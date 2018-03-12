@@ -1,0 +1,90 @@
+
+-- layout --
+
+layout             ":" ;
+layout stop        "elif", "else" ;
+layout toplevel    ;
+
+
+-- program --
+
+
+Program.           Program ::= [Stmt] ;
+separator          Stmt        ";" ;
+
+
+-- statements --
+
+--SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type ":" Block ;
+--ANoDef.            Arg    ::= Type Ident ;
+--ADef.              Arg    ::= Type Ident "=" Expr ;
+--separator          Arg        ";" ;
+
+SBlock.            Block   ::= "{" [Stmt] "}" ;
+
+SSkip.             Stmt   ::= "skip" ;
+
+SAssg.             Stmt   ::= Ident "=" Expr ;
+
+SIf.               Stmt   ::= "if" [Branch] Else ;
+BElIf.             Branch ::= Expr ":" Block ;
+separator          Branch     "elif" ;
+EElse.             Else   ::= "else" ":" Block ;
+EEmpty.            Else   ::= ;
+
+SWhile.            Stmt   ::= "while" Expr ":" Block ;
+
+
+-- expressions --
+
+EInt.              Expr8  ::= Integer ;
+ETrue.             Expr8  ::= "true" ;
+EFalse.            Expr8  ::= "false" ;
+EStr.              Expr8  ::= String ;
+EVar.              Expr8  ::= Ident ;
+
+--ECall.             Expr8  ::= Expr8 "(" [Expr8] ")";
+--separator          Expr8      "," ;
+
+EMul.              Expr7  ::= Expr7 "*" Expr8 ;
+EDiv.              Expr7  ::= Expr7 "/" Expr8 ;
+EMod.              Expr7  ::= Expr7 "%" Expr8 ;
+EAdd.              Expr6  ::= Expr6 "+" Expr7 ;
+ESub.              Expr6  ::= Expr6 "-" Expr7 ;
+ENeg.              Expr6  ::= "-" Expr7;
+
+ECmp.              Expr5  ::= Expr6 CmpOp Expr6 ;
+CmpEQ.             CmpOp  ::= "==" ;
+CmpNE.             CmpOp  ::= "<>" ;
+CmpLT.             CmpOp  ::= "<" ;
+CmpLE.             CmpOp  ::= "<=" ;
+CmpGT.             CmpOp  ::= ">" ;
+CmpGE.             CmpOp  ::= ">=" ;
+
+ENot.              Expr4  ::= "not" Expr4 ;
+EAnd.              Expr3  ::= Expr4 "and" Expr3 ;
+EOr.               Expr2  ::= Expr3 "or" Expr2 ;
+
+--ETuple.            Expr1  ::= [Expr2] ;
+--separator          Expr2      "," ;
+
+coercions          Expr       8 ;
+
+
+-- types --
+
+TInt.              Type4  ::= "Int" ;
+TBool.             Type4  ::= "Bool" ;
+--TStr.              Type4  ::= "Str" ;
+--TPower.            Type3  ::= Type4 "^" Integer ;
+--TTuple.            Type2  ::= [Type3] ;
+--separator nonempty Type3      "*" ;
+--TFunc.             Type1  ::= Type2 "->" Type1 ;
+
+coercions          Type       4 ;
+
+
+-- comments --
+
+comment            "#" ;
+comment            "/*" "*/" ;

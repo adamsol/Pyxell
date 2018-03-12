@@ -1,0 +1,5 @@
+
+if false:
+    skip
+elif false or 0:
+    skip

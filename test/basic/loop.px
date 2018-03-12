@@ -1,0 +1,10 @@
+
+s = 0
+if true:
+    # scope test
+    i = false
+i = 0
+n = 10
+while i <= n:
+    s = s + i
+    i = i + 1

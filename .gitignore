@@ -1,5 +1,6 @@
 dist
 cabal-dev
+*.exe
 *.o
 *.hi
 *.chi
@@ -14,3 +15,8 @@ cabal.sandbox.config
 *.aux
 *.hp
 .stack-work/
+.idea/
+*.iml
+*.txt
+*.bak
+tmp.*

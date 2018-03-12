@@ -1,0 +1,4 @@
+
+if true:
+    x = true
+y = true and x
