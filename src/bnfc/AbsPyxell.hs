@@ -14,8 +14,15 @@ data Program a = Program a [Stmt a]
 instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
+data Block a = SBlock a [Stmt a]
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Block where
+    fmap f x = case x of
+        SBlock a stmts -> SBlock (f a) (map (fmap f) stmts)
 data Stmt a
     = SSkip a
+    | SExpr a (Expr a)
     | SAssg a Ident (Expr a)
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
@@ -24,15 +31,10 @@ data Stmt a
 instance Functor Stmt where
     fmap f x = case x of
         SSkip a -> SSkip (f a)
+        SExpr a expr -> SExpr (f a) (fmap f expr)
         SAssg a ident expr -> SAssg (f a) ident (fmap f expr)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
-data Block a = SBlock a [Stmt a]
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor Block where
-    fmap f x = case x of
-        SBlock a stmts -> SBlock (f a) (map (fmap f) stmts)
 data Branch a = BElIf a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
 

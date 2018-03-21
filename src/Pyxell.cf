@@ -24,6 +24,8 @@ SBlock.            Block   ::= "{" [Stmt] "}" ;
 
 SSkip.             Stmt   ::= "skip" ;
 
+SExpr.             Stmt   ::= Expr ;
+
 SAssg.             Stmt   ::= Ident "=" Expr ;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;

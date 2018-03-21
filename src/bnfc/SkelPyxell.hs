@@ -15,15 +15,16 @@ transIdent x = case x of
 transProgram :: Show a => Program a -> Result
 transProgram x = case x of
   Program _ stmts -> failure x
-transStmt :: Show a => Stmt a -> Result
-transStmt x = case x of
-  SSkip _ -> failure x
-  SAssg _ ident expr -> failure x
-  SIf _ branchs else_ -> failure x
-  SWhile _ expr block -> failure x
 transBlock :: Show a => Block a -> Result
 transBlock x = case x of
   SBlock _ stmts -> failure x
+transStmt :: Show a => Stmt a -> Result
+transStmt x = case x of
+  SSkip _ -> failure x
+  SExpr _ expr -> failure x
+  SAssg _ ident expr -> failure x
+  SIf _ branchs else_ -> failure x
+  SWhile _ expr block -> failure x
 transBranch :: Show a => Branch a -> Result
 transBranch x = case x of
   BElIf _ expr block -> failure x

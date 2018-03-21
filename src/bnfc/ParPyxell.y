@@ -13,13 +13,12 @@ import ErrM
 %tokentype {Token}
 %name pProgram_internal Program
 %name pListStmt_internal ListStmt
-%name pStmt_internal Stmt
 %name pBlock_internal Block
+%name pStmt_internal Stmt
 %name pBranch_internal Branch
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
 %name pExpr8_internal Expr8
-%name pListExpr8_internal ListExpr8
 %name pExpr7_internal Expr7
 %name pExpr6_internal Expr6
 %name pExpr5_internal Expr5
@@ -40,32 +39,31 @@ import ErrM
   ')' { PT _ (TS _ 3) }
   '*' { PT _ (TS _ 4) }
   '+' { PT _ (TS _ 5) }
-  ',' { PT _ (TS _ 6) }
-  '-' { PT _ (TS _ 7) }
-  '/' { PT _ (TS _ 8) }
-  ':' { PT _ (TS _ 9) }
-  ';' { PT _ (TS _ 10) }
-  '<' { PT _ (TS _ 11) }
-  '<=' { PT _ (TS _ 12) }
-  '<>' { PT _ (TS _ 13) }
-  '=' { PT _ (TS _ 14) }
-  '==' { PT _ (TS _ 15) }
-  '>' { PT _ (TS _ 16) }
-  '>=' { PT _ (TS _ 17) }
-  'Bool' { PT _ (TS _ 18) }
-  'Int' { PT _ (TS _ 19) }
-  'and' { PT _ (TS _ 20) }
-  'elif' { PT _ (TS _ 21) }
-  'else' { PT _ (TS _ 22) }
-  'false' { PT _ (TS _ 23) }
-  'if' { PT _ (TS _ 24) }
-  'not' { PT _ (TS _ 25) }
-  'or' { PT _ (TS _ 26) }
-  'skip' { PT _ (TS _ 27) }
-  'true' { PT _ (TS _ 28) }
-  'while' { PT _ (TS _ 29) }
-  '{' { PT _ (TS _ 30) }
-  '}' { PT _ (TS _ 31) }
+  '-' { PT _ (TS _ 6) }
+  '/' { PT _ (TS _ 7) }
+  ':' { PT _ (TS _ 8) }
+  ';' { PT _ (TS _ 9) }
+  '<' { PT _ (TS _ 10) }
+  '<=' { PT _ (TS _ 11) }
+  '<>' { PT _ (TS _ 12) }
+  '=' { PT _ (TS _ 13) }
+  '==' { PT _ (TS _ 14) }
+  '>' { PT _ (TS _ 15) }
+  '>=' { PT _ (TS _ 16) }
+  'Bool' { PT _ (TS _ 17) }
+  'Int' { PT _ (TS _ 18) }
+  'and' { PT _ (TS _ 19) }
+  'elif' { PT _ (TS _ 20) }
+  'else' { PT _ (TS _ 21) }
+  'false' { PT _ (TS _ 22) }
+  'if' { PT _ (TS _ 23) }
+  'not' { PT _ (TS _ 24) }
+  'or' { PT _ (TS _ 25) }
+  'skip' { PT _ (TS _ 26) }
+  'true' { PT _ (TS _ 27) }
+  'while' { PT _ (TS _ 28) }
+  '{' { PT _ (TS _ 29) }
+  '}' { PT _ (TS _ 30) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -114,11 +112,21 @@ ListStmt :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+Block :: {
+  (Maybe (Int, Int), Block (Maybe (Int, Int)))
+}
+: '{' ListStmt '}' {
+  (Just (tokenLineCol $1), AbsPyxell.SBlock (Just (tokenLineCol $1)) (snd $2)) 
+}
+
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
 : 'skip' {
   (Just (tokenLineCol $1), AbsPyxell.SSkip (Just (tokenLineCol $1)))
+}
+| Expr {
+  (fst $1, AbsPyxell.SExpr (fst $1)(snd $1)) 
 }
 | Ident '=' Expr {
   (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)(snd $3)) 
@@ -128,13 +136,6 @@ Stmt :: {
 }
 | 'while' Expr ':' Block {
   (Just (tokenLineCol $1), AbsPyxell.SWhile (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
-}
-
-Block :: {
-  (Maybe (Int, Int), Block (Maybe (Int, Int)))
-}
-: '{' ListStmt '}' {
-  (Just (tokenLineCol $1), AbsPyxell.SBlock (Just (tokenLineCol $1)) (snd $2)) 
 }
 
 Branch :: {
@@ -189,29 +190,16 @@ Expr8 :: {
   (Just (tokenLineCol $1), snd $2)
 }
 
-ListExpr8 :: {
-  (Maybe (Int, Int), [Expr (Maybe (Int, Int))]) 
-}
-: {
-  (Nothing, [])
-}
-| Expr8 {
-  (fst $1, (:[]) (snd $1)) 
-}
-| Expr8 ',' ListExpr8 {
-  (fst $1, (:) (snd $1)(snd $3)) 
-}
-
 Expr7 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr8 '*' Expr7 {
+: Expr7 '*' Expr8 {
   (fst $1, AbsPyxell.EMul (fst $1)(snd $1)(snd $3)) 
 }
-| Expr8 '/' Expr7 {
+| Expr7 '/' Expr8 {
   (fst $1, AbsPyxell.EDiv (fst $1)(snd $1)(snd $3)) 
 }
-| Expr8 '%' Expr7 {
+| Expr7 '%' Expr8 {
   (fst $1, AbsPyxell.EMod (fst $1)(snd $1)(snd $3)) 
 }
 | Expr8 {
@@ -221,10 +209,10 @@ Expr7 :: {
 Expr6 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr7 '+' Expr6 {
+: Expr6 '+' Expr7 {
   (fst $1, AbsPyxell.EAdd (fst $1)(snd $1)(snd $3)) 
 }
-| Expr7 '-' Expr6 {
+| Expr6 '-' Expr7 {
   (fst $1, AbsPyxell.ESub (fst $1)(snd $1)(snd $3)) 
 }
 | '-' Expr7 {
@@ -371,13 +359,12 @@ myLexer = tokens
 
 pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
-pStmt = (>>= return . snd) . pStmt_internal
 pBlock = (>>= return . snd) . pBlock_internal
+pStmt = (>>= return . snd) . pStmt_internal
 pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
 pExpr8 = (>>= return . snd) . pExpr8_internal
-pListExpr8 = (>>= return . snd) . pListExpr8_internal
 pExpr7 = (>>= return . snd) . pExpr7_internal
 pExpr6 = (>>= return . snd) . pExpr6_internal
 pExpr5 = (>>= return . snd) . pExpr5_internal

@@ -94,19 +94,20 @@ instance Print (Program a) where
 instance Print [Stmt a] where
   prt = prtList
 
+instance Print (Block a) where
+  prt i e = case e of
+    SBlock _ stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
+
 instance Print (Stmt a) where
   prt i e = case e of
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
+    SExpr _ expr -> prPrec i 0 (concatD [prt 0 expr])
     SAssg _ id expr -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 0 expr])
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString ":"), prt 0 block])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
-
-instance Print (Block a) where
-  prt i e = case e of
-    SBlock _ stmts -> prPrec i 0 (concatD [doc (showString "{"), prt 0 stmts, doc (showString "}")])
 
 instance Print (Branch a) where
   prt i e = case e of
@@ -139,19 +140,16 @@ instance Print (Expr a) where
     EFalse _ -> prPrec i 8 (concatD [doc (showString "false")])
     EStr _ str -> prPrec i 8 (concatD [prt 0 str])
     EVar _ id -> prPrec i 8 (concatD [prt 0 id])
-    EMul _ expr1 expr2 -> prPrec i 7 (concatD [prt 8 expr1, doc (showString "*"), prt 7 expr2])
-    EDiv _ expr1 expr2 -> prPrec i 7 (concatD [prt 8 expr1, doc (showString "/"), prt 7 expr2])
-    EMod _ expr1 expr2 -> prPrec i 7 (concatD [prt 8 expr1, doc (showString "%"), prt 7 expr2])
-    EAdd _ expr1 expr2 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString "+"), prt 6 expr2])
-    ESub _ expr1 expr2 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString "-"), prt 6 expr2])
+    EMul _ expr1 expr2 -> prPrec i 7 (concatD [prt 7 expr1, doc (showString "*"), prt 8 expr2])
+    EDiv _ expr1 expr2 -> prPrec i 7 (concatD [prt 7 expr1, doc (showString "/"), prt 8 expr2])
+    EMod _ expr1 expr2 -> prPrec i 7 (concatD [prt 7 expr1, doc (showString "%"), prt 8 expr2])
+    EAdd _ expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "+"), prt 7 expr2])
+    ESub _ expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "-"), prt 7 expr2])
     ENeg _ expr -> prPrec i 6 (concatD [doc (showString "-"), prt 7 expr])
     ECmp _ expr1 cmpop expr2 -> prPrec i 5 (concatD [prt 6 expr1, prt 0 cmpop, prt 6 expr2])
     ENot _ expr -> prPrec i 4 (concatD [doc (showString "not"), prt 4 expr])
     EAnd _ expr1 expr2 -> prPrec i 3 (concatD [prt 4 expr1, doc (showString "and"), prt 3 expr2])
     EOr _ expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "or"), prt 2 expr2])
-  prtList 8 [] = concatD []
-  prtList 8 [x] = concatD [prt 8 x]
-  prtList 8 (x:xs) = concatD [prt 8 x, doc (showString ","), prt 8 xs]
 
 instance Print (Type a) where
   prt i e = case e of

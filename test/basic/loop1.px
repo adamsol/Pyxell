@@ -5,6 +5,8 @@ if true:
     i = false
 i = 0
 n = 10
+
 while i <= n:
     s = s + i
     i = i + 1
+s

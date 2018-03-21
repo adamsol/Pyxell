@@ -1,8 +1,0 @@
-
-a = true
-b = false
-c = 0
-if a or b:
-    c = 21 * 2
-else:
-    a = false

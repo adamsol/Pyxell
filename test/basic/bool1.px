@@ -1,0 +1,14 @@
+
+a = true
+b = false
+c = 0
+
+if a or b:
+    c = 21 * 2
+else:
+    a = false
+
+if true and a and (false or not false):
+    c / 1 - 0  # 42
+elif true:
+    skip

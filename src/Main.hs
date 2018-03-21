@@ -24,6 +24,7 @@ import LayoutPyxell (resolveLayout)
 import ErrM
 
 import Checker
+import Compiler
 
 
 main :: IO ()
@@ -42,7 +43,10 @@ main = do
                     result <- runErrorT $ runReaderT (checkProgram prog) M.empty
                     case result of
                         Left error -> do
-                            hPutStrLn stderr $ "ERROR\n" ++ path ++ error
+                            hPutStr stderr $ "ERROR\n" ++ path ++ error
                             exitFailure
                         Right () -> do
-                            hPutStrLn stderr $ "OK"
+                            output <- execWriterT $ runStateT (runReaderT (compileProgram prog) M.empty) M.empty
+                            writeFile (base ++ ".ll") output
+                            readProcess "clang" [base ++ ".ll", "lib/runtime.ll", "-o", base ++ ".exe"] ""
+                            return $ ()

@@ -20,3 +20,5 @@ cabal.sandbox.config
 *.txt
 *.bak
 tmp.*
+*.bc
+test/**/*.ll
