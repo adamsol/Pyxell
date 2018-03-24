@@ -31,19 +31,19 @@ main :: IO ()
 main = do
     args <- getArgs
     case args of
-        [] -> hPutStrLn stderr $ "ERROR\nFile path needed!"
+        [] -> hPutStrLn stderr $ "File path needed!"
         path:_ -> do
             let base = fst $ splitExtension path
             program <- readFile path
             case pProgram $ resolveLayout True $ myLexer program of
                 Bad err -> do
-                    hPutStrLn stderr $ "ERROR\n" ++ path ++ ": " ++ err
+                    hPutStrLn stderr $ path ++ ": " ++ err
                     exitFailure
                 Ok prog -> do
                     result <- runErrorT $ runReaderT (checkProgram prog) M.empty
                     case result of
                         Left error -> do
-                            hPutStr stderr $ "ERROR\n" ++ path ++ error
+                            hPutStr stderr $ path ++ error
                             exitFailure
                         Right () -> do
                             output <- execWriterT $ runStateT (runReaderT (compileProgram prog) M.empty) M.empty

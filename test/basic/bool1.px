@@ -9,6 +9,6 @@ else:
     a = false
 
 if true and a and (false or not false):
-    c / 1 - 0  # 42
+    c / 1 - 0
 elif true:
     skip
