@@ -23,7 +23,7 @@ instance Functor Block where
 data Stmt a
     = SSkip a
     | SExpr a (Expr a)
-    | SAssg a Ident (Expr a)
+    | SAssg a [Ident] (Expr a)
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
@@ -32,7 +32,7 @@ instance Functor Stmt where
     fmap f x = case x of
         SSkip a -> SSkip (f a)
         SExpr a expr -> SExpr (f a) (fmap f expr)
-        SAssg a ident expr -> SAssg (f a) ident (fmap f expr)
+        SAssg a idents expr -> SAssg (f a) idents (fmap f expr)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
 data Branch a = BElIf a (Expr a) (Block a)
@@ -66,6 +66,7 @@ data Expr a
     | EFalse a
     | EStr a String
     | EVar a Ident
+    | EElem a (Expr a) Integer
     | EMul a (Expr a) (Expr a)
     | EDiv a (Expr a) (Expr a)
     | EMod a (Expr a) (Expr a)
@@ -76,6 +77,7 @@ data Expr a
     | ENot a (Expr a)
     | EAnd a (Expr a) (Expr a)
     | EOr a (Expr a) (Expr a)
+    | ETuple a [Expr a]
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Expr where
@@ -85,6 +87,7 @@ instance Functor Expr where
         EFalse a -> EFalse (f a)
         EStr a string -> EStr (f a) string
         EVar a ident -> EVar (f a) ident
+        EElem a expr integer -> EElem (f a) (fmap f expr) integer
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
         EDiv a expr1 expr2 -> EDiv (f a) (fmap f expr1) (fmap f expr2)
         EMod a expr1 expr2 -> EMod (f a) (fmap f expr1) (fmap f expr2)
@@ -95,10 +98,14 @@ instance Functor Expr where
         ENot a expr -> ENot (f a) (fmap f expr)
         EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
-data Type a = TInt a | TBool a
+        ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
+data Type a
+    = TPtr a (Type a) | TInt a | TBool a | TTuple a [Type a]
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
     fmap f x = case x of
+        TPtr a type_ -> TPtr (f a) (fmap f type_)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
+        TTuple a types -> TTuple (f a) (map (fmap f) types)

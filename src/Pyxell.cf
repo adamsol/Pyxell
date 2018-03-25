@@ -26,7 +26,8 @@ SSkip.             Stmt   ::= "skip" ;
 
 SExpr.             Stmt   ::= Expr ;
 
-SAssg.             Stmt   ::= Ident "=" Expr ;
+SAssg.             Stmt   ::= [Ident] "=" Expr ;
+separator nonempty Ident      "," ;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
 BElIf.             Branch ::= Expr ":" Block ;
@@ -44,6 +45,8 @@ ETrue.             Expr8  ::= "true" ;
 EFalse.            Expr8  ::= "false" ;
 EStr.              Expr8  ::= String ;
 EVar.              Expr8  ::= Ident ;
+
+EElem.             Expr8  ::= Expr8 "." Integer ;
 
 --ECall.             Expr8  ::= Expr8 "(" [Expr8] ")";
 --separator          Expr8      "," ;
@@ -67,20 +70,21 @@ ENot.              Expr4  ::= "not" Expr4 ;
 EAnd.              Expr3  ::= Expr4 "and" Expr3 ;
 EOr.               Expr2  ::= Expr3 "or" Expr2 ;
 
---ETuple.            Expr1  ::= [Expr2] ;
---separator          Expr2      "," ;
+ETuple.            Expr1  ::= [Expr2] ;
+separator nonempty Expr2      "," ;
 
 coercions          Expr       8 ;
 
 
 -- types --
 
+internal TPtr.     Type4  ::= Type4 ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;
 --TStr.              Type4  ::= "Str" ;
 --TPower.            Type3  ::= Type4 "^" Integer ;
---TTuple.            Type2  ::= [Type3] ;
---separator nonempty Type3      "*" ;
+TTuple.            Type2  ::= [Type3] ;
+separator nonempty Type3      "*" ;
 --TFunc.             Type1  ::= Type2 "->" Type1 ;
 
 coercions          Type       4 ;

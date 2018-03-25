@@ -29,6 +29,9 @@ data StaticError = NotComparable Type Type
                  | NoUnaryOperator String Type
                  | WrongFunctionCall Type Int
                  | UndeclaredIdentifier Ident
+                 | NotTuple Type
+                 | InvalidTupleElem Type Int
+                 | CannotUnpack Type Int
 
 -- | Show instance for displaying compilation errors.
 instance Show StaticError where
@@ -39,6 +42,9 @@ instance Show StaticError where
         NoUnaryOperator op typ -> "No unary operator `" ++ op ++ "` defined for `" ++ show typ ++ "`."
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
+        NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
+        InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
+        CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
 
 
 -- | Does nothing.
@@ -87,15 +93,17 @@ checkStmt stmt cont = case stmt of
     SExpr pos expr -> do
         checkExpr expr
         cont
-    SAssg pos ident expr -> do
-        t1 <- checkExpr expr
-        r <- getIdent ident
-        case r of
-            Just t2 -> case (t1, t2) of
-                (TInt _, TInt _) -> cont
-                (TBool _, TBool _) -> cont
-                otherwise -> throw pos $ IllegalAssignment t1 t2
-            Nothing -> declare t1 ident cont
+    SAssg pos idents expr -> do
+        t <- checkExpr expr
+        case (idents, t) of
+            ([id], _) -> do
+                checkAssg pos t id cont
+            (_, TTuple _ ts) -> do
+                let n = length idents
+                if length idents == length ts then do
+                    checkAssgs pos ts idents cont
+                else throw pos $ CannotUnpack t n
+            otherwise -> throw pos $ CannotUnpack t (length idents)
     SIf pos brs el -> do
         checkBranches brs
         case el of
@@ -107,6 +115,22 @@ checkStmt stmt cont = case stmt of
         checkCond pos expr block
         cont
     where
+        checkAssgs pos types idents cont = case (idents, types) of
+            ([], []) -> cont
+            (id:ids, t:ts) -> checkAssg pos t id (checkAssgs pos ts ids cont)
+        checkAssg pos typ ident cont = do
+            r <- getIdent ident
+            case r of
+                Just t -> do
+                    checkCast pos (typ, t)
+                    cont
+                Nothing -> declare typ ident cont
+        checkCast pos (typ1, typ2) = case (typ1, typ2) of
+            (TInt _, TInt _) -> skip
+            (TBool _, TBool _) -> skip
+            (TTuple _ ts1, TTuple _ ts2) -> do
+                mapM_ (checkCast pos) (zip ts1 ts2)
+            otherwise -> throw pos $ IllegalAssignment typ1 typ2
         checkBranches brs = case brs of
             [] -> skip
             b:bs -> case b of
@@ -129,6 +153,14 @@ checkExpr expr =
         ETrue pos -> return $ tBool
         EFalse pos -> return $ tBool
         EVar pos ident -> checkIdent pos ident
+        EElem pos e n -> do
+            t <- checkExpr e
+            let i = fromInteger n
+            case t of
+                TTuple _ ts -> do
+                    if i < length ts then return $ ts !! i
+                    else throw pos $ InvalidTupleElem t (i+1)
+                otherwise -> throw pos $ NotTuple t
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
         EMod pos e1 e2 -> checkBinary pos "%" e1 e2
@@ -139,6 +171,11 @@ checkExpr expr =
         ENot pos e -> checkUnary pos "not" e
         EAnd pos e1 e2 -> checkBinary pos "and" e1 e2
         EOr pos e1 e2 -> checkBinary pos "or" e1 e2
+        ETuple pos es -> do
+            ts <- mapM checkExpr es
+            case ts of
+                t:[] -> return $ t
+                otherwise -> return $ tTuple ts
     where
         checkIdent pos ident = do
             r <- getIdent ident

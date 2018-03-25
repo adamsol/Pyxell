@@ -20,14 +20,14 @@ import AbsPyxell hiding (Type)
 import Utils
 
 
--- | Type and name of an LLVM register.
+-- | Type and name of LLVM register(s).
 type Result = (Type, String)
 
 -- | State item (for storing different data).
-data Item = Number Int | Label String
+data StateItem = Number Int | Label String
 
 -- | Compiler monad: Reader for identifier environment, State to store some useful values, Writer to produce output LLVM code.
-type Run r = ReaderT (M.Map String Result) (StateT (M.Map String Item) (WriterT String IO)) r
+type Run r = ReaderT (M.Map String Result) (StateT (M.Map String StateItem) (WriterT String IO)) r
 
 
 -- | Does nothing.
@@ -52,8 +52,10 @@ getIdent ident = case ident of
 -- | LLVM string representation for a given type.
 strType :: Type -> String
 strType typ = case typ of
+    TPtr _ t -> strType t ++ "*"
     TInt _ -> "i32"
     TBool _ -> "i1"
+    TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}"
 
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
@@ -121,6 +123,12 @@ declare typ ident val loc cont = case ident of
         store typ val loc
         local (M.insert x (typ, loc)) cont
 
+gep :: Type -> String -> [Int] -> Run String
+gep typ val inds = do
+    l <- nextTemp
+    write $ indent [ l ++ " = getelementptr inbounds " ++ strType typ ++ ", " ++ strType typ ++ "* " ++ val ++ intercalate "" [", i32 " ++ show i | i <- inds] ]
+    return $ l
+
 -- | Outputs LLVM binary operation instruction.
 binop :: String -> Type -> String -> String -> Run String
 binop op typ val1 val2 = do
@@ -162,17 +170,13 @@ compileStmt stmt cont = case stmt of
         case t of
             TInt _ -> do
                 write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
+            otherwise -> write $ [ show t ]
         cont
-    SAssg _ ident expr -> do
+    SAssg _ idents expr -> do
         (t, v) <- compileExpr expr
-        r <- getIdent ident
-        case r of
-            Just (t, l) -> do
-                store t v l
-                cont
-            Nothing -> do
-                l <- nextTemp
-                declare t ident v l cont
+        case (idents, t) of
+            ([id], _) -> compileAssg t id v cont
+            (_, TPtr _ (TTuple _ ts)) -> compileAssgs (zip3 ts idents [0..]) (tTuple ts) v cont
     SIf _ brs el -> do
         l <- nextLabel
         compileBranches brs l
@@ -189,6 +193,24 @@ compileStmt stmt cont = case stmt of
         compileCond expr block l
         cont
     where
+        compileAssgs rs typ val cont = case rs of
+            [] -> cont
+            (t, id, i):rs -> do
+                l <- gep typ val [0, i]
+                v <- load t l
+                compileAssg t id v (compileAssgs rs typ val cont)
+        compileAssg typ ident val cont = do
+            t <- case typ of
+                TTuple _ _ -> return $ tPtr typ
+                otherwise -> return $ typ
+            r <- getIdent ident
+            case r of
+                Just (t, l) -> do
+                    store t val l
+                    cont
+                Nothing -> do
+                    l <- nextTemp
+                    declare t ident val l cont
         compileBranches brs exit = case brs of
             [] -> skip
             b:bs -> case b of
@@ -214,6 +236,14 @@ compileExpr expr =
         ETrue _ -> return $ (tBool, "true")
         EFalse _ -> return $ (tBool, "false")
         EVar _ ident -> compileRval expr
+        EElem _ e n -> do
+            (t, l) <- compileExpr e
+            let i = fromInteger n
+            case t of
+                TPtr _ (TTuple _ ts) -> do
+                    l <- gep (tTuple ts) l [0, i]
+                    v <- load (ts !! i) l
+                    return $ (ts !! i, v)
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
         EMod _ e1 e2 -> compileBinary "srem" e1 e2
@@ -238,6 +268,16 @@ compileExpr expr =
             l2 <- nextLabel
             goto l1 >> label l1
             compileOr e1 e2 [l1] l2
+        ETuple _ es -> do
+            rs <- mapM compileExpr es
+            case rs of
+                r:[] -> return $ r
+                otherwise -> do
+                    let t = tTuple (map fst rs)
+                    l <- nextTemp
+                    alloca t l
+                    mapM (compileTupleElem t l) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
+                    return $ (tPtr t, l)
     where
         compileBinary op e1 e2 = do
             (t, v1) <- compileExpr e1
@@ -277,6 +317,9 @@ compileExpr expr =
                     v3 <- nextTemp
                     write $ indent $ [ v3 ++ " = phi i1 " ++ (intercalate ", " ["[true, %" ++ l ++ "]" | l <- preds]) ++ ", [" ++ v2 ++ ", %" ++ l2 ++ "]" ]
                     return $ (t, v3)
+        compileTupleElem typ loc (t, v, i) = do
+            l <- gep typ loc [0, i]
+            store t v l
 
 -- | Outputs LLVM code that evaluates a given expression as an r-value. Returns type and name of the result.
 compileRval :: Expr Pos -> Run Result

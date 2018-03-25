@@ -15,6 +15,7 @@ import ErrM
 %name pListStmt_internal ListStmt
 %name pBlock_internal Block
 %name pStmt_internal Stmt
+%name pListIdent_internal ListIdent
 %name pBranch_internal Branch
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
@@ -26,12 +27,14 @@ import ErrM
 %name pExpr4_internal Expr4
 %name pExpr3_internal Expr3
 %name pExpr2_internal Expr2
-%name pExpr_internal Expr
 %name pExpr1_internal Expr1
+%name pListExpr2_internal ListExpr2
+%name pExpr_internal Expr
 %name pType4_internal Type4
+%name pType2_internal Type2
+%name pListType3_internal ListType3
 %name pType_internal Type
 %name pType1_internal Type1
-%name pType2_internal Type2
 %name pType3_internal Type3
 %token
   '%' { PT _ (TS _ 1) }
@@ -39,31 +42,33 @@ import ErrM
   ')' { PT _ (TS _ 3) }
   '*' { PT _ (TS _ 4) }
   '+' { PT _ (TS _ 5) }
-  '-' { PT _ (TS _ 6) }
-  '/' { PT _ (TS _ 7) }
-  ':' { PT _ (TS _ 8) }
-  ';' { PT _ (TS _ 9) }
-  '<' { PT _ (TS _ 10) }
-  '<=' { PT _ (TS _ 11) }
-  '<>' { PT _ (TS _ 12) }
-  '=' { PT _ (TS _ 13) }
-  '==' { PT _ (TS _ 14) }
-  '>' { PT _ (TS _ 15) }
-  '>=' { PT _ (TS _ 16) }
-  'Bool' { PT _ (TS _ 17) }
-  'Int' { PT _ (TS _ 18) }
-  'and' { PT _ (TS _ 19) }
-  'elif' { PT _ (TS _ 20) }
-  'else' { PT _ (TS _ 21) }
-  'false' { PT _ (TS _ 22) }
-  'if' { PT _ (TS _ 23) }
-  'not' { PT _ (TS _ 24) }
-  'or' { PT _ (TS _ 25) }
-  'skip' { PT _ (TS _ 26) }
-  'true' { PT _ (TS _ 27) }
-  'while' { PT _ (TS _ 28) }
-  '{' { PT _ (TS _ 29) }
-  '}' { PT _ (TS _ 30) }
+  ',' { PT _ (TS _ 6) }
+  '-' { PT _ (TS _ 7) }
+  '.' { PT _ (TS _ 8) }
+  '/' { PT _ (TS _ 9) }
+  ':' { PT _ (TS _ 10) }
+  ';' { PT _ (TS _ 11) }
+  '<' { PT _ (TS _ 12) }
+  '<=' { PT _ (TS _ 13) }
+  '<>' { PT _ (TS _ 14) }
+  '=' { PT _ (TS _ 15) }
+  '==' { PT _ (TS _ 16) }
+  '>' { PT _ (TS _ 17) }
+  '>=' { PT _ (TS _ 18) }
+  'Bool' { PT _ (TS _ 19) }
+  'Int' { PT _ (TS _ 20) }
+  'and' { PT _ (TS _ 21) }
+  'elif' { PT _ (TS _ 22) }
+  'else' { PT _ (TS _ 23) }
+  'false' { PT _ (TS _ 24) }
+  'if' { PT _ (TS _ 25) }
+  'not' { PT _ (TS _ 26) }
+  'or' { PT _ (TS _ 27) }
+  'skip' { PT _ (TS _ 28) }
+  'true' { PT _ (TS _ 29) }
+  'while' { PT _ (TS _ 30) }
+  '{' { PT _ (TS _ 31) }
+  '}' { PT _ (TS _ 32) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -128,7 +133,7 @@ Stmt :: {
 | Expr {
   (fst $1, AbsPyxell.SExpr (fst $1)(snd $1)) 
 }
-| Ident '=' Expr {
+| ListIdent '=' Expr {
   (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)(snd $3)) 
 }
 | 'if' ListBranch Else {
@@ -136,6 +141,16 @@ Stmt :: {
 }
 | 'while' Expr ':' Block {
   (Just (tokenLineCol $1), AbsPyxell.SWhile (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
+}
+
+ListIdent :: {
+  (Maybe (Int, Int), [Ident]) 
+}
+: Ident {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Ident ',' ListIdent {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 Branch :: {
@@ -185,6 +200,9 @@ Expr8 :: {
 }
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
+}
+| Expr8 '.' Integer {
+  (fst $1, AbsPyxell.EElem (fst $1)(snd $1)(snd $3)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
@@ -284,17 +302,30 @@ Expr2 :: {
   (fst $1, snd $1)
 }
 
+Expr1 :: {
+  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
+}
+: ListExpr2 {
+  (fst $1, AbsPyxell.ETuple (fst $1)(snd $1)) 
+}
+| Expr2 {
+  (fst $1, snd $1)
+}
+
+ListExpr2 :: {
+  (Maybe (Int, Int), [Expr (Maybe (Int, Int))]) 
+}
+: Expr2 {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Expr2 ',' ListExpr2 {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
 Expr :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
 : Expr1 {
-  (fst $1, snd $1)
-}
-
-Expr1 :: {
-  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
-}
-: Expr2 {
   (fst $1, snd $1)
 }
 
@@ -311,6 +342,26 @@ Type4 :: {
   (Just (tokenLineCol $1), snd $2)
 }
 
+Type2 :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: ListType3 {
+  (fst $1, AbsPyxell.TTuple (fst $1)(snd $1)) 
+}
+| Type3 {
+  (fst $1, snd $1)
+}
+
+ListType3 :: {
+  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
+}
+: Type3 {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Type3 '*' ListType3 {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
 Type :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
@@ -322,13 +373,6 @@ Type1 :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
 : Type2 {
-  (fst $1, snd $1)
-}
-
-Type2 :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: Type3 {
   (fst $1, snd $1)
 }
 
@@ -361,6 +405,7 @@ pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pBlock = (>>= return . snd) . pBlock_internal
 pStmt = (>>= return . snd) . pStmt_internal
+pListIdent = (>>= return . snd) . pListIdent_internal
 pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
@@ -372,12 +417,14 @@ pCmpOp = (>>= return . snd) . pCmpOp_internal
 pExpr4 = (>>= return . snd) . pExpr4_internal
 pExpr3 = (>>= return . snd) . pExpr3_internal
 pExpr2 = (>>= return . snd) . pExpr2_internal
-pExpr = (>>= return . snd) . pExpr_internal
 pExpr1 = (>>= return . snd) . pExpr1_internal
+pListExpr2 = (>>= return . snd) . pListExpr2_internal
+pExpr = (>>= return . snd) . pExpr_internal
 pType4 = (>>= return . snd) . pType4_internal
+pType2 = (>>= return . snd) . pType2_internal
+pListType3 = (>>= return . snd) . pListType3_internal
 pType = (>>= return . snd) . pType_internal
 pType1 = (>>= return . snd) . pType1_internal
-pType2 = (>>= return . snd) . pType2_internal
 pType3 = (>>= return . snd) . pType3_internal
 }
 

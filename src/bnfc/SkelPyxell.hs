@@ -22,7 +22,7 @@ transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
   SSkip _ -> failure x
   SExpr _ expr -> failure x
-  SAssg _ ident expr -> failure x
+  SAssg _ idents expr -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
 transBranch :: Show a => Branch a -> Result
@@ -47,6 +47,7 @@ transExpr x = case x of
   EFalse _ -> failure x
   EStr _ string -> failure x
   EVar _ ident -> failure x
+  EElem _ expr integer -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
   EMod _ expr1 expr2 -> failure x
@@ -57,8 +58,11 @@ transExpr x = case x of
   ENot _ expr -> failure x
   EAnd _ expr1 expr2 -> failure x
   EOr _ expr1 expr2 -> failure x
+  ETuple _ exprs -> failure x
 transType :: Show a => Type a -> Result
 transType x = case x of
+  TPtr _ type_ -> failure x
   TInt _ -> failure x
   TBool _ -> failure x
+  TTuple _ types -> failure x
 

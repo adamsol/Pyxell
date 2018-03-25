@@ -3,6 +3,8 @@
 
 module Utils where
 
+import Data.List
+
 import AbsPyxell hiding (Type)
 import qualified AbsPyxell as Abs (Type)
 
@@ -20,9 +22,11 @@ instance {-# OVERLAPS #-} Show Type where
         TBool _ -> "Bool"
         --TStr _ -> "Str"
         --TPower _ typ exp -> show typ ++ show exp
-        --TTuple _ types -> intercalate "*" $ map show types
+        TTuple _ types -> intercalate "*" $ map show types
         --TFunc _ typ1 typ2 -> show typ1 ++ "->" ++ show typ2
 
 -- | Helper functions for initializing types without a position.
+tPtr typ = TPtr Nothing typ
 tInt = TInt Nothing
 tBool = TBool Nothing
+tTuple = TTuple Nothing
