@@ -1,0 +1,18 @@
+
+b = true
+r = 0
+
+if b < (not b):
+    r = r - 1
+else:
+    r = r + 1
+
+if false == true or b <> b:
+    r = r - 10
+elif false < true:
+    r = r + 10
+
+if true >= false:
+    r = r + 100
+
+r

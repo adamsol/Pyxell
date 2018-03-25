@@ -253,10 +253,10 @@ compileExpr expr =
         ECmp _ e1 op e2 -> case op of
             CmpEQ _ -> compileCmp "eq" e1 e2
             CmpNE _ -> compileCmp "ne" e1 e2
-            CmpLT _ -> compileCmp "slt" e1 e2
-            CmpLE _ -> compileCmp "sle" e1 e2
-            CmpGT _ -> compileCmp "sgt" e1 e2
-            CmpGE _ -> compileCmp "sge" e1 e2
+            CmpLT _ -> compileCmp "lt" e1 e2
+            CmpLE _ -> compileCmp "le" e1 e2
+            CmpGT _ -> compileCmp "gt" e1 e2
+            CmpGE _ -> compileCmp "ge" e1 e2
         ENot _ e -> compileBinary "xor" (ETrue Nothing) e
         EAnd _ e1 e2 -> do
             l1 <- nextLabel
@@ -287,7 +287,11 @@ compileExpr expr =
         compileCmp op e1 e2 = do
             (t, v1) <- compileExpr e1
             (t, v2) <- compileExpr e2
-            v <- binop ("icmp " ++ op) t v1 v2
+            v <- case (op, t) of
+                ("eq", _) -> binop ("icmp " ++ op) t v1 v2
+                ("ne", _) -> binop ("icmp " ++ op) t v1 v2
+                (_, TBool _) -> binop ("icmp u" ++ op) t v1 v2
+                otherwise -> binop ("icmp s" ++ op) t v1 v2
             return $ (tBool, v)
         compileAnd expr1 expr2 preds exit = do
             (t, v1) <- compileExpr expr1
