@@ -43,7 +43,7 @@ SWhile.            Stmt   ::= "while" Expr ":" Block ;
 EInt.              Expr8  ::= Integer ;
 ETrue.             Expr8  ::= "true" ;
 EFalse.            Expr8  ::= "false" ;
-EStr.              Expr8  ::= String ;
+EString.           Expr8  ::= String ;
 EVar.              Expr8  ::= Ident ;
 
 EElem.             Expr8  ::= Expr8 "." Integer ;
@@ -81,7 +81,7 @@ coercions          Expr       8 ;
 internal TPtr.     Type4  ::= Type4 ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;
---TStr.              Type4  ::= "Str" ;
+TString.           Type4  ::= "String" ;
 --TPower.            Type3  ::= Type4 "^" Integer ;
 TTuple.            Type2  ::= [Type3] ;
 separator nonempty Type3      "*" ;

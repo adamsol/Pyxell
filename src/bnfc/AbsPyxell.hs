@@ -64,7 +64,7 @@ data Expr a
     = EInt a Integer
     | ETrue a
     | EFalse a
-    | EStr a String
+    | EString a String
     | EVar a Ident
     | EElem a (Expr a) Integer
     | EMul a (Expr a) (Expr a)
@@ -85,7 +85,7 @@ instance Functor Expr where
         EInt a integer -> EInt (f a) integer
         ETrue a -> ETrue (f a)
         EFalse a -> EFalse (f a)
-        EStr a string -> EStr (f a) string
+        EString a string -> EString (f a) string
         EVar a ident -> EVar (f a) ident
         EElem a expr integer -> EElem (f a) (fmap f expr) integer
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
@@ -100,7 +100,11 @@ instance Functor Expr where
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
 data Type a
-    = TPtr a (Type a) | TInt a | TBool a | TTuple a [Type a]
+    = TPtr a (Type a)
+    | TInt a
+    | TBool a
+    | TString a
+    | TTuple a [Type a]
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -108,4 +112,5 @@ instance Functor Type where
         TPtr a type_ -> TPtr (f a) (fmap f type_)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
+        TString a -> TString (f a)
         TTuple a types -> TTuple (f a) (map (fmap f) types)

@@ -143,7 +143,7 @@ instance Print (Expr a) where
     EInt _ n -> prPrec i 8 (concatD [prt 0 n])
     ETrue _ -> prPrec i 8 (concatD [doc (showString "true")])
     EFalse _ -> prPrec i 8 (concatD [doc (showString "false")])
-    EStr _ str -> prPrec i 8 (concatD [prt 0 str])
+    EString _ str -> prPrec i 8 (concatD [prt 0 str])
     EVar _ id -> prPrec i 8 (concatD [prt 0 id])
     EElem _ expr n -> prPrec i 8 (concatD [prt 8 expr, doc (showString "."), prt 0 n])
     EMul _ expr1 expr2 -> prPrec i 7 (concatD [prt 7 expr1, doc (showString "*"), prt 8 expr2])
@@ -165,6 +165,7 @@ instance Print (Type a) where
     TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
+    TString _ -> prPrec i 4 (concatD [doc (showString "String")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]

@@ -12,6 +12,7 @@ import Control.Monad.Trans.State
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Writer
 import Control.Monad.Trans.Error
+import Data.Char
 import Data.List
 import Data.Maybe
 import qualified Data.Map as M
@@ -55,6 +56,7 @@ strType typ = case typ of
     TPtr _ t -> strType t ++ "*"
     TInt _ -> "i32"
     TBool _ -> "i1"
+    TString _ -> "i8*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}"
 
 -- | Returns an unused index for temporary names.
@@ -123,6 +125,7 @@ declare typ ident val loc cont = case ident of
         store typ val loc
         local (M.insert x (typ, loc)) cont
 
+-- | Outputs LLVM 'getelementptr' command with given indices.
 gep :: Type -> String -> [Int] -> Run String
 gep typ val inds = do
     l <- nextTemp
@@ -136,12 +139,34 @@ binop op typ val1 val2 = do
     write $ indent [ v ++ " = " ++ op ++ " " ++ strType typ ++ " " ++ val1 ++ ", " ++ val2 ]
     return $ v
 
+-- | Outputs LLVM function call instruction.
+call :: Type -> String -> [Result] -> Run String
+call ret name rs = do
+    v <- nextTemp
+    write $ indent [ v ++ " = call " ++ strType ret ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- rs] ++ ")" ]
+    return $ v
+
+
+-- | Outputs LLVM code for string initialization.
+initString :: String -> Run Result
+initString s = do
+    l1 <- nextTemp
+    l2 <- nextTemp
+    let n = length s + 1
+    let d = "[" ++ show n ++ " x i8]"
+    write $ indent [
+        l1 ++ " = call i8* @malloc(i32 " ++ show n ++ ")",
+        l2 ++ " = bitcast i8* " ++ l1 ++ " to " ++ d ++ "*",
+        "store " ++ d ++ "[" ++ intercalate ", " (map (\c -> "i8 " ++ show (ord c)) (s ++ "\0")) ++ "], " ++ d ++ "* " ++ l2 ]
+    return $ (tString, l1)
+
 
 -- | Outputs LLVM code for all statements in the program.
 compileProgram :: Program Pos -> Run ()
 compileProgram prog = case prog of
     Program _ stmts -> do
-        write $ [ "", "declare void @printInt(i32)" ]
+        write $ [ "", "declare i8* @malloc(i32)", "declare i32 @strcmp(i8*, i8*)" ]
+        write $ [ "", "declare void @printInt(i32)", "declare void @printString(i8*)", "declare i8* @concatStrings(i8*, i8*)" ]
         lift $ modify (M.insert "number" (Number 0))
         lift $ modify (M.insert "label" (Label "entry"))
         write $ [ "", "define i32 @main() {", "entry:" ]
@@ -170,6 +195,8 @@ compileStmt stmt cont = case stmt of
         case t of
             TInt _ -> do
                 write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
+            TString _ -> do
+                write $ indent [ "call void @printString(i8* " ++ v ++ ")" ]
             otherwise -> write $ [ show t ]
         cont
     SAssg _ idents expr -> do
@@ -235,7 +262,8 @@ compileExpr expr =
         EInt _ n -> return $ (tInt, show n)
         ETrue _ -> return $ (tBool, "true")
         EFalse _ -> return $ (tBool, "false")
-        EVar _ ident -> compileRval expr
+        EString _ s -> initString (read s)
+        EVar _ _ -> compileRval expr
         EElem _ e n -> do
             (t, l) <- compileExpr e
             let i = fromInteger n
@@ -282,11 +310,18 @@ compileExpr expr =
         compileBinary op e1 e2 = do
             (t, v1) <- compileExpr e1
             (t, v2) <- compileExpr e2
-            v <- binop op t v1 v2
+            v <- case t of
+                TString _ -> call t "@concatStrings" [(t, v1), (t, v2)]
+                otherwise -> binop op t v1 v2
             return $ (t, v)
         compileCmp op e1 e2 = do
             (t, v1) <- compileExpr e1
             (t, v2) <- compileExpr e2
+            (t, v1, v2) <- case t of
+                TString _ -> do
+                    v <- call tInt "@strcmp" [(t, v1), (t, v2)]
+                    return $ (tInt, v, "0")
+                otherwise -> return $ (t, v1, v2)
             v <- case (op, t) of
                 ("eq", _) -> binop ("icmp " ++ op) t v1 v2
                 ("ne", _) -> binop ("icmp " ++ op) t v1 v2

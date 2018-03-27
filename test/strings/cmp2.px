@@ -1,0 +1,8 @@
+
+x = "y"
+x = "x"
+y = "y"
+if x > y or x == y:
+    "error"
+elif x <= y and x <> y and "abc" > "ab":
+    "ok"

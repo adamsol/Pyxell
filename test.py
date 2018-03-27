@@ -42,7 +42,7 @@ for i, path in enumerate(glob.glob(f'test/*{args.pattern}*.px'), 1):
                 continue
         subprocess.call(f'{path.replace(".px", ".exe")}', stdout=outfile)
         try:
-            subprocess.check_output(f'diff tmp.out {path.replace(".px", ".out")}', stderr=subprocess.STDOUT)
+            subprocess.check_output(f'diff --strip-trailing-cr tmp.out {path.replace(".px", ".out")}', stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             if e.returncode == 2:
                 print(f"{Y}{e.output.decode()}{E}")

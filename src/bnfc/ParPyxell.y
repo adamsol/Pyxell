@@ -57,18 +57,19 @@ import ErrM
   '>=' { PT _ (TS _ 18) }
   'Bool' { PT _ (TS _ 19) }
   'Int' { PT _ (TS _ 20) }
-  'and' { PT _ (TS _ 21) }
-  'elif' { PT _ (TS _ 22) }
-  'else' { PT _ (TS _ 23) }
-  'false' { PT _ (TS _ 24) }
-  'if' { PT _ (TS _ 25) }
-  'not' { PT _ (TS _ 26) }
-  'or' { PT _ (TS _ 27) }
-  'skip' { PT _ (TS _ 28) }
-  'true' { PT _ (TS _ 29) }
-  'while' { PT _ (TS _ 30) }
-  '{' { PT _ (TS _ 31) }
-  '}' { PT _ (TS _ 32) }
+  'String' { PT _ (TS _ 21) }
+  'and' { PT _ (TS _ 22) }
+  'elif' { PT _ (TS _ 23) }
+  'else' { PT _ (TS _ 24) }
+  'false' { PT _ (TS _ 25) }
+  'if' { PT _ (TS _ 26) }
+  'not' { PT _ (TS _ 27) }
+  'or' { PT _ (TS _ 28) }
+  'skip' { PT _ (TS _ 29) }
+  'true' { PT _ (TS _ 30) }
+  'while' { PT _ (TS _ 31) }
+  '{' { PT _ (TS _ 32) }
+  '}' { PT _ (TS _ 33) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -196,7 +197,7 @@ Expr8 :: {
   (Just (tokenLineCol $1), AbsPyxell.EFalse (Just (tokenLineCol $1)))
 }
 | String {
-  (fst $1, AbsPyxell.EStr (fst $1)(snd $1)) 
+  (fst $1, AbsPyxell.EString (fst $1)(snd $1)) 
 }
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
@@ -337,6 +338,9 @@ Type4 :: {
 }
 | 'Bool' {
   (Just (tokenLineCol $1), AbsPyxell.TBool (Just (tokenLineCol $1)))
+}
+| 'String' {
+  (Just (tokenLineCol $1), AbsPyxell.TString (Just (tokenLineCol $1)))
 }
 | '(' Type ')' {
   (Just (tokenLineCol $1), snd $2)

@@ -20,13 +20,14 @@ instance {-# OVERLAPS #-} Show Type where
     show typ = case typ of
         TInt _ -> "Int"
         TBool _ -> "Bool"
-        --TStr _ -> "Str"
+        TString _ -> "String"
         --TPower _ typ exp -> show typ ++ show exp
         TTuple _ types -> intercalate "*" $ map show types
         --TFunc _ typ1 typ2 -> show typ1 ++ "->" ++ show typ2
 
 -- | Helper functions for initializing types without a position.
-tPtr typ = TPtr Nothing typ
+tPtr = TPtr Nothing
 tInt = TInt Nothing
 tBool = TBool Nothing
+tString = TString Nothing
 tTuple = TTuple Nothing

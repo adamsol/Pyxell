@@ -45,7 +45,7 @@ transExpr x = case x of
   EInt _ integer -> failure x
   ETrue _ -> failure x
   EFalse _ -> failure x
-  EStr _ string -> failure x
+  EString _ string -> failure x
   EVar _ ident -> failure x
   EElem _ expr integer -> failure x
   EMul _ expr1 expr2 -> failure x
@@ -64,5 +64,6 @@ transType x = case x of
   TPtr _ type_ -> failure x
   TInt _ -> failure x
   TBool _ -> failure x
+  TString _ -> failure x
   TTuple _ types -> failure x
 

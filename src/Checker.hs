@@ -128,6 +128,7 @@ checkStmt stmt cont = case stmt of
         checkCast pos (typ1, typ2) = case (typ1, typ2) of
             (TInt _, TInt _) -> skip
             (TBool _, TBool _) -> skip
+            (TString _, TString _) -> skip
             (TTuple _ ts1, TTuple _ ts2) -> do
                 mapM_ (checkCast pos) (zip ts1 ts2)
             otherwise -> throw pos $ IllegalAssignment typ1 typ2
@@ -152,6 +153,7 @@ checkExpr expr =
         EInt pos _ -> return $ tInt
         ETrue pos -> return $ tBool
         EFalse pos -> return $ tBool
+        EString pos _ -> return $ tString
         EVar pos ident -> checkIdent pos ident
         EElem pos e n -> do
             t <- checkExpr e
@@ -197,6 +199,7 @@ checkExpr expr =
                     otherwise -> throw pos $ NoBinaryOperator "%" t1 t2
                 "+" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ tInt
+                    (TString _, TString _) -> return $ tString
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
                 "-" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ tInt
@@ -222,4 +225,5 @@ checkExpr expr =
             case (t1, t2) of
                 (TInt _, TInt _) -> return $ tBool
                 (TBool _, TBool _) -> return $ tBool
+                (TString _, TString _) -> return $ tBool
                 otherwise -> throw pos $ NotComparable t1 t2
