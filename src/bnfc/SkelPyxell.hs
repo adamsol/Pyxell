@@ -21,8 +21,7 @@ transBlock x = case x of
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
   SSkip _ -> failure x
-  SExpr _ expr -> failure x
-  SAssg _ idents expr -> failure x
+  SAssg _ exprs -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
 transBranch :: Show a => Branch a -> Result
@@ -61,7 +60,7 @@ transExpr x = case x of
   ETuple _ exprs -> failure x
 transType :: Show a => Type a -> Result
 transType x = case x of
-  TPtr _ type_ -> failure x
+  TDeref _ type_ -> failure x
   TInt _ -> failure x
   TBool _ -> failure x
   TString _ -> failure x

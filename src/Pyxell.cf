@@ -24,10 +24,8 @@ SBlock.            Block   ::= "{" [Stmt] "}" ;
 
 SSkip.             Stmt   ::= "skip" ;
 
-SExpr.             Stmt   ::= Expr ;
-
-SAssg.             Stmt   ::= [Ident] "=" Expr ;
-separator nonempty Ident      "," ;
+SAssg.             Stmt   ::= [Expr];
+separator nonempty Expr       "=" ;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
 BElIf.             Branch ::= Expr ":" Block ;
@@ -78,7 +76,7 @@ coercions          Expr       8 ;
 
 -- types --
 
-internal TPtr.     Type4  ::= Type4 ;
+internal TDeref.   Type4  ::= Type4 ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;
 TString.           Type4  ::= "String" ;

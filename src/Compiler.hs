@@ -53,11 +53,11 @@ getIdent ident = case ident of
 -- | LLVM string representation for a given type.
 strType :: Type -> String
 strType typ = case typ of
-    TPtr _ t -> strType t ++ "*"
+    TDeref _ t -> init (strType t)
     TInt _ -> "i32"
     TBool _ -> "i1"
     TString _ -> "i8*"
-    TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}"
+    TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
 
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
@@ -129,7 +129,7 @@ declare typ ident val loc cont = case ident of
 gep :: Type -> String -> [Int] -> Run String
 gep typ val inds = do
     l <- nextTemp
-    write $ indent [ l ++ " = getelementptr inbounds " ++ strType typ ++ ", " ++ strType typ ++ "* " ++ val ++ intercalate "" [", i32 " ++ show i | i <- inds] ]
+    write $ indent [ l ++ " = getelementptr inbounds " ++ strType (tDeref typ) ++ ", " ++ strType typ ++ " " ++ val ++ intercalate "" [", i32 " ++ show i | i <- inds] ]
     return $ l
 
 -- | Outputs LLVM binary operation instruction.
@@ -190,20 +190,25 @@ compileStmt :: Stmt Pos -> Run () -> Run ()
 compileStmt stmt cont = case stmt of
     SSkip _ -> do
         cont
-    SExpr _ expr -> do
-        (t, v) <- compileExpr expr
-        case t of
-            TInt _ -> do
-                write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
-            TString _ -> do
-                write $ indent [ "call void @printString(i8* " ++ v ++ ")" ]
-            otherwise -> write $ [ show t ]
-        cont
-    SAssg _ idents expr -> do
-        (t, v) <- compileExpr expr
-        case (idents, t) of
-            ([id], _) -> compileAssg t id v cont
-            (_, TPtr _ (TTuple _ ts)) -> compileAssgs (zip3 ts idents [0..]) (tTuple ts) v cont
+    SAssg _ exprs -> case exprs of
+        e:[] -> do
+            (t, v) <- compileExpr e
+            case t of
+                TInt _ -> do
+                    write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
+                TString _ -> do
+                    write $ indent [ "call void @printString(i8* " ++ v ++ ")" ]
+                otherwise -> write $ [ show t ]
+            cont
+        e1:e2:[] -> do
+            (t, v) <- compileExpr e2
+            case (e1, t) of
+                (ETuple _ [e], _) -> do
+                    compileAssg t e v cont
+                (ETuple _ es, TTuple _ ts) -> do
+                    compileAssgs (zip3 ts es [0..]) t v cont
+        e1:e2:es ->
+            compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
     SIf _ brs el -> do
         l <- nextLabel
         compileBranches brs l
@@ -222,22 +227,22 @@ compileStmt stmt cont = case stmt of
     where
         compileAssgs rs typ val cont = case rs of
             [] -> cont
-            (t, id, i):rs -> do
+            (t, e, i):rs -> do
                 l <- gep typ val [0, i]
                 v <- load t l
-                compileAssg t id v (compileAssgs rs typ val cont)
-        compileAssg typ ident val cont = do
-            t <- case typ of
-                TTuple _ _ -> return $ tPtr typ
-                otherwise -> return $ typ
-            r <- getIdent ident
-            case r of
-                Just (t, l) -> do
-                    store t val l
+                compileAssg t e v (compileAssgs rs typ val cont)
+        compileAssg typ expr val cont = do
+            e <- case expr of
+                ETuple _ [e] -> return $ e
+                otherwise -> return $ expr
+            r <- compileLval expr
+            case (r, e) of
+                (Just (t, l), _) -> do
+                    store typ val l
                     cont
-                Nothing -> do
+                (Nothing, EVar _ id) -> do
                     l <- nextTemp
-                    declare t ident val l cont
+                    declare typ id val l cont
         compileBranches brs exit = case brs of
             [] -> skip
             b:bs -> case b of
@@ -268,8 +273,8 @@ compileExpr expr =
             (t, l) <- compileExpr e
             let i = fromInteger n
             case t of
-                TPtr _ (TTuple _ ts) -> do
-                    l <- gep (tTuple ts) l [0, i]
+                TTuple _ ts -> do
+                    l <- gep t l [0, i]
                     v <- load (ts !! i) l
                     return $ (ts !! i, v)
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
@@ -277,7 +282,7 @@ compileExpr expr =
         EMod _ e1 e2 -> compileBinary "srem" e1 e2
         EAdd _ e1 e2 -> compileBinary "add" e1 e2
         ESub _ e1 e2 -> compileBinary "sub" e1 e2
-        ENeg _ e -> compileBinary "sub" (EInt Nothing 0) e
+        ENeg _ e -> compileBinary "sub" (EInt _pos 0) e
         ECmp _ e1 op e2 -> case op of
             CmpEQ _ -> compileCmp "eq" e1 e2
             CmpNE _ -> compileCmp "ne" e1 e2
@@ -285,7 +290,7 @@ compileExpr expr =
             CmpLE _ -> compileCmp "le" e1 e2
             CmpGT _ -> compileCmp "gt" e1 e2
             CmpGE _ -> compileCmp "ge" e1 e2
-        ENot _ e -> compileBinary "xor" (ETrue Nothing) e
+        ENot _ e -> compileBinary "xor" (ETrue _pos) e
         EAnd _ e1 e2 -> do
             l1 <- nextLabel
             l2 <- nextLabel
@@ -303,9 +308,9 @@ compileExpr expr =
                 otherwise -> do
                     let t = tTuple (map fst rs)
                     l <- nextTemp
-                    alloca t l
+                    alloca (tDeref t) l
                     mapM (compileTupleElem t l) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
-                    return $ (tPtr t, l)
+                    return $ (t, l)
     where
         compileBinary op e1 e2 = do
             (t, v1) <- compileExpr e1
@@ -363,13 +368,13 @@ compileExpr expr =
 -- | Outputs LLVM code that evaluates a given expression as an r-value. Returns type and name of the result.
 compileRval :: Expr Pos -> Run Result
 compileRval expr = do
-    (t, l) <- compileLval expr
+    Just (t, l) <- compileLval expr
     v <- load t l
     return $ (t, v)
 
--- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name of the result (location).
-compileLval :: Expr Pos -> Run Result
-compileLval expr = case expr of
-    EVar _ ident -> do
-        r <- getIdent ident
-        return $ fromJust r
+-- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.
+compileLval :: Expr Pos -> Run (Maybe Result)
+compileLval expr = do
+    case expr of
+        EVar _ ident -> do
+            getIdent ident

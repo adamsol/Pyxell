@@ -22,8 +22,7 @@ instance Functor Block where
         SBlock a stmts -> SBlock (f a) (map (fmap f) stmts)
 data Stmt a
     = SSkip a
-    | SExpr a (Expr a)
-    | SAssg a [Ident] (Expr a)
+    | SAssg a [Expr a]
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
@@ -31,8 +30,7 @@ data Stmt a
 instance Functor Stmt where
     fmap f x = case x of
         SSkip a -> SSkip (f a)
-        SExpr a expr -> SExpr (f a) (fmap f expr)
-        SAssg a idents expr -> SAssg (f a) idents (fmap f expr)
+        SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
 data Branch a = BElIf a (Expr a) (Block a)
@@ -100,7 +98,7 @@ instance Functor Expr where
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
 data Type a
-    = TPtr a (Type a)
+    = TDeref a (Type a)
     | TInt a
     | TBool a
     | TString a
@@ -109,7 +107,7 @@ data Type a
 
 instance Functor Type where
     fmap f x = case x of
-        TPtr a type_ -> TPtr (f a) (fmap f type_)
+        TDeref a type_ -> TDeref (f a) (fmap f type_)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
         TString a -> TString (f a)

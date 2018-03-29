@@ -32,6 +32,7 @@ data StaticError = NotComparable Type Type
                  | NotTuple Type
                  | InvalidTupleElem Type Int
                  | CannotUnpack Type Int
+                 | NotLvalue
 
 -- | Show instance for displaying compilation errors.
 instance Show StaticError where
@@ -45,6 +46,7 @@ instance Show StaticError where
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
+        NotLvalue -> "Expression cannot be assigned to."
 
 
 -- | Does nothing.
@@ -90,20 +92,22 @@ checkStmt :: Stmt Pos -> Run () -> Run ()
 checkStmt stmt cont = case stmt of
     SSkip pos -> do
         cont
-    SExpr pos expr -> do
-        checkExpr expr
-        cont
-    SAssg pos idents expr -> do
-        t <- checkExpr expr
-        case (idents, t) of
-            ([id], _) -> do
-                checkAssg pos t id cont
-            (_, TTuple _ ts) -> do
-                let n = length idents
-                if length idents == length ts then do
-                    checkAssgs pos ts idents cont
-                else throw pos $ CannotUnpack t n
-            otherwise -> throw pos $ CannotUnpack t (length idents)
+    SAssg pos exprs -> case exprs of
+        e:[] -> do
+            checkExpr e
+            cont
+        e1:e2:[] -> do
+            t <- checkExpr e2
+            case (e1, t) of
+                (ETuple _ [e], _) -> do
+                    compileAssg pos e t cont
+                (ETuple _ es, TTuple _ ts) -> do
+                    if length es == length ts then do
+                        checkAssgs pos es ts cont
+                    else throw pos $ CannotUnpack t (length es)
+                (ETuple _ es, _) -> throw pos $ CannotUnpack t (length es)
+        e1:e2:es ->
+            checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
     SIf pos brs el -> do
         checkBranches brs
         case el of
@@ -115,16 +119,19 @@ checkStmt stmt cont = case stmt of
         checkCond pos expr block
         cont
     where
-        checkAssgs pos types idents cont = case (idents, types) of
+        checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
-            (id:ids, t:ts) -> checkAssg pos t id (checkAssgs pos ts ids cont)
-        checkAssg pos typ ident cont = do
-            r <- getIdent ident
-            case r of
-                Just t -> do
-                    checkCast pos (typ, t)
-                    cont
-                Nothing -> declare typ ident cont
+            (e:es, t:ts) -> compileAssg pos e t (checkAssgs pos es ts cont)
+        compileAssg pos expr typ cont = case expr of
+            EVar _ ident -> do
+                r <- getIdent ident
+                case r of
+                    Just t -> do
+                        checkCast pos (typ, t)
+                        cont
+                    Nothing -> do
+                        declare typ ident cont
+            otherwise -> throw pos $ NotLvalue
         checkCast pos (typ1, typ2) = case (typ1, typ2) of
             (TInt _, TInt _) -> skip
             (TBool _, TBool _) -> skip
@@ -146,7 +153,7 @@ checkStmt stmt cont = case stmt of
             checkBlock block
 
 
--- | Checks an expression.
+-- | Checks an expression and returns its type.
 checkExpr :: Expr Pos -> Run Type
 checkExpr expr =
     case expr of

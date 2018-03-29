@@ -26,8 +26,11 @@ instance {-# OVERLAPS #-} Show Type where
         --TFunc _ typ1 typ2 -> show typ1 ++ "->" ++ show typ2
 
 -- | Helper functions for initializing types without a position.
-tPtr = TPtr Nothing
+tDeref = TDeref Nothing
 tInt = TInt Nothing
 tBool = TBool Nothing
 tString = TString Nothing
 tTuple = TTuple Nothing
+
+-- | Shorter name for none position.
+_pos = Nothing

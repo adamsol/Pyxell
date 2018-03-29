@@ -86,8 +86,6 @@ instance Print Double where
 
 instance Print Ident where
   prt _ (Ident i) = doc (showString i)
-  prtList _ [x] = concatD [prt 0 x]
-  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
 instance Print (Program a) where
   prt i e = case e of
@@ -103,15 +101,14 @@ instance Print (Block a) where
 instance Print (Stmt a) where
   prt i e = case e of
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
-    SExpr _ expr -> prPrec i 0 (concatD [prt 0 expr])
-    SAssg _ ids expr -> prPrec i 0 (concatD [prt 0 ids, doc (showString "="), prt 0 expr])
+    SAssg _ exprs -> prPrec i 0 (concatD [prt 0 exprs])
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString ":"), prt 0 block])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
 
-instance Print [Ident] where
+instance Print [Expr a] where
   prt = prtList
 
 instance Print (Branch a) where
@@ -159,10 +156,12 @@ instance Print (Expr a) where
     ETuple _ exprs -> prPrec i 1 (concatD [prt 2 exprs])
   prtList 2 [x] = concatD [prt 2 x]
   prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString "="), prt 0 xs]
 
 instance Print (Type a) where
   prt i e = case e of
-    TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
+    TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])

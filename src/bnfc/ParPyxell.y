@@ -15,7 +15,7 @@ import ErrM
 %name pListStmt_internal ListStmt
 %name pBlock_internal Block
 %name pStmt_internal Stmt
-%name pListIdent_internal ListIdent
+%name pListExpr_internal ListExpr
 %name pBranch_internal Branch
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
@@ -71,18 +71,11 @@ import ErrM
   '{' { PT _ (TS _ 32) }
   '}' { PT _ (TS _ 33) }
 
-  L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
   L_quoted {PT _ (TL _)}
+  L_ident {PT _ (TV _)}
 
 %%
-
-Ident :: {
-  (Maybe (Int, Int), Ident)
-}
-: L_ident {
-  (Just (tokenLineCol $1), Ident (prToken $1)) 
-}
 
 Integer :: {
   (Maybe (Int, Int), Integer)
@@ -96,6 +89,13 @@ String :: {
 }
 : L_quoted {
   (Just (tokenLineCol $1), prToken $1)
+}
+
+Ident :: {
+  (Maybe (Int, Int), Ident)
+}
+: L_ident {
+  (Just (tokenLineCol $1), Ident (prToken $1)) 
 }
 
 Program :: {
@@ -131,11 +131,8 @@ Stmt :: {
 : 'skip' {
   (Just (tokenLineCol $1), AbsPyxell.SSkip (Just (tokenLineCol $1)))
 }
-| Expr {
-  (fst $1, AbsPyxell.SExpr (fst $1)(snd $1)) 
-}
-| ListIdent '=' Expr {
-  (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)(snd $3)) 
+| ListExpr {
+  (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)) 
 }
 | 'if' ListBranch Else {
   (Just (tokenLineCol $1), AbsPyxell.SIf (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
@@ -144,13 +141,13 @@ Stmt :: {
   (Just (tokenLineCol $1), AbsPyxell.SWhile (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
 }
 
-ListIdent :: {
-  (Maybe (Int, Int), [Ident]) 
+ListExpr :: {
+  (Maybe (Int, Int), [Expr (Maybe (Int, Int))]) 
 }
-: Ident {
+: Expr {
   (fst $1, (:[]) (snd $1)) 
 }
-| Ident ',' ListIdent {
+| Expr '=' ListExpr {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
@@ -409,7 +406,7 @@ pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pBlock = (>>= return . snd) . pBlock_internal
 pStmt = (>>= return . snd) . pStmt_internal
-pListIdent = (>>= return . snd) . pListIdent_internal
+pListExpr = (>>= return . snd) . pListExpr_internal
 pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
