@@ -178,7 +178,9 @@ checkExpr expr =
         ENeg pos e -> checkUnary pos "-" e
         ECmp pos cmp -> case cmp of
             Cmp1 pos e1 op e2 -> do
-                checkCmp pos op e1 e2
+                t1 <- checkExpr e1
+                t2 <- checkExpr e2
+                checkCmp pos op t1 t2
             Cmp2 pos e1 op cmp -> do
                 e2 <- case cmp of
                     Cmp1 _ e2 _ _ -> return $ e2
@@ -234,11 +236,14 @@ checkExpr expr =
                 "not" -> case t of
                     TBool _ -> return $ tBool
                     otherwise -> throw pos $ NoUnaryOperator "not" t
-        checkCmp pos op e1 e2 = do
-            t1 <- checkExpr e1
-            t2 <- checkExpr e2
+        checkCmp pos op t1 t2 = do
             case (t1, t2) of
                 (TInt _, TInt _) -> return $ tBool
                 (TBool _, TBool _) -> return $ tBool
                 (TString _, TString _) -> return $ tBool
+                (TTuple _ ts1, TTuple _ ts2) -> do
+                    if length ts1 == length ts2 then do
+                        mapM (uncurry (checkCmp pos op)) (zip ts1 ts2)
+                        return $ tBool
+                    else throw pos $ NotComparable t1 t2
                 otherwise -> throw pos $ NotComparable t1 t2

@@ -132,6 +132,13 @@ gep typ val inds = do
     write $ indent [ l ++ " = getelementptr inbounds " ++ strType (tDeref typ) ++ ", " ++ strType typ ++ " " ++ val ++ intercalate "" [", i32 " ++ show i | i <- inds] ]
     return $ l
 
+-- | Outputs LLVM 'phi' instruction for given values and label names.
+phi :: [(String, String)] -> Run String
+phi rs = do
+    v <- nextTemp
+    write $ indent [ v ++ " = phi i1 " ++ (intercalate ", " ["[" ++ v ++ ", %" ++ l ++ "]" | (v, l) <- rs]) ]
+    return $ v
+
 -- | Outputs LLVM binary operation instruction.
 binop :: String -> Type -> String -> String -> Run String
 binop op typ val1 val2 = do
@@ -284,13 +291,17 @@ compileExpr expr =
         ESub _ e1 e2 -> compileBinary "sub" e1 e2
         ENeg _ e -> compileBinary "sub" (EInt _pos 0) e
         ECmp _ cmp -> case cmp of
-            Cmp1 _ e1 op e2 -> case op of
-                CmpEQ _ -> compileCmp "eq" e1 e2
-                CmpNE _ -> compileCmp "ne" e1 e2
-                CmpLT _ -> compileCmp "lt" e1 e2
-                CmpLE _ -> compileCmp "le" e1 e2
-                CmpGT _ -> compileCmp "gt" e1 e2
-                CmpGE _ -> compileCmp "ge" e1 e2
+            Cmp1 _ e1 op e2 -> do
+                (t, v1) <- compileExpr e1
+                (t, v2) <- compileExpr e2
+                v <- case op of
+                    CmpEQ _ -> compileCmp "eq" t v1 v2
+                    CmpNE _ -> compileCmp "ne" t v1 v2
+                    CmpLT _ -> compileCmp "lt" t v1 v2
+                    CmpLE _ -> compileCmp "le" t v1 v2
+                    CmpGT _ -> compileCmp "gt" t v1 v2
+                    CmpGE _ -> compileCmp "ge" t v1 v2
+                return $ (tBool, v)
             Cmp2 _ e1 op cmp -> do
                 e2 <- case cmp of
                     Cmp1 pos e2 _ _ -> return $ e2
@@ -299,10 +310,12 @@ compileExpr expr =
         ENot _ e -> compileBinary "xor" (ETrue _pos) e
         EAnd _ e1 e2 -> do
             l <- nextLabel
-            compileAnd e1 e2 [] l
+            v <- compileAnd e1 e2 [] l
+            return $ (tBool, v)
         EOr _ e1 e2 -> do
             l <- nextLabel
-            compileOr e1 e2 [] l
+            v <- compileOr e1 e2 [] l
+            return $ (tBool, v)
         ETuple _ es -> do
             rs <- mapM compileExpr es
             case rs of
@@ -321,22 +334,56 @@ compileExpr expr =
                 TString _ -> call t "@concatStrings" [(t, v1), (t, v2)]
                 otherwise -> binop op t v1 v2
             return $ (t, v)
-        compileCmp op e1 e2 = do
-            (t, v1) <- compileExpr e1
-            (t, v2) <- compileExpr e2
+        compileCmp op t v1 v2 = do
             (t, v1, v2) <- case t of
                 TString _ -> do
                     v <- call tInt "@strcmp" [(t, v1), (t, v2)]
                     return $ (tInt, v, "0")
                 otherwise -> return $ (t, v1, v2)
-            v <- case (op, t) of
+            case (op, t) of
+                (_, TTuple _ ts) -> do
+                    lt <- nextLabel
+                    lf <- nextLabel
+                    compileTupleCmp op t v1 v2 0 lt lf
                 ("eq", _) -> binop ("icmp " ++ op) t v1 v2
                 ("ne", _) -> binop ("icmp " ++ op) t v1 v2
                 (_, TBool _) -> binop ("icmp u" ++ op) t v1 v2
                 otherwise -> binop ("icmp s" ++ op) t v1 v2
-            return $ (tBool, v)
+        compileTupleCmp op t v1 v2 i lt lf = do
+            t' <- case t of
+                TTuple _ ts -> return $ ts !! i
+            v1' <- gep t v1 [0, i] >>= \l -> load t' l
+            v2' <- gep t v2 [0, i] >>= \l -> load t' l
+            v3 <- compileCmp op t' v1' v2'
+            case t of
+                TTuple _ ts -> do
+                    if i == length ts - 1 then do
+                        l1 <- getLabel
+                        l2 <- nextLabel
+                        goto l2
+                        label lt >> goto l2
+                        label lf >> goto l2
+                        label l2
+                        phi [("true", lt), ("false", lf), (v3, l1)]
+                    else do
+                        l1 <- nextLabel
+                        case op of
+                            "eq" -> do
+                                branch v3 l1 lf
+                                label l1
+                            "ne" -> do
+                                branch v3 lt l1
+                                label l1
+                            otherwise -> do
+                                branch v3 lt l1
+                                label l1
+                                v4 <- compileCmp "eq" t' v1' v2'
+                                l2 <- nextLabel
+                                branch v4 l2 lf
+                                label l2
+                        compileTupleCmp op t v1 v2 (i+1) lt lf
         compileAnd expr1 expr2 preds exit = do
-            (t, v1) <- compileExpr expr1
+            (_, v1) <- compileExpr expr1
             l1 <- getLabel
             l2 <- nextLabel
             branch v1 l2 exit
@@ -344,14 +391,12 @@ compileExpr expr =
             case expr2 of
                 EAnd pos e1 e2 -> compileAnd e1 e2 (l1:preds) exit
                 otherwise -> do
-                    (t, v2) <- compileExpr expr2
+                    (_, v2) <- compileExpr expr2
                     l3 <- getLabel
                     goto exit >> label exit
-                    v3 <- nextTemp
-                    write $ indent $ [ v3 ++ " = phi i1 " ++ (intercalate ", " ["[false, %" ++ l ++ "]" | l <- l1:preds]) ++ ", [" ++ v2 ++ ", %" ++ l3 ++ "]" ]
-                    return $ (t, v3)
+                    phi ([("false", l) | l <- l1:preds] ++ [(v2, l3)])
         compileOr expr1 expr2 preds exit = do
-            (t, v1) <- compileExpr expr1
+            (_, v1) <- compileExpr expr1
             l1 <- getLabel
             l2 <- nextLabel
             branch v1 exit l2
@@ -359,12 +404,10 @@ compileExpr expr =
             case expr2 of
                 EOr pos e1 e2 -> compileOr e1 e2 (l1:preds) exit
                 otherwise -> do
-                    (t, v2) <- compileExpr expr2
+                    (_, v2) <- compileExpr expr2
                     l3 <- getLabel
                     goto exit >> label exit
-                    v3 <- nextTemp
-                    write $ indent $ [ v3 ++ " = phi i1 " ++ (intercalate ", " ["[true, %" ++ l ++ "]" | l <- l1:preds]) ++ ", [" ++ v2 ++ ", %" ++ l3 ++ "]" ]
-                    return $ (t, v3)
+                    phi ([("true", l) | l <- l1:preds] ++ [(v2, l3)])
         compileTupleElem typ loc (t, v, i) = do
             l <- gep typ loc [0, i]
             store t v l
