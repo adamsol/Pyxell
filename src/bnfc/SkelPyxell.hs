@@ -31,6 +31,10 @@ transElse :: Show a => Else a -> Result
 transElse x = case x of
   EElse _ block -> failure x
   EEmpty _ -> failure x
+transCmp :: Show a => Cmp a -> Result
+transCmp x = case x of
+  Cmp1 _ expr1 cmpop expr2 -> failure x
+  Cmp2 _ expr cmpop cmp -> failure x
 transCmpOp :: Show a => CmpOp a -> Result
 transCmpOp x = case x of
   CmpEQ _ -> failure x
@@ -53,7 +57,7 @@ transExpr x = case x of
   EAdd _ expr1 expr2 -> failure x
   ESub _ expr1 expr2 -> failure x
   ENeg _ expr -> failure x
-  ECmp _ expr1 cmpop expr2 -> failure x
+  ECmp _ cmp -> failure x
   ENot _ expr -> failure x
   EAnd _ expr1 expr2 -> failure x
   EOr _ expr1 expr2 -> failure x

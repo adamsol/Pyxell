@@ -176,7 +176,15 @@ checkExpr expr =
         EAdd pos e1 e2 -> checkBinary pos "+" e1 e2
         ESub pos e1 e2 -> checkBinary pos "-" e1 e2
         ENeg pos e -> checkUnary pos "-" e
-        ECmp pos e1 op e2 -> checkCmp pos op e1 e2
+        ECmp pos cmp -> case cmp of
+            Cmp1 pos e1 op e2 -> do
+                checkCmp pos op e1 e2
+            Cmp2 pos e1 op cmp -> do
+                e2 <- case cmp of
+                    Cmp1 _ e2 _ _ -> return $ e2
+                    Cmp2 _ e2 _ _ -> return $ e2
+                checkExpr (ECmp _pos (Cmp1 pos e1 op e2))
+                checkExpr (ECmp _pos cmp)
         ENot pos e -> checkUnary pos "not" e
         EAnd pos e1 e2 -> checkBinary pos "and" e1 e2
         EOr pos e1 e2 -> checkBinary pos "or" e1 e2

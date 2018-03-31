@@ -1,0 +1,7 @@
+
+if 2 < 3 <= 3 < 4 == 4 >= 4 > 1 <> 0 and true > false <> true <= true == true:
+    "O"
+    if not 1 == 1 == 1 and true:
+        skip
+    elif not (2 <= 3 < 3 or true > true >= true or "a" == "b" <> "b"):
+        "K"

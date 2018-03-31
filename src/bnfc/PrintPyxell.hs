@@ -126,6 +126,11 @@ instance Print (Else a) where
     EElse _ block -> prPrec i 0 (concatD [doc (showString "else"), doc (showString ":"), prt 0 block])
     EEmpty _ -> prPrec i 0 (concatD [])
 
+instance Print (Cmp a) where
+  prt i e = case e of
+    Cmp1 _ expr1 cmpop expr2 -> prPrec i 0 (concatD [prt 6 expr1, prt 0 cmpop, prt 6 expr2])
+    Cmp2 _ expr cmpop cmp -> prPrec i 0 (concatD [prt 6 expr, prt 0 cmpop, prt 0 cmp])
+
 instance Print (CmpOp a) where
   prt i e = case e of
     CmpEQ _ -> prPrec i 0 (concatD [doc (showString "==")])
@@ -149,7 +154,7 @@ instance Print (Expr a) where
     EAdd _ expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "+"), prt 7 expr2])
     ESub _ expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "-"), prt 7 expr2])
     ENeg _ expr -> prPrec i 6 (concatD [doc (showString "-"), prt 7 expr])
-    ECmp _ expr1 cmpop expr2 -> prPrec i 5 (concatD [prt 6 expr1, prt 0 cmpop, prt 6 expr2])
+    ECmp _ cmp -> prPrec i 5 (concatD [prt 0 cmp])
     ENot _ expr -> prPrec i 4 (concatD [doc (showString "not"), prt 4 expr])
     EAnd _ expr1 expr2 -> prPrec i 3 (concatD [prt 4 expr1, doc (showString "and"), prt 3 expr2])
     EOr _ expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "or"), prt 2 expr2])

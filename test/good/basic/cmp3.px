@@ -1,0 +1,9 @@
+
+if -1 < 0 and (2 + 2 == 4 and true):
+    1
+
+if (1 * 0 == 0 or 1 * 0 == 1) and ((false or false) or true or false):
+    2
+
+if "abc" == "abc" and "a" == "b" or (3 == 4) == false and true and not false:
+    3

@@ -46,6 +46,15 @@ instance Functor Else where
     fmap f x = case x of
         EElse a block -> EElse (f a) (fmap f block)
         EEmpty a -> EEmpty (f a)
+data Cmp a
+    = Cmp1 a (Expr a) (CmpOp a) (Expr a)
+    | Cmp2 a (Expr a) (CmpOp a) (Cmp a)
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Cmp where
+    fmap f x = case x of
+        Cmp1 a expr1 cmpop expr2 -> Cmp1 (f a) (fmap f expr1) (fmap f cmpop) (fmap f expr2)
+        Cmp2 a expr cmpop cmp -> Cmp2 (f a) (fmap f expr) (fmap f cmpop) (fmap f cmp)
 data CmpOp a
     = CmpEQ a | CmpNE a | CmpLT a | CmpLE a | CmpGT a | CmpGE a
   deriving (Eq, Ord, Show, Read)
@@ -71,7 +80,7 @@ data Expr a
     | EAdd a (Expr a) (Expr a)
     | ESub a (Expr a) (Expr a)
     | ENeg a (Expr a)
-    | ECmp a (Expr a) (CmpOp a) (Expr a)
+    | ECmp a (Cmp a)
     | ENot a (Expr a)
     | EAnd a (Expr a) (Expr a)
     | EOr a (Expr a) (Expr a)
@@ -92,7 +101,7 @@ instance Functor Expr where
         EAdd a expr1 expr2 -> EAdd (f a) (fmap f expr1) (fmap f expr2)
         ESub a expr1 expr2 -> ESub (f a) (fmap f expr1) (fmap f expr2)
         ENeg a expr -> ENeg (f a) (fmap f expr)
-        ECmp a expr1 cmpop expr2 -> ECmp (f a) (fmap f expr1) (fmap f cmpop) (fmap f expr2)
+        ECmp a cmp -> ECmp (f a) (fmap f cmp)
         ENot a expr -> ENot (f a) (fmap f expr)
         EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)

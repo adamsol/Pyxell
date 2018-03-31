@@ -56,7 +56,9 @@ EAdd.              Expr6  ::= Expr6 "+" Expr7 ;
 ESub.              Expr6  ::= Expr6 "-" Expr7 ;
 ENeg.              Expr6  ::= "-" Expr7;
 
-ECmp.              Expr5  ::= Expr6 CmpOp Expr6 ;
+ECmp.              Expr5  ::= Cmp ;
+Cmp1.              Cmp    ::= Expr6 CmpOp Expr6 ;
+Cmp2.              Cmp    ::= Expr6 CmpOp Cmp ;
 CmpEQ.             CmpOp  ::= "==" ;
 CmpNE.             CmpOp  ::= "<>" ;
 CmpLT.             CmpOp  ::= "<" ;

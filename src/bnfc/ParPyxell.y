@@ -23,6 +23,7 @@ import ErrM
 %name pExpr7_internal Expr7
 %name pExpr6_internal Expr6
 %name pExpr5_internal Expr5
+%name pCmp_internal Cmp
 %name pCmpOp_internal CmpOp
 %name pExpr4_internal Expr4
 %name pExpr3_internal Expr3
@@ -241,11 +242,21 @@ Expr6 :: {
 Expr5 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr6 CmpOp Expr6 {
-  (fst $1, AbsPyxell.ECmp (fst $1)(snd $1)(snd $2)(snd $3)) 
+: Cmp {
+  (fst $1, AbsPyxell.ECmp (fst $1)(snd $1)) 
 }
 | Expr6 {
   (fst $1, snd $1)
+}
+
+Cmp :: {
+  (Maybe (Int, Int), Cmp (Maybe (Int, Int)))
+}
+: Expr6 CmpOp Expr6 {
+  (fst $1, AbsPyxell.Cmp1 (fst $1)(snd $1)(snd $2)(snd $3)) 
+}
+| Expr6 CmpOp Cmp {
+  (fst $1, AbsPyxell.Cmp2 (fst $1)(snd $1)(snd $2)(snd $3)) 
 }
 
 CmpOp :: {
@@ -414,6 +425,7 @@ pExpr8 = (>>= return . snd) . pExpr8_internal
 pExpr7 = (>>= return . snd) . pExpr7_internal
 pExpr6 = (>>= return . snd) . pExpr6_internal
 pExpr5 = (>>= return . snd) . pExpr5_internal
+pCmp = (>>= return . snd) . pCmp_internal
 pCmpOp = (>>= return . snd) . pCmpOp_internal
 pExpr4 = (>>= return . snd) . pExpr4_internal
 pExpr3 = (>>= return . snd) . pExpr3_internal
