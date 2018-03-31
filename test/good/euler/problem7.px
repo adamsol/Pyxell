@@ -1,0 +1,17 @@
+
+p = 1
+n = 0
+# have to fix alloca inside loop
+i = 2
+is_prime = true
+while n < 10001:
+    p = p + 1
+    is_prime = true
+    i = 2
+    while i * i <= p:
+        if p % i == 0:
+            is_prime = false
+        i = i + 1
+    if is_prime:
+        n = n + 1
+p
