@@ -18,15 +18,17 @@ colorama.init()
 
 # Parse arguments.
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
-parser.add_argument('pattern', nargs='?', default='/',
+parser.add_argument('pattern', nargs='?', default='',
                     help="file path pattern (relative to test folder)")
 parser.add_argument('-e', '--expect-errors', action='store_true',
                     help="expect compiler errors when running intentionally invalid tests")
 args = parser.parse_args()
 
 # Run tests that satisfy a given pattern.
-for i, path in enumerate(glob.glob(f'test/*{args.pattern}*.px'), 1):
-    print(f"{B}> TEST {i}:{E} {os.path.basename(path)}")
+for i, path in enumerate(glob.glob(f'test/**/*.px', recursive=True), 1):
+    if args.pattern.replace('/', os.path.sep) not in path:
+        continue
+    print(f"{B}> TEST {i}:{E} {path}")
     with open('tmp.out', 'w') as outfile:
         try:
             subprocess.check_output(f'pyxell.exe {path}', stderr=subprocess.STDOUT)
