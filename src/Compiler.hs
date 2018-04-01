@@ -55,7 +55,7 @@ strType :: Type -> String
 strType typ = case typ of
     TDeref _ t -> init (strType t)
     TVoid _ -> "void"
-    TInt _ -> "i32"
+    TInt _ -> "i64"
     TBool _ -> "i1"
     TString _ -> "i8*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
@@ -172,7 +172,7 @@ initString s = do
     let n = length s + 1
     let d = "[" ++ show n ++ " x i8]"
     write $ indent [
-        l1 ++ " = call i8* @malloc(i32 " ++ show n ++ ")",
+        l1 ++ " = call i8* @malloc(i64 " ++ show n ++ ")",
         l2 ++ " = bitcast i8* " ++ l1 ++ " to " ++ d ++ "*",
         "store " ++ d ++ " [" ++ intercalate ", " (map (\c -> "i8 " ++ show (ord c)) (s ++ "\0")) ++ "], " ++ d ++ "* " ++ l2 ]
     return $ (tString, l1)
@@ -183,8 +183,8 @@ compileProgram :: Program Pos -> Run ()
 compileProgram prog = case prog of
     Program _ stmts -> do
         write $ [ "",
-            "declare i8* @malloc(i32)", "declare i32 @strcmp(i8*, i8*)",
-            "declare void @printInt(i32)", "declare void @printBool(i1)", "declare void @printString(i8*)",
+            "declare i8* @malloc(i64)", "declare i64 @strcmp(i8*, i8*)",
+            "declare void @printInt(i64)", "declare void @printBool(i1)", "declare void @printString(i8*)",
             "declare void @printSpace()", "declare void @printLn()",
             "declare i8* @concatStrings(i8*, i8*)" ]
         lift $ modify (M.insert "number" (Number 0))

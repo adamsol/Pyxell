@@ -25,9 +25,11 @@ parser.add_argument('-e', '--expect-errors', action='store_true',
 args = parser.parse_args()
 
 # Run tests that satisfy a given pattern.
-for i, path in enumerate(glob.glob(f'test/**/*.px', recursive=True), 1):
+i = 0
+for path in glob.glob(f'test/**/*.px', recursive=True):
     if args.pattern.replace('/', os.path.sep) not in path:
         continue
+    i += 1
     print(f"{B}> TEST {i}:{E} {path}")
     with open('tmp.out', 'w') as outfile:
         try:
