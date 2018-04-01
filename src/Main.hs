@@ -48,5 +48,5 @@ main = do
                         Right () -> do
                             output <- execWriterT $ runStateT (runReaderT (compileProgram prog) M.empty) M.empty
                             writeFile (base ++ ".ll") output
-                            readProcess "clang" [base ++ ".ll", "lib/runtime.ll", "-o", base ++ ".exe"] ""
+                            readProcess "clang" [base ++ ".ll", "lib/runtime.ll", "-o", base ++ ".exe", "-O2"] ""
                             return $ ()
