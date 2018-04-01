@@ -133,6 +133,13 @@ gep typ val inds = do
     write $ indent [ l ++ " = getelementptr inbounds " ++ strType (tDeref typ) ++ ", " ++ strType typ ++ " " ++ val ++ intercalate "" [", i32 " ++ show i | i <- inds] ]
     return $ l
 
+-- | Outputs LLVM 'select' instruction for given values.
+select :: String -> Type -> String -> String -> Run String
+select val typ opt1 opt2 = do
+    v <- nextTemp
+    write $ indent [ v ++ " = select i1 " ++ val ++ ", " ++ strType typ ++ " " ++ opt1 ++ ", " ++ strType typ ++ " " ++ opt2 ]
+    return $ v
+
 -- | Outputs LLVM 'phi' instruction for given values and label names.
 phi :: [(String, String)] -> Run String
 phi opts = do
@@ -314,7 +321,15 @@ compileExpr expr =
                     return $ (ts !! i, v)
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
-        EMod _ e1 e2 -> compileBinary "srem" e1 e2
+        EMod _ e1 e2 -> do
+            (t, v1) <- compileExpr e1
+            (t, v2) <- compileExpr e2
+            v3 <- binop "srem" t v1 v2
+            v4 <- binop "add" t v3 v2
+            v5 <- binop "xor" t v1 v2
+            v6 <- binop "icmp slt" t v5 "0"
+            v7 <- select v6 t v4 v3
+            return $ (t, v7)
         EAdd _ e1 e2 -> compileBinary "add" e1 e2
         ESub _ e1 e2 -> compileBinary "sub" e1 e2
         ENeg _ e -> compileBinary "sub" (EInt _pos 0) e
