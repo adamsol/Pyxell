@@ -1,22 +1,22 @@
 
 if 2 + 2 == 4 do
-    1
+    print 1
 
 w = 2 + 2 == 5
 
 if w do
-    0
+    print 0
 elif 0 < -1 do
-    0
+    print 0
 elif -1 <= 0 do
-    2
+    print 2
 else do
-    0
+    print 0
 
 if 4 >= 4 and 0 == -0 and 1 <> -1 do
-    3
+    print 3
 
 if 2 + 2 * 2 == 8 or (2 + 2) * 2 == 6 do
-    0
+    print 0
 else do
-    4
+    print 4

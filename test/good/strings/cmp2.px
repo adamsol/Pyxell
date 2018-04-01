@@ -3,6 +3,6 @@ x = "y"
 x = "x"
 y = "y"
 if x > y or x == y do
-    "error"
+    print 2
 elif x <= y and x <> y and "abc" > "ab" do
-    "ok"
+    print "ok"

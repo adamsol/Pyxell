@@ -21,6 +21,7 @@ transBlock x = case x of
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
   SSkip _ -> failure x
+  SPrint _ expr -> failure x
   SAssg _ exprs -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x

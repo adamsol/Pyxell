@@ -9,4 +9,4 @@ n = 10
 while i <= n do
     s = s + i
     i = i + 1
-s
+print s

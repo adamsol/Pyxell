@@ -66,11 +66,12 @@ import ErrM
   'if' { PT _ (TS _ 26) }
   'not' { PT _ (TS _ 27) }
   'or' { PT _ (TS _ 28) }
-  'skip' { PT _ (TS _ 29) }
-  'true' { PT _ (TS _ 30) }
-  'while' { PT _ (TS _ 31) }
-  '{' { PT _ (TS _ 32) }
-  '}' { PT _ (TS _ 33) }
+  'print' { PT _ (TS _ 29) }
+  'skip' { PT _ (TS _ 30) }
+  'true' { PT _ (TS _ 31) }
+  'while' { PT _ (TS _ 32) }
+  '{' { PT _ (TS _ 33) }
+  '}' { PT _ (TS _ 34) }
 
   L_integ {PT _ (TI _)}
   L_quoted {PT _ (TL _)}
@@ -131,6 +132,9 @@ Stmt :: {
 }
 : 'skip' {
   (Just (tokenLineCol $1), AbsPyxell.SSkip (Just (tokenLineCol $1)))
+}
+| 'print' Expr {
+  (Just (tokenLineCol $1), AbsPyxell.SPrint (Just (tokenLineCol $1)) (snd $2)) 
 }
 | ListExpr {
   (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)) 

@@ -92,6 +92,9 @@ checkStmt :: Stmt Pos -> Run () -> Run ()
 checkStmt stmt cont = case stmt of
     SSkip pos -> do
         cont
+    SPrint pos expr -> do
+        checkExpr expr
+        cont
     SAssg pos exprs -> case exprs of
         e:[] -> do
             checkExpr e

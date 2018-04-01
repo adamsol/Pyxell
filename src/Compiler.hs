@@ -172,8 +172,11 @@ initString s = do
 compileProgram :: Program Pos -> Run ()
 compileProgram prog = case prog of
     Program _ stmts -> do
-        write $ [ "", "declare i8* @malloc(i32)", "declare i32 @strcmp(i8*, i8*)" ]
-        write $ [ "", "declare void @printInt(i32)", "declare void @printString(i8*)", "declare i8* @concatStrings(i8*, i8*)" ]
+        write $ [ "",
+            "declare i8* @malloc(i32)", "declare i32 @strcmp(i8*, i8*)",
+            "declare void @printInt(i32)", "declare void @printBool(i1)", "declare void @printString(i8*)",
+            "declare void @printSpace()", "declare void @printLn()",
+            "declare i8* @concatStrings(i8*, i8*)" ]
         lift $ modify (M.insert "number" (Number 0))
         lift $ modify (M.insert "label" (Label "entry"))
         write $ [ "", "define i32 @main() {", "entry:" ]
@@ -197,15 +200,14 @@ compileStmt :: Stmt Pos -> Run () -> Run ()
 compileStmt stmt cont = case stmt of
     SSkip _ -> do
         cont
+    SPrint _  expr -> do
+        (t, v) <- compileExpr expr
+        compilePrint t v
+        write $ indent [ "call void @printLn()" ]
+        cont
     SAssg _ exprs -> case exprs of
         e:[] -> do
-            (t, v) <- compileExpr e
-            case t of
-                TInt _ -> do
-                    write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
-                TString _ -> do
-                    write $ indent [ "call void @printString(i8* " ++ v ++ ")" ]
-                otherwise -> write $ [ show t ]
+            compileExpr e
             cont
         e1:e2:[] -> do
             (t, v) <- compileExpr e2
@@ -232,6 +234,22 @@ compileStmt stmt cont = case stmt of
         compileCond expr block l
         cont
     where
+        compilePrint t v = do
+            case t of
+                TInt _ -> do
+                    write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
+                TBool _ -> do
+                    write $ indent [ "call void @printBool(i1 " ++ v ++ ")" ]
+                TString _ -> do
+                    write $ indent [ "call void @printString(i8* " ++ v ++ ")" ]
+                TTuple _ ts -> do
+                    forM_ (zip [0..] ts) $ \(i, t') -> do
+                        case i of
+                            0 -> skip
+                            _ -> write $ indent [ "call void @printSpace()" ]
+                        l <- gep t v [0, i]
+                        v' <- load t' l
+                        compilePrint t' v'
         compileAssgs rs typ val cont = case rs of
             [] -> cont
             (t, e, i):rs -> do

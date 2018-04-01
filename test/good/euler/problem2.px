@@ -6,4 +6,4 @@ while f1 <= 4000000 do
     if f1 % 2 == 0 do
         s = s + f1
     f1, f2 = f2, f1 + f2
-s
+print s

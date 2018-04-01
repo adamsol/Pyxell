@@ -1,0 +1,9 @@
+
+print 42
+print true
+f = true and false
+print f
+s = "ab" + "c"
+print s
+
+print 2, "+", "3 =", 2 + 3

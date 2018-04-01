@@ -15,4 +15,4 @@ elif false < true do
 if true >= false do
     r = r + 100
 
-r
+print r

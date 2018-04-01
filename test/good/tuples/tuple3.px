@@ -1,4 +1,4 @@
 
 a, b = 5, 2
 a, b = b, a
-a - b
+print a - b

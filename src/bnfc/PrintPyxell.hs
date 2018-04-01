@@ -101,6 +101,7 @@ instance Print (Block a) where
 instance Print (Stmt a) where
   prt i e = case e of
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
+    SPrint _ expr -> prPrec i 0 (concatD [doc (showString "print"), prt 0 expr])
     SAssg _ exprs -> prPrec i 0 (concatD [prt 0 exprs])
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), prt 0 block])

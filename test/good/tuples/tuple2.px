@@ -1,8 +1,8 @@
 
 a = (2, true, 6+7)
-a.2
+print a.2
 a = (5, false, 0)
 b = (false, 9, true)
 c = b
 if c.2 and not c.0 do
-    c.1 + b.1 + a.0
+    print c.1 + b.1 + a.0

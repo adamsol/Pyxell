@@ -22,6 +22,7 @@ instance Functor Block where
         SBlock a stmts -> SBlock (f a) (map (fmap f) stmts)
 data Stmt a
     = SSkip a
+    | SPrint a (Expr a)
     | SAssg a [Expr a]
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
@@ -30,6 +31,7 @@ data Stmt a
 instance Functor Stmt where
     fmap f x = case x of
         SSkip a -> SSkip (f a)
+        SPrint a expr -> SPrint (f a) (fmap f expr)
         SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)

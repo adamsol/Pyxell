@@ -2,4 +2,4 @@
 b, m, n = (true, false), 18, (0, (11, 4))
 t, f = b
 if not t == f and not b.1 do
-    m * n.1.0
+    print m * n.1.0

@@ -14,4 +14,4 @@ while n < 10001 do
         i = i + 1
     if is_prime do
         n = n + 1
-p
+print p
