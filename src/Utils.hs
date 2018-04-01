@@ -27,6 +27,7 @@ instance {-# OVERLAPS #-} Show Type where
 
 -- | Helper functions for initializing types without a position.
 tDeref = TDeref Nothing
+tVoid = TVoid Nothing
 tInt = TInt Nothing
 tBool = TBool Nothing
 tString = TString Nothing

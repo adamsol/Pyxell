@@ -168,6 +168,7 @@ instance Print (Expr a) where
 instance Print (Type a) where
   prt i e = case e of
     TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
+    TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])

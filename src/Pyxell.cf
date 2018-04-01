@@ -81,6 +81,7 @@ coercions          Expr       8 ;
 -- types --
 
 internal TDeref.   Type4  ::= Type4 ;
+internal TVoid.    Type4  ::= "Void" ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;
 TString.           Type4  ::= "String" ;

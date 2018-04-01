@@ -58,20 +58,21 @@ import ErrM
   'Bool' { PT _ (TS _ 18) }
   'Int' { PT _ (TS _ 19) }
   'String' { PT _ (TS _ 20) }
-  'and' { PT _ (TS _ 21) }
-  'do' { PT _ (TS _ 22) }
-  'elif' { PT _ (TS _ 23) }
-  'else' { PT _ (TS _ 24) }
-  'false' { PT _ (TS _ 25) }
-  'if' { PT _ (TS _ 26) }
-  'not' { PT _ (TS _ 27) }
-  'or' { PT _ (TS _ 28) }
-  'print' { PT _ (TS _ 29) }
-  'skip' { PT _ (TS _ 30) }
-  'true' { PT _ (TS _ 31) }
-  'while' { PT _ (TS _ 32) }
-  '{' { PT _ (TS _ 33) }
-  '}' { PT _ (TS _ 34) }
+  'Void' { PT _ (TS _ 21) }
+  'and' { PT _ (TS _ 22) }
+  'do' { PT _ (TS _ 23) }
+  'elif' { PT _ (TS _ 24) }
+  'else' { PT _ (TS _ 25) }
+  'false' { PT _ (TS _ 26) }
+  'if' { PT _ (TS _ 27) }
+  'not' { PT _ (TS _ 28) }
+  'or' { PT _ (TS _ 29) }
+  'print' { PT _ (TS _ 30) }
+  'skip' { PT _ (TS _ 31) }
+  'true' { PT _ (TS _ 32) }
+  'while' { PT _ (TS _ 33) }
+  '{' { PT _ (TS _ 34) }
+  '}' { PT _ (TS _ 35) }
 
   L_integ {PT _ (TI _)}
   L_quoted {PT _ (TL _)}

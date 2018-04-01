@@ -110,6 +110,7 @@ instance Functor Expr where
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
 data Type a
     = TDeref a (Type a)
+    | TVoid a
     | TInt a
     | TBool a
     | TString a
@@ -119,6 +120,7 @@ data Type a
 instance Functor Type where
     fmap f x = case x of
         TDeref a type_ -> TDeref (f a) (fmap f type_)
+        TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
         TString a -> TString (f a)

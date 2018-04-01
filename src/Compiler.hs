@@ -54,6 +54,7 @@ getIdent ident = case ident of
 strType :: Type -> String
 strType typ = case typ of
     TDeref _ t -> init (strType t)
+    TVoid _ -> "void"
     TInt _ -> "i32"
     TBool _ -> "i1"
     TString _ -> "i8*"
@@ -134,9 +135,9 @@ gep typ val inds = do
 
 -- | Outputs LLVM 'phi' instruction for given values and label names.
 phi :: [(String, String)] -> Run String
-phi rs = do
+phi opts = do
     v <- nextTemp
-    write $ indent [ v ++ " = phi i1 " ++ (intercalate ", " ["[" ++ v ++ ", %" ++ l ++ "]" | (v, l) <- rs]) ]
+    write $ indent [ v ++ " = phi i1 " ++ (intercalate ", " ["[" ++ v ++ ", %" ++ l ++ "]" | (v, l) <- opts]) ]
     return $ v
 
 -- | Outputs LLVM binary operation instruction.
@@ -146,12 +147,21 @@ binop op typ val1 val2 = do
     write $ indent [ v ++ " = " ++ op ++ " " ++ strType typ ++ " " ++ val1 ++ ", " ++ val2 ]
     return $ v
 
--- | Outputs LLVM function call instruction.
+-- | Outputs LLVM function 'call' instruction.
 call :: Type -> String -> [Result] -> Run String
-call ret name rs = do
+call ret name args = do
     v <- nextTemp
-    write $ indent [ v ++ " = call " ++ strType ret ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- rs] ++ ")" ]
+    c <- case ret of
+        TVoid _ -> return $ "call "
+        otherwise -> return $ v ++ " = call "
+    write $ indent [ c ++ strType ret ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- args] ++ ")" ]
     return $ v
+
+-- | Outputs LLVM function 'call' with void return type.
+callVoid :: String -> [Result] -> Run ()
+callVoid name args = do
+    call tVoid name args
+    skip
 
 
 -- | Outputs LLVM code for string initialization.
@@ -203,7 +213,7 @@ compileStmt stmt cont = case stmt of
     SPrint _  expr -> do
         (t, v) <- compileExpr expr
         compilePrint t v
-        write $ indent [ "call void @printLn()" ]
+        callVoid "@printLn" []
         cont
     SAssg _ exprs -> case exprs of
         e:[] -> do
@@ -237,16 +247,16 @@ compileStmt stmt cont = case stmt of
         compilePrint t v = do
             case t of
                 TInt _ -> do
-                    write $ indent [ "call void @printInt(i32 " ++ v ++ ")" ]
+                    callVoid "@printInt" [(tInt, v)]
                 TBool _ -> do
-                    write $ indent [ "call void @printBool(i1 " ++ v ++ ")" ]
+                    callVoid "@printBool" [(tBool, v)]
                 TString _ -> do
-                    write $ indent [ "call void @printString(i8* " ++ v ++ ")" ]
+                    callVoid "@printString" [(tString, v)]
                 TTuple _ ts -> do
                     forM_ (zip [0..] ts) $ \(i, t') -> do
                         case i of
                             0 -> skip
-                            _ -> write $ indent [ "call void @printSpace()" ]
+                            _ -> callVoid "@printSpace" []
                         l <- gep t v [0, i]
                         v' <- load t' l
                         compilePrint t' v'
