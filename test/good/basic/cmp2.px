@@ -2,17 +2,17 @@
 b = true
 r = 0
 
-if b < (not b):
+if b < (not b) do
     r = r - 1
-else:
+else do
     r = r + 1
 
-if false == true or b <> b:
+if false == true or b <> b do
     r = r - 10
-elif false < true:
+elif false < true do
     r = r + 10
 
-if true >= false:
+if true >= false do
     r = r + 100
 
 r

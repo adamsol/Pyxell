@@ -1,4 +1,4 @@
 
-if true:
+if true do
     x = true
 y = true and x

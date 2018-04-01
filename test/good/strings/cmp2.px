@@ -2,7 +2,7 @@
 x = "y"
 x = "x"
 y = "y"
-if x > y or x == y:
+if x > y or x == y do
     "error"
-elif x <= y and x <> y and "abc" > "ab":
+elif x <= y and x <> y and "abc" > "ab" do
     "ok"

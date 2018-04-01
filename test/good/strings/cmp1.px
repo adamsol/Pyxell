@@ -1,3 +1,3 @@
 
-if "abc" == "abc" and "a" <> "b":
+if "abc" == "abc" and "a" <> "b" do
     "ok"

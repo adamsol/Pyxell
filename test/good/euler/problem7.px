@@ -4,14 +4,14 @@ n = 0
 # have to fix alloca inside loop
 i = 2
 is_prime = true
-while n < 10001:
+while n < 10001 do
     p = p + 1
     is_prime = true
     i = 2
-    while i * i <= p:
-        if p % i == 0:
+    while i * i <= p do
+        if p % i == 0 do
             is_prime = false
         i = i + 1
-    if is_prime:
+    if is_prime do
         n = n + 1
 p

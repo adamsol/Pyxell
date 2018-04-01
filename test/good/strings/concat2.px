@@ -1,10 +1,10 @@
 
 n = 5997
 b = ""
-while n > 0:
-    if n % 2 == 1:
+while n > 0 do
+    if n % 2 == 1 do
         b = "1" + b
-    else:
+    else do
         b = "0" + b
     n = n / 2
 b

@@ -2,5 +2,5 @@
 t = (1, 2) == (1, 2)
 v = ("a", "b", "c"), ("a", "b", "d")
 f = v.1 == v.0
-if t and not f:
+if t and not f do
     "OK"

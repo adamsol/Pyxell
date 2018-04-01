@@ -14,7 +14,7 @@ topLayout :: Bool
 topLayout = True
 
 layoutWords, layoutStopWords :: [String]
-layoutWords     = [":"]
+layoutWords     = ["do"]
 layoutStopWords = ["elif","else"]
 
 -- layout separators
@@ -214,19 +214,19 @@ sToken p s = PT p (TS s i)
       "-" -> 7
       "." -> 8
       "/" -> 9
-      ":" -> 10
-      ";" -> 11
-      "<" -> 12
-      "<=" -> 13
-      "<>" -> 14
-      "=" -> 15
-      "==" -> 16
-      ">" -> 17
-      ">=" -> 18
-      "Bool" -> 19
-      "Int" -> 20
-      "String" -> 21
-      "and" -> 22
+      ";" -> 10
+      "<" -> 11
+      "<=" -> 12
+      "<>" -> 13
+      "=" -> 14
+      "==" -> 15
+      ">" -> 16
+      ">=" -> 17
+      "Bool" -> 18
+      "Int" -> 19
+      "String" -> 20
+      "and" -> 21
+      "do" -> 22
       "elif" -> 23
       "else" -> 24
       "false" -> 25

@@ -103,7 +103,7 @@ instance Print (Stmt a) where
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
     SAssg _ exprs -> prPrec i 0 (concatD [prt 0 exprs])
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
-    SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString ":"), prt 0 block])
+    SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), prt 0 block])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
@@ -113,7 +113,7 @@ instance Print [Expr a] where
 
 instance Print (Branch a) where
   prt i e = case e of
-    BElIf _ expr block -> prPrec i 0 (concatD [prt 0 expr, doc (showString ":"), prt 0 block])
+    BElIf _ expr block -> prPrec i 0 (concatD [prt 0 expr, doc (showString "do"), prt 0 block])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString "elif"), prt 0 xs]
@@ -123,7 +123,7 @@ instance Print [Branch a] where
 
 instance Print (Else a) where
   prt i e = case e of
-    EElse _ block -> prPrec i 0 (concatD [doc (showString "else"), doc (showString ":"), prt 0 block])
+    EElse _ block -> prPrec i 0 (concatD [doc (showString "else"), doc (showString "do"), prt 0 block])
     EEmpty _ -> prPrec i 0 (concatD [])
 
 instance Print (Cmp a) where

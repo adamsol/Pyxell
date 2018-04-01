@@ -1,7 +1,7 @@
 
 -- layout --
 
-layout             ":" ;
+layout             "do" ;
 layout stop        "elif", "else" ;
 layout toplevel    ;
 
@@ -28,12 +28,12 @@ SAssg.             Stmt   ::= [Expr];
 separator nonempty Expr       "=" ;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
-BElIf.             Branch ::= Expr ":" Block ;
+BElIf.             Branch ::= Expr "do" Block ;
 separator          Branch     "elif" ;
-EElse.             Else   ::= "else" ":" Block ;
+EElse.             Else   ::= "else" "do" Block ;
 EEmpty.            Else   ::= ;
 
-SWhile.            Stmt   ::= "while" Expr ":" Block ;
+SWhile.            Stmt   ::= "while" Expr "do" Block ;
 
 
 -- expressions --

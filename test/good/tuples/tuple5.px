@@ -1,5 +1,5 @@
 
 a, b, c = t = 1, 2, true
 d = e, f = t.1, t.0
-if c:
+if c do
     f - e

@@ -1,22 +1,22 @@
 
-if 2 + 2 == 4:
+if 2 + 2 == 4 do
     1
 
 w = 2 + 2 == 5
 
-if w:
+if w do
     0
-elif 0 < -1:
+elif 0 < -1 do
     0
-elif -1 <= 0:
+elif -1 <= 0 do
     2
-else:
+else do
     0
 
-if 4 >= 4 and 0 == -0 and 1 <> -1:
+if 4 >= 4 and 0 == -0 and 1 <> -1 do
     3
 
-if 2 + 2 * 2 == 8 or (2 + 2) * 2 == 6:
+if 2 + 2 * 2 == 8 or (2 + 2) * 2 == 6 do
     0
-else:
+else do
     4

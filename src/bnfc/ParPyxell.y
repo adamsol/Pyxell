@@ -47,19 +47,19 @@ import ErrM
   '-' { PT _ (TS _ 7) }
   '.' { PT _ (TS _ 8) }
   '/' { PT _ (TS _ 9) }
-  ':' { PT _ (TS _ 10) }
-  ';' { PT _ (TS _ 11) }
-  '<' { PT _ (TS _ 12) }
-  '<=' { PT _ (TS _ 13) }
-  '<>' { PT _ (TS _ 14) }
-  '=' { PT _ (TS _ 15) }
-  '==' { PT _ (TS _ 16) }
-  '>' { PT _ (TS _ 17) }
-  '>=' { PT _ (TS _ 18) }
-  'Bool' { PT _ (TS _ 19) }
-  'Int' { PT _ (TS _ 20) }
-  'String' { PT _ (TS _ 21) }
-  'and' { PT _ (TS _ 22) }
+  ';' { PT _ (TS _ 10) }
+  '<' { PT _ (TS _ 11) }
+  '<=' { PT _ (TS _ 12) }
+  '<>' { PT _ (TS _ 13) }
+  '=' { PT _ (TS _ 14) }
+  '==' { PT _ (TS _ 15) }
+  '>' { PT _ (TS _ 16) }
+  '>=' { PT _ (TS _ 17) }
+  'Bool' { PT _ (TS _ 18) }
+  'Int' { PT _ (TS _ 19) }
+  'String' { PT _ (TS _ 20) }
+  'and' { PT _ (TS _ 21) }
+  'do' { PT _ (TS _ 22) }
   'elif' { PT _ (TS _ 23) }
   'else' { PT _ (TS _ 24) }
   'false' { PT _ (TS _ 25) }
@@ -138,7 +138,7 @@ Stmt :: {
 | 'if' ListBranch Else {
   (Just (tokenLineCol $1), AbsPyxell.SIf (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
 }
-| 'while' Expr ':' Block {
+| 'while' Expr 'do' Block {
   (Just (tokenLineCol $1), AbsPyxell.SWhile (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
 }
 
@@ -155,7 +155,7 @@ ListExpr :: {
 Branch :: {
   (Maybe (Int, Int), Branch (Maybe (Int, Int)))
 }
-: Expr ':' Block {
+: Expr 'do' Block {
   (fst $1, AbsPyxell.BElIf (fst $1)(snd $1)(snd $3)) 
 }
 
@@ -175,7 +175,7 @@ ListBranch :: {
 Else :: {
   (Maybe (Int, Int), Else (Maybe (Int, Int)))
 }
-: 'else' ':' Block {
+: 'else' 'do' Block {
   (Just (tokenLineCol $1), AbsPyxell.EElse (Just (tokenLineCol $1)) (snd $3)) 
 }
 | {

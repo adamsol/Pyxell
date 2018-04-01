@@ -3,12 +3,12 @@ a = true
 b = false
 c = 0
 
-if a or b:
+if a or b do
     c = 21 * 2
-else:
+else do
     a = false
 
-if true and a and (false or not false):
+if true and a and (false or not false) do
     c / 1 - 0
-elif true:
+elif true do
     skip

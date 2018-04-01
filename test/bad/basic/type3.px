@@ -1,5 +1,5 @@
 
-if false:
+if false do
     skip
-elif false or 0:
+elif false or 0 do
     skip
