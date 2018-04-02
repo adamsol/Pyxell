@@ -103,6 +103,11 @@ instance Print (Stmt a) where
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
     SPrint _ expr -> prPrec i 0 (concatD [doc (showString "print"), prt 0 expr])
     SAssg _ exprs -> prPrec i 0 (concatD [prt 0 exprs])
+    SAssgMul _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "*="), prt 0 expr2])
+    SAssgDiv _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "/="), prt 0 expr2])
+    SAssgMod _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "%="), prt 0 expr2])
+    SAssgAdd _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "+="), prt 0 expr2])
+    SAssgSub _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "-="), prt 0 expr2])
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), prt 0 block])
   prtList _ [] = concatD []

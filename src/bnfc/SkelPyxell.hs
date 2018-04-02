@@ -23,6 +23,11 @@ transStmt x = case x of
   SSkip _ -> failure x
   SPrint _ expr -> failure x
   SAssg _ exprs -> failure x
+  SAssgMul _ expr1 expr2 -> failure x
+  SAssgDiv _ expr1 expr2 -> failure x
+  SAssgMod _ expr1 expr2 -> failure x
+  SAssgAdd _ expr1 expr2 -> failure x
+  SAssgSub _ expr1 expr2 -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
 transBranch :: Show a => Branch a -> Result

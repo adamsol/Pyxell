@@ -6,12 +6,13 @@ while n < 1000000 do
     l = 0
     while i > 1 do
         if i % 2 == 0 do
-            i = i / 2
+            i /= 2
         else do
-            i = 3 * i + 1
-        l = l + 1
+            i *= 3
+            i += 1
+        l += 1
     if l > m do
         r = n
         m = l
-    n = n + 1
+    n += 1
 print r

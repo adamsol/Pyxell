@@ -1,0 +1,8 @@
+
+a = 3
+a *= 7
+b = a - 6
+a += b
+b %= 6
+a /= b
+print a, b

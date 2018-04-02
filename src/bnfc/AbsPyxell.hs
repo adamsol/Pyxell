@@ -24,6 +24,11 @@ data Stmt a
     = SSkip a
     | SPrint a (Expr a)
     | SAssg a [Expr a]
+    | SAssgMul a (Expr a) (Expr a)
+    | SAssgDiv a (Expr a) (Expr a)
+    | SAssgMod a (Expr a) (Expr a)
+    | SAssgAdd a (Expr a) (Expr a)
+    | SAssgSub a (Expr a) (Expr a)
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
@@ -33,6 +38,11 @@ instance Functor Stmt where
         SSkip a -> SSkip (f a)
         SPrint a expr -> SPrint (f a) (fmap f expr)
         SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
+        SAssgMul a expr1 expr2 -> SAssgMul (f a) (fmap f expr1) (fmap f expr2)
+        SAssgDiv a expr1 expr2 -> SAssgDiv (f a) (fmap f expr1) (fmap f expr2)
+        SAssgMod a expr1 expr2 -> SAssgMod (f a) (fmap f expr1) (fmap f expr2)
+        SAssgAdd a expr1 expr2 -> SAssgAdd (f a) (fmap f expr1) (fmap f expr2)
+        SAssgSub a expr1 expr2 -> SAssgSub (f a) (fmap f expr1) (fmap f expr2)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
 data Branch a = BElIf a (Expr a) (Block a)

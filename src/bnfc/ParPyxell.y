@@ -39,40 +39,45 @@ import ErrM
 %name pType3_internal Type3
 %token
   '%' { PT _ (TS _ 1) }
-  '(' { PT _ (TS _ 2) }
-  ')' { PT _ (TS _ 3) }
-  '*' { PT _ (TS _ 4) }
-  '+' { PT _ (TS _ 5) }
-  ',' { PT _ (TS _ 6) }
-  '-' { PT _ (TS _ 7) }
-  '.' { PT _ (TS _ 8) }
-  '/' { PT _ (TS _ 9) }
-  ';' { PT _ (TS _ 10) }
-  '<' { PT _ (TS _ 11) }
-  '<=' { PT _ (TS _ 12) }
-  '<>' { PT _ (TS _ 13) }
-  '=' { PT _ (TS _ 14) }
-  '==' { PT _ (TS _ 15) }
-  '>' { PT _ (TS _ 16) }
-  '>=' { PT _ (TS _ 17) }
-  'Bool' { PT _ (TS _ 18) }
-  'Int' { PT _ (TS _ 19) }
-  'String' { PT _ (TS _ 20) }
-  'Void' { PT _ (TS _ 21) }
-  'and' { PT _ (TS _ 22) }
-  'do' { PT _ (TS _ 23) }
-  'elif' { PT _ (TS _ 24) }
-  'else' { PT _ (TS _ 25) }
-  'false' { PT _ (TS _ 26) }
-  'if' { PT _ (TS _ 27) }
-  'not' { PT _ (TS _ 28) }
-  'or' { PT _ (TS _ 29) }
-  'print' { PT _ (TS _ 30) }
-  'skip' { PT _ (TS _ 31) }
-  'true' { PT _ (TS _ 32) }
-  'while' { PT _ (TS _ 33) }
-  '{' { PT _ (TS _ 34) }
-  '}' { PT _ (TS _ 35) }
+  '%=' { PT _ (TS _ 2) }
+  '(' { PT _ (TS _ 3) }
+  ')' { PT _ (TS _ 4) }
+  '*' { PT _ (TS _ 5) }
+  '*=' { PT _ (TS _ 6) }
+  '+' { PT _ (TS _ 7) }
+  '+=' { PT _ (TS _ 8) }
+  ',' { PT _ (TS _ 9) }
+  '-' { PT _ (TS _ 10) }
+  '-=' { PT _ (TS _ 11) }
+  '.' { PT _ (TS _ 12) }
+  '/' { PT _ (TS _ 13) }
+  '/=' { PT _ (TS _ 14) }
+  ';' { PT _ (TS _ 15) }
+  '<' { PT _ (TS _ 16) }
+  '<=' { PT _ (TS _ 17) }
+  '<>' { PT _ (TS _ 18) }
+  '=' { PT _ (TS _ 19) }
+  '==' { PT _ (TS _ 20) }
+  '>' { PT _ (TS _ 21) }
+  '>=' { PT _ (TS _ 22) }
+  'Bool' { PT _ (TS _ 23) }
+  'Int' { PT _ (TS _ 24) }
+  'String' { PT _ (TS _ 25) }
+  'Void' { PT _ (TS _ 26) }
+  'and' { PT _ (TS _ 27) }
+  'do' { PT _ (TS _ 28) }
+  'elif' { PT _ (TS _ 29) }
+  'else' { PT _ (TS _ 30) }
+  'false' { PT _ (TS _ 31) }
+  'if' { PT _ (TS _ 32) }
+  'not' { PT _ (TS _ 33) }
+  'or' { PT _ (TS _ 34) }
+  'print' { PT _ (TS _ 35) }
+  'skip' { PT _ (TS _ 36) }
+  'true' { PT _ (TS _ 37) }
+  'while' { PT _ (TS _ 38) }
+  '{' { PT _ (TS _ 39) }
+  '}' { PT _ (TS _ 40) }
 
   L_integ {PT _ (TI _)}
   L_quoted {PT _ (TL _)}
@@ -139,6 +144,21 @@ Stmt :: {
 }
 | ListExpr {
   (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)) 
+}
+| Expr '*=' Expr {
+  (fst $1, AbsPyxell.SAssgMul (fst $1)(snd $1)(snd $3)) 
+}
+| Expr '/=' Expr {
+  (fst $1, AbsPyxell.SAssgDiv (fst $1)(snd $1)(snd $3)) 
+}
+| Expr '%=' Expr {
+  (fst $1, AbsPyxell.SAssgMod (fst $1)(snd $1)(snd $3)) 
+}
+| Expr '+=' Expr {
+  (fst $1, AbsPyxell.SAssgAdd (fst $1)(snd $1)(snd $3)) 
+}
+| Expr '-=' Expr {
+  (fst $1, AbsPyxell.SAssgSub (fst $1)(snd $1)(snd $3)) 
 }
 | 'if' ListBranch Else {
   (Just (tokenLineCol $1), AbsPyxell.SIf (Just (tokenLineCol $1)) (snd $2)(snd $3)) 

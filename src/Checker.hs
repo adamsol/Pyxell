@@ -109,8 +109,18 @@ checkStmt stmt cont = case stmt of
                         checkAssgs pos es ts cont
                     else throw pos $ CannotUnpack t (length es)
                 (ETuple _ es, _) -> throw pos $ CannotUnpack t (length es)
-        e1:e2:es ->
+        e1:e2:es -> do
             checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
+    SAssgMul pos expr1 expr2 -> do
+        checkStmt (SAssg pos [expr1, EMul pos expr1 expr2]) cont
+    SAssgDiv pos expr1 expr2 -> do
+        checkStmt (SAssg pos [expr1, EDiv pos expr1 expr2]) cont
+    SAssgMod pos expr1 expr2 -> do
+        checkStmt (SAssg pos [expr1, EMod pos expr1 expr2]) cont
+    SAssgAdd pos expr1 expr2 -> do
+        checkStmt (SAssg pos [expr1, EAdd pos expr1 expr2]) cont
+    SAssgSub pos expr1 expr2 -> do
+        checkStmt (SAssg pos [expr1, ESub pos expr1 expr2]) cont
     SIf pos brs el -> do
         checkBranches brs
         case el of

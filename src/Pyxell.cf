@@ -28,6 +28,11 @@ SPrint.            Stmt   ::= "print" Expr ;
 
 SAssg.             Stmt   ::= [Expr];
 separator nonempty Expr       "=" ;
+SAssgMul.          Stmt   ::= Expr "*=" Expr;
+SAssgDiv.          Stmt   ::= Expr "/=" Expr;
+SAssgMod.          Stmt   ::= Expr "%=" Expr;
+SAssgAdd.          Stmt   ::= Expr "+=" Expr;
+SAssgSub.          Stmt   ::= Expr "-=" Expr;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
 BElIf.             Branch ::= Expr "do" Block ;

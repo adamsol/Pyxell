@@ -233,8 +233,18 @@ compileStmt stmt cont = case stmt of
                     compileAssg t e v cont
                 (ETuple _ es, TTuple _ ts) -> do
                     compileAssgs (zip3 ts es [0..]) t v cont
-        e1:e2:es ->
+        e1:e2:es -> do
             compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
+    SAssgMul _pos expr1 expr2 -> do
+        compileStmt (SAssg _pos [expr1, EMul _pos expr1 expr2]) cont
+    SAssgDiv pos expr1 expr2 -> do
+        compileStmt (SAssg _pos [expr1, EDiv _pos expr1 expr2]) cont
+    SAssgMod pos expr1 expr2 -> do
+        compileStmt (SAssg _pos [expr1, EMod _pos expr1 expr2]) cont
+    SAssgAdd pos expr1 expr2 -> do
+        compileStmt (SAssg _pos [expr1, EAdd _pos expr1 expr2]) cont
+    SAssgSub pos expr1 expr2 -> do
+        compileStmt (SAssg _pos [expr1, ESub _pos expr1 expr2]) cont
     SIf _ brs el -> do
         l <- nextLabel
         compileBranches brs l
