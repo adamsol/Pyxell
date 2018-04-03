@@ -177,6 +177,7 @@ checkExpr expr =
         EInt pos _ -> return $ tInt
         ETrue pos -> return $ tBool
         EFalse pos -> return $ tBool
+        EChar pos _ -> return $ tChar
         EString pos _ -> return $ tString
         EArray pos es -> do
             ts <- mapM checkExpr es

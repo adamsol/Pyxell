@@ -5,7 +5,7 @@
 @s = internal constant [3 x i8] c"%s\00"
 
 declare i32 @printf(i8*, ...)
-declare i32 @putchar(i32)
+declare i32 @putchar(i8)
 
 declare i8* @malloc(i64)
 declare i64 @strlen(i8*)
@@ -26,6 +26,11 @@ define void @printBool(i1 %x) {
     ret void
 }
 
+define void @printChar(i8 %x) {
+    call i32 @putchar(i8 %x)
+    ret void
+}
+
 define void @printString(i8* %x) {
     %s = getelementptr [3 x i8], [3 x i8]* @s, i32 0, i32 0
     call i32 (i8*, ...) @printf(i8* %s, i8* %x)
@@ -33,12 +38,12 @@ define void @printString(i8* %x) {
 }
 
 define void @printSpace() {
-    call i32 @putchar(i32 32)
+    call i32 @putchar(i8 32)
     ret void
 }
 
 define void @printLn() {
-    call i32 @putchar(i32 10)
+    call i32 @putchar(i8 10)
     ret void
 }
 

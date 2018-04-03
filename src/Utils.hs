@@ -20,6 +20,7 @@ instance {-# OVERLAPS #-} Show Type where
     show typ = case typ of
         TInt _ -> "Int"
         TBool _ -> "Bool"
+        TChar _ -> "Char"
         TObject _ -> "Object"
         TString _ -> "String"
         TArray _ t -> "[" ++ show t ++ "]"
@@ -32,6 +33,7 @@ unifyTypes t1 t2 = do
     case (t1, t2) of
         (TInt _, TInt _) -> Just tInt
         (TBool _, TBool _) -> Just tBool
+        (TChar _, TChar _) -> Just tChar
         --(TObject _, _) -> tObject
         --(_, TObject _) -> tObject
         (TString _, TString _) -> Just tString
@@ -46,6 +48,7 @@ tDeref = TDeref Nothing
 tVoid = TVoid Nothing
 tInt = TInt Nothing
 tBool = TBool Nothing
+tChar = TChar Nothing
 tObject = TObject Nothing
 tString = TString Nothing
 tArray = TArray Nothing

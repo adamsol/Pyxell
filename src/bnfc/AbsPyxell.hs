@@ -83,6 +83,7 @@ data Expr a
     = EInt a Integer
     | ETrue a
     | EFalse a
+    | EChar a Char
     | EString a String
     | EArray a [Expr a]
     | EVar a Ident
@@ -106,6 +107,7 @@ instance Functor Expr where
         EInt a integer -> EInt (f a) integer
         ETrue a -> ETrue (f a)
         EFalse a -> EFalse (f a)
+        EChar a char -> EChar (f a) char
         EString a string -> EString (f a) string
         EArray a exprs -> EArray (f a) (map (fmap f) exprs)
         EVar a ident -> EVar (f a) ident
@@ -127,6 +129,7 @@ data Type a
     | TVoid a
     | TInt a
     | TBool a
+    | TChar a
     | TObject a
     | TString a
     | TArray a (Type a)
@@ -139,6 +142,7 @@ instance Functor Type where
         TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
+        TChar a -> TChar (f a)
         TObject a -> TObject (f a)
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)

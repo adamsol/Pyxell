@@ -32,7 +32,7 @@ $white+ ;
 
 $l $i*   { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
 \" ([$u # [\" \\ \n]] | (\\ (\" | \\ | \' | n | t)))* \"{ tok (\p s -> PT p (TL $ share $ unescapeInitTail s)) }
-
+\' ($u # [\' \\] | \\ [\\ \' n t]) \'  { tok (\p s -> PT p (TC $ share s))  }
 $d+      { tok (\p s -> PT p (TI $ share s))    }
 
 
@@ -101,7 +101,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b ">=" 22 (b "-=" 11 (b "*=" 6 (b "(" 3 (b "%=" 2 (b "%" 1 N N) N) (b "*" 5 (b ")" 4 N N) N)) (b "," 9 (b "+=" 8 (b "+" 7 N N) N) (b "-" 10 N N))) (b "<=" 17 (b "/=" 14 (b "/" 13 (b "." 12 N N) N) (b "<" 16 (b ";" 15 N N) N)) (b "==" 20 (b "=" 19 (b "<>" 18 N N) N) (b ">" 21 N N)))) (b "else" 33 (b "[" 28 (b "Object" 25 (b "Int" 24 (b "Bool" 23 N N) N) (b "Void" 27 (b "String" 26 N N) N)) (b "do" 31 (b "and" 30 (b "]" 29 N N) N) (b "elif" 32 N N))) (b "skip" 39 (b "not" 36 (b "if" 35 (b "false" 34 N N) N) (b "print" 38 (b "or" 37 N N) N)) (b "{" 42 (b "while" 41 (b "true" 40 N N) N) (b "}" 43 N N))))
+resWords = b "Bool" 23 (b "." 12 (b "*=" 6 (b "(" 3 (b "%=" 2 (b "%" 1 N N) N) (b "*" 5 (b ")" 4 N N) N)) (b "," 9 (b "+=" 8 (b "+" 7 N N) N) (b "-=" 11 (b "-" 10 N N) N))) (b "<>" 18 (b ";" 15 (b "/=" 14 (b "/" 13 N N) N) (b "<=" 17 (b "<" 16 N N) N)) (b ">" 21 (b "==" 20 (b "=" 19 N N) N) (b ">=" 22 N N)))) (b "else" 34 (b "[" 29 (b "Object" 26 (b "Int" 25 (b "Char" 24 N N) N) (b "Void" 28 (b "String" 27 N N) N)) (b "do" 32 (b "and" 31 (b "]" 30 N N) N) (b "elif" 33 N N))) (b "skip" 40 (b "not" 37 (b "if" 36 (b "false" 35 N N) N) (b "print" 39 (b "or" 38 N N) N)) (b "{" 43 (b "while" 42 (b "true" 41 N N) N) (b "}" 44 N N))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

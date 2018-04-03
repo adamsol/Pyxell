@@ -62,28 +62,30 @@ import ErrM
   '>' { PT _ (TS _ 21) }
   '>=' { PT _ (TS _ 22) }
   'Bool' { PT _ (TS _ 23) }
-  'Int' { PT _ (TS _ 24) }
-  'Object' { PT _ (TS _ 25) }
-  'String' { PT _ (TS _ 26) }
-  'Void' { PT _ (TS _ 27) }
-  '[' { PT _ (TS _ 28) }
-  ']' { PT _ (TS _ 29) }
-  'and' { PT _ (TS _ 30) }
-  'do' { PT _ (TS _ 31) }
-  'elif' { PT _ (TS _ 32) }
-  'else' { PT _ (TS _ 33) }
-  'false' { PT _ (TS _ 34) }
-  'if' { PT _ (TS _ 35) }
-  'not' { PT _ (TS _ 36) }
-  'or' { PT _ (TS _ 37) }
-  'print' { PT _ (TS _ 38) }
-  'skip' { PT _ (TS _ 39) }
-  'true' { PT _ (TS _ 40) }
-  'while' { PT _ (TS _ 41) }
-  '{' { PT _ (TS _ 42) }
-  '}' { PT _ (TS _ 43) }
+  'Char' { PT _ (TS _ 24) }
+  'Int' { PT _ (TS _ 25) }
+  'Object' { PT _ (TS _ 26) }
+  'String' { PT _ (TS _ 27) }
+  'Void' { PT _ (TS _ 28) }
+  '[' { PT _ (TS _ 29) }
+  ']' { PT _ (TS _ 30) }
+  'and' { PT _ (TS _ 31) }
+  'do' { PT _ (TS _ 32) }
+  'elif' { PT _ (TS _ 33) }
+  'else' { PT _ (TS _ 34) }
+  'false' { PT _ (TS _ 35) }
+  'if' { PT _ (TS _ 36) }
+  'not' { PT _ (TS _ 37) }
+  'or' { PT _ (TS _ 38) }
+  'print' { PT _ (TS _ 39) }
+  'skip' { PT _ (TS _ 40) }
+  'true' { PT _ (TS _ 41) }
+  'while' { PT _ (TS _ 42) }
+  '{' { PT _ (TS _ 43) }
+  '}' { PT _ (TS _ 44) }
 
   L_integ {PT _ (TI _)}
+  L_charac {PT _ (TC _)}
   L_quoted {PT _ (TL _)}
   L_ident {PT _ (TV _)}
 
@@ -93,6 +95,13 @@ Integer :: {
   (Maybe (Int, Int), Integer)
 }
 : L_integ {
+  (Just (tokenLineCol $1), read (prToken $1)) 
+}
+
+Char :: {
+  (Maybe (Int, Int), Char)
+}
+: L_charac {
   (Just (tokenLineCol $1), read (prToken $1)) 
 }
 
@@ -222,6 +231,9 @@ Expr8 :: {
 }
 | 'false' {
   (Just (tokenLineCol $1), AbsPyxell.EFalse (Just (tokenLineCol $1)))
+}
+| Char {
+  (fst $1, AbsPyxell.EChar (fst $1)(snd $1)) 
 }
 | String {
   (fst $1, AbsPyxell.EString (fst $1)(snd $1)) 
@@ -394,6 +406,9 @@ Type4 :: {
 }
 | 'Bool' {
   (Just (tokenLineCol $1), AbsPyxell.TBool (Just (tokenLineCol $1)))
+}
+| 'Char' {
+  (Just (tokenLineCol $1), AbsPyxell.TChar (Just (tokenLineCol $1)))
 }
 | 'Object' {
   (Just (tokenLineCol $1), AbsPyxell.TObject (Just (tokenLineCol $1)))

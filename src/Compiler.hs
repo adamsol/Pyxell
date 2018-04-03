@@ -57,6 +57,7 @@ strType typ = case typ of
     TVoid _ -> "void"
     TInt _ -> "i64"
     TBool _ -> "i1"
+    TChar _ -> "i8"
     TObject _ -> "i8*"
     TString _ -> "i8*"
     TArray _ t -> strType t ++ "*"
@@ -223,7 +224,8 @@ compileProgram prog = case prog of
     Program _ stmts -> do
         write $ [ "",
             "declare i8* @malloc(i64)", "declare i64 @strcmp(i8*, i8*)",
-            "declare void @printInt(i64)", "declare void @printBool(i1)", "declare void @printString(i8*)",
+            "declare void @printInt(i64)", "declare void @printBool(i1)",
+            "declare void @printChar(i8)", "declare void @printString(i8*)",
             "declare void @printSpace()", "declare void @printLn()",
             "declare i8* @concatStrings(i8*, i8*)" ]
         lift $ modify (M.insert "number" (Number 0))
@@ -299,6 +301,8 @@ compileStmt stmt cont = case stmt of
                     callVoid "@printInt" [(tInt, v)]
                 TBool _ -> do
                     callVoid "@printBool" [(tBool, v)]
+                TChar _ -> do
+                    callVoid "@printChar" [(tChar, v)]
                 TString _ -> do
                     callVoid "@printString" [(tString, v)]
                 TTuple _ ts -> do
@@ -349,6 +353,7 @@ compileExpr expr =
         EInt _ n -> return $ (tInt, show n)
         ETrue _ -> return $ (tBool, "true")
         EFalse _ -> return $ (tBool, "false")
+        EChar _ c -> return $ (tChar, show (ord c))
         EString _ s -> initString (read s)
         EArray _ es -> do
             rs <- mapM compileExpr es
