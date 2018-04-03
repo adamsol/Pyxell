@@ -152,7 +152,9 @@ instance Print (Expr a) where
     ETrue _ -> prPrec i 8 (concatD [doc (showString "true")])
     EFalse _ -> prPrec i 8 (concatD [doc (showString "false")])
     EString _ str -> prPrec i 8 (concatD [prt 0 str])
+    EArray _ exprs -> prPrec i 8 (concatD [doc (showString "["), prt 2 exprs, doc (showString "]")])
     EVar _ id -> prPrec i 8 (concatD [prt 0 id])
+    EIndex _ expr1 expr2 -> prPrec i 8 (concatD [prt 8 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
     EElem _ expr n -> prPrec i 8 (concatD [prt 8 expr, doc (showString "."), prt 0 n])
     EMul _ expr1 expr2 -> prPrec i 7 (concatD [prt 7 expr1, doc (showString "*"), prt 8 expr2])
     EDiv _ expr1 expr2 -> prPrec i 7 (concatD [prt 7 expr1, doc (showString "/"), prt 8 expr2])
@@ -161,10 +163,13 @@ instance Print (Expr a) where
     ESub _ expr1 expr2 -> prPrec i 6 (concatD [prt 6 expr1, doc (showString "-"), prt 7 expr2])
     ENeg _ expr -> prPrec i 6 (concatD [doc (showString "-"), prt 7 expr])
     ECmp _ cmp -> prPrec i 5 (concatD [prt 0 cmp])
-    ENot _ expr -> prPrec i 4 (concatD [doc (showString "not"), prt 4 expr])
-    EAnd _ expr1 expr2 -> prPrec i 3 (concatD [prt 4 expr1, doc (showString "and"), prt 3 expr2])
-    EOr _ expr1 expr2 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "or"), prt 2 expr2])
-    ETuple _ exprs -> prPrec i 1 (concatD [prt 2 exprs])
+    ENot _ expr -> prPrec i 5 (concatD [doc (showString "not"), prt 5 expr])
+    EAnd _ expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "and"), prt 4 expr2])
+    EOr _ expr1 expr2 -> prPrec i 3 (concatD [prt 4 expr1, doc (showString "or"), prt 3 expr2])
+    ETuple _ exprs -> prPrec i 1 (concatD [prt 3 exprs])
+  prtList 3 [x] = concatD [prt 3 x]
+  prtList 3 (x:xs) = concatD [prt 3 x, doc (showString ","), prt 3 xs]
+  prtList 2 [] = concatD []
   prtList 2 [x] = concatD [prt 2 x]
   prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
   prtList _ [x] = concatD [prt 0 x]
@@ -176,7 +181,9 @@ instance Print (Type a) where
     TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
+    TObject _ -> prPrec i 4 (concatD [doc (showString "Object")])
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])
+    TArray _ type_ -> prPrec i 4 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]

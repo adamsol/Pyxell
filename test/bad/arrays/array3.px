@@ -1,0 +1,3 @@
+
+a = ["abc", false, "d"]
+print a[0] + a[2]

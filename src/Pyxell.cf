@@ -49,8 +49,11 @@ EInt.              Expr8  ::= Integer ;
 ETrue.             Expr8  ::= "true" ;
 EFalse.            Expr8  ::= "false" ;
 EString.           Expr8  ::= String ;
-EVar.              Expr8  ::= Ident ;
+EArray.            Expr8  ::= "[" [Expr2] "]" ;
+separator          Expr2      "," ;
 
+EVar.              Expr8  ::= Ident ;
+EIndex.            Expr8  ::= Expr8 "[" Expr "]" ;
 EElem.             Expr8  ::= Expr8 "." Integer ;
 
 --ECall.             Expr8  ::= Expr8 "(" [Expr8] ")";
@@ -73,12 +76,12 @@ CmpLE.             CmpOp  ::= "<=" ;
 CmpGT.             CmpOp  ::= ">" ;
 CmpGE.             CmpOp  ::= ">=" ;
 
-ENot.              Expr4  ::= "not" Expr4 ;
-EAnd.              Expr3  ::= Expr4 "and" Expr3 ;
-EOr.               Expr2  ::= Expr3 "or" Expr2 ;
+ENot.              Expr5  ::= "not" Expr5 ;
+EAnd.              Expr4  ::= Expr5 "and" Expr4 ;
+EOr.               Expr3  ::= Expr4 "or" Expr3 ;
 
-ETuple.            Expr1  ::= [Expr2] ;
-separator nonempty Expr2      "," ;
+ETuple.            Expr1  ::= [Expr3] ;
+separator nonempty Expr3      "," ;
 
 coercions          Expr       8 ;
 
@@ -89,7 +92,9 @@ internal TDeref.   Type4  ::= Type4 ;
 internal TVoid.    Type4  ::= "Void" ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;
+TObject.           Type4  ::= "Object" ;
 TString.           Type4  ::= "String" ;
+TArray.            Type4  ::= "[" Type "]" ;
 --TPower.            Type3  ::= Type4 "^" Integer ;
 TTuple.            Type2  ::= [Type3] ;
 separator nonempty Type3      "*" ;

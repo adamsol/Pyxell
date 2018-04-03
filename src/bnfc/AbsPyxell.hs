@@ -84,7 +84,9 @@ data Expr a
     | ETrue a
     | EFalse a
     | EString a String
+    | EArray a [Expr a]
     | EVar a Ident
+    | EIndex a (Expr a) (Expr a)
     | EElem a (Expr a) Integer
     | EMul a (Expr a) (Expr a)
     | EDiv a (Expr a) (Expr a)
@@ -105,7 +107,9 @@ instance Functor Expr where
         ETrue a -> ETrue (f a)
         EFalse a -> EFalse (f a)
         EString a string -> EString (f a) string
+        EArray a exprs -> EArray (f a) (map (fmap f) exprs)
         EVar a ident -> EVar (f a) ident
+        EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EElem a expr integer -> EElem (f a) (fmap f expr) integer
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
         EDiv a expr1 expr2 -> EDiv (f a) (fmap f expr1) (fmap f expr2)
@@ -123,7 +127,9 @@ data Type a
     | TVoid a
     | TInt a
     | TBool a
+    | TObject a
     | TString a
+    | TArray a (Type a)
     | TTuple a [Type a]
   deriving (Eq, Ord, Show, Read)
 
@@ -133,5 +139,7 @@ instance Functor Type where
         TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
+        TObject a -> TObject (f a)
         TString a -> TString (f a)
+        TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)

@@ -29,10 +29,12 @@ data StaticError = NotComparable Type Type
                  | NoUnaryOperator String Type
                  | WrongFunctionCall Type Int
                  | UndeclaredIdentifier Ident
+                 | NotLvalue
+                 | UnknownType
                  | NotTuple Type
                  | InvalidTupleElem Type Int
                  | CannotUnpack Type Int
-                 | NotLvalue
+                 | NotIndexable Type
 
 -- | Show instance for displaying compilation errors.
 instance Show StaticError where
@@ -43,10 +45,12 @@ instance Show StaticError where
         NoUnaryOperator op typ -> "No unary operator `" ++ op ++ "` defined for `" ++ show typ ++ "`."
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
+        NotLvalue -> "Expression cannot be assigned to."
+        UnknownType -> "Cannot infer type of expression."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
-        NotLvalue -> "Expression cannot be assigned to."
+        NotIndexable typ -> "Type `" ++ show typ ++ "` is not indexable."
 
 
 -- | Does nothing.
@@ -102,13 +106,13 @@ checkStmt stmt cont = case stmt of
         e1:e2:[] -> do
             t <- checkExpr e2
             case (e1, t) of
-                (ETuple _ [e], _) -> do
-                    compileAssg pos e t cont
                 (ETuple _ es, TTuple _ ts) -> do
                     if length es == length ts then do
                         checkAssgs pos es ts cont
                     else throw pos $ CannotUnpack t (length es)
                 (ETuple _ es, _) -> throw pos $ CannotUnpack t (length es)
+                otherwise -> do
+                    compileAssg pos e1 t cont
         e1:e2:es -> do
             checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
     SAssgMul pos expr1 expr2 -> do
@@ -136,22 +140,22 @@ checkStmt stmt cont = case stmt of
             ([], []) -> cont
             (e:es, t:ts) -> compileAssg pos e t (checkAssgs pos es ts cont)
         compileAssg pos expr typ cont = case expr of
-            EVar _ ident -> do
-                r <- getIdent ident
+            EVar _ id -> do
+                r <- getIdent id
                 case r of
                     Just t -> do
-                        checkCast pos (typ, t)
+                        checkCast pos typ t
                         cont
                     Nothing -> do
-                        declare typ ident cont
+                        declare typ id cont
+            EIndex _ e1 e2 -> do
+                t <- checkExpr expr
+                checkCast pos typ t
+                cont
             otherwise -> throw pos $ NotLvalue
-        checkCast pos (typ1, typ2) = case (typ1, typ2) of
-            (TInt _, TInt _) -> skip
-            (TBool _, TBool _) -> skip
-            (TString _, TString _) -> skip
-            (TTuple _ ts1, TTuple _ ts2) -> do
-                mapM_ (checkCast pos) (zip ts1 ts2)
-            otherwise -> throw pos $ IllegalAssignment typ1 typ2
+        checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
+            Just t -> skip
+            Nothing -> throw pos $ IllegalAssignment typ1 typ2
         checkBranches brs = case brs of
             [] -> skip
             b:bs -> case b of
@@ -174,7 +178,21 @@ checkExpr expr =
         ETrue pos -> return $ tBool
         EFalse pos -> return $ tBool
         EString pos _ -> return $ tString
-        EVar pos ident -> checkIdent pos ident
+        EArray pos es -> do
+            ts <- mapM checkExpr es
+            case ts of
+                [] -> return $ tArray tObject
+                t:ts -> case foldM unifyTypes t ts of
+                    Just t -> return $ tArray t
+                    Nothing -> throw pos $ UnknownType
+        EVar pos id -> checkIdent pos id
+        EIndex pos e1 e2 -> do
+            t1 <- checkExpr e1
+            t2 <- checkExpr e2
+            case (t1, t2) of
+                (TArray _ t, TInt _) -> return $ t
+                (TArray _ t, _) -> throw pos $ IllegalAssignment t2 tInt
+                otherwise -> throw pos $ NotIndexable t1
         EElem pos e n -> do
             t <- checkExpr e
             let i = fromInteger n
@@ -209,11 +227,11 @@ checkExpr expr =
                 t:[] -> return $ t
                 otherwise -> return $ tTuple ts
     where
-        checkIdent pos ident = do
-            r <- getIdent ident
+        checkIdent pos id = do
+            r <- getIdent id
             case r of
                 Just t -> return $ t
-                Nothing -> throw pos $ UndeclaredIdentifier ident
+                Nothing -> throw pos $ UndeclaredIdentifier id
         checkBinary pos op e1 e2 = do
             t1 <- checkExpr e1
             t2 <- checkExpr e2
@@ -250,13 +268,9 @@ checkExpr expr =
                     TBool _ -> return $ tBool
                     otherwise -> throw pos $ NoUnaryOperator "not" t
         checkCmp pos op t1 t2 = do
-            case (t1, t2) of
-                (TInt _, TInt _) -> return $ tBool
-                (TBool _, TBool _) -> return $ tBool
-                (TString _, TString _) -> return $ tBool
-                (TTuple _ ts1, TTuple _ ts2) -> do
-                    if length ts1 == length ts2 then do
-                        mapM (uncurry (checkCmp pos op)) (zip ts1 ts2)
-                        return $ tBool
-                    else throw pos $ NotComparable t1 t2
-                otherwise -> throw pos $ NotComparable t1 t2
+            case unifyTypes t1 t2 of
+                Just t -> case t of
+                    TObject _ -> throw pos $ NotComparable t1 t2
+                    TArray _ _ -> throw pos $ NotComparable t1 t2
+                    otherwise -> return $ tBool
+                Nothing -> throw pos $ NotComparable t1 t2

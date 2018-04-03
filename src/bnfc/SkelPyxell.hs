@@ -55,7 +55,9 @@ transExpr x = case x of
   ETrue _ -> failure x
   EFalse _ -> failure x
   EString _ string -> failure x
+  EArray _ exprs -> failure x
   EVar _ ident -> failure x
+  EIndex _ expr1 expr2 -> failure x
   EElem _ expr integer -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
@@ -74,6 +76,8 @@ transType x = case x of
   TVoid _ -> failure x
   TInt _ -> failure x
   TBool _ -> failure x
+  TObject _ -> failure x
   TString _ -> failure x
+  TArray _ type_ -> failure x
   TTuple _ types -> failure x
 

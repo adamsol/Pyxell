@@ -57,7 +57,9 @@ strType typ = case typ of
     TVoid _ -> "void"
     TInt _ -> "i64"
     TBool _ -> "i1"
+    TObject _ -> "i8*"
     TString _ -> "i8*"
+    TArray _ t -> strType t ++ "*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
 
 -- | Returns an unused index for temporary names.
@@ -103,35 +105,59 @@ branch val lbl1 lbl2 = do
 
 -- | Outputs LLVM 'alloca' command.
 alloca :: Type -> String -> Run ()
-alloca typ loc = do
-    write $ indent [ loc ++ " = alloca " ++ strType typ ]
+alloca typ ptr = do
+    write $ indent [ ptr ++ " = alloca " ++ strType typ ]
 
 -- | Outputs LLVM 'store' command.
 store :: Type -> String -> String -> Run ()
-store typ val loc = do
-    write $ indent [ "store " ++ strType typ ++ " " ++ val ++ ", " ++ strType typ ++ "* " ++ loc ]
+store typ val ptr = do
+    write $ indent [ "store " ++ strType typ ++ " " ++ val ++ ", " ++ strType typ ++ "* " ++ ptr ]
+
+-- | Outputs LLVM 'store' command for an array of values.
+storeArray :: Type -> [String] -> String -> Run ()
+storeArray typ vals ptr = do
+    let n = length vals
+    let d = "[" ++ show n ++ " x " ++ strType typ ++ "]"
+    p <- nextTemp
+    write $ indent [
+        p ++ " = bitcast " ++ strType typ ++ "* " ++ ptr ++ " to " ++ d ++ "*",
+        "store " ++ d ++ " [" ++ intercalate ", " (map ((strType typ ++ " ") ++) vals) ++ "], " ++ d ++ "* " ++ p ]
 
 -- | Outputs LLVM 'load' command.
 load :: Type -> String -> Run String
-load typ loc = do
+load typ ptr = do
     v <- nextTemp
-    write $ indent [ v ++ " = load " ++ strType typ ++ ", " ++ strType typ ++ "* " ++ loc ]
+    write $ indent [ v ++ " = load " ++ strType typ ++ ", " ++ strType typ ++ "* " ++ ptr ]
     return $ v
 
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
 declare :: Type -> Ident -> String -> String -> Run () -> Run ()
-declare typ ident val loc cont = case ident of
+declare typ ident val ptr cont = case ident of
     Ident x -> do
-        alloca typ loc
-        store typ val loc
-        local (M.insert x (typ, loc)) cont
+        alloca typ ptr
+        store typ val ptr
+        local (M.insert x (typ, ptr)) cont
 
 -- | Outputs LLVM 'getelementptr' command with given indices.
-gep :: Type -> String -> [Int] -> Run String
-gep typ val inds = do
-    l <- nextTemp
-    write $ indent [ l ++ " = getelementptr inbounds " ++ strType (tDeref typ) ++ ", " ++ strType typ ++ " " ++ val ++ intercalate "" [", i32 " ++ show i | i <- inds] ]
-    return $ l
+gep :: Type -> String -> [String] -> [Int] -> Run String
+gep typ val inds1 inds2 = do
+    p <- nextTemp
+    write $ indent [ p ++ " = getelementptr inbounds " ++ strType (tDeref typ) ++ ", " ++ strType typ ++ " " ++ val ++ intercalate "" [", i64 " ++ i | i <- inds1] ++ intercalate "" [", i32 " ++ show i | i <- inds2] ]
+    return $ p
+
+-- | Outputs LLVM 'bitcast' command.
+bitcast :: Type -> String -> Type -> Run String
+bitcast typ1 ptr typ2 = do
+    p <- nextTemp
+    write $ indent [ p ++ " = bitcast " ++ strType typ1 ++ " " ++ ptr ++ " to " ++ strType typ2 ]
+    return $ p
+
+-- | Outputs LLVM 'ptrtoint' command.
+ptrtoint :: Type -> String -> Run String
+ptrtoint typ ptr = do
+    v <- nextTemp
+    write $ indent [ v ++ " = ptrtoint " ++ strType typ ++ " " ++ ptr ++ " to i64" ]
+    return $ v
 
 -- | Outputs LLVM 'select' instruction for given values.
 select :: String -> Type -> String -> String -> Run String
@@ -174,15 +200,21 @@ callVoid name args = do
 -- | Outputs LLVM code for string initialization.
 initString :: String -> Run Result
 initString s = do
-    l1 <- nextTemp
-    l2 <- nextTemp
     let n = length s + 1
-    let d = "[" ++ show n ++ " x i8]"
-    write $ indent [
-        l1 ++ " = call i8* @malloc(i64 " ++ show n ++ ")",
-        l2 ++ " = bitcast i8* " ++ l1 ++ " to " ++ d ++ "*",
-        "store " ++ d ++ " [" ++ intercalate ", " (map (\c -> "i8 " ++ show (ord c)) (s ++ "\0")) ++ "], " ++ d ++ "* " ++ l2 ]
-    return $ (tString, l1)
+    p <- call tString "@malloc" [(tInt, show n)]
+    storeArray (tDeref tString) (map (show . ord) (s ++ "\0")) p
+    return $ (tString, p)
+
+-- | Outputs LLVM code for array initialization.
+initArray :: Type -> [String] -> Run Result
+initArray typ vals = do
+    let t = tArray typ
+    let n = length vals
+    v1 <- gep t "null" [show (length vals)] [] >>= ptrtoint t
+    p1 <- call tString "@malloc" [(tInt, v1)]
+    p2 <- bitcast tString p1 t
+    forM (zip [0..] vals) (\(i, v) -> gep t p2 [show i] [] >>= store typ v)
+    return $ (t, p2)
 
 
 -- | Outputs LLVM code for all statements in the program.
@@ -229,10 +261,10 @@ compileStmt stmt cont = case stmt of
         e1:e2:[] -> do
             (t, v) <- compileExpr e2
             case (e1, t) of
-                (ETuple _ [e], _) -> do
-                    compileAssg t e v cont
                 (ETuple _ es, TTuple _ ts) -> do
                     compileAssgs (zip3 ts es [0..]) t v cont
+                otherwise -> do
+                    compileAssg t e1 v cont
         e1:e2:es -> do
             compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
     SAssgMul _pos expr1 expr2 -> do
@@ -274,14 +306,12 @@ compileStmt stmt cont = case stmt of
                         case i of
                             0 -> skip
                             _ -> callVoid "@printSpace" []
-                        l <- gep t v [0, i]
-                        v' <- load t' l
+                        v' <- gep t v ["0"] [i] >>= load t'
                         compilePrint t' v'
         compileAssgs rs typ val cont = case rs of
             [] -> cont
             (t, e, i):rs -> do
-                l <- gep typ val [0, i]
-                v <- load t l
+                v <- gep typ val ["0"] [i] >>= load t
                 compileAssg t e v (compileAssgs rs typ val cont)
         compileAssg typ expr val cont = do
             e <- case expr of
@@ -320,14 +350,19 @@ compileExpr expr =
         ETrue _ -> return $ (tBool, "true")
         EFalse _ -> return $ (tBool, "false")
         EString _ s -> initString (read s)
+        EArray _ es -> do
+            rs <- mapM compileExpr es
+            case rs of
+                [] -> initArray tObject []
+                r:_ -> initArray (fst r) (map snd rs)
         EVar _ _ -> compileRval expr
+        EIndex _ _ _ -> compileRval expr
         EElem _ e n -> do
-            (t, l) <- compileExpr e
+            (t, p) <- compileExpr e
             let i = fromInteger n
             case t of
                 TTuple _ ts -> do
-                    l <- gep t l [0, i]
-                    v <- load (ts !! i) l
+                    v <- gep t p ["0"] [i] >>= load (ts !! i)
                     return $ (ts !! i, v)
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
@@ -375,10 +410,10 @@ compileExpr expr =
                 r:[] -> return $ r
                 otherwise -> do
                     let t = tTuple (map fst rs)
-                    l <- nextTemp
-                    alloca (tDeref t) l
-                    mapM (compileTupleElem t l) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
-                    return $ (t, l)
+                    p <- nextTemp
+                    alloca (tDeref t) p
+                    mapM (compileTupleElem t p) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
+                    return $ (t, p)
     where
         compileBinary op e1 e2 = do
             (t, v1) <- compileExpr e1
@@ -405,8 +440,8 @@ compileExpr expr =
         compileTupleCmp op t v1 v2 i lt lf = do
             t' <- case t of
                 TTuple _ ts -> return $ ts !! i
-            v1' <- gep t v1 [0, i] >>= \l -> load t' l
-            v2' <- gep t v2 [0, i] >>= \l -> load t' l
+            v1' <- gep t v1 ["0"] [i] >>= load t'
+            v2' <- gep t v2 ["0"] [i] >>= load t'
             v3 <- compileCmp op t' v1' v2'
             case t of
                 TTuple _ ts -> do
@@ -461,19 +496,24 @@ compileExpr expr =
                     l3 <- getLabel
                     goto exit >> label exit
                     phi ([("true", l) | l <- l1:preds] ++ [(v2, l3)])
-        compileTupleElem typ loc (t, v, i) = do
-            l <- gep typ loc [0, i]
-            store t v l
+        compileTupleElem typ ptr (t, v, i) = do
+            gep typ ptr ["0"] [i] >>= store t v
 
 -- | Outputs LLVM code that evaluates a given expression as an r-value. Returns type and name of the result.
 compileRval :: Expr Pos -> Run Result
 compileRval expr = do
-    Just (t, l) <- compileLval expr
-    v <- load t l
+    Just (t, p) <- compileLval expr
+    v <- load t p
     return $ (t, v)
 
 -- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.
 compileLval :: Expr Pos -> Run (Maybe Result)
 compileLval expr = case expr of
-    EVar _ ident -> do
-        getIdent ident
+    EVar _ id -> do
+        getIdent id
+    EIndex _ e1 e2 -> do
+        (t1, v1) <- compileExpr e1
+        (t2, v2) <- compileExpr e2
+        v3 <- gep t1 v1 [v2] []
+        case t1 of
+            TArray _ t1' -> return $ Just (t1', v3)
