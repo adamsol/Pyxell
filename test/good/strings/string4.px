@@ -1,0 +1,6 @@
+
+# should strings be mutable? now they are
+s = "abc"
+s[0] = 'x'
+s[2] = s[0]
+print s

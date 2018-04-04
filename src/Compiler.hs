@@ -521,4 +521,5 @@ compileLval expr = case expr of
         (t2, v2) <- compileExpr e2
         v3 <- gep t1 v1 [v2] []
         case t1 of
+            TString _ -> return $ Just (tChar, v3)
             TArray _ t1' -> return $ Just (t1', v3)

@@ -190,10 +190,12 @@ checkExpr expr =
         EIndex pos e1 e2 -> do
             t1 <- checkExpr e1
             t2 <- checkExpr e2
-            case (t1, t2) of
-                (TArray _ t, TInt _) -> return $ t
-                (TArray _ t, _) -> throw pos $ IllegalAssignment t2 tInt
-                otherwise -> throw pos $ NotIndexable t1
+            case t2 of
+                TInt _ -> case t1 of
+                    TString _ -> return $ tChar
+                    TArray _ t1' -> return $ t1'
+                    otherwise -> throw pos $ NotIndexable t1
+                otherwise -> throw pos $ IllegalAssignment t2 tInt
         EElem pos e n -> do
             t <- checkExpr e
             let i = fromInteger n
