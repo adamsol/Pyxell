@@ -294,6 +294,30 @@ compileStmt stmt cont = case stmt of
         goto l >> label l
         compileCond expr block l
         cont
+    SFor _ expr1 expr2 block -> case expr2 of
+        ERange _ e1 e2 -> do
+            compileStmt (SFor _pos expr1 (ERangeStep _pos e1 e2 (EInt _pos 1)) block) cont
+        ERangeStep _ e1 e2 e3 -> do
+            [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
+            v4 <- binop "icmp sgt" t v3 "0"
+            p <- nextTemp
+            alloca t p
+            store t v1 p
+            [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+            goto l1 >> label l1
+            v5 <- load t p
+            compileAssg t expr1 v5 $ do
+                v6 <- binop "icmp sle" t v5 v2
+                v7 <- binop "icmp sge" t v5 v2
+                v8 <- select v4 tBool v6 v7
+                branch v8 l2 l3
+                label l2
+                compileBlock block
+                v9 <- binop "add" t v5 v3
+                store t v9 p
+                goto l1
+                label l3
+                cont
     where
         compilePrint t v = do
             case t of

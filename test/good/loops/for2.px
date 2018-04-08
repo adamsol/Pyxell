@@ -1,0 +1,8 @@
+
+n = 4
+a = [0, 7, -2, 1]
+for i in n-1..a[3]..-a[3] do
+    i *= 2
+    a[i/2] += i - 3
+print a[1], a[2], a[3]
+print i

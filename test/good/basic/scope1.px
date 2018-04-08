@@ -1,0 +1,5 @@
+
+if true do
+    i = false
+i = 2
+print i

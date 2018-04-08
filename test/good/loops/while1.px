@@ -1,11 +1,7 @@
 
 s = 0
-if true do
-    # scope test
-    i = false
 i = 0
 n = 10
-
 while i <= n do
     s = s + i
     i = i + 1

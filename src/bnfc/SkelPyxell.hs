@@ -30,6 +30,7 @@ transStmt x = case x of
   SAssgSub _ expr1 expr2 -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
+  SFor _ expr1 expr2 block -> failure x
 transBranch :: Show a => Branch a -> Result
 transBranch x = case x of
   BElIf _ expr block -> failure x
@@ -66,6 +67,8 @@ transExpr x = case x of
   EAdd _ expr1 expr2 -> failure x
   ESub _ expr1 expr2 -> failure x
   ENeg _ expr -> failure x
+  ERange _ expr1 expr2 -> failure x
+  ERangeStep _ expr1 expr2 expr3 -> failure x
   ECmp _ cmp -> failure x
   ENot _ expr -> failure x
   EAnd _ expr1 expr2 -> failure x

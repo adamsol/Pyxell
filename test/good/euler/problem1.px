@@ -1,8 +1,6 @@
 
 s = 0
-i = 1
-while i < 1000 do
+for i in 1..999 do
     if i % 3 == 0 or i % 5 == 0 do
         s += i
-    i += 1
 print s

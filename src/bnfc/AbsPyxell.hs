@@ -31,6 +31,7 @@ data Stmt a
     | SAssgSub a (Expr a) (Expr a)
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
+    | SFor a (Expr a) (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Stmt where
@@ -45,6 +46,7 @@ instance Functor Stmt where
         SAssgSub a expr1 expr2 -> SAssgSub (f a) (fmap f expr1) (fmap f expr2)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
+        SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
 data Branch a = BElIf a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
 
@@ -95,6 +97,8 @@ data Expr a
     | EAdd a (Expr a) (Expr a)
     | ESub a (Expr a) (Expr a)
     | ENeg a (Expr a)
+    | ERange a (Expr a) (Expr a)
+    | ERangeStep a (Expr a) (Expr a) (Expr a)
     | ECmp a (Cmp a)
     | ENot a (Expr a)
     | EAnd a (Expr a) (Expr a)
@@ -119,6 +123,8 @@ instance Functor Expr where
         EAdd a expr1 expr2 -> EAdd (f a) (fmap f expr1) (fmap f expr2)
         ESub a expr1 expr2 -> ESub (f a) (fmap f expr1) (fmap f expr2)
         ENeg a expr -> ENeg (f a) (fmap f expr)
+        ERange a expr1 expr2 -> ERange (f a) (fmap f expr1) (fmap f expr2)
+        ERangeStep a expr1 expr2 expr3 -> ERangeStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ECmp a cmp -> ECmp (f a) (fmap f cmp)
         ENot a expr -> ENot (f a) (fmap f expr)
         EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)

@@ -35,6 +35,7 @@ data StaticError = NotComparable Type Type
                  | InvalidTupleElem Type Int
                  | CannotUnpack Type Int
                  | NotIndexable Type
+                 | NotIterable Type
 
 -- | Show instance for displaying compilation errors.
 instance Show StaticError where
@@ -46,11 +47,12 @@ instance Show StaticError where
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         NotLvalue -> "Expression cannot be assigned to."
-        UnknownType -> "Cannot infer type of expression."
+        UnknownType -> "Expression cannot be used in this context."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
         NotIndexable typ -> "Type `" ++ show typ ++ "` is not indexable."
+        NotIterable typ -> "Type `" ++ show typ ++ "` is not iterable."
 
 
 -- | Does nothing.
@@ -112,7 +114,7 @@ checkStmt stmt cont = case stmt of
                     else throw pos $ CannotUnpack t (length es)
                 (ETuple _ es, _) -> throw pos $ CannotUnpack t (length es)
                 otherwise -> do
-                    compileAssg pos e1 t cont
+                    checkAssg pos e1 t cont
         e1:e2:es -> do
             checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
     SAssgMul pos expr1 expr2 -> do
@@ -135,11 +137,25 @@ checkStmt stmt cont = case stmt of
     SWhile pos expr block -> do
         checkCond pos expr block
         cont
+    SFor pos expr1 expr2 block -> case expr2 of
+        ERange _ e1 e2 -> do
+            checkStmt (SFor pos expr1 (ERangeStep _pos e1 e2 (EInt _pos 1)) block) cont
+        ERangeStep _ e1 e2 e3 -> do
+            ts <- mapM checkExpr [e1, e2, e3]
+            case ts of
+                [TInt _, TInt _, TInt _] -> do
+                    checkAssg pos expr1 tInt (checkBlock block >> cont)
+                [TInt _, TInt _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
+                [TInt _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tInt
+                otherwise -> throw pos $ IllegalAssignment (ts !! 0) tInt
+        otherwise -> do
+            t <- checkExpr expr2
+            throw pos $ NotIterable t
     where
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
-            (e:es, t:ts) -> compileAssg pos e t (checkAssgs pos es ts cont)
-        compileAssg pos expr typ cont = case expr of
+            (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
+        checkAssg pos expr typ cont = case expr of
             EVar _ id -> do
                 r <- getIdent id
                 case r of
@@ -184,7 +200,7 @@ checkExpr expr =
             case ts of
                 [] -> return $ tArray tObject
                 t:ts -> case foldM unifyTypes t ts of
-                    Just t -> return $ tArray t
+                    Just t' -> return $ tArray t'
                     Nothing -> throw pos $ UnknownType
         EVar pos id -> checkIdent pos id
         EIndex pos e1 e2 -> do
@@ -210,6 +226,8 @@ checkExpr expr =
         EAdd pos e1 e2 -> checkBinary pos "+" e1 e2
         ESub pos e1 e2 -> checkBinary pos "-" e1 e2
         ENeg pos e -> checkUnary pos "-" e
+        ERange pos _ _ -> throw pos $ UnknownType
+        ERangeStep pos _ _ _ -> throw pos $ UnknownType
         ECmp pos cmp -> case cmp of
             Cmp1 pos e1 op e2 -> do
                 t1 <- checkExpr e1

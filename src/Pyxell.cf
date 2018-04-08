@@ -41,31 +41,35 @@ EElse.             Else   ::= "else" "do" Block ;
 EEmpty.            Else   ::= ;
 
 SWhile.            Stmt   ::= "while" Expr "do" Block ;
+SFor.              Stmt   ::= "for" Expr "in" Expr "do" Block ;
 
 
 -- expressions --
 
-EInt.              Expr8  ::= Integer ;
-ETrue.             Expr8  ::= "true" ;
-EFalse.            Expr8  ::= "false" ;
-EChar.             Expr8  ::= Char ;
-EString.           Expr8  ::= String ;
-EArray.            Expr8  ::= "[" [Expr2] "]" ;
+EInt.              Expr9  ::= Integer ;
+ETrue.             Expr9  ::= "true" ;
+EFalse.            Expr9  ::= "false" ;
+EChar.             Expr9  ::= Char ;
+EString.           Expr9  ::= String ;
+EArray.            Expr9  ::= "[" [Expr2] "]" ;
 separator          Expr2      "," ;
 
-EVar.              Expr8  ::= Ident ;
-EIndex.            Expr8  ::= Expr8 "[" Expr "]" ;
-EElem.             Expr8  ::= Expr8 "." Integer ;
+EVar.              Expr9  ::= Ident ;
+EIndex.            Expr9  ::= Expr9 "[" Expr "]" ;
+EElem.             Expr9  ::= Expr9 "." Integer ;
 
 --ECall.             Expr8  ::= Expr8 "(" [Expr8] ")";
 --separator          Expr8      "," ;
 
-EMul.              Expr7  ::= Expr7 "*" Expr8 ;
-EDiv.              Expr7  ::= Expr7 "/" Expr8 ;
-EMod.              Expr7  ::= Expr7 "%" Expr8 ;
-EAdd.              Expr6  ::= Expr6 "+" Expr7 ;
-ESub.              Expr6  ::= Expr6 "-" Expr7 ;
-ENeg.              Expr6  ::= "-" Expr7;
+EMul.              Expr8  ::= Expr8 "*" Expr9 ;
+EDiv.              Expr8  ::= Expr8 "/" Expr9 ;
+EMod.              Expr8  ::= Expr8 "%" Expr9 ;
+EAdd.              Expr7  ::= Expr7 "+" Expr8 ;
+ESub.              Expr7  ::= Expr7 "-" Expr8 ;
+ENeg.              Expr7  ::= "-" Expr8;
+
+ERange.            Expr6  ::= Expr7 ".." Expr7 ;
+ERangeStep.        Expr6  ::= Expr7 ".." Expr7 ".." Expr7 ;
 
 ECmp.              Expr5  ::= Cmp ;
 Cmp1.              Cmp    ::= Expr6 CmpOp Expr6 ;
@@ -84,7 +88,7 @@ EOr.               Expr3  ::= Expr4 "or" Expr3 ;
 ETuple.            Expr1  ::= [Expr3] ;
 separator nonempty Expr3      "," ;
 
-coercions          Expr       8 ;
+coercions          Expr       9 ;
 
 
 -- types --

@@ -1,0 +1,8 @@
+
+for a in 1..0 do
+    print false
+for i in 3..6 do
+    if i % 4 > 0 do
+        print i
+for j in i..3..-2 do
+    print j

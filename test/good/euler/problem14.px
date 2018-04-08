@@ -1,7 +1,7 @@
 
-n = r = 1
+r = 1
 m = 0
-while n < 1000000 do
+for n in 1..1000000-1 do
     i = n
     l = 0
     while i > 1 do
@@ -14,5 +14,4 @@ while n < 1000000 do
     if l > m do
         r = n
         m = l
-    n += 1
 print r
