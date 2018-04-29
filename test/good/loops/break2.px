@@ -1,0 +1,11 @@
+
+n = x = 0
+for i in 1..10 do
+    for j in 7..5..-1 do
+        if i % j == 0 do
+            break
+        n += 1
+    while j > 5 do
+        x += j
+        break
+print n, x

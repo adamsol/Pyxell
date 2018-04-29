@@ -45,6 +45,7 @@ unifyTypes t1 t2 = do
 
 -- | Helper functions for initializing types without a position.
 tDeref = TDeref Nothing
+tLabel = TLabel Nothing
 tVoid = TVoid Nothing
 tInt = TInt Nothing
 tBool = TBool Nothing

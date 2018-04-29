@@ -290,9 +290,14 @@ compileStmt stmt cont = case stmt of
         goto l >> label l
         cont
     SWhile _ expr block -> do
-        l <- nextLabel
-        goto l >> label l
-        compileCond expr block l
+        [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+        goto l1 >> label l1
+        (t, v) <- compileExpr expr
+        branch v l2 l3
+        label l2
+        local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l1)) $ compileBlock block
+        goto l1
+        label l3
         cont
     SFor _ expr1 expr2 block -> case expr2 of
         ERange _ e1 e2 -> do
@@ -303,7 +308,7 @@ compileStmt stmt cont = case stmt of
             p <- nextTemp
             alloca t p
             store t v1 p
-            [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+            [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
             goto l1 >> label l1
             v5 <- load t p
             compileAssg t expr1 v5 $ do
@@ -312,12 +317,19 @@ compileStmt stmt cont = case stmt of
                 v8 <- select v4 tBool v6 v7
                 branch v8 l2 l3
                 label l2
-                compileBlock block
+                local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
+                goto l4 >> label l4
                 v9 <- binop "add" t v5 v3
                 store t v9 p
                 goto l1
                 label l3
                 cont
+    SBreak _ -> do
+        (_, l) <- asks (M.! "#break")
+        goto l
+    SContinue _ -> do
+        (_, l) <- asks (M.! "#continue")
+        goto l
     where
         compilePrint t v = do
             case t of
@@ -357,17 +369,15 @@ compileStmt stmt cont = case stmt of
             [] -> skip
             b:bs -> case b of
                 BElIf _ expr block -> do
-                    compileCond expr block exit
+                    (t, v) <- compileExpr expr
+                    l1 <- nextLabel
+                    l2 <- nextLabel
+                    branch v l1 l2
+                    label l1
+                    compileBlock block
+                    goto exit
+                    label l2
                     compileBranches bs exit
-        compileCond expr block exit = do
-            (t, v) <- compileExpr expr
-            l1 <- nextLabel
-            l2 <- nextLabel
-            branch v l1 l2
-            label l1
-            compileBlock block
-            goto exit
-            label l2
 
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.

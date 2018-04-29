@@ -31,6 +31,8 @@ transStmt x = case x of
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
   SFor _ expr1 expr2 block -> failure x
+  SContinue _ -> failure x
+  SBreak _ -> failure x
 transBranch :: Show a => Branch a -> Result
 transBranch x = case x of
   BElIf _ expr block -> failure x
@@ -78,6 +80,7 @@ transType :: Show a => Type a -> Result
 transType x = case x of
   TDeref _ type_ -> failure x
   TVoid _ -> failure x
+  TLabel _ -> failure x
   TInt _ -> failure x
   TBool _ -> failure x
   TChar _ -> failure x

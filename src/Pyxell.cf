@@ -42,6 +42,8 @@ EEmpty.            Else   ::= ;
 
 SWhile.            Stmt   ::= "while" Expr "do" Block ;
 SFor.              Stmt   ::= "for" Expr "in" Expr "do" Block ;
+SContinue.         Stmt   ::= "continue" ;
+SBreak.            Stmt   ::= "break" ;
 
 
 -- expressions --
@@ -94,6 +96,7 @@ coercions          Expr       9 ;
 -- types --
 
 internal TDeref.   Type4  ::= Type4 ;
+internal TLabel.   Type4  ::= "Label" ;
 internal TVoid.    Type4  ::= "Void" ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;

@@ -32,6 +32,8 @@ data Stmt a
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
     | SFor a (Expr a) (Expr a) (Block a)
+    | SContinue a
+    | SBreak a
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Stmt where
@@ -47,6 +49,8 @@ instance Functor Stmt where
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
         SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
+        SContinue a -> SContinue (f a)
+        SBreak a -> SBreak (f a)
 data Branch a = BElIf a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
 
@@ -133,6 +137,7 @@ instance Functor Expr where
 data Type a
     = TDeref a (Type a)
     | TVoid a
+    | TLabel a
     | TInt a
     | TBool a
     | TChar a
@@ -146,6 +151,7 @@ instance Functor Type where
     fmap f x = case x of
         TDeref a type_ -> TDeref (f a) (fmap f type_)
         TVoid a -> TVoid (f a)
+        TLabel a -> TLabel (f a)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
         TChar a -> TChar (f a)

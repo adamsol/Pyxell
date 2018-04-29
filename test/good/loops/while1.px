@@ -1,8 +1,7 @@
 
-s = 0
-i = 0
+s = i = 0
 n = 10
 while i <= n do
-    s = s + i
-    i = i + 1
+    s += i
+    i += 1
 print s

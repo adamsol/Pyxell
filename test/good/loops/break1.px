@@ -1,0 +1,7 @@
+
+i = 0
+while true do
+    i += 1
+    if i > 42 do
+        break
+print i

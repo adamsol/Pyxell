@@ -21,6 +21,7 @@ import Utils
 
 -- | Checker monad: Reader for identifier environment, ErrorT to report compilation errors.
 type Run r = ReaderT (M.Map String Type) (ErrorT String IO) r
+--type Run r = ReaderT (M.Map String Type) (ReaderT Int (ErrorT String IO)) r
 
 -- | Compilation error type.
 data StaticError = NotComparable Type Type
@@ -28,6 +29,7 @@ data StaticError = NotComparable Type Type
                  | NoBinaryOperator String Type Type
                  | NoUnaryOperator String Type
                  | WrongFunctionCall Type Int
+                 | UnexpectedStatement String
                  | UndeclaredIdentifier Ident
                  | NotLvalue
                  | UnknownType
@@ -45,6 +47,7 @@ instance Show StaticError where
         NoBinaryOperator op typ1 typ2 -> "No binary operator `" ++ op ++ "` defined for `" ++ show typ1 ++ "` and `" ++ show typ2 ++ "`."
         NoUnaryOperator op typ -> "No unary operator `" ++ op ++ "` defined for `" ++ show typ ++ "`."
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
+        UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         NotLvalue -> "Expression cannot be assigned to."
         UnknownType -> "Expression cannot be used in this context."
@@ -135,7 +138,7 @@ checkStmt stmt cont = case stmt of
                 cont
             EEmpty pos -> cont
     SWhile pos expr block -> do
-        checkCond pos expr block
+        local (M.insert "#loop" tLabel) $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> case expr2 of
         ERange _ e1 e2 -> do
@@ -144,13 +147,23 @@ checkStmt stmt cont = case stmt of
             ts <- mapM checkExpr [e1, e2, e3]
             case ts of
                 [TInt _, TInt _, TInt _] -> do
-                    checkAssg pos expr1 tInt (checkBlock block >> cont)
+                    local (M.insert "#loop" tLabel) $ checkAssg pos expr1 tInt (checkBlock block >> cont)
                 [TInt _, TInt _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
                 [TInt _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tInt
                 otherwise -> throw pos $ IllegalAssignment (ts !! 0) tInt
         otherwise -> do
             t <- checkExpr expr2
             throw pos $ NotIterable t
+    SBreak pos -> do
+        r <- asks (M.lookup "#loop")
+        case r of
+            Just _ -> cont
+            otherwise -> throw pos $ UnexpectedStatement "break"
+    SContinue pos -> do
+        r <- asks (M.lookup "#loop")
+        case r of
+            Just _ -> cont
+            otherwise -> throw pos $ UnexpectedStatement "continue"
     where
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont

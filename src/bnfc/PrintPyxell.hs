@@ -111,6 +111,8 @@ instance Print (Stmt a) where
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), prt 0 block])
     SFor _ expr1 expr2 block -> prPrec i 0 (concatD [doc (showString "for"), prt 0 expr1, doc (showString "in"), prt 0 expr2, doc (showString "do"), prt 0 block])
+    SContinue _ -> prPrec i 0 (concatD [doc (showString "continue")])
+    SBreak _ -> prPrec i 0 (concatD [doc (showString "break")])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
@@ -183,6 +185,7 @@ instance Print (Type a) where
   prt i e = case e of
     TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
+    TLabel _ -> prPrec i 4 (concatD [doc (showString "Label")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])

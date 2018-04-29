@@ -1,0 +1,13 @@
+
+i = 0
+while i < 8 do
+    i += 1
+    if i % 2 > 0 do
+        continue
+    print 2
+    if i % 3 > 0 do
+        continue
+    else do
+        print 3
+        continue
+    print false

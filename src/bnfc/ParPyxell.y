@@ -66,27 +66,30 @@ import ErrM
   'Bool' { PT _ (TS _ 24) }
   'Char' { PT _ (TS _ 25) }
   'Int' { PT _ (TS _ 26) }
-  'Object' { PT _ (TS _ 27) }
-  'String' { PT _ (TS _ 28) }
-  'Void' { PT _ (TS _ 29) }
-  '[' { PT _ (TS _ 30) }
-  ']' { PT _ (TS _ 31) }
-  'and' { PT _ (TS _ 32) }
-  'do' { PT _ (TS _ 33) }
-  'elif' { PT _ (TS _ 34) }
-  'else' { PT _ (TS _ 35) }
-  'false' { PT _ (TS _ 36) }
-  'for' { PT _ (TS _ 37) }
-  'if' { PT _ (TS _ 38) }
-  'in' { PT _ (TS _ 39) }
-  'not' { PT _ (TS _ 40) }
-  'or' { PT _ (TS _ 41) }
-  'print' { PT _ (TS _ 42) }
-  'skip' { PT _ (TS _ 43) }
-  'true' { PT _ (TS _ 44) }
-  'while' { PT _ (TS _ 45) }
-  '{' { PT _ (TS _ 46) }
-  '}' { PT _ (TS _ 47) }
+  'Label' { PT _ (TS _ 27) }
+  'Object' { PT _ (TS _ 28) }
+  'String' { PT _ (TS _ 29) }
+  'Void' { PT _ (TS _ 30) }
+  '[' { PT _ (TS _ 31) }
+  ']' { PT _ (TS _ 32) }
+  'and' { PT _ (TS _ 33) }
+  'break' { PT _ (TS _ 34) }
+  'continue' { PT _ (TS _ 35) }
+  'do' { PT _ (TS _ 36) }
+  'elif' { PT _ (TS _ 37) }
+  'else' { PT _ (TS _ 38) }
+  'false' { PT _ (TS _ 39) }
+  'for' { PT _ (TS _ 40) }
+  'if' { PT _ (TS _ 41) }
+  'in' { PT _ (TS _ 42) }
+  'not' { PT _ (TS _ 43) }
+  'or' { PT _ (TS _ 44) }
+  'print' { PT _ (TS _ 45) }
+  'skip' { PT _ (TS _ 46) }
+  'true' { PT _ (TS _ 47) }
+  'while' { PT _ (TS _ 48) }
+  '{' { PT _ (TS _ 49) }
+  '}' { PT _ (TS _ 50) }
 
   L_integ {PT _ (TI _)}
   L_charac {PT _ (TC _)}
@@ -185,6 +188,12 @@ Stmt :: {
 }
 | 'for' Expr 'in' Expr 'do' Block {
   (Just (tokenLineCol $1), AbsPyxell.SFor (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
+}
+| 'continue' {
+  (Just (tokenLineCol $1), AbsPyxell.SContinue (Just (tokenLineCol $1)))
+}
+| 'break' {
+  (Just (tokenLineCol $1), AbsPyxell.SBreak (Just (tokenLineCol $1)))
 }
 
 ListExpr :: {
