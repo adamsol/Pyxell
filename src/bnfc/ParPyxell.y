@@ -260,11 +260,14 @@ Expr9 :: {
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
 }
+| Expr9 '.' Integer {
+  (fst $1, AbsPyxell.EElem (fst $1)(snd $1)(snd $3)) 
+}
 | Expr9 '[' Expr ']' {
   (fst $1, AbsPyxell.EIndex (fst $1)(snd $1)(snd $3)) 
 }
-| Expr9 '.' Integer {
-  (fst $1, AbsPyxell.EElem (fst $1)(snd $1)(snd $3)) 
+| Expr9 '.' Ident {
+  (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)

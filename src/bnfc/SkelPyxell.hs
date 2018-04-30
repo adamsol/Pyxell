@@ -61,8 +61,9 @@ transExpr x = case x of
   EString _ string -> failure x
   EArray _ exprs -> failure x
   EVar _ ident -> failure x
-  EIndex _ expr1 expr2 -> failure x
   EElem _ expr integer -> failure x
+  EIndex _ expr1 expr2 -> failure x
+  EAttr _ expr ident -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
   EMod _ expr1 expr2 -> failure x
@@ -78,9 +79,10 @@ transExpr x = case x of
   ETuple _ exprs -> failure x
 transType :: Show a => Type a -> Result
 transType x = case x of
+  TPtr _ type_ -> failure x
   TDeref _ type_ -> failure x
-  TVoid _ -> failure x
   TLabel _ -> failure x
+  TVoid _ -> failure x
   TInt _ -> failure x
   TBool _ -> failure x
   TChar _ -> failure x

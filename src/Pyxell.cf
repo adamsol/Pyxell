@@ -57,8 +57,9 @@ EArray.            Expr9  ::= "[" [Expr2] "]" ;
 separator          Expr2      "," ;
 
 EVar.              Expr9  ::= Ident ;
-EIndex.            Expr9  ::= Expr9 "[" Expr "]" ;
 EElem.             Expr9  ::= Expr9 "." Integer ;
+EIndex.            Expr9  ::= Expr9 "[" Expr "]" ;
+EAttr.             Expr9  ::= Expr9 "." Ident ;
 
 --ECall.             Expr8  ::= Expr8 "(" [Expr8] ")";
 --separator          Expr8      "," ;
@@ -95,6 +96,7 @@ coercions          Expr       9 ;
 
 -- types --
 
+internal TPtr.     Type4  ::= Type4 ;
 internal TDeref.   Type4  ::= Type4 ;
 internal TLabel.   Type4  ::= "Label" ;
 internal TVoid.    Type4  ::= "Void" ;

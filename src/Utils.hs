@@ -44,6 +44,7 @@ unifyTypes t1 t2 = do
         otherwise -> Nothing
 
 -- | Helper functions for initializing types without a position.
+tPtr = TPtr Nothing
 tDeref = TDeref Nothing
 tLabel = TLabel Nothing
 tVoid = TVoid Nothing

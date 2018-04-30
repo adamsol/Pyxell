@@ -158,8 +158,9 @@ instance Print (Expr a) where
     EString _ str -> prPrec i 9 (concatD [prt 0 str])
     EArray _ exprs -> prPrec i 9 (concatD [doc (showString "["), prt 2 exprs, doc (showString "]")])
     EVar _ id -> prPrec i 9 (concatD [prt 0 id])
-    EIndex _ expr1 expr2 -> prPrec i 9 (concatD [prt 9 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
     EElem _ expr n -> prPrec i 9 (concatD [prt 9 expr, doc (showString "."), prt 0 n])
+    EIndex _ expr1 expr2 -> prPrec i 9 (concatD [prt 9 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
+    EAttr _ expr id -> prPrec i 9 (concatD [prt 9 expr, doc (showString "."), prt 0 id])
     EMul _ expr1 expr2 -> prPrec i 8 (concatD [prt 8 expr1, doc (showString "*"), prt 9 expr2])
     EDiv _ expr1 expr2 -> prPrec i 8 (concatD [prt 8 expr1, doc (showString "/"), prt 9 expr2])
     EMod _ expr1 expr2 -> prPrec i 8 (concatD [prt 8 expr1, doc (showString "%"), prt 9 expr2])
@@ -183,9 +184,10 @@ instance Print (Expr a) where
 
 instance Print (Type a) where
   prt i e = case e of
+    TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
-    TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TLabel _ -> prPrec i 4 (concatD [doc (showString "Label")])
+    TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])

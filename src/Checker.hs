@@ -38,6 +38,8 @@ data StaticError = NotComparable Type Type
                  | CannotUnpack Type Int
                  | NotIndexable Type
                  | NotIterable Type
+                 | NotClass Type
+                 | InvalidAttr Type Ident
 
 -- | Show instance for displaying compilation errors.
 instance Show StaticError where
@@ -56,6 +58,8 @@ instance Show StaticError where
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
         NotIndexable typ -> "Type `" ++ show typ ++ "` is not indexable."
         NotIterable typ -> "Type `" ++ show typ ++ "` is not iterable."
+        NotClass typ -> "Type `" ++ show typ ++ "` is not a class."
+        InvalidAttr typ (Ident a) -> "Type `" ++ show typ ++ "` has no attribute `" ++ a ++  "`."
 
 
 -- | Does nothing.
@@ -216,6 +220,14 @@ checkExpr expr =
                     Just t' -> return $ tArray t'
                     Nothing -> throw pos $ UnknownType
         EVar pos id -> checkIdent pos id
+        EElem pos e n -> do
+            t <- checkExpr e
+            let i = fromInteger n
+            case t of
+                TTuple _ ts -> do
+                    if i < length ts then return $ ts !! i
+                    else throw pos $ InvalidTupleElem t (i+1)
+                otherwise -> throw pos $ NotTuple t
         EIndex pos e1 e2 -> do
             t1 <- checkExpr e1
             t2 <- checkExpr e2
@@ -225,14 +237,14 @@ checkExpr expr =
                     TArray _ t1' -> return $ t1'
                     otherwise -> throw pos $ NotIndexable t1
                 otherwise -> throw pos $ IllegalAssignment t2 tInt
-        EElem pos e n -> do
+        EAttr pos e id -> do
             t <- checkExpr e
-            let i = fromInteger n
             case t of
-                TTuple _ ts -> do
-                    if i < length ts then return $ ts !! i
-                    else throw pos $ InvalidTupleElem t (i+1)
-                otherwise -> throw pos $ NotTuple t
+                TArray _ t' -> do
+                    case id of
+                        Ident "length" -> return $ tInt
+                        otherwise -> throw pos $ InvalidAttr t id
+                otherwise -> throw pos $ NotClass t
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
         EMod pos e1 e2 -> checkBinary pos "%" e1 e2

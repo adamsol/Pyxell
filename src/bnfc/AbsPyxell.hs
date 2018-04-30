@@ -93,8 +93,9 @@ data Expr a
     | EString a String
     | EArray a [Expr a]
     | EVar a Ident
-    | EIndex a (Expr a) (Expr a)
     | EElem a (Expr a) Integer
+    | EIndex a (Expr a) (Expr a)
+    | EAttr a (Expr a) Ident
     | EMul a (Expr a) (Expr a)
     | EDiv a (Expr a) (Expr a)
     | EMod a (Expr a) (Expr a)
@@ -119,8 +120,9 @@ instance Functor Expr where
         EString a string -> EString (f a) string
         EArray a exprs -> EArray (f a) (map (fmap f) exprs)
         EVar a ident -> EVar (f a) ident
-        EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EElem a expr integer -> EElem (f a) (fmap f expr) integer
+        EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
+        EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
         EDiv a expr1 expr2 -> EDiv (f a) (fmap f expr1) (fmap f expr2)
         EMod a expr1 expr2 -> EMod (f a) (fmap f expr1) (fmap f expr2)
@@ -135,9 +137,10 @@ instance Functor Expr where
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
 data Type a
-    = TDeref a (Type a)
-    | TVoid a
+    = TPtr a (Type a)
+    | TDeref a (Type a)
     | TLabel a
+    | TVoid a
     | TInt a
     | TBool a
     | TChar a
@@ -149,9 +152,10 @@ data Type a
 
 instance Functor Type where
     fmap f x = case x of
+        TPtr a type_ -> TPtr (f a) (fmap f type_)
         TDeref a type_ -> TDeref (f a) (fmap f type_)
-        TVoid a -> TVoid (f a)
         TLabel a -> TLabel (f a)
+        TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
         TBool a -> TBool (f a)
         TChar a -> TChar (f a)

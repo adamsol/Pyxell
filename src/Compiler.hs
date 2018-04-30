@@ -53,6 +53,7 @@ getIdent ident = case ident of
 -- | LLVM string representation for a given type.
 strType :: Type -> String
 strType typ = case typ of
+    TPtr _ t -> strType t ++ "*"
     TDeref _ t -> init (strType t)
     TVoid _ -> "void"
     TInt _ -> "i64"
@@ -60,7 +61,7 @@ strType typ = case typ of
     TChar _ -> "i8"
     TObject _ -> "i8*"
     TString _ -> "i8*"
-    TArray _ t -> strType t ++ "*"
+    TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
 
 -- | Returns an unused index for temporary names.
@@ -147,8 +148,8 @@ gep typ val inds1 inds2 = do
     return $ p
 
 -- | Outputs LLVM 'bitcast' command.
-bitcast :: Type -> String -> Type -> Run String
-bitcast typ1 ptr typ2 = do
+bitcast :: Type -> Type -> String -> Run String
+bitcast typ1 typ2 ptr = do
     p <- nextTemp
     write $ indent [ p ++ " = bitcast " ++ strType typ1 ++ " " ++ ptr ++ " to " ++ strType typ2 ]
     return $ p
@@ -209,13 +210,19 @@ initString s = do
 -- | Outputs LLVM code for array initialization.
 initArray :: Type -> [String] -> Run Result
 initArray typ vals = do
-    let t = tArray typ
+    let t1 = tArray typ
+    let t2 = tPtr typ
     let n = length vals
-    v1 <- gep t "null" [show (length vals)] [] >>= ptrtoint t
-    p1 <- call tString "@malloc" [(tInt, v1)]
-    p2 <- bitcast tString p1 t
-    forM (zip [0..] vals) (\(i, v) -> gep t p2 [show i] [] >>= store typ v)
-    return $ (t, p2)
+    v1 <- gep t1 "null" ["1"] [] >>= ptrtoint t1
+    p1 <- call tString "@malloc" [(tInt, v1)] >>= bitcast tString t1
+    v2 <- gep t2 "null" [show n] [] >>= ptrtoint t2
+    p2 <- call tString "@malloc" [(tInt, v2)] >>= bitcast tString t2
+    p3 <- gep t1 p1 ["0"] [0]
+    store t2 p2 p3
+    p4 <- gep t1 p1 ["0"] [1]
+    store tInt (show n) p4
+    forM (zip [0..] vals) (\(i, v) -> gep t2 p2 [show i] [] >>= store typ v)
+    return $ (t1, p1)
 
 
 -- | Outputs LLVM code for all statements in the program.
@@ -395,7 +402,6 @@ compileExpr expr =
                 [] -> initArray tObject []
                 r:_ -> initArray (fst r) (map snd rs)
         EVar _ _ -> compileRval expr
-        EIndex _ _ _ -> compileRval expr
         EElem _ e n -> do
             (t, p) <- compileExpr e
             let i = fromInteger n
@@ -403,6 +409,8 @@ compileExpr expr =
                 TTuple _ ts -> do
                     v <- gep t p ["0"] [i] >>= load (ts !! i)
                     return $ (ts !! i, v)
+        EIndex _ _ _ -> compileRval expr
+        EAttr _ _ _ -> compileRval expr
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
         EMod _ e1 e2 -> do
@@ -553,7 +561,18 @@ compileLval expr = case expr of
     EIndex _ e1 e2 -> do
         (t1, v1) <- compileExpr e1
         (t2, v2) <- compileExpr e2
-        v3 <- gep t1 v1 [v2] []
         case t1 of
-            TString _ -> return $ Just (tChar, v3)
-            TArray _ t1' -> return $ Just (t1', v3)
+            TString _ -> do
+                v3 <- gep t1 v1 [v2] []
+                return $ Just (tChar, v3)
+            TArray _ t1' -> do
+                p1 <- gep t1 v1 ["0"] [0]
+                v3 <- load (tPtr t1') p1
+                v4 <- gep (tPtr t1') v3 [v2] []
+                return $ Just (t1', v4)
+    EAttr _ e1 id -> do
+        (t, v) <- compileExpr e1
+        case t of
+            TArray _ t' -> do
+                p <- gep t v ["0"] [1]
+                return $ Just (tInt, p)
