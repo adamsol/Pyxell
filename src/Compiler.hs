@@ -331,6 +331,30 @@ compileStmt stmt cont = case stmt of
                 goto l1
                 label l3
                 cont
+        otherwise -> do
+            (t, v) <- compileExpr expr2
+            case t of
+                TArray _ t' -> do
+                    v2 <- gep t v ["0"] [1] >>= load tInt
+                    p <- nextTemp
+                    alloca tInt p
+                    store tInt "0" p
+                    [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
+                    goto l1 >> label l1
+                    v3 <- load tInt p
+                    v4 <- binop "icmp slt" tInt v3 v2
+                    branch v4 l2 l3
+                    label l2
+                    v5 <- gep t v ["0"] [0] >>= load (tPtr t')
+                    v6 <- gep (tPtr t') v5 [v3] [] >>= load t'
+                    compileAssg t' expr1 v6 $ do
+                        local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
+                        goto l4 >> label l4
+                        v7 <- binop "add" tInt v3 "1"
+                        store tInt v7 p
+                        goto l1
+                        label l3
+                        cont
     SBreak _ -> do
         (_, l) <- asks (M.! "#break")
         goto l
@@ -566,8 +590,7 @@ compileLval expr = case expr of
                 v3 <- gep t1 v1 [v2] []
                 return $ Just (tChar, v3)
             TArray _ t1' -> do
-                p1 <- gep t1 v1 ["0"] [0]
-                v3 <- load (tPtr t1') p1
+                v3 <- gep t1 v1 ["0"] [0] >>= load (tPtr t1')
                 v4 <- gep (tPtr t1') v3 [v2] []
                 return $ Just (t1', v4)
     EAttr _ e1 id -> do

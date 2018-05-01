@@ -157,7 +157,10 @@ checkStmt stmt cont = case stmt of
                 otherwise -> throw pos $ IllegalAssignment (ts !! 0) tInt
         otherwise -> do
             t <- checkExpr expr2
-            throw pos $ NotIterable t
+            case t of
+                TArray _ t' -> do
+                    local (M.insert "#loop" tLabel) $ checkAssg pos expr1 t' (checkBlock block >> cont)
+                otherwise -> throw pos $ NotIterable t
     SBreak pos -> do
         r <- asks (M.lookup "#loop")
         case r of

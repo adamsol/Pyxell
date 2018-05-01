@@ -1,0 +1,7 @@
+
+for n in [0, 1, 2, 3, 4] do
+    if n >= 3 do
+        break
+    elif n == 2 do
+        continue
+    print n
