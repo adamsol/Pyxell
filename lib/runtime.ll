@@ -7,10 +7,6 @@
 declare i32 @printf(i8*, ...)
 declare i32 @putchar(i8)
 
-declare i8* @malloc(i64)
-declare i64 @strlen(i8*)
-declare i8* @strncpy(i8*, i8*, i64)
-
 
 define void @printInt(i64 %x) {
     %d = getelementptr [5 x i8], [5 x i8]* @d, i32 0, i32 0
@@ -45,17 +41,4 @@ define void @printSpace() {
 define void @printLn() {
     call i32 @putchar(i8 10)
     ret void
-}
-
-
-define i8* @concatStrings(i8*, i8*) {
-    %3 = call i64 @strlen(i8* %0)
-    %4 = call i64 @strlen(i8* %1)
-    %5 = add i64 %4, 1
-    %6 = add i64 %5, %3
-    %7 = call i8* @malloc(i64 %6)
-    %8 = call i8* @strncpy(i8* %7, i8* %0, i64 %3)
-    %9 = getelementptr inbounds i8, i8* %7, i64 %3
-    %10 = call i8* @strncpy(i8* %9, i8* %1, i64 %5)
-    ret i8* %7
 }

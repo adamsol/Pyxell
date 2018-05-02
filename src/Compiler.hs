@@ -60,7 +60,7 @@ strType typ = case typ of
     TBool _ -> "i1"
     TChar _ -> "i8"
     TObject _ -> "i8*"
-    TString _ -> "i8*"
+    TString _ -> strType (tArray tChar)
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
 
@@ -114,16 +114,6 @@ alloca typ ptr = do
 store :: Type -> String -> String -> Run ()
 store typ val ptr = do
     write $ indent [ "store " ++ strType typ ++ " " ++ val ++ ", " ++ strType typ ++ "* " ++ ptr ]
-
--- | Outputs LLVM 'store' command for an array of values.
-storeArray :: Type -> [String] -> String -> Run ()
-storeArray typ vals ptr = do
-    let n = length vals
-    let d = "[" ++ show n ++ " x " ++ strType typ ++ "]"
-    p <- nextTemp
-    write $ indent [
-        p ++ " = bitcast " ++ strType typ ++ "* " ++ ptr ++ " to " ++ d ++ "*",
-        "store " ++ d ++ " [" ++ intercalate ", " (map ((strType typ ++ " ") ++) vals) ++ "], " ++ d ++ "* " ++ p ]
 
 -- | Outputs LLVM 'load' command.
 load :: Type -> String -> Run String
@@ -202,25 +192,25 @@ callVoid name args = do
 -- | Outputs LLVM code for string initialization.
 initString :: String -> Run Result
 initString s = do
-    let n = length s + 1
-    p <- call tString "@malloc" [(tInt, show n)]
-    storeArray (tDeref tString) (map (show . ord) (s ++ "\0")) p
+    (_, p) <- initArray tChar (map (show . ord) (s ++ "\0")) [show (length s)]
     return $ (tString, p)
 
 -- | Outputs LLVM code for array initialization.
-initArray :: Type -> [String] -> Run Result
-initArray typ vals = do
+-- |   'lens' is an array of two optional values:
+-- |   - length which will be saved in the .length attribute,
+-- |   - size of allocated memory.
+-- |   Any omitted value will default to the length of 'vals'.
+initArray :: Type -> [String] -> [String] -> Run Result
+initArray typ vals lens = do
     let t1 = tArray typ
     let t2 = tPtr typ
-    let n = length vals
+    let len1:len2:_ = lens ++ replicate 2 (show (length vals))
     v1 <- gep t1 "null" ["1"] [] >>= ptrtoint t1
-    p1 <- call tString "@malloc" [(tInt, v1)] >>= bitcast tString t1
-    v2 <- gep t2 "null" [show n] [] >>= ptrtoint t2
-    p2 <- call tString "@malloc" [(tInt, v2)] >>= bitcast tString t2
-    p3 <- gep t1 p1 ["0"] [0]
-    store t2 p2 p3
-    p4 <- gep t1 p1 ["0"] [1]
-    store tInt (show n) p4
+    p1 <- call (tPtr tChar) "@malloc" [(tInt, v1)] >>= bitcast (tPtr tChar) t1
+    v2 <- gep t2 "null" [len2] [] >>= ptrtoint t2
+    p2 <- call (tPtr tChar) "@malloc" [(tInt, v2)] >>= bitcast (tPtr tChar) t2
+    gep t1 p1 ["0"] [0] >>= store t2 p2
+    gep t1 p1 ["0"] [1] >>= store tInt len1
     forM (zip [0..] vals) (\(i, v) -> gep t2 p2 [show i] [] >>= store typ v)
     return $ (t1, p1)
 
@@ -230,7 +220,7 @@ compileProgram :: Program Pos -> Run ()
 compileProgram prog = case prog of
     Program _ stmts -> do
         write $ [ "",
-            "declare i8* @malloc(i64)", "declare i64 @strcmp(i8*, i8*)",
+            "declare i8* @malloc(i64)", "declare i64 @strcmp(i8*, i8*)", "declare i8* @strcpy(i8*, i8*)",
             "declare void @printInt(i64)", "declare void @printBool(i1)",
             "declare void @printChar(i8)", "declare void @printString(i8*)",
             "declare void @printSpace()", "declare void @printLn()",
@@ -333,28 +323,29 @@ compileStmt stmt cont = case stmt of
                 cont
         otherwise -> do
             (t, v) <- compileExpr expr2
-            case t of
-                TArray _ t' -> do
-                    v2 <- gep t v ["0"] [1] >>= load tInt
-                    p <- nextTemp
-                    alloca tInt p
-                    store tInt "0" p
-                    [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
-                    goto l1 >> label l1
-                    v3 <- load tInt p
-                    v4 <- binop "icmp slt" tInt v3 v2
-                    branch v4 l2 l3
-                    label l2
-                    v5 <- gep t v ["0"] [0] >>= load (tPtr t')
-                    v6 <- gep (tPtr t') v5 [v3] [] >>= load t'
-                    compileAssg t' expr1 v6 $ do
-                        local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
-                        goto l4 >> label l4
-                        v7 <- binop "add" tInt v3 "1"
-                        store tInt v7 p
-                        goto l1
-                        label l3
-                        cont
+            t' <- case t of
+                TString _ -> return $ tChar
+                TArray _ t' -> return $ t'
+            v2 <- gep t v ["0"] [0] >>= load (tPtr t')
+            v3 <- gep t v ["0"] [1] >>= load tInt
+            p <- nextTemp
+            alloca tInt p
+            store tInt "0" p
+            [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
+            goto l1 >> label l1
+            v4 <- load tInt p
+            v5 <- binop "icmp slt" tInt v4 v3
+            branch v5 l2 l3
+            label l2
+            v6 <- gep (tPtr t') v2 [v4] [] >>= load t'
+            compileAssg t' expr1 v6 $ do
+                local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
+                goto l4 >> label l4
+                v7 <- binop "add" tInt v4 "1"
+                store tInt v7 p
+                goto l1
+                label l3
+                cont
     SBreak _ -> do
         (_, l) <- asks (M.! "#break")
         goto l
@@ -371,7 +362,8 @@ compileStmt stmt cont = case stmt of
                 TChar _ -> do
                     callVoid "@printChar" [(tChar, v)]
                 TString _ -> do
-                    callVoid "@printString" [(tString, v)]
+                    v2 <- gep (tArray tChar) v ["0"] [0] >>= load (tPtr tChar)
+                    callVoid "@printString" [(tPtr tChar, v2)]
                 TTuple _ ts -> do
                     forM_ (zip [0..] ts) $ \(i, t') -> do
                         case i of
@@ -423,8 +415,8 @@ compileExpr expr =
         EArray _ es -> do
             rs <- mapM compileExpr es
             case rs of
-                [] -> initArray tObject []
-                r:_ -> initArray (fst r) (map snd rs)
+                [] -> initArray tObject [] []
+                r:_ -> initArray (fst r) (map snd rs) []
         EVar _ _ -> compileRval expr
         EElem _ e n -> do
             (t, p) <- compileExpr e
@@ -490,14 +482,29 @@ compileExpr expr =
             (t, v1) <- compileExpr e1
             (t, v2) <- compileExpr e2
             v <- case t of
-                TString _ -> call t "@concatStrings" [(t, v1), (t, v2)]
+                TString _ -> do
+                    p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
+                    p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
+                    v3 <- gep tString v1 ["0"] [1] >>= load (tInt)
+                    v4 <- gep tString v2 ["0"] [1] >>= load (tInt)
+                    v5 <- binop "add" tInt v3 v4
+                    v6 <- binop "add" tInt v5 "1"
+                    (_, p3) <- initArray tChar [] [v5, v6]
+                    p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
+                    call (tPtr tChar) "@strcpy" [(tPtr tChar, p4), (tPtr tChar, p1)]
+                    p5 <- gep (tPtr tChar) p4 [v3] []
+                    call (tPtr tChar) "@strcpy" [(tPtr tChar, p5), (tPtr tChar, p2)]
+                    gep (tPtr tChar) p4 [v5] [] >>= store tChar "0"
+                    return p3
                 otherwise -> binop op t v1 v2
             return $ (t, v)
         compileCmp op t v1 v2 = do
             (t, v1, v2) <- case t of
                 TString _ -> do
-                    v <- call tInt "@strcmp" [(t, v1), (t, v2)]
-                    return $ (tInt, v, "0")
+                    p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
+                    p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
+                    v3 <- call tInt "@strcmp" [(tPtr tChar, p1), (tPtr tChar, p2)]
+                    return $ (tInt, v3, "0")
                 otherwise -> return $ (t, v1, v2)
             case (op, t) of
                 (_, TTuple _ ts) -> do
@@ -586,16 +593,18 @@ compileLval expr = case expr of
         (t1, v1) <- compileExpr e1
         (t2, v2) <- compileExpr e2
         case t1 of
-            TString _ -> do
-                v3 <- gep t1 v1 [v2] []
-                return $ Just (tChar, v3)
-            TArray _ t1' -> do
-                v3 <- gep t1 v1 ["0"] [0] >>= load (tPtr t1')
-                v4 <- gep (tPtr t1') v3 [v2] []
-                return $ Just (t1', v4)
+            TString _ -> getIndex tChar v1 v2
+            TArray _ t1' -> getIndex t1' v1 v2
     EAttr _ e1 id -> do
         (t, v) <- compileExpr e1
         case t of
-            TArray _ t' -> do
-                p <- gep t v ["0"] [1]
-                return $ Just (tInt, p)
+            TString _ -> getAttr (tArray tChar) v tInt 1
+            TArray _ _ -> getAttr t v tInt 1
+    where
+        getIndex t v1 v2 = do
+            v3 <- gep (tArray t) v1 ["0"] [0] >>= load (tPtr t)
+            v4 <- gep (tPtr t) v3 [v2] []
+            return $ Just (t, v4)
+        getAttr t1 v t2 i = do
+            p <- gep t1 v ["0"] [i]
+            return $ Just (t2, p)

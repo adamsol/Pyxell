@@ -158,6 +158,8 @@ checkStmt stmt cont = case stmt of
         otherwise -> do
             t <- checkExpr expr2
             case t of
+                TString _ -> do
+                    local (M.insert "#loop" tLabel) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
                 TArray _ t' -> do
                     local (M.insert "#loop" tLabel) $ checkAssg pos expr1 t' (checkBlock block >> cont)
                 otherwise -> throw pos $ NotIterable t
@@ -243,10 +245,12 @@ checkExpr expr =
         EAttr pos e id -> do
             t <- checkExpr e
             case t of
-                TArray _ t' -> do
-                    case id of
-                        Ident "length" -> return $ tInt
-                        otherwise -> throw pos $ InvalidAttr t id
+                TString _ -> case id of
+                    Ident "length" -> return $ tInt
+                    otherwise -> throw pos $ InvalidAttr t id
+                TArray _ _ -> case id of
+                    Ident "length" -> return $ tInt
+                    otherwise -> throw pos $ InvalidAttr t id
                 otherwise -> throw pos $ NotClass t
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
