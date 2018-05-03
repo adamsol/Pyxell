@@ -113,7 +113,7 @@ checkStmt stmt cont = case stmt of
             checkExpr e
             cont
         e1:e2:[] -> do
-            t <- checkExpr e2
+            (t, _) <- checkExpr e2
             case (e1, t) of
                 (ETuple _ es, TTuple _ ts) -> do
                     if length es == length ts then do
@@ -148,15 +148,16 @@ checkStmt stmt cont = case stmt of
         ERange _ e1 e2 -> do
             checkStmt (SFor pos expr1 (ERangeStep _pos e1 e2 (EInt _pos 1)) block) cont
         ERangeStep _ e1 e2 e3 -> do
-            ts <- mapM checkExpr [e1, e2, e3]
-            case ts of
+            rs <- mapM checkExpr [e1, e2, e3]
+            let (ts, _) = unzip rs
+            case map fst rs of
                 [TInt _, TInt _, TInt _] -> do
                     local (M.insert "#loop" tLabel) $ checkAssg pos expr1 tInt (checkBlock block >> cont)
                 [TInt _, TInt _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
                 [TInt _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tInt
                 otherwise -> throw pos $ IllegalAssignment (ts !! 0) tInt
         otherwise -> do
-            t <- checkExpr expr2
+            (t, _) <- checkExpr expr2
             case t of
                 TString _ -> do
                     local (M.insert "#loop" tLabel) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
@@ -186,10 +187,18 @@ checkStmt stmt cont = case stmt of
                         cont
                     Nothing -> do
                         declare typ id cont
-            EIndex _ e1 e2 -> do
-                t <- checkExpr expr
-                checkCast pos typ t
-                cont
+            EIndex _ _ _ -> do
+                (t, m) <- checkExpr expr
+                if m then do
+                    checkCast pos typ t
+                    cont
+                else throw pos $ NotLvalue
+            EAttr _ _ _ -> do
+                (t, m) <- checkExpr expr
+                if m then do
+                    checkCast pos typ t
+                    cont
+                else throw pos $ NotLvalue
             otherwise -> throw pos $ NotLvalue
         checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
             Just t -> skip
@@ -201,55 +210,56 @@ checkStmt stmt cont = case stmt of
                     checkCond pos expr block
                     checkBranches bs
         checkCond pos expr block = do
-            t <- checkExpr expr
+            (t, _) <- checkExpr expr
             case t of
                 TBool _ -> return $ ()
                 otherwise -> throw pos $ IllegalAssignment t tBool
             checkBlock block
 
 
--- | Checks an expression and returns its type.
-checkExpr :: Expr Pos -> Run Type
+-- | Checks an expression and returns its type and whether it is mutable.
+checkExpr :: Expr Pos -> Run (Type, Bool)
 checkExpr expr =
     case expr of
-        EInt pos _ -> return $ tInt
-        ETrue pos -> return $ tBool
-        EFalse pos -> return $ tBool
-        EChar pos _ -> return $ tChar
-        EString pos _ -> return $ tString
+        EInt pos _ -> return $ (tInt, False)
+        ETrue pos -> return $ (tBool, False)
+        EFalse pos -> return $ (tBool, False)
+        EChar pos _ -> return $ (tChar, False)
+        EString pos _ -> return $ (tString, False)
         EArray pos es -> do
-            ts <- mapM checkExpr es
+            rs <- mapM checkExpr es
+            let (ts, _) = unzip rs
             case ts of
-                [] -> return $ tArray tObject
+                [] -> return $ (tArray tObject, False)
                 t:ts -> case foldM unifyTypes t ts of
-                    Just t' -> return $ tArray t'
+                    Just t' -> return $ (tArray t', False)
                     Nothing -> throw pos $ UnknownType
         EVar pos id -> checkIdent pos id
         EElem pos e n -> do
-            t <- checkExpr e
+            (t, m) <- checkExpr e
             let i = fromInteger n
             case t of
                 TTuple _ ts -> do
-                    if i < length ts then return $ ts !! i
+                    if i < length ts then return $ (ts !! i, m)
                     else throw pos $ InvalidTupleElem t (i+1)
                 otherwise -> throw pos $ NotTuple t
         EIndex pos e1 e2 -> do
-            t1 <- checkExpr e1
-            t2 <- checkExpr e2
+            (t1, m1) <- checkExpr e1
+            (t2, m2) <- checkExpr e2
             case t2 of
                 TInt _ -> case t1 of
-                    TString _ -> return $ tChar
-                    TArray _ t1' -> return $ t1'
+                    TString _ -> return $ (tChar, False)
+                    TArray _ t1' -> return $ (t1', True)
                     otherwise -> throw pos $ NotIndexable t1
                 otherwise -> throw pos $ IllegalAssignment t2 tInt
         EAttr pos e id -> do
-            t <- checkExpr e
+            (t, m) <- checkExpr e
             case t of
                 TString _ -> case id of
-                    Ident "length" -> return $ tInt
+                    Ident "length" -> return $ (tInt, False)
                     otherwise -> throw pos $ InvalidAttr t id
                 TArray _ _ -> case id of
-                    Ident "length" -> return $ tInt
+                    Ident "length" -> return $ (tInt, False)
                     otherwise -> throw pos $ InvalidAttr t id
                 otherwise -> throw pos $ NotClass t
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
@@ -262,8 +272,8 @@ checkExpr expr =
         ERangeStep pos _ _ _ -> throw pos $ UnknownType
         ECmp pos cmp -> case cmp of
             Cmp1 pos e1 op e2 -> do
-                t1 <- checkExpr e1
-                t2 <- checkExpr e2
+                (t1, _) <- checkExpr e1
+                (t2, _) <- checkExpr e2
                 checkCmp pos op t1 t2
             Cmp2 pos e1 op cmp -> do
                 e2 <- case cmp of
@@ -275,55 +285,56 @@ checkExpr expr =
         EAnd pos e1 e2 -> checkBinary pos "and" e1 e2
         EOr pos e1 e2 -> checkBinary pos "or" e1 e2
         ETuple pos es -> do
-            ts <- mapM checkExpr es
+            rs <- mapM checkExpr es
+            let (ts, ms) = unzip rs
             case ts of
-                t:[] -> return $ t
-                otherwise -> return $ tTuple ts
+                t:[] -> return $ (t, all (== True) ms)
+                otherwise -> return $ (tTuple ts, all (== True) ms)
     where
         checkIdent pos id = do
             r <- getIdent id
             case r of
-                Just t -> return $ t
+                Just t -> return $ (t, True)
                 Nothing -> throw pos $ UndeclaredIdentifier id
         checkBinary pos op e1 e2 = do
-            t1 <- checkExpr e1
-            t2 <- checkExpr e2
+            (t1, _) <- checkExpr e1
+            (t2, _) <- checkExpr e2
             case op of
                 "*" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ tInt
+                    (TInt _, TInt _) -> return $ (tInt, False)
                     otherwise -> throw pos $ NoBinaryOperator "*" t1 t2
                 "/" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ tInt
+                    (TInt _, TInt _) -> return $ (tInt, False)
                     otherwise -> throw pos $ NoBinaryOperator "/" t1 t2
                 "%" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ tInt
+                    (TInt _, TInt _) -> return $ (tInt, False)
                     otherwise -> throw pos $ NoBinaryOperator "%" t1 t2
                 "+" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ tInt
-                    (TString _, TString _) -> return $ tString
+                    (TInt _, TInt _) -> return $ (tInt, False)
+                    (TString _, TString _) -> return $ (tString, False)
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
                 "-" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ tInt
+                    (TInt _, TInt _) -> return $ (tInt, False)
                     otherwise -> throw pos $ NoBinaryOperator "-" t1 t2
                 "and" -> case (t1, t2) of
-                    (TBool _, TBool _) -> return $ tBool
+                    (TBool _, TBool _) -> return $ (tBool, False)
                     otherwise -> throw pos $ NoBinaryOperator "and" t1 t2
                 "or" -> case (t1, t2) of
-                    (TBool _, TBool _) -> return $ tBool
+                    (TBool _, TBool _) -> return $ (tBool, False)
                     otherwise -> throw pos $ NoBinaryOperator "or" t1 t2
         checkUnary pos op e = do
-            t <- checkExpr e
+            (t, _) <- checkExpr e
             case op of
                 "-" -> case t of
-                    TInt _ -> return $ tInt
+                    TInt _ -> return $ (tInt, False)
                     otherwise -> throw pos $ NoUnaryOperator "-" t
                 "not" -> case t of
-                    TBool _ -> return $ tBool
+                    TBool _ -> return $ (tBool, False)
                     otherwise -> throw pos $ NoUnaryOperator "not" t
         checkCmp pos op t1 t2 = do
             case unifyTypes t1 t2 of
                 Just t -> case t of
                     TObject _ -> throw pos $ NotComparable t1 t2
                     TArray _ _ -> throw pos $ NotComparable t1 t2
-                    otherwise -> return $ tBool
+                    otherwise -> return $ (tBool, False)
                 Nothing -> throw pos $ NotComparable t1 t2

@@ -1,3 +1,0 @@
-
-e = ""
-print "string".length + e.length
