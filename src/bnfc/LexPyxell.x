@@ -21,7 +21,7 @@ $i = [$l $d _ ']          -- identifier character
 $u = [\0-\255]          -- universal: any character
 
 @rsyms =    -- symbols and non-identifier-like reserved words
-   \; | \{ | \} | \= | \* \= | \/ \= | \% \= | \+ \= | \- \= | \[ | \] | \, | \. | \* | \/ | \% | \+ | \- | \. \. | \= \= | \< \> | \< | \< \= | \> | \> \= | \( | \)
+   \; | \{ | \} | \= | \* \= | \/ \= | \% \= | \+ \= | \- \= | \[ | \] | \, | \. | \* | \/ | \% | \+ | \- | \. \. | \. \. \. | \= \= | \< \> | \< | \< \= | \> | \> \= | \( | \)
 
 :-
 "#" [.]* ; -- Toss single line comments
@@ -101,7 +101,7 @@ eitherResIdent tv s = treeFind resWords
                               | s == a = t
 
 resWords :: BTree
-resWords = b "Int" 26 (b ".." 13 (b "+" 7 (b ")" 4 (b "%=" 2 (b "%" 1 N N) (b "(" 3 N N)) (b "*=" 6 (b "*" 5 N N) N)) (b "-" 10 (b "," 9 (b "+=" 8 N N) N) (b "." 12 (b "-=" 11 N N) N))) (b "=" 20 (b "<" 17 (b "/=" 15 (b "/" 14 N N) (b ";" 16 N N)) (b "<>" 19 (b "<=" 18 N N) N)) (b ">=" 23 (b ">" 22 (b "==" 21 N N) N) (b "Char" 25 (b "Bool" 24 N N) N)))) (b "false" 39 (b "and" 33 (b "Void" 30 (b "Object" 28 (b "Label" 27 N N) (b "String" 29 N N)) (b "]" 32 (b "[" 31 N N) N)) (b "do" 36 (b "continue" 35 (b "break" 34 N N) N) (b "else" 38 (b "elif" 37 N N) N))) (b "print" 45 (b "in" 42 (b "if" 41 (b "for" 40 N N) N) (b "or" 44 (b "not" 43 N N) N)) (b "while" 48 (b "true" 47 (b "skip" 46 N N) N) (b "}" 50 (b "{" 49 N N) N))))
+resWords = b "Char" 26 (b ".." 13 (b "+" 7 (b ")" 4 (b "%=" 2 (b "%" 1 N N) (b "(" 3 N N)) (b "*=" 6 (b "*" 5 N N) N)) (b "-" 10 (b "," 9 (b "+=" 8 N N) N) (b "." 12 (b "-=" 11 N N) N))) (b "<>" 20 (b ";" 17 (b "/" 15 (b "..." 14 N N) (b "/=" 16 N N)) (b "<=" 19 (b "<" 18 N N) N)) (b ">" 23 (b "==" 22 (b "=" 21 N N) N) (b "Bool" 25 (b ">=" 24 N N) N)))) (b "else" 39 (b "]" 33 (b "String" 30 (b "Label" 28 (b "Int" 27 N N) (b "Object" 29 N N)) (b "[" 32 (b "Void" 31 N N) N)) (b "continue" 36 (b "break" 35 (b "and" 34 N N) N) (b "elif" 38 (b "do" 37 N N) N))) (b "print" 46 (b "in" 43 (b "for" 41 (b "false" 40 N N) (b "if" 42 N N)) (b "or" 45 (b "not" 44 N N) N)) (b "while" 49 (b "true" 48 (b "skip" 47 N N) N) (b "}" 51 (b "{" 50 N N) N))))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

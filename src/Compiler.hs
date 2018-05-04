@@ -297,55 +297,36 @@ compileStmt stmt cont = case stmt of
         label l3
         cont
     SFor _ expr1 expr2 block -> case expr2 of
-        ERange _ e1 e2 -> do
-            compileStmt (SFor _pos expr1 (ERangeStep _pos e1 e2 (EInt _pos 1)) block) cont
-        ERangeStep _ e1 e2 e3 -> do
+        ERangeIncl _ e1 e2 -> do
+            compileStmt (SFor _pos expr1 (ERangeInclStep _pos e1 e2 (EInt _pos 1)) block) cont
+        ERangeExcl _ e1 e2 -> do
+            compileStmt (SFor _pos expr1 (ERangeExclStep _pos e1 e2 (EInt _pos 1)) block) cont
+        ERangeInclStep _ e1 e2 e3 -> do
             [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
             v4 <- binop "icmp sgt" t v3 "0"
-            p <- nextTemp
-            alloca t p
-            store t v1 p
-            [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
-            goto l1 >> label l1
-            v5 <- load t p
-            compileAssg t expr1 v5 $ do
-                v6 <- binop "icmp sle" t v5 v2
-                v7 <- binop "icmp sge" t v5 v2
-                v8 <- select v4 tBool v6 v7
-                branch v8 l2 l3
-                label l2
-                local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
-                goto l4 >> label l4
-                v9 <- binop "add" t v5 v3
-                store t v9 p
-                goto l1
-                label l3
-                cont
+            let cmp v = do
+                v5 <- binop "icmp sle" t v v2
+                v6 <- binop "icmp sge" t v v2
+                select v4 tBool v5 v6
+            compileFor t t expr1 v1 v2 v3 cmp return block cont
+        ERangeExclStep _ e1 e2 e3 -> do
+            [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
+            v4 <- binop "icmp sgt" t v3 "0"
+            let cmp v = do
+                v5 <- binop "icmp slt" t v v2
+                v6 <- binop "icmp sgt" t v v2
+                select v4 tBool v5 v6
+            compileFor t t expr1 v1 v2 v3 cmp return block cont
         otherwise -> do
-            (t, v) <- compileExpr expr2
+            (t, v1) <- compileExpr expr2
             t' <- case t of
                 TString _ -> return $ tChar
                 TArray _ t' -> return $ t'
-            v2 <- gep t v ["0"] [0] >>= load (tPtr t')
-            v3 <- gep t v ["0"] [1] >>= load tInt
-            p <- nextTemp
-            alloca tInt p
-            store tInt "0" p
-            [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
-            goto l1 >> label l1
-            v4 <- load tInt p
-            v5 <- binop "icmp slt" tInt v4 v3
-            branch v5 l2 l3
-            label l2
-            v6 <- gep (tPtr t') v2 [v4] [] >>= load t'
-            compileAssg t' expr1 v6 $ do
-                local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
-                goto l4 >> label l4
-                v7 <- binop "add" tInt v4 "1"
-                store tInt v7 p
-                goto l1
-                label l3
-                cont
+            v2 <- gep t v1 ["0"] [0] >>= load (tPtr t')
+            v3 <- gep t v1 ["0"] [1] >>= load tInt
+            let cmp v = binop "icmp slt" tInt v v3
+            let get v = gep (tPtr t') v2 [v] [] >>= load t'
+            compileFor tInt t' expr1 "0" v3 "1" cmp get block cont
     SBreak _ -> do
         (_, l) <- asks (M.! "#break")
         goto l
@@ -401,6 +382,25 @@ compileStmt stmt cont = case stmt of
                     goto exit
                     label l2
                     compileBranches bs exit
+        compileFor typ1 typ2 var start end step cmp get block cont = do
+            p <- nextTemp
+            alloca typ1 p
+            store typ1 start p
+            [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
+            goto l1 >> label l1
+            v1 <- load typ1 p
+            v2 <- cmp v1
+            branch v2 l2 l3
+            label l2
+            v3 <- get v1
+            compileAssg typ2 var v3 $ do
+                local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
+                goto l4 >> label l4
+                v4 <- binop "add" typ1 v1 step
+                store typ1 v4 p
+                goto l1
+                label l3
+                cont
 
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.

@@ -1,7 +1,7 @@
 
 r = 1
 m = 0
-for n in 1..1000000-1 do
+for n in 1...1000000 do
     i = n
     l = 0
     while i > 1 do

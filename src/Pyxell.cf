@@ -71,8 +71,10 @@ EAdd.              Expr7  ::= Expr7 "+" Expr8 ;
 ESub.              Expr7  ::= Expr7 "-" Expr8 ;
 ENeg.              Expr7  ::= "-" Expr8;
 
-ERange.            Expr6  ::= Expr7 ".." Expr7 ;
-ERangeStep.        Expr6  ::= Expr7 ".." Expr7 ".." Expr7 ;
+ERangeIncl.        Expr6  ::= Expr7 ".." Expr7 ;
+ERangeExcl.        Expr6  ::= Expr7 "..." Expr7 ;
+ERangeInclStep.    Expr6  ::= Expr7 ".." Expr7 ".." Expr7 ;
+ERangeExclStep.    Expr6  ::= Expr7 "..." Expr7 ".." Expr7 ;
 
 ECmp.              Expr5  ::= Cmp ;
 Cmp1.              Cmp    ::= Expr6 CmpOp Expr6 ;

@@ -70,8 +70,10 @@ transExpr x = case x of
   EAdd _ expr1 expr2 -> failure x
   ESub _ expr1 expr2 -> failure x
   ENeg _ expr -> failure x
-  ERange _ expr1 expr2 -> failure x
-  ERangeStep _ expr1 expr2 expr3 -> failure x
+  ERangeIncl _ expr1 expr2 -> failure x
+  ERangeExcl _ expr1 expr2 -> failure x
+  ERangeInclStep _ expr1 expr2 expr3 -> failure x
+  ERangeExclStep _ expr1 expr2 expr3 -> failure x
   ECmp _ cmp -> failure x
   ENot _ expr -> failure x
   EAnd _ expr1 expr2 -> failure x

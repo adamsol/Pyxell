@@ -145,9 +145,13 @@ checkStmt stmt cont = case stmt of
         local (M.insert "#loop" tLabel) $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> case expr2 of
-        ERange _ e1 e2 -> do
-            checkStmt (SFor pos expr1 (ERangeStep _pos e1 e2 (EInt _pos 1)) block) cont
-        ERangeStep _ e1 e2 e3 -> do
+        ERangeIncl _ e1 e2 -> do
+            checkStmt (SFor pos expr1 (ERangeInclStep _pos e1 e2 (EInt _pos 1)) block) cont
+        ERangeExcl _ e1 e2 -> do
+            checkStmt (SFor pos expr1 (ERangeExclStep _pos e1 e2 (EInt _pos 1)) block) cont
+        ERangeInclStep _ e1 e2 e3 -> do
+            checkStmt (SFor pos expr1 (ERangeExclStep _pos e1 e2 e3) block) cont
+        ERangeExclStep _ e1 e2 e3 -> do
             rs <- mapM checkExpr [e1, e2, e3]
             let (ts, _) = unzip rs
             case map fst rs of
@@ -268,8 +272,10 @@ checkExpr expr =
         EAdd pos e1 e2 -> checkBinary pos "+" e1 e2
         ESub pos e1 e2 -> checkBinary pos "-" e1 e2
         ENeg pos e -> checkUnary pos "-" e
-        ERange pos _ _ -> throw pos $ UnknownType
-        ERangeStep pos _ _ _ -> throw pos $ UnknownType
+        ERangeIncl pos _ _ -> throw pos $ UnknownType
+        ERangeExcl pos _ _ -> throw pos $ UnknownType
+        ERangeInclStep pos _ _ _ -> throw pos $ UnknownType
+        ERangeExclStep pos _ _ _ -> throw pos $ UnknownType
         ECmp pos cmp -> case cmp of
             Cmp1 pos e1 op e2 -> do
                 (t1, _) <- checkExpr e1
