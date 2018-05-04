@@ -1,0 +1,7 @@
+
+a = [1, 3, 7, 8, 9, 15]
+print a[-2]
+for i in -a.length..-1 do
+    if a[i] <> a[a.length + i] do
+        print false
+print a[-a[-6]]

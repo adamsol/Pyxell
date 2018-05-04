@@ -601,10 +601,14 @@ compileLval expr = case expr of
             TString _ -> getAttr (tArray tChar) v tInt 1
             TArray _ _ -> getAttr t v tInt 1
     where
-        getIndex t v1 v2 = do
-            v3 <- gep (tArray t) v1 ["0"] [0] >>= load (tPtr t)
-            v4 <- gep (tPtr t) v3 [v2] []
-            return $ Just (t, v4)
-        getAttr t1 v t2 i = do
-            p <- gep t1 v ["0"] [i]
-            return $ Just (t2, p)
+        getIndex typ arr idx = do
+            v1 <- gep (tArray typ) arr ["0"] [1] >>= load tInt
+            v2 <- binop "add" tInt v1 idx
+            v3 <- binop "icmp sge" tInt idx "0"
+            v4 <- select v3 tInt idx v2
+            v5 <- gep (tArray typ) arr ["0"] [0] >>= load (tPtr typ)
+            v6 <- gep (tPtr typ) v5 [v4] []
+            return $ Just (typ, v6)
+        getAttr typ1 obj typ2 idx = do
+            p <- gep typ1 obj ["0"] [idx]
+            return $ Just (typ2, p)
