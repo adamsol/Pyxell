@@ -479,14 +479,14 @@ compileExpr expr =
                     return $ (t, p)
     where
         compileBinary op e1 e2 = do
-            (t, v1) <- compileExpr e1
-            (t, v2) <- compileExpr e2
-            v <- case t of
-                TString _ -> do
+            (t1, v1) <- compileExpr e1
+            (t2, v2) <- compileExpr e2
+            (t, v) <- case (t1, t2) of
+                (TString _, TString _) -> do
                     p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
                     p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
-                    v3 <- gep tString v1 ["0"] [1] >>= load (tInt)
-                    v4 <- gep tString v2 ["0"] [1] >>= load (tInt)
+                    v3 <- gep tString v1 ["0"] [1] >>= load tInt
+                    v4 <- gep tString v2 ["0"] [1] >>= load tInt
                     v5 <- binop "add" tInt v3 v4
                     v6 <- binop "add" tInt v5 "1"
                     (_, p3) <- initArray tChar [] [v5, v6]
@@ -495,9 +495,56 @@ compileExpr expr =
                     p5 <- gep (tPtr tChar) p4 [v3] []
                     call (tPtr tChar) "@strcpy" [(tPtr tChar, p5), (tPtr tChar, p2)]
                     gep (tPtr tChar) p4 [v5] [] >>= store tChar "0"
-                    return p3
-                otherwise -> binop op t v1 v2
+                    return (tString, p3)
+                (TString _, TInt _) -> do
+                    p <- compileArrayMul tChar v1 v2
+                    return $ (tString, p)
+                (TInt _, TString _) -> do
+                    compileBinary op e2 e1
+                (TArray _ t', TInt _) -> do
+                    p <- compileArrayMul t' v1 v2
+                    return $ (t1, p)
+                (TInt _, TArray _ _) -> do
+                    compileBinary op e2 e1
+                otherwise -> do
+                    v3 <- binop op t1 v1 v2
+                    return $ (t1, v3)
             return $ (t, v)
+        compileArrayMul t' v1 v2 = do
+            p1 <- gep (tArray t') v1 ["0"] [0] >>= load (tPtr t')
+            v3 <- gep (tArray t') v1 ["0"] [1] >>= load tInt
+            v4 <- binop "mul" tInt v3 v2
+            (_, p2) <- initArray t' [] [v4, v4]
+            p3 <- gep (tArray t') p2 ["0"] [0] >>= load (tPtr t')
+            p4 <- nextTemp
+            alloca tInt p4
+            p5 <- nextTemp
+            alloca tInt p5
+            [l1, l2, l3, l4, l5, l6] <- sequence (replicate 6 nextLabel)
+            store tInt "0" p4
+            goto l1 >> label l1
+            v5 <- load tInt p4
+            v6 <- binop "icmp slt" tInt v5 v3
+            branch v6 l2 l3
+            label l2
+            v7 <- gep (tPtr t') p1 [v5] [] >>= load t'
+            do
+                store tInt v5 p5
+                goto l4 >> label l4
+                v8 <- load tInt p5
+                v9 <- binop "icmp slt" tInt v8 v4
+                branch v9 l5 l6
+                label l5
+                gep (tPtr t') p3 [v8] [] >>= store t' v7
+                v10 <- binop "add" tInt v8 v3
+                store tInt v10 p5
+                goto l4
+                label l6
+            v11 <- binop "add" tInt v5 "1"
+            store tInt v11 p4
+            goto l1
+            label l3
+            return $ p2
         compileCmp op t v1 v2 = do
             (t, v1, v2) <- case t of
                 TString _ -> do

@@ -1,0 +1,17 @@
+
+n = 2000000
+a = [true] * n
+
+# Sieve of Eratosthenes
+i = 2
+while i * i <= n do
+    if a[i] do
+        for j in i*2...n..i do
+            a[j] = false
+    i += 1
+
+s = 0
+for i in 2...n do
+    if a[i] do
+        s += i
+print s

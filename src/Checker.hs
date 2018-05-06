@@ -308,6 +308,10 @@ checkExpr expr =
             case op of
                 "*" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
+                    (TString _, TInt _) -> return $ (t1, False)
+                    (TInt _, TString _) -> return $ (t2, False)
+                    (TArray _ _, TInt _) -> return $ (t1, False)
+                    (TInt _, TArray _ _) -> return $ (t2, False)
                     otherwise -> throw pos $ NoBinaryOperator "*" t1 t2
                 "/" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)

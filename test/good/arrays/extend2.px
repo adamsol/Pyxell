@@ -1,0 +1,7 @@
+
+a = 4 * ["x", "t", "abc"]
+print a.length
+s = ""
+for w in a do
+    s += w
+print s
