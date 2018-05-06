@@ -113,7 +113,8 @@ alloca typ ptr = do
 -- | Outputs LLVM 'store' command.
 store :: Type -> String -> String -> Run ()
 store typ val ptr = do
-    write $ indent [ "store " ++ strType typ ++ " " ++ val ++ ", " ++ strType typ ++ "* " ++ ptr ]
+    if val == "" then skip
+    else write $ indent [ "store " ++ strType typ ++ " " ++ val ++ ", " ++ strType typ ++ "* " ++ ptr ]
 
 -- | Outputs LLVM 'load' command.
 load :: Type -> String -> Run String
@@ -387,13 +388,14 @@ compileStmt stmt cont = case stmt of
             alloca typ1 p
             store typ1 start p
             [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
-            goto l1 >> label l1
-            v1 <- load typ1 p
-            v2 <- cmp v1
-            branch v2 l2 l3
-            label l2
-            v3 <- get v1
-            compileAssg typ2 var v3 $ do
+            compileAssg typ2 var "" $ do
+                goto l1 >> label l1
+                v1 <- load typ1 p
+                v2 <- cmp v1
+                branch v2 l2 l3
+                label l2
+                v3 <- get v1
+                compileAssg typ2 var v3 skip
                 local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l4)) $ compileBlock block
                 goto l4 >> label l4
                 v4 <- binop "add" typ1 v1 step

@@ -1,0 +1,7 @@
+
+for i in 1..2 do
+    skip
+x = 5
+for i in 1..2 do
+    x += i
+print x
