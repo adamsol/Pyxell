@@ -1,5 +1,6 @@
 dist
 cabal-dev
+pyxell
 *.exe
 *.o
 *.hi
@@ -17,9 +18,9 @@ cabal.sandbox.config
 .stack-work/
 .idea/
 *.iml
-*.txt
 *.bak
 tmp.*
+_*
 *.bc
 test/**/*.ll
 test/**/.*

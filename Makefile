@@ -7,4 +7,4 @@ code:
 
 clean:
 	+$(MAKE) clean -C src
-	-rm -f pyxell.exe
+	-rm -f pyxell pyxell.exe
