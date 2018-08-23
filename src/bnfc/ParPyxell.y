@@ -13,8 +13,10 @@ import ErrM
 %tokentype {Token}
 %name pProgram_internal Program
 %name pListStmt_internal ListStmt
-%name pBlock_internal Block
 %name pStmt_internal Stmt
+%name pArg_internal Arg
+%name pListArg_internal ListArg
+%name pBlock_internal Block
 %name pListExpr_internal ListExpr
 %name pBranch_internal Branch
 %name pListBranch_internal ListBranch
@@ -36,8 +38,9 @@ import ErrM
 %name pType4_internal Type4
 %name pType2_internal Type2
 %name pListType3_internal ListType3
-%name pType_internal Type
+%name pListType2_internal ListType2
 %name pType1_internal Type1
+%name pType_internal Type
 %name pType3_internal Type3
 %token
   '%' { PT _ (TS _ 1) }
@@ -51,53 +54,65 @@ import ErrM
   ',' { PT _ (TS _ 9) }
   '-' { PT _ (TS _ 10) }
   '-=' { PT _ (TS _ 11) }
-  '.' { PT _ (TS _ 12) }
-  '..' { PT _ (TS _ 13) }
-  '...' { PT _ (TS _ 14) }
-  '/' { PT _ (TS _ 15) }
-  '/=' { PT _ (TS _ 16) }
-  ';' { PT _ (TS _ 17) }
-  '<' { PT _ (TS _ 18) }
-  '<=' { PT _ (TS _ 19) }
-  '<>' { PT _ (TS _ 20) }
-  '=' { PT _ (TS _ 21) }
-  '==' { PT _ (TS _ 22) }
-  '>' { PT _ (TS _ 23) }
-  '>=' { PT _ (TS _ 24) }
-  'Bool' { PT _ (TS _ 25) }
-  'Char' { PT _ (TS _ 26) }
-  'Int' { PT _ (TS _ 27) }
-  'Label' { PT _ (TS _ 28) }
-  'Object' { PT _ (TS _ 29) }
-  'String' { PT _ (TS _ 30) }
-  'Void' { PT _ (TS _ 31) }
-  '[' { PT _ (TS _ 32) }
-  ']' { PT _ (TS _ 33) }
-  'and' { PT _ (TS _ 34) }
-  'break' { PT _ (TS _ 35) }
-  'continue' { PT _ (TS _ 36) }
-  'do' { PT _ (TS _ 37) }
-  'elif' { PT _ (TS _ 38) }
-  'else' { PT _ (TS _ 39) }
-  'false' { PT _ (TS _ 40) }
-  'for' { PT _ (TS _ 41) }
-  'if' { PT _ (TS _ 42) }
-  'in' { PT _ (TS _ 43) }
-  'not' { PT _ (TS _ 44) }
-  'or' { PT _ (TS _ 45) }
-  'print' { PT _ (TS _ 46) }
-  'skip' { PT _ (TS _ 47) }
-  'true' { PT _ (TS _ 48) }
-  'while' { PT _ (TS _ 49) }
-  '{' { PT _ (TS _ 50) }
-  '}' { PT _ (TS _ 51) }
+  '->' { PT _ (TS _ 12) }
+  '.' { PT _ (TS _ 13) }
+  '..' { PT _ (TS _ 14) }
+  '...' { PT _ (TS _ 15) }
+  '/' { PT _ (TS _ 16) }
+  '/=' { PT _ (TS _ 17) }
+  ';' { PT _ (TS _ 18) }
+  '<' { PT _ (TS _ 19) }
+  '<=' { PT _ (TS _ 20) }
+  '<>' { PT _ (TS _ 21) }
+  '=' { PT _ (TS _ 22) }
+  '==' { PT _ (TS _ 23) }
+  '>' { PT _ (TS _ 24) }
+  '>=' { PT _ (TS _ 25) }
+  'Bool' { PT _ (TS _ 26) }
+  'Char' { PT _ (TS _ 27) }
+  'Int' { PT _ (TS _ 28) }
+  'Label' { PT _ (TS _ 29) }
+  'Object' { PT _ (TS _ 30) }
+  'String' { PT _ (TS _ 31) }
+  'Void' { PT _ (TS _ 32) }
+  '[' { PT _ (TS _ 33) }
+  ']' { PT _ (TS _ 34) }
+  'and' { PT _ (TS _ 35) }
+  'break' { PT _ (TS _ 36) }
+  'continue' { PT _ (TS _ 37) }
+  'def' { PT _ (TS _ 38) }
+  'do' { PT _ (TS _ 39) }
+  'elif' { PT _ (TS _ 40) }
+  'else' { PT _ (TS _ 41) }
+  'false' { PT _ (TS _ 42) }
+  'for' { PT _ (TS _ 43) }
+  'func' { PT _ (TS _ 44) }
+  'if' { PT _ (TS _ 45) }
+  'in' { PT _ (TS _ 46) }
+  'not' { PT _ (TS _ 47) }
+  'or' { PT _ (TS _ 48) }
+  'print' { PT _ (TS _ 49) }
+  'proc' { PT _ (TS _ 50) }
+  'return' { PT _ (TS _ 51) }
+  'skip' { PT _ (TS _ 52) }
+  'true' { PT _ (TS _ 53) }
+  'while' { PT _ (TS _ 54) }
+  '{' { PT _ (TS _ 55) }
+  '}' { PT _ (TS _ 56) }
 
+  L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
   L_charac {PT _ (TC _)}
   L_quoted {PT _ (TL _)}
-  L_ident {PT _ (TV _)}
 
 %%
+
+Ident :: {
+  (Maybe (Int, Int), Ident)
+}
+: L_ident {
+  (Just (tokenLineCol $1), Ident (prToken $1)) 
+}
 
 Integer :: {
   (Maybe (Int, Int), Integer)
@@ -120,13 +135,6 @@ String :: {
   (Just (tokenLineCol $1), prToken $1)
 }
 
-Ident :: {
-  (Maybe (Int, Int), Ident)
-}
-: L_ident {
-  (Just (tokenLineCol $1), Ident (prToken $1)) 
-}
-
 Program :: {
   (Maybe (Int, Int), Program (Maybe (Int, Int)))
 }
@@ -147,17 +155,22 @@ ListStmt :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
-Block :: {
-  (Maybe (Int, Int), Block (Maybe (Int, Int)))
-}
-: '{' ListStmt '}' {
-  (Just (tokenLineCol $1), AbsPyxell.SBlock (Just (tokenLineCol $1)) (snd $2)) 
-}
-
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'skip' {
+: 'proc' Ident '(' ListArg ')' 'def' Block {
+  (Just (tokenLineCol $1), AbsPyxell.SProc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $7)) 
+}
+| 'func' Ident '(' ListArg ')' Type 'def' Block {
+  (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
+}
+| 'return' {
+  (Just (tokenLineCol $1), AbsPyxell.SRetVoid (Just (tokenLineCol $1)))
+}
+| 'return' Expr {
+  (Just (tokenLineCol $1), AbsPyxell.SRetExpr (Just (tokenLineCol $1)) (snd $2)) 
+}
+| 'skip' {
   (Just (tokenLineCol $1), AbsPyxell.SSkip (Just (tokenLineCol $1)))
 }
 | 'print' Expr {
@@ -195,6 +208,33 @@ Stmt :: {
 }
 | 'break' {
   (Just (tokenLineCol $1), AbsPyxell.SBreak (Just (tokenLineCol $1)))
+}
+
+Arg :: {
+  (Maybe (Int, Int), Arg (Maybe (Int, Int)))
+}
+: Type Ident {
+  (fst $1, AbsPyxell.ANoDef (fst $1)(snd $1)(snd $2)) 
+}
+
+ListArg :: {
+  (Maybe (Int, Int), [Arg (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| Arg {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Arg ',' ListArg {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
+Block :: {
+  (Maybe (Int, Int), Block (Maybe (Int, Int)))
+}
+: '{' ListStmt '}' {
+  (Just (tokenLineCol $1), AbsPyxell.SBlock (Just (tokenLineCol $1)) (snd $2)) 
 }
 
 ListExpr :: {
@@ -269,6 +309,9 @@ Expr9 :: {
 }
 | Expr9 '.' Ident {
   (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
+}
+| Expr9 '(' ListExpr2 ')' {
+  (fst $1, AbsPyxell.ECall (fst $1)(snd $1)(snd $3)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
@@ -482,17 +525,30 @@ ListType3 :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
-Type :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+ListType2 :: {
+  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
 }
-: Type1 {
-  (fst $1, snd $1)
+: Type2 {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Type2 ',' ListType2 {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 Type1 :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
-: Type2 {
+: ListType2 '->' Type2 {
+  (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
+}
+| Type2 {
+  (fst $1, snd $1)
+}
+
+Type :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: Type1 {
   (fst $1, snd $1)
 }
 
@@ -523,8 +579,10 @@ myLexer = tokens
 
 pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
-pBlock = (>>= return . snd) . pBlock_internal
 pStmt = (>>= return . snd) . pStmt_internal
+pArg = (>>= return . snd) . pArg_internal
+pListArg = (>>= return . snd) . pListArg_internal
+pBlock = (>>= return . snd) . pBlock_internal
 pListExpr = (>>= return . snd) . pListExpr_internal
 pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
@@ -546,8 +604,9 @@ pExpr2 = (>>= return . snd) . pExpr2_internal
 pType4 = (>>= return . snd) . pType4_internal
 pType2 = (>>= return . snd) . pType2_internal
 pListType3 = (>>= return . snd) . pListType3_internal
-pType = (>>= return . snd) . pType_internal
+pListType2 = (>>= return . snd) . pListType2_internal
 pType1 = (>>= return . snd) . pType1_internal
+pType = (>>= return . snd) . pType_internal
 pType3 = (>>= return . snd) . pType3_internal
 }
 

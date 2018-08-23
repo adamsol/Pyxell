@@ -14,7 +14,7 @@ topLayout :: Bool
 topLayout = True
 
 layoutWords, layoutStopWords :: [String]
-layoutWords     = ["do"]
+layoutWords     = ["do","def"]
 layoutStopWords = ["elif","else"]
 
 -- layout separators
@@ -216,46 +216,51 @@ sToken p s = PT p (TS s i)
       "," -> 9
       "-" -> 10
       "-=" -> 11
-      "." -> 12
-      ".." -> 13
-      "..." -> 14
-      "/" -> 15
-      "/=" -> 16
-      ";" -> 17
-      "<" -> 18
-      "<=" -> 19
-      "<>" -> 20
-      "=" -> 21
-      "==" -> 22
-      ">" -> 23
-      ">=" -> 24
-      "Bool" -> 25
-      "Char" -> 26
-      "Int" -> 27
-      "Label" -> 28
-      "Object" -> 29
-      "String" -> 30
-      "Void" -> 31
-      "[" -> 32
-      "]" -> 33
-      "and" -> 34
-      "break" -> 35
-      "continue" -> 36
-      "do" -> 37
-      "elif" -> 38
-      "else" -> 39
-      "false" -> 40
-      "for" -> 41
-      "if" -> 42
-      "in" -> 43
-      "not" -> 44
-      "or" -> 45
-      "print" -> 46
-      "skip" -> 47
-      "true" -> 48
-      "while" -> 49
-      "{" -> 50
-      "}" -> 51
+      "->" -> 12
+      "." -> 13
+      ".." -> 14
+      "..." -> 15
+      "/" -> 16
+      "/=" -> 17
+      ";" -> 18
+      "<" -> 19
+      "<=" -> 20
+      "<>" -> 21
+      "=" -> 22
+      "==" -> 23
+      ">" -> 24
+      ">=" -> 25
+      "Bool" -> 26
+      "Char" -> 27
+      "Int" -> 28
+      "Label" -> 29
+      "Object" -> 30
+      "String" -> 31
+      "Void" -> 32
+      "[" -> 33
+      "]" -> 34
+      "and" -> 35
+      "break" -> 36
+      "continue" -> 37
+      "def" -> 38
+      "do" -> 39
+      "elif" -> 40
+      "else" -> 41
+      "false" -> 42
+      "for" -> 43
+      "func" -> 44
+      "if" -> 45
+      "in" -> 46
+      "not" -> 47
+      "or" -> 48
+      "print" -> 49
+      "proc" -> 50
+      "return" -> 51
+      "skip" -> 52
+      "true" -> 53
+      "while" -> 54
+      "{" -> 55
+      "}" -> 56
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

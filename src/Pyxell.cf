@@ -1,7 +1,7 @@
 
 -- layout --
 
-layout             "do" ;
+layout             "do", "def" ;
 layout stop        "elif", "else" ;
 layout toplevel    ;
 
@@ -15,15 +15,17 @@ separator          Stmt        ";" ;
 
 -- statements --
 
---SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type ":" Block ;
---ANoDef.            Arg    ::= Type Ident ;
+SProc.             Stmt   ::= "proc" Ident "(" [Arg] ")" "def" Block ;
+SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type "def" Block ;
+ANoDef.            Arg    ::= Type Ident ;
 --ADef.              Arg    ::= Type Ident "=" Expr ;
---separator          Arg        ";" ;
+separator          Arg        "," ;
+SRetVoid.          Stmt   ::= "return" ;
+SRetExpr.          Stmt   ::= "return" Expr ;
 
 SBlock.            Block   ::= "{" [Stmt] "}" ;
 
 SSkip.             Stmt   ::= "skip" ;
-
 SPrint.            Stmt   ::= "print" Expr ;
 
 SAssg.             Stmt   ::= [Expr];
@@ -60,9 +62,7 @@ EVar.              Expr9  ::= Ident ;
 EElem.             Expr9  ::= Expr9 "." Integer ;
 EIndex.            Expr9  ::= Expr9 "[" Expr "]" ;
 EAttr.             Expr9  ::= Expr9 "." Ident ;
-
---ECall.             Expr8  ::= Expr8 "(" [Expr8] ")";
---separator          Expr8      "," ;
+ECall.             Expr9  ::= Expr9 "(" [Expr2] ")";
 
 EMul.              Expr8  ::= Expr8 "*" Expr9 ;
 EDiv.              Expr8  ::= Expr8 "/" Expr9 ;
@@ -111,7 +111,8 @@ TArray.            Type4  ::= "[" Type "]" ;
 --TPower.            Type3  ::= Type4 "^" Integer ;
 TTuple.            Type2  ::= [Type3] ;
 separator nonempty Type3      "*" ;
---TFunc.             Type1  ::= Type2 "->" Type1 ;
+separator nonempty Type2      "," ;
+TFunc.             Type1  ::= [Type2] "->" Type2 ;
 
 coercions          Type       4 ;
 

@@ -14,14 +14,12 @@ data Program a = Program a [Stmt a]
 instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
-data Block a = SBlock a [Stmt a]
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor Block where
-    fmap f x = case x of
-        SBlock a stmts -> SBlock (f a) (map (fmap f) stmts)
 data Stmt a
-    = SSkip a
+    = SProc a Ident [Arg a] (Block a)
+    | SFunc a Ident [Arg a] (Type a) (Block a)
+    | SRetVoid a
+    | SRetExpr a (Expr a)
+    | SSkip a
     | SPrint a (Expr a)
     | SAssg a [Expr a]
     | SAssgMul a (Expr a) (Expr a)
@@ -38,6 +36,10 @@ data Stmt a
 
 instance Functor Stmt where
     fmap f x = case x of
+        SProc a ident args block -> SProc (f a) ident (map (fmap f) args) (fmap f block)
+        SFunc a ident args type_ block -> SFunc (f a) ident (map (fmap f) args) (fmap f type_) (fmap f block)
+        SRetVoid a -> SRetVoid (f a)
+        SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
         SSkip a -> SSkip (f a)
         SPrint a expr -> SPrint (f a) (fmap f expr)
         SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
@@ -51,6 +53,18 @@ instance Functor Stmt where
         SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
+data Arg a = ANoDef a (Type a) Ident
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Arg where
+    fmap f x = case x of
+        ANoDef a type_ ident -> ANoDef (f a) (fmap f type_) ident
+data Block a = SBlock a [Stmt a]
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Block where
+    fmap f x = case x of
+        SBlock a stmts -> SBlock (f a) (map (fmap f) stmts)
 data Branch a = BElIf a (Expr a) (Block a)
   deriving (Eq, Ord, Show, Read)
 
@@ -96,6 +110,7 @@ data Expr a
     | EElem a (Expr a) Integer
     | EIndex a (Expr a) (Expr a)
     | EAttr a (Expr a) Ident
+    | ECall a (Expr a) [Expr a]
     | EMul a (Expr a) (Expr a)
     | EDiv a (Expr a) (Expr a)
     | EMod a (Expr a) (Expr a)
@@ -125,6 +140,7 @@ instance Functor Expr where
         EElem a expr integer -> EElem (f a) (fmap f expr) integer
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
+        ECall a expr exprs -> ECall (f a) (fmap f expr) (map (fmap f) exprs)
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
         EDiv a expr1 expr2 -> EDiv (f a) (fmap f expr1) (fmap f expr2)
         EMod a expr1 expr2 -> EMod (f a) (fmap f expr1) (fmap f expr2)
@@ -152,6 +168,7 @@ data Type a
     | TString a
     | TArray a (Type a)
     | TTuple a [Type a]
+    | TFunc a [Type a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -167,3 +184,4 @@ instance Functor Type where
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
+        TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)

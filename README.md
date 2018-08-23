@@ -60,7 +60,7 @@ These are the software versions that I use. Pyxell may work with others versions
 
 * GHC 8.2.2
 * Cabal 2.0.0
-* BNFC 2.8.1 with 176-source-position branch 
+* BNFC 2.8.1 with `176-source-position` branch 
 * Clang 6.0.0 with C++ standard library
 * Python 3.6.4 with `colorama` and `argparse` packages
 

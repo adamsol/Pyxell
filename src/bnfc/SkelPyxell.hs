@@ -15,11 +15,12 @@ transIdent x = case x of
 transProgram :: Show a => Program a -> Result
 transProgram x = case x of
   Program _ stmts -> failure x
-transBlock :: Show a => Block a -> Result
-transBlock x = case x of
-  SBlock _ stmts -> failure x
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
+  SProc _ ident args block -> failure x
+  SFunc _ ident args type_ block -> failure x
+  SRetVoid _ -> failure x
+  SRetExpr _ expr -> failure x
   SSkip _ -> failure x
   SPrint _ expr -> failure x
   SAssg _ exprs -> failure x
@@ -33,6 +34,12 @@ transStmt x = case x of
   SFor _ expr1 expr2 block -> failure x
   SContinue _ -> failure x
   SBreak _ -> failure x
+transArg :: Show a => Arg a -> Result
+transArg x = case x of
+  ANoDef _ type_ ident -> failure x
+transBlock :: Show a => Block a -> Result
+transBlock x = case x of
+  SBlock _ stmts -> failure x
 transBranch :: Show a => Branch a -> Result
 transBranch x = case x of
   BElIf _ expr block -> failure x
@@ -64,6 +71,7 @@ transExpr x = case x of
   EElem _ expr integer -> failure x
   EIndex _ expr1 expr2 -> failure x
   EAttr _ expr ident -> failure x
+  ECall _ expr exprs -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
   EMod _ expr1 expr2 -> failure x
@@ -92,4 +100,5 @@ transType x = case x of
   TString _ -> failure x
   TArray _ type_ -> failure x
   TTuple _ types -> failure x
+  TFunc _ types type_ -> failure x
 

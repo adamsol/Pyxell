@@ -17,6 +17,7 @@ reserved words excluded.
 
 
 ===Literals===
+
 Integer literals //Integer// are nonempty sequences of digits.
 
 
@@ -31,26 +32,27 @@ except ``"`` unless preceded by ``\``.
 
 
 
-
 ===Reserved words and symbols===
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Pyxell are the following:
   | ``Bool`` | ``Char`` | ``Int`` | ``Label``
   | ``Object`` | ``String`` | ``Void`` | ``and``
-  | ``break`` | ``continue`` | ``do`` | ``elif``
-  | ``else`` | ``false`` | ``for`` | ``if``
-  | ``in`` | ``not`` | ``or`` | ``print``
+  | ``break`` | ``continue`` | ``def`` | ``do``
+  | ``elif`` | ``else`` | ``false`` | ``for``
+  | ``func`` | ``if`` | ``in`` | ``not``
+  | ``or`` | ``print`` | ``proc`` | ``return``
   | ``skip`` | ``true`` | ``while`` | 
 
 The symbols used in Pyxell are the following:
-  | ; | { | } | =
-  | *= | /= | %= | +=
-  | -= | [ | ] | ,
-  | . | * | / | %
-  | + | - | .. | ...
-  | == | <> | < | <=
-  | > | >= | ( | )
+  | ; | ( | ) | ,
+  | { | } | = | *=
+  | /= | %= | += | -=
+  | [ | ] | . | *
+  | / | % | + | -
+  | .. | ... | == | <>
+  | < | <= | > | >=
+  | -> |  |  | 
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with /* and */.
@@ -65,8 +67,11 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
-  | //Block// | -> | ``{`` //[Stmt]// ``}`` 
-  | //Stmt// | -> | ``skip`` 
+  | //Stmt// | -> | ``proc`` //Ident// ``(`` //[Arg]// ``)`` ``def`` //Block// 
+  |  |  **|**  | ``func`` //Ident// ``(`` //[Arg]// ``)`` //Type// ``def`` //Block// 
+  |  |  **|**  | ``return`` 
+  |  |  **|**  | ``return`` //Expr// 
+  |  |  **|**  | ``skip`` 
   |  |  **|**  | ``print`` //Expr// 
   |  |  **|**  | //[Expr]// 
   |  |  **|**  | //Expr// ``*=`` //Expr// 
@@ -79,6 +84,11 @@ All other symbols are terminals.
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
+  | //Arg// | -> | //Type// //Ident// 
+  | //[Arg]// | -> | **eps**
+  |  |  **|**  | //Arg// 
+  |  |  **|**  | //Arg// ``,`` //[Arg]// 
+  | //Block// | -> | ``{`` //[Stmt]// ``}`` 
   | //[Expr]// | -> | //Expr// 
   |  |  **|**  | //Expr// ``=`` //[Expr]// 
   | //Branch// | -> | //Expr// ``do`` //Block// 
@@ -97,6 +107,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr9// ``.`` //Integer// 
   |  |  **|**  | //Expr9// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr9// ``.`` //Ident// 
+  |  |  **|**  | //Expr9// ``(`` //[Expr2]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //[Expr2]// | -> | **eps**
   |  |  **|**  | //Expr2// 
@@ -146,8 +157,11 @@ All other symbols are terminals.
   |  |  **|**  | //Type3// 
   | //[Type3]// | -> | //Type3// 
   |  |  **|**  | //Type3// ``*`` //[Type3]// 
+  | //[Type2]// | -> | //Type2// 
+  |  |  **|**  | //Type2// ``,`` //[Type2]// 
+  | //Type1// | -> | //[Type2]// ``->`` //Type2// 
+  |  |  **|**  | //Type2// 
   | //Type// | -> | //Type1// 
-  | //Type1// | -> | //Type2// 
   | //Type3// | -> | //Type4// 
 
 

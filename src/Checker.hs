@@ -31,6 +31,7 @@ data StaticError = NotComparable Type Type
                  | WrongFunctionCall Type Int
                  | UnexpectedStatement String
                  | UndeclaredIdentifier Ident
+                 | RedeclaredIdentifier Ident
                  | NotLvalue
                  | UnknownType
                  | NotTuple Type
@@ -51,6 +52,7 @@ instance Show StaticError where
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
         UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
+        RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
         NotLvalue -> "Expression cannot be assigned to."
         UnknownType -> "Expression cannot be used in this context."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
@@ -75,13 +77,11 @@ throw pos err = case pos of
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Type)
-getIdent ident = case ident of
-    Ident x -> asks (M.lookup x)
+getIdent (Ident x) = asks (M.lookup x)
 
 -- | Adds an identifier to the environment.
 declare :: Type -> Ident -> Run () -> Run ()
-declare typ ident cont = case ident of
-    Ident x -> local (M.insert x typ) cont
+declare typ (Ident x) cont = local (M.insert x typ) cont
 
 
 -- | Checks the whole program.
@@ -103,6 +103,24 @@ checkStmts stmts cont = case stmts of
 -- | Checks a single statement.
 checkStmt :: Stmt Pos -> Run () -> Run ()
 checkStmt stmt cont = case stmt of
+    SProc pos id args block -> do
+        checkFunc pos id args tVoid block cont
+    SFunc pos id args ret block -> do
+        checkFunc pos id args ret block cont
+    SRetVoid pos -> do
+        r <- asks (M.lookup "#return")
+        case r of
+            Just (TVoid _) -> cont
+            Nothing -> throw pos $ UnexpectedStatement "return"
+    SRetExpr pos expr -> do
+        (t1, _) <- checkExpr expr
+        r <- asks (M.lookup "#return")
+        case r of
+            Just (TVoid _) -> throw pos $ UnexpectedStatement "return"
+            Just t2 -> do
+                checkCast pos t1 t2
+                cont
+            otherwise -> throw pos $ UnexpectedStatement "return"
     SSkip pos -> do
         cont
     SPrint pos expr -> do
@@ -179,6 +197,22 @@ checkStmt stmt cont = case stmt of
             Just _ -> cont
             otherwise -> throw pos $ UnexpectedStatement "continue"
     where
+        checkFunc pos id args ret block cont = do
+            r <- getIdent id
+            case r of
+                Nothing -> skip
+                Just _ -> throw pos $ RedeclaredIdentifier id
+            let as = map (\(ANoDef _ typ _) -> reduceType typ) args
+            let r = reduceType ret
+            declare (tFunc as r) id $ do
+                checkArgs args $ local (M.insert "#return" r) $ local (M.delete "#loop") $ checkBlock block
+                cont
+        checkArgs args cont = case args of
+             [] -> cont
+             a:as -> checkArg a (checkArgs as cont)
+        checkArg arg cont = case arg of
+            ANoDef _ typ id -> do
+                declare (reduceType typ) id cont
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
             (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
@@ -204,9 +238,6 @@ checkStmt stmt cont = case stmt of
                     cont
                 else throw pos $ NotLvalue
             otherwise -> throw pos $ NotLvalue
-        checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
-            Just t -> skip
-            Nothing -> throw pos $ IllegalAssignment typ1 typ2
         checkBranches brs = case brs of
             [] -> skip
             b:bs -> case b of
@@ -219,6 +250,12 @@ checkStmt stmt cont = case stmt of
                 TBool _ -> return $ ()
                 otherwise -> throw pos $ IllegalAssignment t tBool
             checkBlock block
+
+-- | Check if one type can be cast to another.
+checkCast :: Pos -> Type -> Type -> Run ()
+checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
+    Just _ -> skip
+    Nothing -> throw pos $ IllegalAssignment typ1 typ2
 
 
 -- | Checks an expression and returns its type and whether it is mutable.
@@ -266,6 +303,17 @@ checkExpr expr =
                     Ident "length" -> return $ (tInt, False)
                     otherwise -> throw pos $ InvalidAttr t id
                 otherwise -> throw pos $ NotClass t
+        ECall pos e es -> do
+            (t, _) <- checkExpr e
+            case t of
+                TFunc _ args ret -> do
+                    case length es == length args of
+                        True -> skip
+                        False -> throw pos $ WrongFunctionCall t (length es)
+                    as <- mapM checkExpr es
+                    forM (zip (map fst as) args) (uncurry $ checkCast pos)
+                    return $ (ret, False)
+                otherwise -> throw pos $ WrongFunctionCall t (length es)
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
         EMod pos e1 e2 -> checkBinary pos "%" e1 e2

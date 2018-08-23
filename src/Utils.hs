@@ -25,8 +25,8 @@ instance {-# OVERLAPS #-} Show Type where
         TString _ -> "String"
         TArray _ t -> "[" ++ show t ++ "]"
         --TPower _ typ exp -> show typ ++ show exp
-        TTuple _ types -> intercalate "*" $ map show types
-        --TFunc _ typ1 typ2 -> show typ1 ++ "->" ++ show typ2
+        TTuple _ types -> intercalate "*" (map show types)
+        TFunc _ args ret -> "(" ++ intercalate "," (map show args) ++ ") -> " ++ show ret
 
 -- | Unification function. Returns a common supertype of given types.
 unifyTypes t1 t2 = do
@@ -43,6 +43,12 @@ unifyTypes t1 t2 = do
             else Nothing
         otherwise -> Nothing
 
+-- | Try to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
+reduceType t = do
+    case t of
+        TTuple _ ts -> if length ts == 1 then head ts else t
+        otherwise -> t
+
 -- | Helper functions for initializing types without a position.
 tPtr = TPtr Nothing
 tDeref = TDeref Nothing
@@ -55,6 +61,10 @@ tObject = TObject Nothing
 tString = TString Nothing
 tArray = TArray Nothing
 tTuple = TTuple Nothing
+tFunc = TFunc Nothing
 
 -- | Shorter name for none position.
 _pos = Nothing
+
+-- | Gets name from an identifier.
+fromIdent (Ident x) = x

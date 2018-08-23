@@ -46,8 +46,7 @@ indent lines = map ('\t':) lines
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Result)
-getIdent ident = case ident of
-    Ident x -> asks (M.lookup x)
+getIdent (Ident x) = asks (M.lookup x)
 
 
 -- | LLVM string representation for a given type.
@@ -67,8 +66,8 @@ strType typ = case typ of
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
 nextNumber = do
-    Number n <- lift $ gets (M.! "number")
-    lift $ modify (M.insert "number" (Number (n+1)))
+    Number n <- lift $ gets (M.! "$number")
+    lift $ modify (M.insert "$number" (Number (n+1)))
     return $ n+1
 
 -- | Returns an unused register name in the form: '%t\d'.
@@ -87,12 +86,12 @@ nextLabel = do
 label :: String -> Run ()
 label lbl = do
     write $ [ lbl ++ ":" ]
-    lift $ modify (M.insert "label" (Label lbl))
+    lift $ modify (M.insert "$label" (Label lbl))
 
 -- | Returns name of the currently active label.
 getLabel :: Run String
 getLabel = do
-    Label l <- lift $ gets (M.! "label")
+    Label l <- lift $ gets (M.! "$label")
     return $ l
 
 -- | Outputs LLVM 'br' command with a single goal.
@@ -125,11 +124,10 @@ load typ ptr = do
 
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
 declare :: Type -> Ident -> String -> String -> Run () -> Run ()
-declare typ ident val ptr cont = case ident of
-    Ident x -> do
-        alloca typ ptr
-        store typ val ptr
-        local (M.insert x (typ, ptr)) cont
+declare typ (Ident x) val ptr cont = do
+    alloca typ ptr
+    store typ val ptr
+    local (M.insert x (typ, ptr)) cont
 
 -- | Outputs LLVM 'getelementptr' command with given indices.
 gep :: Type -> String -> [String] -> [Int] -> Run String
@@ -226,12 +224,12 @@ compileProgram prog = case prog of
             "declare void @printChar(i8)", "declare void @printString(i8*)",
             "declare void @printSpace()", "declare void @printLn()",
             "declare i8* @concatStrings(i8*, i8*)" ]
-        lift $ modify (M.insert "number" (Number 0))
-        lift $ modify (M.insert "label" (Label "entry"))
-        write $ [ "", "define i32 @main() {", "entry:" ]
+        lift $ modify (M.insert "$number" (Number 0))
+        lift $ modify (M.insert "$label" (Label "entry"))
+        --write $ [ "", "define i32 @main() {", "entry:" ]
         compileStmts stmts skip
-        write $ indent [ "ret i32 0" ]
-        write $ [ "}" ]
+        --write $ indent [ "ret i32 0" ]
+        --write $ [ "}" ]
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
@@ -247,6 +245,16 @@ compileStmts stmts cont = case stmts of
 -- | Outputs LLVM code for a single statement and runs the continuation.
 compileStmt :: Stmt Pos -> Run () -> Run ()
 compileStmt stmt cont = case stmt of
+    SProc _ (Ident f) args block -> do
+        compileFunc f args tVoid block cont
+    SFunc _ (Ident f) args ret block -> do
+        compileFunc f args ret block cont
+    SRetVoid _ -> do
+        write $ indent $ [ "ret void" ]
+    SRetExpr _ expr -> do
+        (t1, _) <- asks (M.! "#return")
+        (t2, v) <- compileExpr expr
+        write $ indent $ [ "ret " ++ strType t1 ++ " " ++ v ]
     SSkip _ -> do
         cont
     SPrint _  expr -> do
@@ -335,6 +343,26 @@ compileStmt stmt cont = case stmt of
         (_, l) <- asks (M.! "#continue")
         goto l
     where
+        compileFunc f args ret block cont = do
+            let as = map (\(ANoDef _ typ _) -> reduceType typ) args
+            let r = reduceType ret
+            write $ [ "",
+                "define " ++ strType r ++ " @" ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
+                "entry:" ]
+            local (M.insert f (tFunc as r, "@" ++ f)) $ do
+                compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
+                    l <- nextLabel
+                    goto l >> label l
+                    compileBlock block
+                    write $ [ "}" ]
+                cont
+        compileArgs args i cont = case args of
+             [] -> cont
+             a:as -> compileArg a i (compileArgs as (i+1) cont)
+        compileArg arg i cont = case arg of
+            ANoDef pos typ id -> do
+                p <- nextTemp
+                declare (reduceType typ) id ("%" ++ show i) p cont
         compilePrint t v = do
             case t of
                 TInt _ -> do
@@ -429,6 +457,11 @@ compileExpr expr =
                     return $ (ts !! i, v)
         EIndex _ _ _ -> compileRval expr
         EAttr _ _ _ -> compileRval expr
+        ECall _ e es -> do
+            (TFunc _ args ret, f) <- compileExpr e
+            as <- forM (zip args es) $ \(t, e) -> compileExpr e
+            v <- call ret f as
+            return $ (ret, v)
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
         EMod _ e1 e2 -> do
@@ -630,7 +663,9 @@ compileExpr expr =
 compileRval :: Expr Pos -> Run Result
 compileRval expr = do
     Just (t, p) <- compileLval expr
-    v <- load t p
+    v <- case t of
+        TFunc _ _ _ -> return $ p
+        otherwise -> load t p
     return $ (t, v)
 
 -- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.

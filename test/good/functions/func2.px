@@ -1,0 +1,8 @@
+
+func fact(Int n) Int def
+    if n <= 1 do return 1
+    return n * fact(n-1)
+
+func main() Int def
+    print fact(7)
+    return 0
