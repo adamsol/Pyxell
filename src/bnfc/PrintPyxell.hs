@@ -96,7 +96,7 @@ instance Print [Stmt a] where
 
 instance Print (Stmt a) where
   prt i e = case e of
-    SProc _ id args block -> prPrec i 0 (concatD [doc (showString "proc"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "def"), prt 0 block])
+    SProc _ id args block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "def"), prt 0 block])
     SFunc _ id args type_ block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), prt 0 type_, doc (showString "def"), prt 0 block])
     SRetVoid _ -> prPrec i 0 (concatD [doc (showString "return")])
     SRetExpr _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])

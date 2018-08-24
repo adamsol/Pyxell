@@ -1,0 +1,6 @@
+
+func f() Int def
+    return true
+
+func main() Int def
+    return 0

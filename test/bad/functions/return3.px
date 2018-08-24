@@ -1,0 +1,6 @@
+
+func f() def
+    return 'r'
+
+func main() Int def
+    return 0

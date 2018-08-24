@@ -1,0 +1,7 @@
+
+func f(Int x) def
+    return
+
+func main() Int def
+    f(f(5))
+    return 0

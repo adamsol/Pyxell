@@ -254,13 +254,12 @@ sToken p s = PT p (TS s i)
       "not" -> 47
       "or" -> 48
       "print" -> 49
-      "proc" -> 50
-      "return" -> 51
-      "skip" -> 52
-      "true" -> 53
-      "while" -> 54
-      "{" -> 55
-      "}" -> 56
+      "return" -> 50
+      "skip" -> 51
+      "true" -> 52
+      "while" -> 53
+      "{" -> 54
+      "}" -> 55
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

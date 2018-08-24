@@ -92,13 +92,12 @@ import ErrM
   'not' { PT _ (TS _ 47) }
   'or' { PT _ (TS _ 48) }
   'print' { PT _ (TS _ 49) }
-  'proc' { PT _ (TS _ 50) }
-  'return' { PT _ (TS _ 51) }
-  'skip' { PT _ (TS _ 52) }
-  'true' { PT _ (TS _ 53) }
-  'while' { PT _ (TS _ 54) }
-  '{' { PT _ (TS _ 55) }
-  '}' { PT _ (TS _ 56) }
+  'return' { PT _ (TS _ 50) }
+  'skip' { PT _ (TS _ 51) }
+  'true' { PT _ (TS _ 52) }
+  'while' { PT _ (TS _ 53) }
+  '{' { PT _ (TS _ 54) }
+  '}' { PT _ (TS _ 55) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -158,7 +157,7 @@ ListStmt :: {
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'proc' Ident '(' ListArg ')' 'def' Block {
+: 'func' Ident '(' ListArg ')' 'def' Block {
   (Just (tokenLineCol $1), AbsPyxell.SProc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $7)) 
 }
 | 'func' Ident '(' ListArg ')' Type 'def' Block {
@@ -483,7 +482,10 @@ Expr2 :: {
 Type4 :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
-: 'Int' {
+: 'Void' {
+  (Just (tokenLineCol $1), AbsPyxell.TVoid (Just (tokenLineCol $1)))
+}
+| 'Int' {
   (Just (tokenLineCol $1), AbsPyxell.TInt (Just (tokenLineCol $1)))
 }
 | 'Bool' {

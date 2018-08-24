@@ -41,8 +41,8 @@ The reserved words used in Pyxell are the following:
   | ``break`` | ``continue`` | ``def`` | ``do``
   | ``elif`` | ``else`` | ``false`` | ``for``
   | ``func`` | ``if`` | ``in`` | ``not``
-  | ``or`` | ``print`` | ``proc`` | ``return``
-  | ``skip`` | ``true`` | ``while`` | 
+  | ``or`` | ``print`` | ``return`` | ``skip``
+  | ``true`` | ``while`` |  | 
 
 The symbols used in Pyxell are the following:
   | ; | ( | ) | ,
@@ -67,7 +67,7 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
-  | //Stmt// | -> | ``proc`` //Ident// ``(`` //[Arg]// ``)`` ``def`` //Block// 
+  | //Stmt// | -> | ``func`` //Ident// ``(`` //[Arg]// ``)`` ``def`` //Block// 
   |  |  **|**  | ``func`` //Ident// ``(`` //[Arg]// ``)`` //Type// ``def`` //Block// 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
@@ -146,7 +146,8 @@ All other symbols are terminals.
   |  |  **|**  | //Expr3// ``,`` //[Expr3]// 
   | //Expr// | -> | //Expr1// 
   | //Expr2// | -> | //Expr3// 
-  | //Type4// | -> | ``Int`` 
+  | //Type4// | -> | ``Void`` 
+  |  |  **|**  | ``Int`` 
   |  |  **|**  | ``Bool`` 
   |  |  **|**  | ``Char`` 
   |  |  **|**  | ``Object`` 

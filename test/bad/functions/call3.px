@@ -1,8 +1,7 @@
 
-proc test() def
-    print "test"
+func f() def
     return
 
 func main() Int def
-    test()
+    f(false)
     return 0

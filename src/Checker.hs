@@ -32,6 +32,7 @@ data StaticError = NotComparable Type Type
                  | UnexpectedStatement String
                  | UndeclaredIdentifier Ident
                  | RedeclaredIdentifier Ident
+                 | VoidDeclaration
                  | NotLvalue
                  | UnknownType
                  | NotTuple Type
@@ -53,6 +54,7 @@ instance Show StaticError where
         UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
+        VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
         UnknownType -> "Expression cannot be used in this context."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
@@ -80,8 +82,10 @@ getIdent :: Ident -> Run (Maybe Type)
 getIdent (Ident x) = asks (M.lookup x)
 
 -- | Adds an identifier to the environment.
-declare :: Type -> Ident -> Run () -> Run ()
-declare typ (Ident x) cont = local (M.insert x typ) cont
+declare :: Pos -> Type -> Ident -> Run () -> Run ()
+declare pos typ (Ident x) cont = case typ of
+    TVoid _ -> throw pos $ VoidDeclaration
+    otherwise -> local (M.insert x typ) cont
 
 
 -- | Checks the whole program.
@@ -110,13 +114,14 @@ checkStmt stmt cont = case stmt of
     SRetVoid pos -> do
         r <- asks (M.lookup "#return")
         case r of
-            Just (TVoid _) -> cont
+            Just t -> do
+                checkCast pos tVoid t
+                cont
             Nothing -> throw pos $ UnexpectedStatement "return"
     SRetExpr pos expr -> do
         (t1, _) <- checkExpr expr
         r <- asks (M.lookup "#return")
         case r of
-            Just (TVoid _) -> throw pos $ UnexpectedStatement "return"
             Just t2 -> do
                 checkCast pos t1 t2
                 cont
@@ -204,15 +209,15 @@ checkStmt stmt cont = case stmt of
                 Just _ -> throw pos $ RedeclaredIdentifier id
             let as = map (\(ANoDef _ typ _) -> reduceType typ) args
             let r = reduceType ret
-            declare (tFunc as r) id $ do
+            declare pos (tFunc as r) id $ do
                 checkArgs args $ local (M.insert "#return" r) $ local (M.delete "#loop") $ checkBlock block
                 cont
         checkArgs args cont = case args of
              [] -> cont
              a:as -> checkArg a (checkArgs as cont)
         checkArg arg cont = case arg of
-            ANoDef _ typ id -> do
-                declare (reduceType typ) id cont
+            ANoDef pos typ id -> do
+                declare pos (reduceType typ) id cont
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
             (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
@@ -224,7 +229,7 @@ checkStmt stmt cont = case stmt of
                         checkCast pos typ t
                         cont
                     Nothing -> do
-                        declare typ id cont
+                        declare pos typ id cont
             EIndex _ _ _ -> do
                 (t, m) <- checkExpr expr
                 if m then do

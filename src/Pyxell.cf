@@ -15,7 +15,7 @@ separator          Stmt        ";" ;
 
 -- statements --
 
-SProc.             Stmt   ::= "proc" Ident "(" [Arg] ")" "def" Block ;
+SProc.             Stmt   ::= "func" Ident "(" [Arg] ")" "def" Block ;
 SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type "def" Block ;
 ANoDef.            Arg    ::= Type Ident ;
 --ADef.              Arg    ::= Type Ident "=" Expr ;
@@ -101,7 +101,7 @@ coercions          Expr       9 ;
 internal TPtr.     Type4  ::= Type4 ;
 internal TDeref.   Type4  ::= Type4 ;
 internal TLabel.   Type4  ::= "Label" ;
-internal TVoid.    Type4  ::= "Void" ;
+TVoid.             Type4  ::= "Void" ;
 TInt.              Type4  ::= "Int" ;
 TBool.             Type4  ::= "Bool" ;
 TChar.             Type4  ::= "Char" ;

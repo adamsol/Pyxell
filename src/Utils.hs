@@ -18,6 +18,7 @@ type Type = Abs.Type Pos
 -- | Show instance for displaying types.
 instance {-# OVERLAPS #-} Show Type where
     show typ = case typ of
+        TVoid _ -> "Void"
         TInt _ -> "Int"
         TBool _ -> "Bool"
         TChar _ -> "Char"
@@ -26,11 +27,12 @@ instance {-# OVERLAPS #-} Show Type where
         TArray _ t -> "[" ++ show t ++ "]"
         --TPower _ typ exp -> show typ ++ show exp
         TTuple _ types -> intercalate "*" (map show types)
-        TFunc _ args ret -> "(" ++ intercalate "," (map show args) ++ ") -> " ++ show ret
+        TFunc _ args ret -> "(" ++ intercalate "," (map show args) ++ ")->" ++ show ret
 
 -- | Unification function. Returns a common supertype of given types.
 unifyTypes t1 t2 = do
     case (t1, t2) of
+        (TVoid _, TVoid _) -> Just tInt
         (TInt _, TInt _) -> Just tInt
         (TBool _, TBool _) -> Just tBool
         (TChar _, TChar _) -> Just tChar

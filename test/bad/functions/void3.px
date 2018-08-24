@@ -1,0 +1,6 @@
+
+func f(Void v) def
+    return
+
+func main() Int def
+    return 0
