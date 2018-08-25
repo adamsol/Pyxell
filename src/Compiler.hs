@@ -10,7 +10,6 @@ import Control.Monad.IO.Class
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Reader
-import Control.Monad.Trans.Writer
 import Control.Monad.Trans.Error
 import Data.Char
 import Data.List
@@ -28,7 +27,7 @@ type Result = (Type, String)
 data StateItem = Number Int | Label String
 
 -- | Compiler monad: Reader for identifier environment, State to store some useful values, Writer to produce output LLVM code.
-type Run r = ReaderT (M.Map String Result) (StateT (M.Map String StateItem) (WriterT String IO)) r
+type Run r = ReaderT (M.Map String Result) (StateT (M.Map String StateItem) (StateT (M.Map String [String]) IO)) r
 
 
 -- | Does nothing.
@@ -38,7 +37,12 @@ skip = do
 
 -- | Outputs several lines of LLVM code.
 write :: [String] -> Run ()
-write lines = lift $ lift $ tell $ unlines lines
+write lines = do
+    r <- asks (M.lookup "#function")
+    name <- case r of
+        Just (_, name) -> return $ name
+        Nothing -> return $ "!global"
+    lift $ lift $ modify (M.insertWith (++) name (reverse lines))
 
 -- | Adds an indent to given lines.
 indent :: [String] -> [String]
@@ -227,7 +231,13 @@ compileProgram prog = case prog of
         lift $ modify (M.insert "$number" (Number 0))
         lift $ modify (M.insert "$label" (Label "entry"))
         --write $ [ "", "define i32 @main() {", "entry:" ]
-        compileStmts stmts skip
+        local (M.insert "#function" (tVoid, "@main")) $ do
+            write $ [ "",
+                "define i32 @main() {",
+                "entry:" ]
+            compileStmts stmts skip
+            write $ indent $ [ "ret i32 0" ]
+            write $ [ "}" ]
         --write $ indent [ "ret i32 0" ]
         --write $ [ "}" ]
 
@@ -343,18 +353,19 @@ compileStmt stmt cont = case stmt of
         (_, l) <- asks (M.! "#continue")
         goto l
     where
-        compileFunc f args ret block cont = do
+        compileFunc name args ret block cont = do
             let as = map (\(ANoDef _ typ _) -> reduceType typ) args
             let r = reduceType ret
-            write $ [ "",
-                "define " ++ strType r ++ " @" ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
-                "entry:" ]
-            local (M.insert f (tFunc as r, "@" ++ f)) $ do
-                compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
-                    l <- nextLabel
-                    goto l >> label l
-                    compileBlock block
-                    write $ [ "}" ]
+            local (M.insert name (tFunc as r, "@" ++ name)) $ do
+                local (M.insert "#function" (tVoid, "@" ++ name)) $ do
+                    write $ [ "",
+                        "define " ++ strType r ++ " @" ++ name ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
+                        "entry:" ]
+                    compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
+                        l <- nextLabel
+                        goto l >> label l
+                        compileBlock block
+                        write $ [ "}" ]
                 cont
         compileArgs args i cont = case args of
              [] -> cont

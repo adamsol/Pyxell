@@ -1,6 +1,3 @@
 
 func f(Int x, Char y) Bool def
     return x == y
-
-func main() Int def
-    return 0

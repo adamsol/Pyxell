@@ -6,7 +6,5 @@ func min(Int x, Int y) Int def
         return y
     return 0
 
-func main() Int def
-    x = 5
-    print min(42, x) + min(x, x) + min(-1, x)
-    return 0
+x = 5
+print min(42, x) + min(x, x) + min(-1, x)

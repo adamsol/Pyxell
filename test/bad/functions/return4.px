@@ -1,6 +1,3 @@
 
 func f(Int x) Bool def
     return x
-
-func main() Int def
-    return 0

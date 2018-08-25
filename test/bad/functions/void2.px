@@ -2,6 +2,4 @@
 func f() def
     return
 
-func main() Int def
-    x = f()
-    return 0
+x = f()

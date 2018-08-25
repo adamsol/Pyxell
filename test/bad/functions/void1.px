@@ -2,7 +2,5 @@
 func f() def
     return
 
-func main() Int def
-    x = 3
-    x = f()
-    return 0
+x = 3
+x = f()

@@ -12,7 +12,6 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Reader
-import Control.Monad.Trans.Writer
 import Control.Monad.Trans.Error
 import qualified Data.Map as M
 
@@ -46,7 +45,7 @@ main = do
                             hPutStr stderr $ path ++ error
                             exitFailure
                         Right () -> do
-                            output <- execWriterT $ runStateT (runReaderT (compileProgram prog) M.empty) M.empty
-                            writeFile (base ++ ".ll") output
+                            output <- execStateT (runStateT (runReaderT (compileProgram prog) M.empty) M.empty) M.empty
+                            writeFile (base ++ ".ll") (unlines [unlines (reverse f) | f <- M.elems output])
                             readProcess "clang" [base ++ ".ll", "lib/runtime.ll", "-o", base ++ ".exe", "-O2"] ""
                             return $ ()

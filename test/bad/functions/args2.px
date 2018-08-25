@@ -2,6 +2,3 @@
 func f(String s) def
     s = 5
     return
-
-func main() Int def
-    return 0

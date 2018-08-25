@@ -2,6 +2,4 @@
 func f(Int x) Bool def
     return x == x
 
-func main() Int def
-    f("3")
-    return 0
+f("3")
