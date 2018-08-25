@@ -46,6 +46,6 @@ main = do
                             exitFailure
                         Right () -> do
                             output <- execStateT (runStateT (runReaderT (compileProgram prog) M.empty) M.empty) M.empty
-                            writeFile (base ++ ".ll") (unlines [unlines (reverse f) | f <- M.elems output])
+                            writeFile (base ++ ".ll") (concat [unlines (reverse f) | f <- M.elems output])
                             readProcess "clang" [base ++ ".ll", "lib/runtime.ll", "-o", base ++ ".exe", "-O2"] ""
                             return $ ()

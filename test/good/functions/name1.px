@@ -1,0 +1,9 @@
+
+func printInt() def
+    return
+
+func main() def
+    print "ok"
+    return
+
+main()

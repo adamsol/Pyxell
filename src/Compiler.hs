@@ -356,10 +356,11 @@ compileStmt stmt cont = case stmt of
         compileFunc name args ret block cont = do
             let as = map (\(ANoDef _ typ _) -> reduceType typ) args
             let r = reduceType ret
-            local (M.insert name (tFunc as r, "@" ++ name)) $ do
-                local (M.insert "#function" (tVoid, "@" ++ name)) $ do
+            let f = "@$" ++ [if c == '\'' then '$' else c | c <- name]
+            local (M.insert name (tFunc as r, f)) $ do
+                local (M.insert "#function" (tVoid, f)) $ do
                     write $ [ "",
-                        "define " ++ strType r ++ " @" ++ name ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
+                        "define " ++ strType r ++ " " ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
                         "entry:" ]
                     compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
                         l <- nextLabel
