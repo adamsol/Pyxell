@@ -1,0 +1,14 @@
+
+b = true
+a = ["a"]
+s = a[0] + "bc"
+
+func inc(String s) String def
+    if b do
+        s += "z"
+        b = false
+    print s
+    return s
+
+if b do
+    print inc("xy"), s

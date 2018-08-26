@@ -1,0 +1,9 @@
+
+x = 2
+
+func test(Bool x, Char x) def
+    print x
+    return
+
+test(false, 'c')
+print x

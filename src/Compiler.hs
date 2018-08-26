@@ -35,14 +35,24 @@ skip :: Run ()
 skip = do
     return $ ()
 
+-- | Runs compilation in a given scope.
+scope :: String -> Run a -> Run a
+scope name cont = do
+    local (M.insert "#scope" (tVoid, name)) cont
+
+-- | Returns name of the current scope (function).
+getScope :: Run String
+getScope = do
+    r <- asks (M.lookup "#scope")
+    case r of
+        Just (_, name) -> return $ name
+        Nothing -> return $ "!global"
+
 -- | Outputs several lines of LLVM code.
 write :: [String] -> Run ()
 write lines = do
-    r <- asks (M.lookup "#function")
-    name <- case r of
-        Just (_, name) -> return $ name
-        Nothing -> return $ "!global"
-    lift $ lift $ modify (M.insertWith (++) name (reverse lines))
+    f <- getScope
+    lift $ lift $ modify (M.insertWith (++) f (reverse lines))
 
 -- | Adds an indent to given lines.
 indent :: [String] -> [String]
@@ -80,6 +90,12 @@ nextTemp = do
     n <- nextNumber
     return $ "%t" ++ show n
 
+-- | Returns an unused global variable name in the form: '%g\d'.
+nextGlobal :: Run String
+nextGlobal = do
+    n <- nextNumber
+    return $ "@g" ++ show n
+
 -- | Returns an unused label name in the form: 'L\d'.
 nextLabel :: Run String
 nextLabel = do
@@ -109,9 +125,18 @@ branch val lbl1 lbl2 = do
     write $ indent [ "br i1 " ++ val ++ ", label %" ++ lbl1 ++ ", label %" ++ lbl2 ]
 
 -- | Outputs LLVM 'alloca' command.
-alloca :: Type -> String -> Run ()
-alloca typ ptr = do
-    write $ indent [ ptr ++ " = alloca " ++ strType typ ]
+alloca :: Type -> Run String
+alloca typ = do
+    p <- nextTemp
+    write $ indent [ p ++ " = alloca " ++ strType typ ]
+    return $ p
+
+-- | Outputs LLVM 'global' command.
+global :: Type -> String -> Run String
+global typ val = do
+    p <- nextGlobal
+    write $ [ p ++ " = global " ++ strType typ ++ " " ++ val ]
+    return $ p
 
 -- | Outputs LLVM 'store' command.
 store :: Type -> String -> String -> Run ()
@@ -127,11 +152,20 @@ load typ ptr = do
     return $ v
 
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
-declare :: Type -> Ident -> String -> String -> Run () -> Run ()
-declare typ (Ident x) val ptr cont = do
-    alloca typ ptr
-    store typ val ptr
-    local (M.insert x (typ, ptr)) cont
+declare :: Type -> Ident -> String -> Run () -> Run ()
+declare typ (Ident x) val cont = do
+    f <- getScope
+    p <- case f of
+        "@main" -> do
+            v <- case typ of
+                TInt _ -> return $ "0"
+                TBool _ -> return $ "false"
+                TChar _ -> return $ "0"
+                otherwise -> return $ "null"
+            scope "!global" $ global typ v
+        otherwise -> alloca typ
+    store typ val p
+    local (M.insert x (typ, p)) cont
 
 -- | Outputs LLVM 'getelementptr' command with given indices.
 gep :: Type -> String -> [String] -> [Int] -> Run String
@@ -227,16 +261,17 @@ compileProgram prog = case prog of
             "declare void @printInt(i64)", "declare void @printBool(i1)",
             "declare void @printChar(i8)", "declare void @printString(i8*)",
             "declare void @printSpace()", "declare void @printLn()",
-            "declare i8* @concatStrings(i8*, i8*)" ]
+            "declare i8* @concatStrings(i8*, i8*)",
+             "" ]
         lift $ modify (M.insert "$number" (Number 0))
         lift $ modify (M.insert "$label" (Label "entry"))
         --write $ [ "", "define i32 @main() {", "entry:" ]
-        local (M.insert "#function" (tVoid, "@main")) $ do
+        scope "@main" $ do
             write $ [ "",
                 "define i32 @main() {",
                 "entry:" ]
             compileStmts stmts skip
-            write $ indent $ [ "ret i32 0" ]
+            write $ indent [ "ret i32 0" ]
             write $ [ "}" ]
         --write $ indent [ "ret i32 0" ]
         --write $ [ "}" ]
@@ -260,11 +295,11 @@ compileStmt stmt cont = case stmt of
     SFunc _ (Ident f) args ret block -> do
         compileFunc f args ret block cont
     SRetVoid _ -> do
-        write $ indent $ [ "ret void" ]
+        write $ indent [ "ret void" ]
     SRetExpr _ expr -> do
         (t1, _) <- asks (M.! "#return")
         (t2, v) <- compileExpr expr
-        write $ indent $ [ "ret " ++ strType t1 ++ " " ++ v ]
+        write $ indent [ "ret " ++ strType t1 ++ " " ++ v ]
     SSkip _ -> do
         cont
     SPrint _  expr -> do
@@ -358,7 +393,7 @@ compileStmt stmt cont = case stmt of
             let r = reduceType ret
             let f = "@$" ++ [if c == '\'' then '$' else c | c <- name]
             local (M.insert name (tFunc as r, f)) $ do
-                local (M.insert "#function" (tVoid, f)) $ do
+                scope f $ do
                     write $ [ "",
                         "define " ++ strType r ++ " " ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
                         "entry:" ]
@@ -373,8 +408,7 @@ compileStmt stmt cont = case stmt of
              a:as -> compileArg a i (compileArgs as (i+1) cont)
         compileArg arg i cont = case arg of
             ANoDef pos typ id -> do
-                p <- nextTemp
-                declare (reduceType typ) id ("%" ++ show i) p cont
+                declare (reduceType typ) id ("%" ++ show i) cont
         compilePrint t v = do
             case t of
                 TInt _ -> do
@@ -404,12 +438,11 @@ compileStmt stmt cont = case stmt of
                 otherwise -> return $ expr
             r <- compileLval expr
             case (r, e) of
-                (Just (t, l), _) -> do
-                    store typ val l
+                (Just (t, p), _) -> do
+                    store typ val p
                     cont
                 (Nothing, EVar _ id) -> do
-                    l <- nextTemp
-                    declare typ id val l cont
+                    declare typ id val cont
         compileBranches brs exit = case brs of
             [] -> skip
             b:bs -> case b of
@@ -424,8 +457,7 @@ compileStmt stmt cont = case stmt of
                     label l2
                     compileBranches bs exit
         compileFor typ1 typ2 var start end step cmp get block cont = do
-            p <- nextTemp
-            alloca typ1 p
+            p <- alloca typ1
             store typ1 start p
             [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)
             compileAssg typ2 var "" $ do
@@ -520,8 +552,7 @@ compileExpr expr =
                 r:[] -> return $ r
                 otherwise -> do
                     let t = tTuple (map fst rs)
-                    p <- nextTemp
-                    alloca (tDeref t) p
+                    p <- alloca (tDeref t)
                     mapM (compileTupleElem t p) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
                     return $ (t, p)
     where
@@ -563,10 +594,8 @@ compileExpr expr =
             v4 <- binop "mul" tInt v3 v2
             (_, p2) <- initArray t' [] [v4, v4]
             p3 <- gep (tArray t') p2 ["0"] [0] >>= load (tPtr t')
-            p4 <- nextTemp
-            alloca tInt p4
-            p5 <- nextTemp
-            alloca tInt p5
+            p4 <- alloca tInt
+            p5 <- alloca tInt
             [l1, l2, l3, l4, l5, l6] <- sequence (replicate 6 nextLabel)
             store tInt "0" p4
             goto l1 >> label l1

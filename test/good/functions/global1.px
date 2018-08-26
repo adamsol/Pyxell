@@ -1,0 +1,9 @@
+
+g = 10
+
+func inc() Int def
+    g += 1
+    return g
+
+print inc() + inc()
+print g
