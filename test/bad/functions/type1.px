@@ -1,0 +1,9 @@
+
+func f(Int x) def
+    return
+
+func g(String x) def
+    return
+
+h = f
+h = g

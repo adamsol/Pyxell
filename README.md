@@ -27,7 +27,7 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Native tuples (+)
 * Immutable strings (+)
 * Mutable arrays (+)
-* First-class functions
+* First-class functions (+)
 * Closures and lambdas
 * Keyword arguments
 * Arbitrary-precision arithmetic

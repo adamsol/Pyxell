@@ -1,0 +1,8 @@
+
+func apply(Bool->Bool f, Bool b) Bool def
+    return f(b)
+
+func f() Bool def
+    return true
+
+apply(f, true)

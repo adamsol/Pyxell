@@ -1,0 +1,8 @@
+
+func f(String x) def
+    return
+
+func g(String x) Char def
+    return 'g'
+
+g = f

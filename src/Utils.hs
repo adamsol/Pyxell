@@ -30,6 +30,7 @@ instance {-# OVERLAPS #-} Show Type where
         TFunc _ args ret -> "(" ++ intercalate "," (map show args) ++ ")->" ++ show ret
 
 -- | Unification function. Returns a common supertype of given types.
+unifyTypes :: Type -> Type -> Maybe Type
 unifyTypes t1 t2 = do
     case (t1, t2) of
         (TVoid _, TVoid _) -> Just tInt
@@ -43,12 +44,20 @@ unifyTypes t1 t2 = do
         (TTuple _ ts1, TTuple _ ts2) ->
             if length ts1 == length ts2 then fmap tTuple (sequence (map (uncurry unifyTypes) (zip ts1 ts2)))
             else Nothing
+        (TFunc _ as1 r1, TFunc _ as2 r2) ->
+            if length as1 == length as2 then case (sequence (map (uncurry unifyTypes) (zip as1 as2)), (unifyTypes r1 r2)) of
+                (Just as, Just r) -> Just (tFunc as r)
+                otherwise -> Nothing
+            else Nothing
         otherwise -> Nothing
 
 -- | Try to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
+reduceType :: Type -> Type
 reduceType t = do
     case t of
-        TTuple _ ts -> if length ts == 1 then head ts else t
+        TArray _ t' -> tArray (reduceType t')
+        TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
+        TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
         otherwise -> t
 
 -- | Helper functions for initializing types without a position.

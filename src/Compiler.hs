@@ -76,6 +76,7 @@ strType typ = case typ of
     TString _ -> strType (tArray tChar)
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
+    TFunc _ as r -> strType r ++ " (" ++ intercalate ", " (map strType as) ++ ")*"
 
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
@@ -131,11 +132,11 @@ alloca typ = do
     write $ indent [ p ++ " = alloca " ++ strType typ ]
     return $ p
 
--- | Outputs LLVM 'global' command.
+-- | Outputs LLVM 'global' command in the global scope.
 global :: Type -> String -> Run String
 global typ val = do
     p <- nextGlobal
-    write $ [ p ++ " = global " ++ strType typ ++ " " ++ val ]
+    scope "!global" $ write $ [ p ++ " = global " ++ strType typ ++ " " ++ val ]
     return $ p
 
 -- | Outputs LLVM 'store' command.
@@ -162,7 +163,7 @@ declare typ (Ident x) val cont = do
                 TBool _ -> return $ "false"
                 TChar _ -> return $ "0"
                 otherwise -> return $ "null"
-            scope "!global" $ global typ v
+            global typ v
         otherwise -> alloca typ
     store typ val p
     local (M.insert x (typ, p)) cont
@@ -265,7 +266,6 @@ compileProgram prog = case prog of
              "" ]
         lift $ modify (M.insert "$number" (Number 0))
         lift $ modify (M.insert "$label" (Label "entry"))
-        --write $ [ "", "define i32 @main() {", "entry:" ]
         scope "@main" $ do
             write $ [ "",
                 "define i32 @main() {",
@@ -273,8 +273,6 @@ compileProgram prog = case prog of
             compileStmts stmts skip
             write $ indent [ "ret i32 0" ]
             write $ [ "}" ]
-        --write $ indent [ "ret i32 0" ]
-        --write $ [ "}" ]
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
@@ -389,10 +387,12 @@ compileStmt stmt cont = case stmt of
         goto l
     where
         compileFunc name args ret block cont = do
-            let as = map (\(ANoDef _ typ _) -> reduceType typ) args
+            let as = map (\(ANoDef _ t _) -> reduceType t) args
             let r = reduceType ret
-            let f = "@$" ++ [if c == '\'' then '$' else c | c <- name]
-            local (M.insert name (tFunc as r, f)) $ do
+            let t = tFunc as r
+            let f = "@$" ++ [if c == '\'' then '-' else c | c <- name]
+            p <- global t f
+            local (M.insert name (t, p)) $ do
                 scope f $ do
                     write $ [ "",
                         "define " ++ strType r ++ " " ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
@@ -427,6 +427,8 @@ compileStmt stmt cont = case stmt of
                             _ -> callVoid "@printSpace" []
                         v' <- gep t v ["0"] [i] >>= load t'
                         compilePrint t' v'
+                otherwise -> do
+                    callVoid "@printLn" []
         compileAssgs rs typ val cont = case rs of
             [] -> cont
             (t, e, i):rs -> do
@@ -704,9 +706,7 @@ compileExpr expr =
 compileRval :: Expr Pos -> Run Result
 compileRval expr = do
     Just (t, p) <- compileLval expr
-    v <- case t of
-        TFunc _ _ _ -> return $ p
-        otherwise -> load t p
+    v <- load t p
     return $ (t, v)
 
 -- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.

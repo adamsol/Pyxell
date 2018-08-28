@@ -1,0 +1,11 @@
+
+func apply(Int->Int op, Int x) Int def
+    return op(x)
+
+func neg(Int n) Int def
+    return -n
+
+func cube(Int n) Int def
+    return n * n * n
+
+print apply(cube, 6), apply(cube, apply(neg, 8))

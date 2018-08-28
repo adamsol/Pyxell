@@ -1,0 +1,8 @@
+
+a = [2, 4]
+
+func get() [Int] def
+    return a
+
+get()[1] -= 7
+print a[0], a[1]

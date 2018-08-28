@@ -1,0 +1,12 @@
+
+func id(Int x) Int def
+    print("id")
+    return x
+
+func id'(Int x) Int def
+    print("id'")
+    return x
+
+id = id'
+id' = id
+print id(5)

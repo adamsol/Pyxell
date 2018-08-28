@@ -1,0 +1,6 @@
+
+func sqr(Int x) Int def
+    return x*x
+
+f = sqr
+print f(-9)

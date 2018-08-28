@@ -206,7 +206,7 @@ checkStmt stmt cont = case stmt of
             case r of
                 Nothing -> skip
                 Just _ -> throw pos $ RedeclaredIdentifier id
-            let as = map (\(ANoDef _ typ _) -> reduceType typ) args
+            let as = map (\(ANoDef _ t _) -> reduceType t) args
             let r = reduceType ret
             declare pos (tFunc as r) id $ do
                 checkArgs args $ local (M.insert "#return" r) $ local (M.delete "#loop") $ checkBlock block
@@ -398,5 +398,6 @@ checkExpr expr =
                 Just t -> case t of
                     TObject _ -> throw pos $ NotComparable t1 t2
                     TArray _ _ -> throw pos $ NotComparable t1 t2
+                    TFunc _ _ _ -> throw pos $ NotComparable t1 t2
                     otherwise -> return $ (tBool, False)
                 Nothing -> throw pos $ NotComparable t1 t2
