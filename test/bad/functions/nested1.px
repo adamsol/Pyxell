@@ -1,0 +1,6 @@
+
+for i in 1..2 do
+    func f() Int def
+        break
+        return 0
+    print i

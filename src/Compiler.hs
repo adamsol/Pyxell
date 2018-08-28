@@ -76,7 +76,7 @@ strType typ = case typ of
     TString _ -> strType (tArray tChar)
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
-    TFunc _ as r -> strType r ++ " (" ++ intercalate ", " (map strType as) ++ ")*"
+    TFunc _ as r -> strType r ++ "(" ++ intercalate ", " (map strType as) ++ ")*"
 
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
@@ -390,7 +390,8 @@ compileStmt stmt cont = case stmt of
             let as = map (\(ANoDef _ t _) -> reduceType t) args
             let r = reduceType ret
             let t = tFunc as r
-            let f = "@$" ++ [if c == '\'' then '-' else c | c <- name]
+            s <- getScope
+            let f = (if s /= "@main" then s else "@") ++ "." ++ [if c == '\'' then '-' else c | c <- name]
             p <- global t f
             local (M.insert name (t, p)) $ do
                 scope f $ do

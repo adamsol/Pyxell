@@ -1,0 +1,5 @@
+
+for i in 1..3 do
+    func f(Int x) Int def
+        return x * i
+    print f(i)

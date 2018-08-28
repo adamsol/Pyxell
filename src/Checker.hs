@@ -18,9 +18,8 @@ import AbsPyxell hiding (Type)
 import Utils
 
 
--- | Checker monad: Reader for identifier environment, ErrorT to report compilation errors.
-type Run r = ReaderT (M.Map String Type) (ErrorT String IO) r
---type Run r = ReaderT (M.Map String Type) (ReaderT Int (ErrorT String IO)) r
+-- | Checker monad: Reader for identifier environment, Error to report compilation errors.
+type Run r = ReaderT (M.Map String (Type, Int)) (ErrorT String IO) r
 
 -- | Compilation error type.
 data StaticError = NotComparable Type Type
@@ -28,6 +27,7 @@ data StaticError = NotComparable Type Type
                  | NoBinaryOperator String Type Type
                  | NoUnaryOperator String Type
                  | WrongFunctionCall Type Int
+                 | ClosureRequired Ident
                  | UnexpectedStatement String
                  | UndeclaredIdentifier Ident
                  | RedeclaredIdentifier Ident
@@ -50,6 +50,7 @@ instance Show StaticError where
         NoBinaryOperator op typ1 typ2 -> "No binary operator `" ++ op ++ "` defined for `" ++ show typ1 ++ "` and `" ++ show typ2 ++ "`."
         NoUnaryOperator op typ -> "No unary operator `" ++ op ++ "` defined for `" ++ show typ ++ "`."
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
+        ClosureRequired (Ident x) -> "Cannot access a non-global and non-local variable `" ++ x ++ "`."
         UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
@@ -76,21 +77,44 @@ throw pos err = case pos of
     Just (r, c) -> fail $ ":" ++ show r ++ ":" ++ show c ++ ": " ++ show err
     Nothing -> fail $ ": " ++ show err
 
+-- | Returns current nesting level.
+getLevel :: Run Int
+getLevel = do
+    r <- asks (M.lookup "#level")
+    case r of
+        Just (_, l) -> return $ l
+        Nothing -> return $ -1
+
+-- | Runs continuation on a higher nesting level.
+nextLevel :: Run a -> Run a
+nextLevel cont = do
+    l <- getLevel
+    local (M.insert "#level" (tLabel, l+1)) cont
+
 -- | Gets an identifier from the environment.
-getIdent :: Ident -> Run (Maybe Type)
-getIdent (Ident x) = asks (M.lookup x)
+getIdent :: Pos -> Ident -> Run (Maybe Type)
+getIdent pos (Ident x) = do
+    l1 <- getLevel
+    r <- asks (M.lookup x)
+    case r of
+        Just (t, l2) -> do
+            if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired (Ident x)
+            else return $ Just t
+        Nothing -> return $ Nothing
 
 -- | Adds an identifier to the environment.
 declare :: Pos -> Type -> Ident -> Run () -> Run ()
 declare pos typ (Ident x) cont = case typ of
     TVoid _ -> throw pos $ VoidDeclaration
-    otherwise -> local (M.insert x typ) cont
+    otherwise -> do
+        l <- getLevel
+        local (M.insert x (typ, l)) cont
 
 
 -- | Checks the whole program.
 checkProgram :: Program Pos -> Run ()
 checkProgram prog = case prog of
-    Program pos stmts -> checkStmts stmts skip
+    Program pos stmts -> nextLevel $ checkStmts stmts skip
 
 -- | Checks a block with statements.
 checkBlock :: Block Pos -> Run ()
@@ -113,7 +137,7 @@ checkStmt stmt cont = case stmt of
     SRetVoid pos -> do
         r <- asks (M.lookup "#return")
         case r of
-            Just t -> do
+            Just (t, _) -> do
                 checkCast pos tVoid t
                 cont
             Nothing -> throw pos $ UnexpectedStatement "return"
@@ -121,10 +145,10 @@ checkStmt stmt cont = case stmt of
         (t1, _) <- checkExpr expr
         r <- asks (M.lookup "#return")
         case r of
-            Just t2 -> do
+            Just (t2, _) -> do
                 checkCast pos t1 t2
                 cont
-            otherwise -> throw pos $ UnexpectedStatement "return"
+            Nothing -> throw pos $ UnexpectedStatement "return"
     SSkip pos -> do
         cont
     SPrint pos expr -> do
@@ -164,7 +188,7 @@ checkStmt stmt cont = case stmt of
                 cont
             EEmpty pos -> cont
     SWhile pos expr block -> do
-        local (M.insert "#loop" tLabel) $ checkCond pos expr block
+        local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> case expr2 of
         ERangeIncl _ e1 e2 -> do
@@ -178,7 +202,7 @@ checkStmt stmt cont = case stmt of
             let (ts, _) = unzip rs
             case map fst rs of
                 [TInt _, TInt _, TInt _] -> do
-                    local (M.insert "#loop" tLabel) $ checkAssg pos expr1 tInt (checkBlock block >> cont)
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tInt (checkBlock block >> cont)
                 [TInt _, TInt _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
                 [TInt _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tInt
                 otherwise -> throw pos $ IllegalAssignment (ts !! 0) tInt
@@ -186,9 +210,9 @@ checkStmt stmt cont = case stmt of
             (t, _) <- checkExpr expr2
             case t of
                 TString _ -> do
-                    local (M.insert "#loop" tLabel) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
                 TArray _ t' -> do
-                    local (M.insert "#loop" tLabel) $ checkAssg pos expr1 t' (checkBlock block >> cont)
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 t' (checkBlock block >> cont)
                 otherwise -> throw pos $ NotIterable t
     SBreak pos -> do
         r <- asks (M.lookup "#loop")
@@ -202,14 +226,15 @@ checkStmt stmt cont = case stmt of
             otherwise -> throw pos $ UnexpectedStatement "continue"
     where
         checkFunc pos id args ret block cont = do
-            r <- getIdent id
+            r <- getIdent pos id
             case r of
                 Nothing -> skip
                 Just _ -> throw pos $ RedeclaredIdentifier id
             let as = map (\(ANoDef _ t _) -> reduceType t) args
             let r = reduceType ret
-            declare pos (tFunc as r) id $ do
-                checkArgs args $ local (M.insert "#return" r) $ local (M.delete "#loop") $ checkBlock block
+            declare pos (tFunc as r) id $ do  -- so global functions are global
+                nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
+                    checkArgs args $ local (M.insert "#return" (r, 0)) $ local (M.delete "#loop") $ checkBlock block
                 cont
         checkArgs args cont = case args of
              [] -> cont
@@ -222,7 +247,7 @@ checkStmt stmt cont = case stmt of
             (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
         checkAssg pos expr typ cont = case expr of
             EVar _ id -> do
-                r <- getIdent id
+                r <- getIdent pos id
                 case r of
                     Just t -> do
                         checkCast pos typ t
@@ -350,7 +375,7 @@ checkExpr expr =
                 otherwise -> return $ (tTuple ts, all (== True) ms)
     where
         checkIdent pos id = do
-            r <- getIdent id
+            r <- getIdent pos id
             case r of
                 Just t -> return $ (t, True)
                 Nothing -> throw pos $ UndeclaredIdentifier id
