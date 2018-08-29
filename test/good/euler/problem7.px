@@ -1,14 +1,16 @@
 
+func is_prime(Int p) Bool def
+    i = 2
+    while i * i <= p do
+        if p % i == 0 do
+            return false
+        i += 1
+    return true
+
 p = 1
 n = 0
 while n < 10001 do
     p += 1
-    is_prime = true
-    i = 2
-    while i * i <= p do
-        if p % i == 0 do
-            is_prime = false
-        i += 1
-    if is_prime do
+    if is_prime(p) do
         n += 1
 print p

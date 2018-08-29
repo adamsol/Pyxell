@@ -3,4 +3,4 @@ if true do
     func h() def
         return
 
-return h()
+h()

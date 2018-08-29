@@ -108,7 +108,6 @@ TChar.             Type4  ::= "Char" ;
 TObject.           Type4  ::= "Object" ;
 TString.           Type4  ::= "String" ;
 TArray.            Type4  ::= "[" Type "]" ;
---TPower.            Type3  ::= Type4 "^" Integer ;
 TTuple.            Type2  ::= [Type3] ;
 separator nonempty Type3      "*" ;
 separator nonempty Type2      "," ;

@@ -4,7 +4,6 @@ func min(Int x, Int y) Int def
         return x
     else do
         return y
-    return 0
 
 x = 5
 print min(42, x) + min(x, x) + min(-1, x)

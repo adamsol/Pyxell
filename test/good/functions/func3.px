@@ -6,6 +6,5 @@ func ack(Int m, Int n) Int def
         return ack(m-1, 1)
     else do
         return ack(m-1, ack(m, n-1))
-    return 0
 
 print ack(3, 4)

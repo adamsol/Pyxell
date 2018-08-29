@@ -51,8 +51,8 @@ getScope = do
 -- | Outputs several lines of LLVM code.
 write :: [String] -> Run ()
 write lines = do
-    f <- getScope
-    lift $ lift $ modify (M.insertWith (++) f (reverse lines))
+    s <- getScope
+    lift $ lift $ modify (M.insertWith (++) s (reverse lines))
 
 -- | Adds an indent to given lines.
 indent :: [String] -> [String]
@@ -77,6 +77,17 @@ strType typ = case typ of
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
     TFunc _ as r -> strType r ++ "(" ++ intercalate ", " (map strType as) ++ ")*"
+
+-- | Returns a default value for a given type.
+-- | This function is for LLVM code and only serves its internal requirements.
+-- | Returned values are not to be relied upon.
+defaultValue :: Type -> String
+defaultValue typ = case typ of
+    TVoid _ -> ""
+    TInt _ -> "42"
+    TBool _ -> "true"
+    TChar _ -> show (ord '$')
+    otherwise -> "null"
 
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
@@ -155,15 +166,9 @@ load typ ptr = do
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
 declare :: Type -> Ident -> String -> Run () -> Run ()
 declare typ (Ident x) val cont = do
-    f <- getScope
-    p <- case f of
-        "@main" -> do
-            v <- case typ of
-                TInt _ -> return $ "0"
-                TBool _ -> return $ "false"
-                TChar _ -> return $ "0"
-                otherwise -> return $ "null"
-            global typ v
+    s <- getScope
+    p <- case s of
+        "@main" -> global typ (defaultValue typ)
         otherwise -> alloca typ
     store typ val p
     local (M.insert x (typ, p)) cont
@@ -212,12 +217,12 @@ binop op typ val1 val2 = do
 
 -- | Outputs LLVM function 'call' instruction.
 call :: Type -> String -> [Result] -> Run String
-call ret name args = do
+call rt name args = do
     v <- nextTemp
-    c <- case ret of
+    c <- case rt of
         TVoid _ -> return $ "call "
         otherwise -> return $ v ++ " = call "
-    write $ indent [ c ++ strType ret ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- args] ++ ")" ]
+    write $ indent [ c ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- args] ++ ")" ]
     return $ v
 
 -- | Outputs LLVM function 'call' with void return type.
@@ -225,6 +230,11 @@ callVoid :: String -> [Result] -> Run ()
 callVoid name args = do
     call tVoid name args
     skip
+
+-- | Outputs LLVM 'ret' instruction.
+ret :: Type -> String -> Run ()
+ret typ val = do
+    write $ indent [ "ret " ++ strType typ ++ " " ++ val ]
 
 
 -- | Outputs LLVM code for string initialization.
@@ -268,10 +278,10 @@ compileProgram prog = case prog of
         lift $ modify (M.insert "$label" (Label "entry"))
         scope "@main" $ do
             write $ [ "",
-                "define i32 @main() {",
+                "define i64 @main() {",
                 "entry:" ]
             compileStmts stmts skip
-            write $ indent [ "ret i32 0" ]
+            ret tInt "0"
             write $ [ "}" ]
 
 -- | Outputs LLVM code for a block of statements.
@@ -290,14 +300,13 @@ compileStmt :: Stmt Pos -> Run () -> Run ()
 compileStmt stmt cont = case stmt of
     SProc _ (Ident f) args block -> do
         compileFunc f args tVoid block cont
-    SFunc _ (Ident f) args ret block -> do
-        compileFunc f args ret block cont
+    SFunc _ (Ident f) args rt block -> do
+        compileFunc f args rt block cont
     SRetVoid _ -> do
-        write $ indent [ "ret void" ]
+        ret tVoid ""
     SRetExpr _ expr -> do
-        (t1, _) <- asks (M.! "#return")
-        (t2, v) <- compileExpr expr
-        write $ indent [ "ret " ++ strType t1 ++ " " ++ v ]
+        (t, v) <- compileExpr expr
+        ret t v
     SSkip _ -> do
         cont
     SPrint _  expr -> do
@@ -386,9 +395,9 @@ compileStmt stmt cont = case stmt of
         (_, l) <- asks (M.! "#continue")
         goto l
     where
-        compileFunc name args ret block cont = do
+        compileFunc name args rt block cont = do
             let as = map (\(ANoDef _ t _) -> reduceType t) args
-            let r = reduceType ret
+            let r = reduceType rt
             let t = tFunc as r
             s <- getScope
             let f = (if s /= "@main" then s else "@") ++ "." ++ [if c == '\'' then '-' else c | c <- name]
@@ -402,6 +411,7 @@ compileStmt stmt cont = case stmt of
                         l <- nextLabel
                         goto l >> label l
                         compileBlock block
+                        ret r (defaultValue r)
                         write $ [ "}" ]
                 cont
         compileArgs args i cont = case args of

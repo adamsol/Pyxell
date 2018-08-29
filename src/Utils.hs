@@ -24,10 +24,9 @@ instance {-# OVERLAPS #-} Show Type where
         TChar _ -> "Char"
         TObject _ -> "Object"
         TString _ -> "String"
-        TArray _ t -> "[" ++ show t ++ "]"
-        --TPower _ typ exp -> show typ ++ show exp
-        TTuple _ types -> intercalate "*" (map show types)
-        TFunc _ args ret -> "(" ++ intercalate "," (map show args) ++ ")->" ++ show ret
+        TArray _ t' -> "[" ++ show t' ++ "]"
+        TTuple _ ts -> intercalate "*" (map show ts)
+        TFunc _ as r -> "(" ++ intercalate "," (map show as) ++ ")->" ++ show r
 
 -- | Unification function. Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
