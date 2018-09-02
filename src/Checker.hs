@@ -3,18 +3,13 @@
 
 module Checker where
 
-import Control.Applicative
 import Control.Monad
-import Control.Monad.Identity
-import Control.Monad.IO.Class
-import Control.Monad.Trans.Class
-import Control.Monad.Trans.State
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Error
-import Data.List
 import qualified Data.Map as M
 
 import AbsPyxell hiding (Type)
+
 import Utils
 
 
@@ -131,9 +126,13 @@ checkStmts stmts cont = case stmts of
 checkStmt :: Stmt Pos -> Run () -> Run ()
 checkStmt stmt cont = case stmt of
     SProc pos id args block -> do
-        checkFunc pos id args tVoid block cont
+        checkFunc pos id args tVoid (Just block) cont
     SFunc pos id args ret block -> do
-        checkFunc pos id args ret block cont
+        checkFunc pos id args ret (Just block) cont
+    SProcExtern pos id args -> do
+        checkFunc pos id args tVoid Nothing cont
+    SFuncExtern pos id args ret -> do
+        checkFunc pos id args ret Nothing cont
     SRetVoid pos -> do
         r <- asks (M.lookup "#return")
         case r of
@@ -233,8 +232,10 @@ checkStmt stmt cont = case stmt of
             let as = map (\(ANoDef _ t _) -> reduceType t) args
             let r = reduceType ret
             declare pos (tFunc as r) id $ do  -- so global functions are global
-                nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
-                    checkArgs args $ local (M.insert "#return" (r, 0)) $ local (M.delete "#loop") $ checkBlock block
+                case block of
+                    Just b -> nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
+                        checkArgs args $ local (M.insert "#return" (r, 0)) $ local (M.delete "#loop") $ checkBlock b
+                    Nothing -> skip
                 cont
         checkArgs args cont = case args of
              [] -> cont
@@ -325,15 +326,28 @@ checkExpr expr =
         EAttr pos e id -> do
             (t, m) <- checkExpr e
             case t of
-                TString _ -> case id of
-                    Ident "length" -> return $ (tInt, False)
+                TInt _ -> case fromIdent id of
+                    "toString" -> return $ (tFunc [tInt] tString, False)
+                TBool _ -> case fromIdent id of
+                    "toString" -> return $ (tFunc [tBool] tString, False)
+                TChar _ -> case fromIdent id of
+                    "toString" -> return $ (tFunc [tChar] tString, False)
+                TString _ -> case fromIdent id of
+                    "length" -> return $ (tInt, False)
+                    "toString" -> return $ (tFunc [tString] tString, False)
+                    "toInt" -> return $ (tFunc [tString] tInt, False)
                     otherwise -> throw pos $ InvalidAttr t id
-                TArray _ _ -> case id of
-                    Ident "length" -> return $ (tInt, False)
+                TArray _ t' -> case (t', fromIdent id) of
+                    (_, "length") -> return $ (tInt, False)
+                    (TChar _, "join") -> return $ (tFunc [tArray tChar, tString] tString, False)
+                    (TString _, "join") -> return $ (tFunc [tArray tString, tString] tString, False)
                     otherwise -> throw pos $ InvalidAttr t id
-                otherwise -> throw pos $ NotClass t
+                otherwise -> throw pos $ InvalidAttr t id
         ECall pos e es -> do
             (t, _) <- checkExpr e
+            es <- case e of
+                EAttr _ e' _ -> return $ e':es
+                otherwise -> return $ es
             case t of
                 TFunc _ args ret -> do
                     case length es == length args of

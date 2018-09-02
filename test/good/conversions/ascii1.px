@@ -1,0 +1,3 @@
+
+print ord('#'), ord('x')
+print ord('\n')

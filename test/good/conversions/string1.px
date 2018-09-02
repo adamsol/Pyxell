@@ -1,0 +1,4 @@
+
+s = 42.toString()
+print s, s[0] == '4', s == "42"
+print s.length

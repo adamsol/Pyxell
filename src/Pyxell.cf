@@ -17,6 +17,8 @@ separator          Stmt        ";" ;
 
 SProc.             Stmt   ::= "func" Ident "(" [Arg] ")" "def" Block ;
 SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type "def" Block ;
+SProcExtern.       Stmt   ::= "func" Ident "(" [Arg] ")" "extern" ;
+SFuncExtern.       Stmt   ::= "func" Ident "(" [Arg] ")" Type "extern" ;
 ANoDef.            Arg    ::= Type Ident ;
 --ADef.              Arg    ::= Type Ident "=" Expr ;
 separator          Arg        "," ;

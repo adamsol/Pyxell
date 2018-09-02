@@ -1,0 +1,9 @@
+
+a = "26490539817".toInt()
+print a
+
+b = ((-387).toString()+"9736"*2).toInt()
+print a + b
+
+print "-000000".toInt() == 0
+

@@ -1,0 +1,6 @@
+
+s = ['a', '&', 'c'].join("xy")
+print s.length, s
+
+print ['x', 'y', 'z'].join("")
+print ['T'].join("EST")

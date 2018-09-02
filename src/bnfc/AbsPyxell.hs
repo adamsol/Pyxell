@@ -17,6 +17,8 @@ instance Functor Program where
 data Stmt a
     = SProc a Ident [Arg a] (Block a)
     | SFunc a Ident [Arg a] (Type a) (Block a)
+    | SProcExtern a Ident [Arg a]
+    | SFuncExtern a Ident [Arg a] (Type a)
     | SRetVoid a
     | SRetExpr a (Expr a)
     | SSkip a
@@ -38,6 +40,8 @@ instance Functor Stmt where
     fmap f x = case x of
         SProc a ident args block -> SProc (f a) ident (map (fmap f) args) (fmap f block)
         SFunc a ident args type_ block -> SFunc (f a) ident (map (fmap f) args) (fmap f type_) (fmap f block)
+        SProcExtern a ident args -> SProcExtern (f a) ident (map (fmap f) args)
+        SFuncExtern a ident args type_ -> SFuncExtern (f a) ident (map (fmap f) args) (fmap f type_)
         SRetVoid a -> SRetVoid (f a)
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
         SSkip a -> SSkip (f a)

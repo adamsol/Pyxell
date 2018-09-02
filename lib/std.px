@@ -1,0 +1,85 @@
+
+func ord(Char c) Int extern
+func chr(Int c) Char extern
+
+func str([Char] a) String extern
+
+func write(String s) extern
+func writeLn() extern
+
+
+func CharArray_join([Char] array, String sep) String def
+    m = sep.length
+    n = array.length
+    r = [' '] * ((m+1) * (n-1) + 1)
+    p = 0
+    for i in 0...n do
+        r[p] = array[i]
+        p += 1
+        if i < n-1 do
+            for c in sep do
+                r[p] = c
+                p += 1
+    return str(r)
+
+func StringArray_join([String] array, String sep) String def
+    m = sep.length
+    n = array.length
+    l = 0
+    for s in array do
+        l += s.length
+    r = [' '] * (l + m*(n-1))
+    p = 0
+    for i in 0...n do
+        for c in array[i] do
+            r[p] = c
+            p += 1
+        if i < n-1 do
+            for c in sep do
+                r[p] = c
+                p += 1
+    return str(r)
+
+
+func Int_toString(Int n) String def
+    if n == 0 do
+        return "0"
+    neg = false
+    if n < 0 do
+        neg = true
+        n = -n
+    r = [' '] * 22
+    p = 0
+    while n <> 0 do
+        r[p] = chr(n % 10 + 48)
+        n /= 10
+        p += 1
+    if neg do
+        r[p] = '-'
+        p += 1
+    r' = [' '] * p
+    for i in 0...p do
+        r'[i] = r[p-1-i]
+    return str(r')
+
+func Bool_toString(Bool b) String def
+    if b do
+        return "true"
+    else do
+        return "false"
+
+func Char_toString(Char c) String def
+    return str([c])
+
+func String_toString(String s) String def
+    return s
+
+
+func String_toInt(String s) Int def
+    n = 0
+    for c in s do
+        if '0' <= c <= '9' do
+            n = n*10 + ord(c)-48
+    if s[0] == '-' do
+        n = -n
+    return n

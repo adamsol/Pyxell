@@ -84,20 +84,21 @@ import ErrM
   'do' { PT _ (TS _ 39) }
   'elif' { PT _ (TS _ 40) }
   'else' { PT _ (TS _ 41) }
-  'false' { PT _ (TS _ 42) }
-  'for' { PT _ (TS _ 43) }
-  'func' { PT _ (TS _ 44) }
-  'if' { PT _ (TS _ 45) }
-  'in' { PT _ (TS _ 46) }
-  'not' { PT _ (TS _ 47) }
-  'or' { PT _ (TS _ 48) }
-  'print' { PT _ (TS _ 49) }
-  'return' { PT _ (TS _ 50) }
-  'skip' { PT _ (TS _ 51) }
-  'true' { PT _ (TS _ 52) }
-  'while' { PT _ (TS _ 53) }
-  '{' { PT _ (TS _ 54) }
-  '}' { PT _ (TS _ 55) }
+  'extern' { PT _ (TS _ 42) }
+  'false' { PT _ (TS _ 43) }
+  'for' { PT _ (TS _ 44) }
+  'func' { PT _ (TS _ 45) }
+  'if' { PT _ (TS _ 46) }
+  'in' { PT _ (TS _ 47) }
+  'not' { PT _ (TS _ 48) }
+  'or' { PT _ (TS _ 49) }
+  'print' { PT _ (TS _ 50) }
+  'return' { PT _ (TS _ 51) }
+  'skip' { PT _ (TS _ 52) }
+  'true' { PT _ (TS _ 53) }
+  'while' { PT _ (TS _ 54) }
+  '{' { PT _ (TS _ 55) }
+  '}' { PT _ (TS _ 56) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -162,6 +163,12 @@ Stmt :: {
 }
 | 'func' Ident '(' ListArg ')' Type 'def' Block {
   (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
+}
+| 'func' Ident '(' ListArg ')' 'extern' {
+  (Just (tokenLineCol $1), AbsPyxell.SProcExtern (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
+}
+| 'func' Ident '(' ListArg ')' Type 'extern' {
+  (Just (tokenLineCol $1), AbsPyxell.SFuncExtern (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
 | 'return' {
   (Just (tokenLineCol $1), AbsPyxell.SRetVoid (Just (tokenLineCol $1)))

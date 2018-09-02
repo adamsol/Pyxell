@@ -246,20 +246,21 @@ sToken p s = PT p (TS s i)
       "do" -> 39
       "elif" -> 40
       "else" -> 41
-      "false" -> 42
-      "for" -> 43
-      "func" -> 44
-      "if" -> 45
-      "in" -> 46
-      "not" -> 47
-      "or" -> 48
-      "print" -> 49
-      "return" -> 50
-      "skip" -> 51
-      "true" -> 52
-      "while" -> 53
-      "{" -> 54
-      "}" -> 55
+      "extern" -> 42
+      "false" -> 43
+      "for" -> 44
+      "func" -> 45
+      "if" -> 46
+      "in" -> 47
+      "not" -> 48
+      "or" -> 49
+      "print" -> 50
+      "return" -> 51
+      "skip" -> 52
+      "true" -> 53
+      "while" -> 54
+      "{" -> 55
+      "}" -> 56
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

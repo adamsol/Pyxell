@@ -1,44 +1,64 @@
 
-@d = internal constant [5 x i8] c"%lld\00"
-@bt = internal constant [5 x i8] c"true\00"
-@bf = internal constant [6 x i8] c"false\00"
 @s = internal constant [3 x i8] c"%s\00"
 
-declare i32 @printf(i8*, ...)
-declare i32 @putchar(i8)
+declare i8* @malloc(i64)
+declare i8* @memcpy(i8*, i8*, i64)
+declare i8* @strcpy(i8*, i8*)
+declare i64 @strcmp(i8*, i8*)
+declare i64 @putchar(i8)
+declare i64 @printf(i8*, i8*)
 
 
-define void @printInt(i64 %x) {
-    %d = getelementptr [5 x i8], [5 x i8]* @d, i32 0, i32 0
-    call i32 (i8*, ...) @printf(i8* %d, i64 %x)
-    ret void
+define i8 @chr(i64) {
+entry:
+	%t2 = trunc i64 %0 to i8
+	ret i8 %t2
 }
 
-define void @printBool(i1 %x) {
-    %bt = getelementptr [5 x i8], [5 x i8]* @bt, i32 0, i32 0
-    %bf = getelementptr [6 x i8], [6 x i8]* @bf, i32 0, i32 0
-    %b = select i1 %x, i8* %bt, i8* %bf
-    call i32 (i8*, ...) @printf(i8* %b)
-    ret void
+define i64 @ord(i8) {
+entry:
+	%t1 = zext i8 %0 to i64
+	ret i64 %t1
 }
 
-define void @printChar(i8 %x) {
-    call i32 @putchar(i8 %x)
-    ret void
+define {i8*, i64}* @str({i8*, i64}*) {
+entry:
+	%t3 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %0, i64 0, i32 0
+	%t4 = load i8*, i8** %t3
+	%t5 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %0, i64 0, i32 1
+	%t6 = load i64, i64* %t5
+	%t7 = add i64 %t6, 1
+	%t8 = getelementptr inbounds {i8*, i64}, {i8*, i64}* null, i64 1
+	%t9 = ptrtoint {i8*, i64}* %t8 to i64
+	%t10 = call i8* @malloc(i64 %t9)
+	%t11 = bitcast i8* %t10 to {i8*, i64}*
+	%t12 = getelementptr inbounds i8, i8* null, i64 %t7
+	%t13 = ptrtoint i8* %t12 to i64
+	%t14 = call i8* @malloc(i64 %t13)
+	%t15 = bitcast i8* %t14 to i8*
+	%t16 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t11, i64 0, i32 0
+	store i8* %t15, i8** %t16
+	%t17 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t11, i64 0, i32 1
+	store i64 %t6, i64* %t17
+	%t18 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t11, i64 0, i32 0
+	%t19 = load i8*, i8** %t18
+	%t20 = call i8* @memcpy(i8* %t19, i8* %t4, i64 %t6)
+	%t21 = getelementptr inbounds i8, i8* %t19, i64 %t6
+	store i8 0, i8* %t21
+	ret {i8*, i64}* %t11
 }
 
-define void @printString(i8* %x) {
-    %s = getelementptr [3 x i8], [3 x i8]* @s, i32 0, i32 0
-    call i32 (i8*, ...) @printf(i8* %s, i8* %x)
-    ret void
+define void @write({i8*, i64}*) {
+entry:
+	%t22 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %0, i64 0, i32 0
+	%t23 = load i8*, i8** %t22
+	%s = getelementptr [3 x i8], [3 x i8]* @s, i32 0, i32 0
+	%t24 = call i64 @printf(i8* %s, i8* %t23)
+	ret void 
 }
 
-define void @printSpace() {
-    call i32 @putchar(i8 32)
-    ret void
-}
-
-define void @printLn() {
-    call i32 @putchar(i8 10)
-    ret void
+define void @writeLn() {
+entry:
+	%t25 = call i64 @putchar(i8 10)
+	ret void 
 }

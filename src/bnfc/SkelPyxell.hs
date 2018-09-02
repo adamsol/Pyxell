@@ -19,6 +19,8 @@ transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
   SProc _ ident args block -> failure x
   SFunc _ ident args type_ block -> failure x
+  SProcExtern _ ident args -> failure x
+  SFuncExtern _ ident args type_ -> failure x
   SRetVoid _ -> failure x
   SRetExpr _ expr -> failure x
   SSkip _ -> failure x

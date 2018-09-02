@@ -60,9 +60,9 @@ These are the software versions that I use. Pyxell may work with others versions
 
 * GHC 8.2.2
 * Cabal 2.0.0
-* BNFC 2.8.1 with `176-source-position` branch 
 * Clang 6.0.0 with C++ standard library
-* Python 3.6.4 with `colorama` and `argparse` packages
+* BNFC 2.8.1 with `176-source-position` branch (to recompile grammar)
+* Python 3.6.4 with `colorama` and `argparse` packages (to run tests)
 
 For BNFC to store source code position, install it from source:
 
@@ -82,11 +82,14 @@ or it may be necessary to run `clang` with `-target x86_64-pc-windows-gnu` in `M
 Usage
 -----
 
-> make \
+> make bin \
 > ./pyxell code.px
 
 If the program is correct, `code.ll` file and an executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
+
+Run `make grammar` to run BNFC after changing the grammar (`src/Pyxell.cf`).
+Run `make libs` to recompile runtime libraries (`lib/`).
 
 
 Tests

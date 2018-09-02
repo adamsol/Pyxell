@@ -1,9 +1,9 @@
-all: grammar code
+all: grammar bin
 
 grammar:
 	+$(MAKE) -C bnfc
-code:
-	ghc --make Main.hs -i./bnfc/ -o ../pyxell
+bin:
+	ghc --make -fwarn-unused-imports Main.hs -i./bnfc/ -o ../pyxell
 
 clean:
 	+$(MAKE) clean -C bnfc
