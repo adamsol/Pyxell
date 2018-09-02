@@ -21,7 +21,6 @@ libInternal = do
         "declare i64 @putchar(i8)", "declare i64 @printf(i8*, i8*)",
         "" ]
     lift $ modify (M.insert "$number" (Number 0))
-    lift $ modify (M.insert "$label" (Label "entry"))
 
     -- Char <-> Int (ASCII)
     define (tFunc [tChar] tInt) "@ord" $ do

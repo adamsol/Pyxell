@@ -115,6 +115,7 @@ define (TFunc _ args rt) name cont = do
         write $ [ "",
             "define " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ") {",
             "entry:" ]
+        lift $ modify (M.insert ("$label-" ++ name) (Label "entry"))
         cont
         write $ [ "}" ]
 
@@ -128,12 +129,14 @@ nextLabel = do
 label :: String -> Run ()
 label lbl = do
     write $ [ lbl ++ ":" ]
-    lift $ modify (M.insert "$label" (Label lbl))
+    s <- getScope
+    lift $ modify (M.insert ("$label-" ++ s)  (Label lbl))
 
 -- | Returns name of the currently active label.
 getLabel :: Run String
 getLabel = do
-    Label l <- lift $ gets (M.! "$label")
+    s <- getScope
+    Label l <- lift $ gets (M.! ("$label-" ++ s))
     return $ l
 
 -- | Outputs LLVM 'br' command with a single goal.

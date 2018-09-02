@@ -27,7 +27,6 @@ compileProgram prog = case prog of
             "declare i64 @putchar(i8)",
             "" ]
         lift $ modify (M.insert "$number" (Number 0))
-        lift $ modify (M.insert "$label" (Label "entry"))
         define (tFunc [] tInt) "@main" $ do
             compileStmts stmts skip
             ret tInt "0"
