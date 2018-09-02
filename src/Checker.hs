@@ -24,6 +24,7 @@ data StaticError = NotComparable Type Type
                  | WrongFunctionCall Type Int
                  | ClosureRequired Ident
                  | UnexpectedStatement String
+                 | NotPrintable Type
                  | UndeclaredIdentifier Ident
                  | RedeclaredIdentifier Ident
                  | VoidDeclaration
@@ -47,6 +48,7 @@ instance Show StaticError where
         WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
         ClosureRequired (Ident x) -> "Cannot access a non-global and non-local variable `" ++ x ++ "`."
         UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
+        NotPrintable typ -> "Variable of type `" ++ show typ ++ "` cannot be printed."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
@@ -151,8 +153,12 @@ checkStmt stmt cont = case stmt of
     SSkip pos -> do
         cont
     SPrint pos expr -> do
-        checkExpr expr
-        cont
+        (t, _) <- checkExpr expr
+        case t of
+            TVoid _ -> throw pos $ NotPrintable t
+            TArray _ _ -> throw pos $ NotPrintable t
+            TFunc _ _ _ -> throw pos $ NotPrintable t
+            otherwise -> cont
     SAssg pos exprs -> case exprs of
         e:[] -> do
             checkExpr e
