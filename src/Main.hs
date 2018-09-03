@@ -29,7 +29,7 @@ main = do
     case args of
         [] -> hPutStrLn stderr $ "File path needed!"
         "-l":_ -> do
-            outputCode libInternal "lib/runtime.ll"
+            outputCode libRuntime "lib/runtime.ll"
         path:_ -> do
             let base = fst $ splitExtension path
             code <- readFile path

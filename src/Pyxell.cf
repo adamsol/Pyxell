@@ -8,7 +8,6 @@ layout toplevel    ;
 
 -- program --
 
-
 Program.           Program ::= [Stmt] ;
 separator          Stmt        ";" ;
 

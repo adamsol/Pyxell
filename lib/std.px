@@ -8,6 +8,19 @@ func write(String s) extern
 func writeLn() extern
 
 
+func min(Int a, Int b) Int def
+    if a < b do
+        return a
+    else do
+        return b
+
+func max(Int a, Int b) Int def
+    if b < a do
+        return a
+    else do
+        return b
+
+
 func CharArray_join([Char] array, String sep) String def
     m = sep.length
     n = array.length
@@ -83,3 +96,15 @@ func String_toInt(String s) Int def
     if s[0] == '-' do
         n = -n
     return n
+
+func String_compare(String a, String b) Int def
+    for i in 0...min(a.length, b.length) do
+        if a[i] < b[i] do
+            return -1
+        elif b[i] < a[i] do
+            return 1
+    if a.length < b.length do
+        return -1
+    elif b.length < a.length do
+        return 1
+    return 0

@@ -267,7 +267,7 @@ ret typ val = do
 -- | Outputs LLVM code for string initialization.
 initString :: String -> Run Result
 initString s = do
-    (_, p) <- initArray tChar (map (show . ord) (s ++ "\0")) [show (length s)]
+    (_, p) <- initArray tChar (map (show . ord) s) []
     return $ (tString, p)
 
 -- | Outputs LLVM code for array initialization.

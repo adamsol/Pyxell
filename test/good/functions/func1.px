@@ -1,9 +1,9 @@
 
-func min(Int x, Int y) Int def
+func min_(Int x, Int y) Int def
     if x < y do
         return x
     else do
         return y
 
 x = 5
-print min(42, x) + min(x, x) + min(-1, x)
+print min_(42, x) + min_(x, x) + min_(-1, x)

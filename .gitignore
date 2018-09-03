@@ -22,5 +22,4 @@ cabal.sandbox.config
 tmp.*
 _*
 *.bc
-test/**/*.ll
-test/**/.*
+*.ll

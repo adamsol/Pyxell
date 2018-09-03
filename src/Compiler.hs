@@ -22,8 +22,7 @@ compileProgram :: Program Pos -> Run ()
 compileProgram prog = case prog of
     Program _ stmts -> do
         write $ [ "",
-            "declare i8* @malloc(i64)",
-            "declare i8* @strcpy(i8*, i8*)", "declare i64 @strcmp(i8*, i8*)",
+            "declare i8* @malloc(i64)", "declare i8* @memcpy(i8*, i8*, i64)",
             "declare i64 @putchar(i8)",
             "" ]
         lift $ modify (M.insert "$number" (Number 0))
@@ -325,13 +324,11 @@ compileExpr expr =
                     v3 <- gep tString v1 ["0"] [1] >>= load tInt
                     v4 <- gep tString v2 ["0"] [1] >>= load tInt
                     v5 <- binop "add" tInt v3 v4
-                    v6 <- binop "add" tInt v5 "1"
-                    (_, p3) <- initArray tChar [] [v5, v6]
+                    (_, p3) <- initArray tChar [] [v5, v5]
                     p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
-                    call (tPtr tChar) "@strcpy" [(tPtr tChar, p4), (tPtr tChar, p1)]
+                    call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v3)]
                     p5 <- gep (tPtr tChar) p4 [v3] []
-                    call (tPtr tChar) "@strcpy" [(tPtr tChar, p5), (tPtr tChar, p2)]
-                    gep (tPtr tChar) p4 [v5] [] >>= store tChar "0"
+                    call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v4)]
                     return (tString, p3)
                 (TString _, TInt _) -> do
                     p <- compileArrayMul tChar v1 v2
@@ -383,9 +380,9 @@ compileExpr expr =
         compileCmp op t v1 v2 = do
             (t, v1, v2) <- case t of
                 TString _ -> do
-                    p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
-                    p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
-                    v3 <- call tInt "@strcmp" [(tPtr tChar, p1), (tPtr tChar, p2)]
+                    Just (t1, p1) <- getIdent (Ident "String_compare")
+                    p2 <- load t1 p1
+                    v3 <- call tInt p2 [(tString, v1), (tString, v2)]
                     return $ (tInt, v3, "0")
                 otherwise -> return $ (t, v1, v2)
             case (op, t) of

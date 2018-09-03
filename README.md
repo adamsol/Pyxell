@@ -82,14 +82,14 @@ or it may be necessary to run `clang` with `-target x86_64-pc-windows-gnu` in `M
 Usage
 -----
 
-> make bin \
+> make bin libs \
 > ./pyxell code.px
 
 If the program is correct, `code.ll` file and an executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
 
 Run `make grammar` to run BNFC after changing the grammar (`src/Pyxell.cf`).
-Run `make libs` to recompile runtime libraries (`lib/`).
+Run `make libs` to only recompile runtime libraries (`lib/`).
 
 
 Tests

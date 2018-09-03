@@ -26,7 +26,7 @@ args = parser.parse_args()
 
 # Run tests that satisfy a given pattern.
 i = 0
-for path in glob.glob(f'test/**/*.px', recursive=True):
+for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
     if args.pattern.replace('/', os.path.sep) not in path:
         continue
     i += 1
