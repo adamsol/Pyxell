@@ -26,12 +26,12 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Full compilation to machine code (+)
 * Native tuples (+)
 * Immutable strings (+)
+* String interpolation (+)
 * Mutable arrays (+)
 * First-class functions (+)
+* Default and keyword arguments
 * Closures and lambdas
-* Keyword arguments
 * Arbitrary-precision arithmetic
-* String interpolation
 * Classes with multiple inheritance and safe references
 * Separate nullable types
 * Coroutines
@@ -58,8 +58,7 @@ Requirements
 
 These are the software versions that I use. Pyxell may work with others versions, but it is not guaranteed.
 
-* GHC 8.2.2
-* Cabal 2.0.0
+* GHC 8.2.2 with `regex-compat` package
 * Clang 6.0.0 with C++ standard library
 * BNFC 2.8.1 with `176-source-position` branch (to recompile grammar)
 * Python 3.6.4 with `colorama` and `argparse` packages (to run tests)

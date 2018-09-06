@@ -12,6 +12,9 @@ import Data.List
 import qualified Data.Map as M
 
 import AbsPyxell hiding (Type)
+import ParPyxell
+import LayoutPyxell (resolveLayout)
+import ErrM
 
 import CodeGen
 import Utils
@@ -178,9 +181,7 @@ compileStmt stmt cont = case stmt of
                     if i == length ts - 1 then skip
                     else call tInt "@putchar" [(tChar, "32")] >> skip
             otherwise -> do
-                Just (t, p1) <- compileAttr typ val (Ident "toString")
-                p2 <- load t p1
-                v <- call tString p2 [(typ, val)]
+                (_, v) <- compileMethod typ "toString" [val]
                 callVoid "@write" [(tString, v)]
         compileAssgs rs typ val cont = case rs of
             [] -> cont
@@ -240,7 +241,26 @@ compileExpr expr =
         ETrue _ -> return $ (tBool, "true")
         EFalse _ -> return $ (tBool, "false")
         EChar _ c -> return $ (tChar, show (ord c))
-        EString _ s -> initString (read s)
+        EString _ s -> do
+            let (txts, tags) = interpolateString (read s)
+            if length txts == 1 then initString (txts !! 0)
+            else do
+                (_, p1) <- initArray tString [] (replicate 2 (show (length txts * 2 - 1)))
+                p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
+                forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
+                    p3 <- gep (tPtr tString) p2 [show (2*i)] []
+                    (_, p4) <- initString txt
+                    store tString p4 p3
+                    if tag == "" then skip
+                    else do
+                        p5 <- gep (tPtr tString) p2 [show (2*i+1)] []
+                        (_, v) <- case pExpr $ resolveLayout False $ myLexer tag of
+                            Ok expr -> do
+                                (t, v) <- compileExpr expr
+                                compileMethod t "toString" [v]
+                        store tString v p5
+                (_, p7) <- initString ""
+                compileMethod (tArray tString) "join" [p1, p7]
         EArray _ es -> do
             rs <- mapM compileExpr es
             case rs of
@@ -380,9 +400,7 @@ compileExpr expr =
         compileCmp op t v1 v2 = do
             (t, v1, v2) <- case t of
                 TString _ -> do
-                    Just (t1, p1) <- getIdent (Ident "String_compare")
-                    p2 <- load t1 p1
-                    v3 <- call tInt p2 [(tString, v1), (tString, v2)]
+                    (_, v3) <- compileMethod tString "compare" [v1, v2]
                     return $ (tInt, v3, "0")
                 otherwise -> return $ (t, v1, v2)
             case (op, t) of
@@ -486,11 +504,8 @@ compileLval expr = case expr of
             v5 <- gep (tArray typ) arr ["0"] [0] >>= load (tPtr typ)
             v6 <- gep (tPtr typ) v5 [v4] []
             return $ Just (typ, v6)
-        getAttr typ1 obj typ2 idx = do
-            p <- gep typ1 obj ["0"] [idx]
-            return $ Just (typ2, p)
 
--- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.
+-- | Outputs LLVM code that evaluates a given attribute as an l-value. Returns type and name (location) of the result or Nothing.
 compileAttr :: Type -> String -> Ident -> Run (Maybe Result)
 compileAttr typ val (Ident attr) = do
     case typ of
@@ -505,6 +520,7 @@ compileAttr typ val (Ident attr) = do
             "length" -> getAttr (tArray tChar) val tInt 1
             "toString" -> getIdent (Ident "String_toString")
             "toInt" -> getIdent (Ident "String_toInt")
+            "compare" -> getIdent (Ident "String_compare")
         TArray _ t' -> case (t', attr) of
             (_, "length") -> getAttr typ val tInt 1
             (TChar _, "join") -> getIdent (Ident "CharArray_join")
@@ -513,3 +529,12 @@ compileAttr typ val (Ident attr) = do
         getAttr typ1 obj typ2 idx = do
             p <- gep typ1 obj ["0"] [idx]
             return $ Just (typ2, p)
+
+-- | Outputs LLVM code that calls a method with given arguments. Returns type and name of the result.
+compileMethod :: Type -> String -> [String] -> Run Result
+compileMethod typ func args = do
+    Just (t, p1) <- compileAttr typ "" (Ident func)
+    let TFunc _ as r = t
+    p2 <- load t p1
+    v <- call r p2 (zip as args)
+    return $ (r, v)

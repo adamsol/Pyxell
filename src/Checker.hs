@@ -9,6 +9,9 @@ import Control.Monad.Trans.Error
 import qualified Data.Map as M
 
 import AbsPyxell hiding (Type)
+import ParPyxell
+import LayoutPyxell (resolveLayout)
+import ErrM
 
 import Utils
 
@@ -29,6 +32,7 @@ data StaticError = NotComparable Type Type
                  | RedeclaredIdentifier Ident
                  | VoidDeclaration
                  | NotLvalue
+                 | InvalidExpression String
                  | UnknownType
                  | NotTuple Type
                  | InvalidTupleElem Type Int
@@ -53,6 +57,7 @@ instance Show StaticError where
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
+        InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
         UnknownType -> "Expression cannot be used in this context."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
@@ -302,7 +307,14 @@ checkExpr expr =
         ETrue pos -> return $ (tBool, False)
         EFalse pos -> return $ (tBool, False)
         EChar pos _ -> return $ (tChar, False)
-        EString pos _ -> return $ (tString, False)
+        EString pos s -> do
+            let (_, tags) = interpolateString (read s)
+            forM tags $ \tag -> do
+                if tag == "" then skip
+                else case pExpr $ resolveLayout False $ myLexer tag of
+                    Bad err -> throw pos $ InvalidExpression tag
+                    Ok expr -> checkExpr (ECall _pos (EAttr _pos expr (Ident "toString")) []) >> skip
+            return $ (tString, False)
         EArray pos es -> do
             rs <- mapM checkExpr es
             let (ts, _) = unzip rs

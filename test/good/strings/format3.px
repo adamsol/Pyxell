@@ -1,0 +1,6 @@
+
+x = 98334
+a = [true]
+s = "{x*5-x*(2+2)}"
+print "#{s}{' '.toString()*4}{not a[0]}"
+print "{s[1]}{\"Z%d\"} {-x/3}"

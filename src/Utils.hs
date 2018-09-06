@@ -4,6 +4,7 @@
 module Utils where
 
 import Data.List
+import Text.Regex
 
 import AbsPyxell hiding (Type)
 import qualified AbsPyxell as Abs (Type)
@@ -78,3 +79,13 @@ _pos = Nothing
 
 -- | Gets name from an identifier.
 fromIdent (Ident x) = x
+
+-- | Splits a string into formatting parts.
+interpolateString :: String -> ([String], [String])
+interpolateString str =
+    let r = mkRegex "\\{[^{}]+\\}" in
+    case matchRegexAll r str of
+        Just (before, match, after, _) ->
+            let (txts, tags) = interpolateString after in
+            (before : txts, tail (init match) : tags)
+        Nothing -> ([str], [""])
