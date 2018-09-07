@@ -103,12 +103,20 @@ compileStmt stmt cont = case stmt of
     SWhile _ expr block -> do
         [l1, l2, l3] <- sequence (replicate 3 nextLabel)
         goto l1 >> label l1
-        (t, v) <- compileExpr expr
+        (_, v) <- compileExpr expr
         branch v l2 l3
         label l2
         local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l1)) $ compileBlock block
         goto l1
         label l3
+        cont
+    SUntil _ expr block -> do
+        [l1, l2] <- sequence (replicate 2 nextLabel)
+        goto l1 >> label l1
+        local (M.insert "#break" (tLabel, l2)) $ local (M.insert "#continue" (tLabel, l1)) $ compileBlock block
+        (_, v) <- compileExpr expr
+        branch v l2 l1
+        label l2
         cont
     SFor _ expr1 expr2 block -> case expr2 of
         ERangeIncl _ e1 e2 -> do

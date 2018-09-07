@@ -96,9 +96,10 @@ import ErrM
   'return' { PT _ (TS _ 51) }
   'skip' { PT _ (TS _ 52) }
   'true' { PT _ (TS _ 53) }
-  'while' { PT _ (TS _ 54) }
-  '{' { PT _ (TS _ 55) }
-  '}' { PT _ (TS _ 56) }
+  'until' { PT _ (TS _ 54) }
+  'while' { PT _ (TS _ 55) }
+  '{' { PT _ (TS _ 56) }
+  '}' { PT _ (TS _ 57) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -205,6 +206,9 @@ Stmt :: {
 }
 | 'while' Expr 'do' Block {
   (Just (tokenLineCol $1), AbsPyxell.SWhile (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
+}
+| 'until' Expr 'do' Block {
+  (Just (tokenLineCol $1), AbsPyxell.SUntil (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
 }
 | 'for' Expr 'in' Expr 'do' Block {
   (Just (tokenLineCol $1), AbsPyxell.SFor (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 

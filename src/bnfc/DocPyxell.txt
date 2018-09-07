@@ -42,7 +42,7 @@ The reserved words used in Pyxell are the following:
   | ``elif`` | ``else`` | ``extern`` | ``false``
   | ``for`` | ``func`` | ``if`` | ``in``
   | ``not`` | ``or`` | ``print`` | ``return``
-  | ``skip`` | ``true`` | ``while`` | 
+  | ``skip`` | ``true`` | ``until`` | ``while``
 
 The symbols used in Pyxell are the following:
   | ; | ( | ) | ,
@@ -83,6 +83,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr// ``-=`` //Expr// 
   |  |  **|**  | ``if`` //[Branch]// //Else// 
   |  |  **|**  | ``while`` //Expr// ``do`` //Block// 
+  |  |  **|**  | ``until`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 

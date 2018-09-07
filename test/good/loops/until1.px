@@ -1,0 +1,5 @@
+
+i = 0
+until i <= 0 or i >= 5 do
+    i += 1
+print i

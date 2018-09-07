@@ -31,6 +31,7 @@ data Stmt a
     | SAssgSub a (Expr a) (Expr a)
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
+    | SUntil a (Expr a) (Block a)
     | SFor a (Expr a) (Expr a) (Block a)
     | SContinue a
     | SBreak a
@@ -54,6 +55,7 @@ instance Functor Stmt where
         SAssgSub a expr1 expr2 -> SAssgSub (f a) (fmap f expr1) (fmap f expr2)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
+        SUntil a expr block -> SUntil (f a) (fmap f expr) (fmap f block)
         SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)

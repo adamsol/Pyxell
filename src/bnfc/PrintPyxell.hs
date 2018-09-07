@@ -112,6 +112,7 @@ instance Print (Stmt a) where
     SAssgSub _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "-="), prt 0 expr2])
     SIf _ branchs else_ -> prPrec i 0 (concatD [doc (showString "if"), prt 0 branchs, prt 0 else_])
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), prt 0 block])
+    SUntil _ expr block -> prPrec i 0 (concatD [doc (showString "until"), prt 0 expr, doc (showString "do"), prt 0 block])
     SFor _ expr1 expr2 block -> prPrec i 0 (concatD [doc (showString "for"), prt 0 expr1, doc (showString "in"), prt 0 expr2, doc (showString "do"), prt 0 block])
     SContinue _ -> prPrec i 0 (concatD [doc (showString "continue")])
     SBreak _ -> prPrec i 0 (concatD [doc (showString "break")])

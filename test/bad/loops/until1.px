@@ -1,0 +1,6 @@
+
+until false do
+    skip
+
+until 7 do
+    print 7

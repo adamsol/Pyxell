@@ -200,6 +200,9 @@ checkStmt stmt cont = case stmt of
     SWhile pos expr block -> do
         local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
         cont
+    SUntil pos expr block -> do
+        local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
+        cont
     SFor pos expr1 expr2 block -> case expr2 of
         ERangeIncl _ e1 e2 -> do
             checkStmt (SFor pos expr1 (ERangeInclStep _pos e1 e2 (EInt _pos 1)) block) cont

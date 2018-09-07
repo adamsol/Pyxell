@@ -33,6 +33,7 @@ transStmt x = case x of
   SAssgSub _ expr1 expr2 -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
+  SUntil _ expr block -> failure x
   SFor _ expr1 expr2 block -> failure x
   SContinue _ -> failure x
   SBreak _ -> failure x

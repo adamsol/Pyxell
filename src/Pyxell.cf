@@ -44,6 +44,7 @@ EElse.             Else   ::= "else" "do" Block ;
 EEmpty.            Else   ::= ;
 
 SWhile.            Stmt   ::= "while" Expr "do" Block ;
+SUntil.            Stmt   ::= "until" Expr "do" Block ;
 SFor.              Stmt   ::= "for" Expr "in" Expr "do" Block ;
 SContinue.         Stmt   ::= "continue" ;
 SBreak.            Stmt   ::= "break" ;
