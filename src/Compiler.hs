@@ -332,6 +332,13 @@ compileExpr expr =
             l <- nextLabel
             v <- compileOr e1 e2 [] l
             return $ (tBool, v)
+        ECond _ e1 e2 e3 -> do
+            (t1, v1) <- compileExpr e1
+            (t2, v2) <- compileExpr e2
+            (t3, v3) <- compileExpr e3
+            let Just t4 = unifyTypes t2 t3
+            v4 <- select v1 t4 v2 v3
+            return $ (t4, v4)
         ETuple _ es -> do
             rs <- mapM compileExpr es
             case rs of

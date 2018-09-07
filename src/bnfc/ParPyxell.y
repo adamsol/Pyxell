@@ -33,8 +33,8 @@ import ErrM
 %name pExpr3_internal Expr3
 %name pExpr1_internal Expr1
 %name pListExpr3_internal ListExpr3
-%name pExpr_internal Expr
 %name pExpr2_internal Expr2
+%name pExpr_internal Expr
 %name pType4_internal Type4
 %name pType2_internal Type2
 %name pListType3_internal ListType3
@@ -60,46 +60,48 @@ import ErrM
   '...' { PT _ (TS _ 15) }
   '/' { PT _ (TS _ 16) }
   '/=' { PT _ (TS _ 17) }
-  ';' { PT _ (TS _ 18) }
-  '<' { PT _ (TS _ 19) }
-  '<=' { PT _ (TS _ 20) }
-  '<>' { PT _ (TS _ 21) }
-  '=' { PT _ (TS _ 22) }
-  '==' { PT _ (TS _ 23) }
-  '>' { PT _ (TS _ 24) }
-  '>=' { PT _ (TS _ 25) }
-  'Bool' { PT _ (TS _ 26) }
-  'Char' { PT _ (TS _ 27) }
-  'Int' { PT _ (TS _ 28) }
-  'Label' { PT _ (TS _ 29) }
-  'Object' { PT _ (TS _ 30) }
-  'String' { PT _ (TS _ 31) }
-  'Void' { PT _ (TS _ 32) }
-  '[' { PT _ (TS _ 33) }
-  ']' { PT _ (TS _ 34) }
-  'and' { PT _ (TS _ 35) }
-  'break' { PT _ (TS _ 36) }
-  'continue' { PT _ (TS _ 37) }
-  'def' { PT _ (TS _ 38) }
-  'do' { PT _ (TS _ 39) }
-  'elif' { PT _ (TS _ 40) }
-  'else' { PT _ (TS _ 41) }
-  'extern' { PT _ (TS _ 42) }
-  'false' { PT _ (TS _ 43) }
-  'for' { PT _ (TS _ 44) }
-  'func' { PT _ (TS _ 45) }
-  'if' { PT _ (TS _ 46) }
-  'in' { PT _ (TS _ 47) }
-  'not' { PT _ (TS _ 48) }
-  'or' { PT _ (TS _ 49) }
-  'print' { PT _ (TS _ 50) }
-  'return' { PT _ (TS _ 51) }
-  'skip' { PT _ (TS _ 52) }
-  'true' { PT _ (TS _ 53) }
-  'until' { PT _ (TS _ 54) }
-  'while' { PT _ (TS _ 55) }
-  '{' { PT _ (TS _ 56) }
-  '}' { PT _ (TS _ 57) }
+  ':' { PT _ (TS _ 18) }
+  ';' { PT _ (TS _ 19) }
+  '<' { PT _ (TS _ 20) }
+  '<=' { PT _ (TS _ 21) }
+  '<>' { PT _ (TS _ 22) }
+  '=' { PT _ (TS _ 23) }
+  '==' { PT _ (TS _ 24) }
+  '>' { PT _ (TS _ 25) }
+  '>=' { PT _ (TS _ 26) }
+  '?' { PT _ (TS _ 27) }
+  'Bool' { PT _ (TS _ 28) }
+  'Char' { PT _ (TS _ 29) }
+  'Int' { PT _ (TS _ 30) }
+  'Label' { PT _ (TS _ 31) }
+  'Object' { PT _ (TS _ 32) }
+  'String' { PT _ (TS _ 33) }
+  'Void' { PT _ (TS _ 34) }
+  '[' { PT _ (TS _ 35) }
+  ']' { PT _ (TS _ 36) }
+  'and' { PT _ (TS _ 37) }
+  'break' { PT _ (TS _ 38) }
+  'continue' { PT _ (TS _ 39) }
+  'def' { PT _ (TS _ 40) }
+  'do' { PT _ (TS _ 41) }
+  'elif' { PT _ (TS _ 42) }
+  'else' { PT _ (TS _ 43) }
+  'extern' { PT _ (TS _ 44) }
+  'false' { PT _ (TS _ 45) }
+  'for' { PT _ (TS _ 46) }
+  'func' { PT _ (TS _ 47) }
+  'if' { PT _ (TS _ 48) }
+  'in' { PT _ (TS _ 49) }
+  'not' { PT _ (TS _ 50) }
+  'or' { PT _ (TS _ 51) }
+  'print' { PT _ (TS _ 52) }
+  'return' { PT _ (TS _ 53) }
+  'skip' { PT _ (TS _ 54) }
+  'true' { PT _ (TS _ 55) }
+  'until' { PT _ (TS _ 56) }
+  'while' { PT _ (TS _ 57) }
+  '{' { PT _ (TS _ 58) }
+  '}' { PT _ (TS _ 59) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -476,17 +478,20 @@ ListExpr3 :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+Expr2 :: {
+  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
+}
+: Expr3 '?' Expr3 ':' Expr2 {
+  (fst $1, AbsPyxell.ECond (fst $1)(snd $1)(snd $3)(snd $5)) 
+}
+| Expr3 {
+  (fst $1, snd $1)
+}
+
 Expr :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
 : Expr1 {
-  (fst $1, snd $1)
-}
-
-Expr2 :: {
-  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
-}
-: Expr3 {
   (fst $1, snd $1)
 }
 
@@ -612,8 +617,8 @@ pExpr4 = (>>= return . snd) . pExpr4_internal
 pExpr3 = (>>= return . snd) . pExpr3_internal
 pExpr1 = (>>= return . snd) . pExpr1_internal
 pListExpr3 = (>>= return . snd) . pListExpr3_internal
-pExpr = (>>= return . snd) . pExpr_internal
 pExpr2 = (>>= return . snd) . pExpr2_internal
+pExpr = (>>= return . snd) . pExpr_internal
 pType4 = (>>= return . snd) . pType4_internal
 pType2 = (>>= return . snd) . pType2_internal
 pListType3 = (>>= return . snd) . pListType3_internal

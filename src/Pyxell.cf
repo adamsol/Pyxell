@@ -95,6 +95,9 @@ EOr.               Expr3  ::= Expr4 "or" Expr3 ;
 ETuple.            Expr1  ::= [Expr3] ;
 separator nonempty Expr3      "," ;
 
+-- when ECond is above ETuple, strange things happen
+ECond.             Expr2  ::= Expr3 "?" Expr3 ":" Expr2 ;
+
 coercions          Expr       9 ;
 
 

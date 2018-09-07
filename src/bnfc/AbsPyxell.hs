@@ -132,6 +132,7 @@ data Expr a
     | EAnd a (Expr a) (Expr a)
     | EOr a (Expr a) (Expr a)
     | ETuple a [Expr a]
+    | ECond a (Expr a) (Expr a) (Expr a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Expr where
@@ -162,6 +163,7 @@ instance Functor Expr where
         EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
+        ECond a expr1 expr2 expr3 -> ECond (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
 data Type a
     = TPtr a (Type a)
     | TDeref a (Type a)

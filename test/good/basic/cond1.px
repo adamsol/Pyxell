@@ -1,0 +1,3 @@
+
+print true and false ? 56 : 12
+print 3 < 2 or 51 > 49 ? "ABC" : "XYZ"

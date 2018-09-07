@@ -58,7 +58,7 @@ instance Show StaticError where
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
-        UnknownType -> "Expression cannot be used in this context."
+        UnknownType -> "Cannot settle type of the expression."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
@@ -402,6 +402,16 @@ checkExpr expr =
         ENot pos e -> checkUnary pos "not" e
         EAnd pos e1 e2 -> checkBinary pos "and" e1 e2
         EOr pos e1 e2 -> checkBinary pos "or" e1 e2
+        ECond pos e1 e2 e3 -> do
+            (t1, _) <- checkExpr e1
+            case t1 of
+                TBool _ -> skip
+                otherwise -> throw pos $ IllegalAssignment t1 tBool
+            (t2, m1) <- checkExpr e2
+            (t3, m2) <- checkExpr e3
+            case unifyTypes (reduceType t2) (reduceType t3) of
+                Just t4 -> return $ (t4, m1 && m2)
+                Nothing -> throw pos $ UnknownType
         ETuple pos es -> do
             rs <- mapM checkExpr es
             let (ts, ms) = unzip rs
