@@ -16,9 +16,9 @@ import Utils
 
 -- | Runs compilation and writes generated LLVM code to a file.
 outputCode :: Run () -> String -> IO ()
-outputCode compiler filepath = do
+outputCode compiler path = do
     scopes <- execStateT (runStateT (runReaderT compiler M.empty) M.empty) M.empty
-    writeFile filepath (concat [unlines (reverse f) | f <- M.elems scopes])
+    writeFile path (concat [unlines (reverse f) | f <- M.elems scopes])
 
 
 -- | Type and name of LLVM register(s).
@@ -103,22 +103,6 @@ nextTemp = do
     n <- nextNumber
     return $ "%t" ++ show n
 
--- | Returns an unused global variable name in the form: '%g\d'.
-nextGlobal :: Run String
-nextGlobal = do
-    n <- nextNumber
-    return $ "@g" ++ show n
-
-define :: Type -> String -> Run () -> Run ()
-define (TFunc _ args rt) name cont = do
-    scope name $ do
-        write $ [ "",
-            "define " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ") {",
-            "entry:" ]
-        lift $ modify (M.insert ("$label-" ++ name) (Label "entry"))
-        cont
-        write $ [ "}" ]
-
 -- | Returns an unused label name in the form: 'L\d'.
 nextLabel :: Run String
 nextLabel = do
@@ -136,8 +120,29 @@ label lbl = do
 getLabel :: Run String
 getLabel = do
     s <- getScope
+    e <- ask
     Label l <- lift $ gets (M.! ("$label-" ++ s))
     return $ l
+
+-- | Outputs a function declaration.
+declare :: Type -> String -> Run ()
+declare (TFunc _ args rt) name = do
+    scope "!global" $ write $ [ "declare " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ")" ]
+
+-- | Outputs new function definition with given body.
+define :: Type -> String -> Run () -> Run ()
+define typ name body = do
+    let (TFunc _ args rt) = typ
+    s <- getScope
+    let f = (if s /= "main" && s /= "!global" then s else "") ++ "." ++ escapeName name
+    global ("@" ++ f) typ ("@func" ++ f)
+    scope f $ do
+        write $ [ "",
+            "define " ++ strType rt ++ " @func" ++ f ++ "(" ++ intercalate ", " (map strType args) ++ ") {",
+            "entry:" ]
+        lift $ modify (M.insert ("$label-" ++ f) (Label "entry"))
+        body
+        write $ [ "}" ]
 
 -- | Outputs LLVM 'br' command with a single goal.
 goto :: String -> Run ()
@@ -157,11 +162,16 @@ alloca typ = do
     return $ p
 
 -- | Outputs LLVM 'global' command in the global scope.
-global :: Type -> String -> Run String
-global typ val = do
-    p <- nextGlobal
-    scope "!global" $ write $ [ p ++ " = global " ++ strType typ ++ " " ++ val ]
-    return $ p
+global :: String -> Type -> String -> Run String
+global name typ val = do
+    scope "!global" $ write $ [ name ++ " = global " ++ strType typ ++ " " ++ val ]
+    return $ name
+
+-- | Outputs LLVM 'external global' command in the global scope.
+external :: String -> Type -> Run String
+external name typ = do
+    scope "!global" $ write $ [ name ++ " = external global " ++ strType typ ]
+    return $ name
 
 -- | Outputs LLVM 'store' command.
 store :: Type -> String -> String -> Run ()
@@ -177,11 +187,13 @@ load typ ptr = do
     return $ v
 
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
-declare :: Type -> Ident -> String -> Run () -> Run ()
-declare typ (Ident x) val cont = do
+variable :: Type -> Ident -> String -> Run () -> Run ()
+variable typ (Ident x) val cont = do
     s <- getScope
     p <- case s of
-        "@main" -> global typ (defaultValue typ)
+        "main" -> do
+            n <- nextNumber
+            global ("@" ++ escapeName x ++ show n) typ (defaultValue typ)
         otherwise -> alloca typ
     store typ val p
     local (M.insert x (typ, p)) cont

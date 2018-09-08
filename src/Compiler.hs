@@ -8,7 +8,6 @@ import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Reader
 import Data.Char
-import Data.List
 import qualified Data.Map as M
 
 import AbsPyxell hiding (Type)
@@ -21,17 +20,29 @@ import Utils
 
 
 -- | Outputs LLVM code for all statements in the program.
-compileProgram :: Program Pos -> Run ()
-compileProgram prog = case prog of
+compileProgram :: Program Pos -> M.Map String Type -> Bool -> Run ()
+compileProgram prog env main = case prog of
     Program _ stmts -> do
-        write $ [ "",
-            "declare i8* @malloc(i64)", "declare i8* @memcpy(i8*, i8*, i64)",
-            "declare i64 @putchar(i8)",
-            "" ]
         lift $ modify (M.insert "$number" (Number 0))
-        define (tFunc [] tInt) "@main" $ do
-            compileStmts stmts skip
-            ret tInt "0"
+        write $ [ "" ]
+        declare (tFunc [tInt] (tPtr tChar)) "@malloc"
+        declare (tFunc [tPtr tChar, tPtr tChar, tInt] (tPtr tChar)) "@memcpy"
+        declare (tFunc [tChar] (tInt)) "@putchar"
+        write $ [ "" ]
+        list <- forM (M.assocs env) $ \(f, t) -> do
+            p <- external ("@." ++ f) t
+            return $ (f, (t, p))
+        write $ [ "" ]
+        local (\_ -> M.fromList list) $ do
+            if main then scope "main" $ do
+                write $ [ "",
+                    "define i64 @main() {",
+                    "entry:" ]
+                lift $ modify (M.insert ("$label-main") (Label "entry"))
+                compileStmts stmts skip
+                ret tInt "0"
+                write $ [ "}" ]
+            else compileStmts stmts skip
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
@@ -65,7 +76,7 @@ compileStmt stmt cont = case stmt of
     SPrint _  expr -> do
         (t, v) <- compileExpr expr
         compilePrint t v
-        callVoid "@writeLn" []
+        call tInt "@putchar" [(tChar, "10")]
         cont
     SAssg _ exprs -> case exprs of
         e:[] -> do
@@ -161,26 +172,25 @@ compileStmt stmt cont = case stmt of
             let r = reduceType rt
             let t = tFunc as r
             s <- getScope
-            let f = do
-                if block == Nothing then "@" ++ name
-                else (if s /= "@main" then s else "@") ++ "." ++ [if c == '\'' then '-' else c | c <- name]
-            p <- global t f
+            let f = (if s /= "main" && s /= "!global" then s else "") ++ "." ++ escapeName name
+            let p = "@" ++ f
             local (M.insert name (t, p)) $ do
                 case block of
-                    Just b -> define t f $ compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
+                    Just b -> define t name $ compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
                         l <- nextLabel
                         goto l >> label l
                         compileBlock b
                         ret r (defaultValue r)
-                    Nothing -> scope "!global" $ do
-                        write $ [ "declare " ++ strType r ++ " " ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ")" ]
+                    Nothing -> do
+                        external p t
+                        skip
                 cont
         compileArgs args i cont = case args of
              [] -> cont
              a:as -> compileArg a i (compileArgs as (i+1) cont)
         compileArg arg i cont = case arg of
             ANoDef pos typ id -> do
-                declare (reduceType typ) id ("%" ++ show i) cont
+                variable (reduceType typ) id ("%" ++ show i) cont
         compilePrint typ val = case typ of
             TTuple _ ts -> do
                 forM_ (zip [0..] ts) $ \(i, t') -> do
@@ -190,7 +200,8 @@ compileStmt stmt cont = case stmt of
                     else call tInt "@putchar" [(tChar, "32")] >> skip
             otherwise -> do
                 (_, v) <- compileMethod typ "toString" [val]
-                callVoid "@write" [(tString, v)]
+                compileMethod tString "write" [v]
+                skip
         compileAssgs rs typ val cont = case rs of
             [] -> cont
             (t, e, i):rs -> do
@@ -206,7 +217,7 @@ compileStmt stmt cont = case stmt of
                     store typ val p
                     cont
                 (Nothing, EVar _ id) -> do
-                    declare typ id val cont
+                    variable typ id val cont
         compileBranches brs exit = case brs of
             [] -> skip
             b:bs -> case b of
@@ -532,6 +543,7 @@ compileAttr typ val (Ident attr) = do
         TChar _ -> case attr of
             "toString" -> getIdent (Ident "Char_toString")
         TString _ -> case attr of
+            "write" -> getIdent (Ident "write")
             "length" -> getAttr (tArray tChar) val tInt 1
             "toString" -> getIdent (Ident "String_toString")
             "toInt" -> getIdent (Ident "String_toInt")

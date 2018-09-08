@@ -105,7 +105,7 @@ getIdent pos (Ident x) = do
         Nothing -> return $ Nothing
 
 -- | Adds an identifier to the environment.
-declare :: Pos -> Type -> Ident -> Run () -> Run ()
+declare :: Pos -> Type -> Ident -> Run a -> Run a
 declare pos typ (Ident x) cont = case typ of
     TVoid _ -> throw pos $ VoidDeclaration
     otherwise -> do
@@ -113,10 +113,12 @@ declare pos typ (Ident x) cont = case typ of
         local (M.insert x (typ, l)) cont
 
 
--- | Checks the whole program.
-checkProgram :: Program Pos -> Run ()
-checkProgram prog = case prog of
-    Program pos stmts -> nextLevel $ checkStmts stmts skip
+-- | Checks the whole program and returns environment.
+checkProgram :: Program Pos -> M.Map String Type -> Run (M.Map String Type)
+checkProgram prog env = case prog of
+    Program pos stmts -> do
+        local (\_ -> (M.map (\t -> (t, 0)) env)) $ nextLevel $ do
+            checkStmts stmts (asks ((M.map fst) . (M.delete "#level")))
 
 -- | Checks a block with statements.
 checkBlock :: Block Pos -> Run ()
@@ -124,13 +126,13 @@ checkBlock block = case block of
     SBlock pos stmts -> checkStmts stmts skip
 
 -- | Checks a bunch of statements.
-checkStmts :: [Stmt Pos] -> Run () -> Run ()
+checkStmts :: [Stmt Pos] -> Run a -> Run a
 checkStmts stmts cont = case stmts of
     [] -> cont
     s:ss -> checkStmt s (checkStmts ss cont)
 
 -- | Checks a single statement.
-checkStmt :: Stmt Pos -> Run () -> Run ()
+checkStmt :: Stmt Pos -> Run a -> Run a
 checkStmt stmt cont = case stmt of
     SProc pos id args block -> do
         checkFunc pos id args tVoid (Just block) cont

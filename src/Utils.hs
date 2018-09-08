@@ -80,6 +80,9 @@ _pos = Nothing
 -- | Gets name from an identifier.
 fromIdent (Ident x) = x
 
+-- | Changes apostrophes to hyphens.
+escapeName name = [if c == '\'' then '-' else c | c <- name]
+
 -- | Splits a string into formatting parts.
 interpolateString :: String -> ([String], [String])
 interpolateString str =

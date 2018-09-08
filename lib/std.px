@@ -5,7 +5,6 @@ func chr(Int c) Char extern
 func str([Char] a) String extern
 
 func write(String s) extern
-func writeLn() extern
 
 
 func min(Int a, Int b) Int def
