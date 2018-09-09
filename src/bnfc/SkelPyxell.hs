@@ -75,6 +75,7 @@ transExpr x = case x of
   EIndex _ expr1 expr2 -> failure x
   EAttr _ expr ident -> failure x
   ECall _ expr exprs -> failure x
+  EPow _ expr1 expr2 -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
   EMod _ expr1 expr2 -> failure x

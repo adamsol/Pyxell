@@ -117,6 +117,7 @@ data Expr a
     | EIndex a (Expr a) (Expr a)
     | EAttr a (Expr a) Ident
     | ECall a (Expr a) [Expr a]
+    | EPow a (Expr a) (Expr a)
     | EMul a (Expr a) (Expr a)
     | EDiv a (Expr a) (Expr a)
     | EMod a (Expr a) (Expr a)
@@ -148,6 +149,7 @@ instance Functor Expr where
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         ECall a expr exprs -> ECall (f a) (fmap f expr) (map (fmap f) exprs)
+        EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
         EDiv a expr1 expr2 -> EDiv (f a) (fmap f expr1) (fmap f expr2)
         EMod a expr1 expr2 -> EMod (f a) (fmap f expr1) (fmap f expr2)

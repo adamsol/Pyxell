@@ -48,11 +48,11 @@ The symbols used in Pyxell are the following:
   | ; | ( | ) | ,
   | { | } | = | *=
   | /= | %= | += | -=
-  | [ | ] | . | *
-  | / | % | + | -
-  | .. | ... | == | <>
-  | < | <= | > | >=
-  | ? | : | -> | 
+  | [ | ] | . | **
+  | * | / | % | +
+  | - | .. | ... | ==
+  | <> | < | <= | >
+  | >= | ? | : | ->
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with /* and */.
@@ -100,21 +100,23 @@ All other symbols are terminals.
   |  |  **|**  | //Branch// ``elif`` //[Branch]// 
   | //Else// | -> | ``else`` ``do`` //Block// 
   |  |  **|**  | **eps**
-  | //Expr9// | -> | //Integer// 
+  | //Expr10// | -> | //Integer// 
   |  |  **|**  | ``true`` 
   |  |  **|**  | ``false`` 
   |  |  **|**  | //Char// 
   |  |  **|**  | //String// 
   |  |  **|**  | ``[`` //[Expr2]// ``]`` 
   |  |  **|**  | //Ident// 
-  |  |  **|**  | //Expr9// ``.`` //Integer// 
-  |  |  **|**  | //Expr9// ``[`` //Expr// ``]`` 
-  |  |  **|**  | //Expr9// ``.`` //Ident// 
-  |  |  **|**  | //Expr9// ``(`` //[Expr2]// ``)`` 
+  |  |  **|**  | //Expr10// ``.`` //Integer// 
+  |  |  **|**  | //Expr10// ``[`` //Expr// ``]`` 
+  |  |  **|**  | //Expr10// ``.`` //Ident// 
+  |  |  **|**  | //Expr10// ``(`` //[Expr2]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //[Expr2]// | -> | **eps**
   |  |  **|**  | //Expr2// 
   |  |  **|**  | //Expr2// ``,`` //[Expr2]// 
+  | //Expr9// | -> | //Expr10// ``**`` //Expr9// 
+  |  |  **|**  | //Expr10// 
   | //Expr8// | -> | //Expr8// ``*`` //Expr9// 
   |  |  **|**  | //Expr8// ``/`` //Expr9// 
   |  |  **|**  | //Expr8// ``%`` //Expr9// 

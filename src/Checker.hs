@@ -384,6 +384,7 @@ checkExpr expr =
                     forM (zip (map fst as) args) (uncurry $ checkCast pos)
                     return $ (ret, False)
                 otherwise -> throw pos $ WrongFunctionCall t (length es)
+        EPow pos e1 e2 -> checkBinary pos "**" e1 e2
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
         EMod pos e1 e2 -> checkBinary pos "%" e1 e2
@@ -434,6 +435,9 @@ checkExpr expr =
             (t1, _) <- checkExpr e1
             (t2, _) <- checkExpr e2
             case op of
+                "**" -> case (t1, t2) of
+                    (TInt _, TInt _) -> return $ (tInt, False)
+                    otherwise -> throw pos $ NoBinaryOperator "**" t1 t2
                 "*" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
                     (TString _, TInt _) -> return $ (t1, False)

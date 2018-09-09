@@ -309,6 +309,7 @@ compileExpr expr =
             as <- forM (zip args es) $ \(t, e) -> compileExpr e
             v <- call ret f as
             return $ (ret, v)
+        EPow _ e1 e2 -> compileBinary "pow" e1 e2
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
         EMod _ e1 e2 -> do
@@ -369,8 +370,8 @@ compileExpr expr =
         compileBinary op e1 e2 = do
             (t1, v1) <- compileExpr e1
             (t2, v2) <- compileExpr e2
-            (t, v) <- case (t1, t2) of
-                (TString _, TString _) -> do
+            (t, v) <- case (t1, t2, op) of
+                (TString _, TString _, "add") -> do
                     p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
                     p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
                     v3 <- gep tString v1 ["0"] [1] >>= load tInt
@@ -382,16 +383,18 @@ compileExpr expr =
                     p5 <- gep (tPtr tChar) p4 [v3] []
                     call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v4)]
                     return (tString, p3)
-                (TString _, TInt _) -> do
+                (TString _, TInt _, "mul") -> do
                     p <- compileArrayMul tChar v1 v2
                     return $ (tString, p)
-                (TInt _, TString _) -> do
+                (TInt _, TString _, "mul") -> do
                     compileBinary op e2 e1
-                (TArray _ t', TInt _) -> do
+                (TArray _ t', TInt _, "mul") -> do
                     p <- compileArrayMul t' v1 v2
                     return $ (t1, p)
-                (TInt _, TArray _ _) -> do
+                (TInt _, TArray _ _, "mul") -> do
                     compileBinary op e2 e1
+                (_, _, "pow") -> do
+                    compileMethod t1 "pow" [v1, v2]
                 otherwise -> do
                     v3 <- binop op t1 v1 v2
                     return $ (t1, v3)
@@ -544,6 +547,7 @@ compileAttr typ val (Ident attr) = do
         -- TODO: toString() for other types
         TInt _ -> case attr of
             "toString" -> getIdent (Ident "Int_toString")
+            "pow" -> getIdent (Ident "Int_pow")
         TBool _ -> case attr of
             "toString" -> getIdent (Ident "Bool_toString")
         TChar _ -> case attr of

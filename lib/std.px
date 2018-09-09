@@ -20,6 +20,18 @@ func max(Int a, Int b) Int def
         return b
 
 
+func Int_pow(Int b, Int p) Int def
+    if p < 0 do
+        return 0
+    r = 1
+    while p > 0 do
+        if p % 2 > 0 do
+            r *= b
+        b *= b
+        p /= 2
+    return r
+
+
 func CharArray_join([Char] array, String sep) String def
     m = sep.length
     n = array.length

@@ -52,20 +52,21 @@ SBreak.            Stmt   ::= "break" ;
 
 -- expressions --
 
-EInt.              Expr9  ::= Integer ;
-ETrue.             Expr9  ::= "true" ;
-EFalse.            Expr9  ::= "false" ;
-EChar.             Expr9  ::= Char ;
-EString.           Expr9  ::= String ;
-EArray.            Expr9  ::= "[" [Expr2] "]" ;
+EInt.              Expr10 ::= Integer ;
+ETrue.             Expr10 ::= "true" ;
+EFalse.            Expr10 ::= "false" ;
+EChar.             Expr10 ::= Char ;
+EString.           Expr10 ::= String ;
+EArray.            Expr10 ::= "[" [Expr2] "]" ;
 separator          Expr2      "," ;
 
-EVar.              Expr9  ::= Ident ;
-EElem.             Expr9  ::= Expr9 "." Integer ;
-EIndex.            Expr9  ::= Expr9 "[" Expr "]" ;
-EAttr.             Expr9  ::= Expr9 "." Ident ;
-ECall.             Expr9  ::= Expr9 "(" [Expr2] ")";
+EVar.              Expr10 ::= Ident ;
+EElem.             Expr10 ::= Expr10 "." Integer ;
+EIndex.            Expr10 ::= Expr10 "[" Expr "]" ;
+EAttr.             Expr10 ::= Expr10 "." Ident ;
+ECall.             Expr10 ::= Expr10 "(" [Expr2] ")";
 
+EPow.              Expr9  ::= Expr10 "**" Expr9 ;
 EMul.              Expr8  ::= Expr8 "*" Expr9 ;
 EDiv.              Expr8  ::= Expr8 "/" Expr9 ;
 EMod.              Expr8  ::= Expr8 "%" Expr9 ;
@@ -98,7 +99,7 @@ separator nonempty Expr3      "," ;
 -- when ECond is above ETuple, strange things happen
 ECond.             Expr2  ::= Expr3 "?" Expr3 ":" Expr2 ;
 
-coercions          Expr       9 ;
+coercions          Expr       10 ;
 
 
 -- types --
