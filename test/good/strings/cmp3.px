@@ -1,10 +1,10 @@
 
 a1 = a2 = ""
 n = 0
-for c in ord('A')..ord('Z') do
+for c in 'A'..'Z' do
     if a1 == a2 do
         n += 1
-    a1 += chr(c).toString()
-    a2 += chr(c).toString()
-print n
+    a1 += c.toString()
+    a2 += c.toString()
+print n, a1[-2]
 print not a1 < a1 + a2 or a2 + a1 <= a2

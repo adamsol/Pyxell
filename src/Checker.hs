@@ -220,7 +220,11 @@ checkStmt stmt cont = case stmt of
                     local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tInt (checkBlock block >> cont)
                 [TInt _, TInt _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
                 [TInt _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tInt
-                otherwise -> throw pos $ IllegalAssignment (ts !! 0) tInt
+                [TChar _, TChar _, TInt _] -> do
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
+                [TChar _, TChar _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
+                [TChar _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tChar
+                otherwise -> throw pos $ UnknownType
         otherwise -> do
             (t, _) <- checkExpr expr2
             case t of

@@ -136,6 +136,9 @@ compileStmt stmt cont = case stmt of
             compileStmt (SFor _pos expr1 (ERangeExclStep _pos e1 e2 (EInt _pos 1)) block) cont
         ERangeInclStep _ e1 e2 e3 -> do
             [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
+            v3 <- case t of
+                TInt _ -> return $ v3
+                otherwise -> trunc tInt t v3
             v4 <- binop "icmp sgt" t v3 "0"
             let cmp v = do
                 v5 <- binop "icmp sle" t v v2
@@ -144,6 +147,9 @@ compileStmt stmt cont = case stmt of
             compileFor t t expr1 v1 v2 v3 cmp return block cont
         ERangeExclStep _ e1 e2 e3 -> do
             [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
+            v3 <- case t of
+                TInt _ -> return $ v3
+                otherwise -> trunc tInt t v3
             v4 <- binop "icmp sgt" t v3 "0"
             let cmp v = do
                 v5 <- binop "icmp slt" t v v2
