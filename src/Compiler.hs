@@ -320,7 +320,9 @@ compileExpr expr =
             v5 <- binop "xor" t v1 v2
             v6 <- binop "icmp slt" t v5 "0"
             v7 <- select v6 t v4 v3
-            return $ (t, v7)
+            v8 <- binop "icmp eq" t v3 "0"
+            v9 <- select v8 t v3 v7
+            return $ (t, v9)
         EAdd _ e1 e2 -> compileBinary "add" e1 e2
         ESub _ e1 e2 -> compileBinary "sub" e1 e2
         ENeg _ e -> compileBinary "sub" (EInt _pos 0) e
