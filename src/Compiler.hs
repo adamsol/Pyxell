@@ -174,11 +174,20 @@ compileStmt stmt cont = case stmt of
         goto l
     where
         compileFunc name args rt block cont = do
-            let as = map (\(ANoDef _ t _) -> reduceType t) args
-            let r = reduceType rt
-            let t = tFunc as r
             s <- getScope
             let f = (if s /= "main" && s /= "!global" then s else "") ++ "." ++ escapeName name
+            as <- forM args $ \a -> case a of
+                ANoDefault _ t _ -> return $ tArgN (reduceType t)
+                ADefault _ t (Ident x) e -> do
+                    t <- return $ reduceType t
+                    n <- nextNumber
+                    p <- global ("@" ++ f ++ "." ++ escapeName x ++ show n) t (defaultValue t)
+                    scope "main" $ do
+                        (_, v) <- compileExpr e
+                        store t v p
+                    return $ tArgD t p
+            let r = reduceType rt
+            let t = tFunc as r
             let p = "@" ++ f
             local (M.insert name (t, p)) $ do
                 case block of
@@ -195,7 +204,9 @@ compileStmt stmt cont = case stmt of
              [] -> cont
              a:as -> compileArg a i (compileArgs as (i+1) cont)
         compileArg arg i cont = case arg of
-            ANoDef pos typ id -> do
+            ANoDefault pos typ id -> do
+                variable (reduceType typ) id ("%" ++ show i) cont
+            ADefault pos typ id _ -> do
                 variable (reduceType typ) id ("%" ++ show i) cont
         compilePrint typ val = case typ of
             TTuple _ ts -> do
@@ -306,8 +317,11 @@ compileExpr expr =
             es <- case e of
                 EAttr _ e' _ -> return $ e':es
                 otherwise -> return $ es
-            as <- forM (zip args es) $ \(t, e) -> compileExpr e
-            v <- call ret f as
+            as1 <- forM (zip args es) $ \(_, e) -> compileExpr e
+            as2 <- forM (drop (length es) args) $ \(TArgD _ t p) -> do
+                v <- load t p
+                return $ (t, v)
+            v <- call ret f (as1 ++ as2)
             return $ (ret, v)
         EPow _ e1 e2 -> compileBinary "pow" e1 e2
         EMul _ e1 e2 -> compileBinary "mul" e1 e2

@@ -1,0 +1,6 @@
+
+func mul(Int a, Int b: 1, Int c: 1, Bool neg: false) Int def
+    return a * b * c * (neg ? -1 : 1)
+
+print mul(5), mul(3, -4)
+print mul(-10, -100, -1000, true)

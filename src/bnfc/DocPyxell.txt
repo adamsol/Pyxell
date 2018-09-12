@@ -45,14 +45,14 @@ The reserved words used in Pyxell are the following:
   | ``skip`` | ``true`` | ``until`` | ``while``
 
 The symbols used in Pyxell are the following:
-  | ; | ( | ) | ,
-  | { | } | = | *=
-  | /= | %= | += | -=
-  | [ | ] | . | **
-  | * | / | % | +
-  | - | .. | ... | ==
-  | <> | < | <= | >
-  | >= | ? | : | ->
+  | ; | ( | ) | :
+  | , | { | } | =
+  | *= | /= | %= | +=
+  | -= | [ | ] | .
+  | ** | * | / | %
+  | + | - | .. | ...
+  | == | <> | < | <=
+  | > | >= | ? | ->
 
 ===Comments===
 Single-line comments begin with #.Multiple-line comments are  enclosed with /* and */.
@@ -88,6 +88,7 @@ All other symbols are terminals.
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
   | //Arg// | -> | //Type// //Ident// 
+  |  |  **|**  | //Type// //Ident// ``:`` //Expr2// 
   | //[Arg]// | -> | **eps**
   |  |  **|**  | //Arg// 
   |  |  **|**  | //Arg// ``,`` //[Arg]// 
@@ -112,9 +113,6 @@ All other symbols are terminals.
   |  |  **|**  | //Expr10// ``.`` //Ident// 
   |  |  **|**  | //Expr10// ``(`` //[Expr2]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
-  | //[Expr2]// | -> | **eps**
-  |  |  **|**  | //Expr2// 
-  |  |  **|**  | //Expr2// ``,`` //[Expr2]// 
   | //Expr9// | -> | //Expr10// ``**`` //Expr9// 
   |  |  **|**  | //Expr10// 
   | //Expr8// | -> | //Expr8// ``*`` //Expr9// 
@@ -149,6 +147,9 @@ All other symbols are terminals.
   |  |  **|**  | //Expr2// 
   | //[Expr3]// | -> | //Expr3// 
   |  |  **|**  | //Expr3// ``,`` //[Expr3]// 
+  | //[Expr2]// | -> | **eps**
+  |  |  **|**  | //Expr2// 
+  |  |  **|**  | //Expr2// ``,`` //[Expr2]// 
   | //Expr2// | -> | //Expr3// ``?`` //Expr3// ``:`` //Expr2// 
   |  |  **|**  | //Expr3// 
   | //Expr// | -> | //Expr1// 
@@ -162,12 +163,12 @@ All other symbols are terminals.
   |  |  **|**  | ``(`` //Type// ``)`` 
   | //Type2// | -> | //[Type3]// 
   |  |  **|**  | //Type3// 
+  | //Type1// | -> | //[Type2]// ``->`` //Type2// 
+  |  |  **|**  | //Type2// 
   | //[Type3]// | -> | //Type3// 
   |  |  **|**  | //Type3// ``*`` //[Type3]// 
   | //[Type2]// | -> | //Type2// 
   |  |  **|**  | //Type2// ``,`` //[Type2]// 
-  | //Type1// | -> | //[Type2]// ``->`` //Type2// 
-  |  |  **|**  | //Type2// 
   | //Type// | -> | //Type1// 
   | //Type3// | -> | //Type4// 
 

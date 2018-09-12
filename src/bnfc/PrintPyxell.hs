@@ -122,7 +122,8 @@ instance Print (Stmt a) where
 
 instance Print (Arg a) where
   prt i e = case e of
-    ANoDef _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
+    ANoDefault _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
+    ADefault _ type_ id expr -> prPrec i 0 (concatD [prt 0 type_, prt 0 id, doc (showString ":"), prt 2 expr])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
@@ -217,6 +218,8 @@ instance Print (Type a) where
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])
     TArray _ type_ -> prPrec i 4 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
+    TArgN _ type_ -> prPrec i 2 (concatD [prt 1 type_])
+    TArgD _ type_ str -> prPrec i 2 (concatD [prt 1 type_, prt 0 str])
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 2 type_])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]

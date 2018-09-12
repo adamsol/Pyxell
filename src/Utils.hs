@@ -18,7 +18,7 @@ type Type = Abs.Type Pos
 
 -- | Show instance for displaying types.
 instance {-# OVERLAPS #-} Show Type where
-    show typ = case typ of
+    show typ = case reduceType typ of
         TVoid _ -> "Void"
         TInt _ -> "Int"
         TBool _ -> "Bool"
@@ -49,6 +49,10 @@ unifyTypes t1 t2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
+        (TArgN _ t1', _) -> unifyTypes t1' t2
+        (TArgD _ t1' _, _) -> unifyTypes t1' t2
+        (_, TArgN _ t2') -> unifyTypes t1 t2'
+        (_, TArgD _ t2' _) -> unifyTypes t1 t2'
         otherwise -> Nothing
 
 -- | Try to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
@@ -58,6 +62,8 @@ reduceType t = do
         TArray _ t' -> tArray (reduceType t')
         TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
         TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
+        TArgN _ t' -> reduceType t'
+        TArgD _ t' _ -> reduceType t'
         otherwise -> t
 
 -- | Helper functions for initializing types without a position.
@@ -73,6 +79,8 @@ tString = TString Nothing
 tArray = TArray Nothing
 tTuple = TTuple Nothing
 tFunc = TFunc Nothing
+tArgN  = TArgN Nothing
+tArgD = TArgD Nothing
 
 -- | Shorter name for none position.
 _pos = Nothing

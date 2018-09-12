@@ -22,7 +22,6 @@ import ErrM
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
 %name pExpr10_internal Expr10
-%name pListExpr2_internal ListExpr2
 %name pExpr9_internal Expr9
 %name pExpr8_internal Expr8
 %name pExpr7_internal Expr7
@@ -34,13 +33,14 @@ import ErrM
 %name pExpr3_internal Expr3
 %name pExpr1_internal Expr1
 %name pListExpr3_internal ListExpr3
+%name pListExpr2_internal ListExpr2
 %name pExpr2_internal Expr2
 %name pExpr_internal Expr
 %name pType4_internal Type4
 %name pType2_internal Type2
+%name pType1_internal Type1
 %name pListType3_internal ListType3
 %name pListType2_internal ListType2
-%name pType1_internal Type1
 %name pType_internal Type
 %name pType3_internal Type3
 %token
@@ -228,7 +228,10 @@ Arg :: {
   (Maybe (Int, Int), Arg (Maybe (Int, Int)))
 }
 : Type Ident {
-  (fst $1, AbsPyxell.ANoDef (fst $1)(snd $1)(snd $2)) 
+  (fst $1, AbsPyxell.ANoDefault (fst $1)(snd $1)(snd $2)) 
+}
+| Type Ident ':' Expr2 {
+  (fst $1, AbsPyxell.ADefault (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
 
 ListArg :: {
@@ -329,19 +332,6 @@ Expr10 :: {
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
-}
-
-ListExpr2 :: {
-  (Maybe (Int, Int), [Expr (Maybe (Int, Int))]) 
-}
-: {
-  (Nothing, [])
-}
-| Expr2 {
-  (fst $1, (:[]) (snd $1)) 
-}
-| Expr2 ',' ListExpr2 {
-  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 Expr9 :: {
@@ -490,6 +480,19 @@ ListExpr3 :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+ListExpr2 :: {
+  (Maybe (Int, Int), [Expr (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| Expr2 {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Expr2 ',' ListExpr2 {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
 Expr2 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
@@ -545,6 +548,16 @@ Type2 :: {
   (fst $1, snd $1)
 }
 
+Type1 :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: ListType2 '->' Type2 {
+  (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
+}
+| Type2 {
+  (fst $1, snd $1)
+}
+
 ListType3 :: {
   (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
 }
@@ -563,16 +576,6 @@ ListType2 :: {
 }
 | Type2 ',' ListType2 {
   (fst $1, (:) (snd $1)(snd $3)) 
-}
-
-Type1 :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: ListType2 '->' Type2 {
-  (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
-}
-| Type2 {
-  (fst $1, snd $1)
 }
 
 Type :: {
@@ -618,7 +621,6 @@ pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
 pExpr10 = (>>= return . snd) . pExpr10_internal
-pListExpr2 = (>>= return . snd) . pListExpr2_internal
 pExpr9 = (>>= return . snd) . pExpr9_internal
 pExpr8 = (>>= return . snd) . pExpr8_internal
 pExpr7 = (>>= return . snd) . pExpr7_internal
@@ -630,13 +632,14 @@ pExpr4 = (>>= return . snd) . pExpr4_internal
 pExpr3 = (>>= return . snd) . pExpr3_internal
 pExpr1 = (>>= return . snd) . pExpr1_internal
 pListExpr3 = (>>= return . snd) . pListExpr3_internal
+pListExpr2 = (>>= return . snd) . pListExpr2_internal
 pExpr2 = (>>= return . snd) . pExpr2_internal
 pExpr = (>>= return . snd) . pExpr_internal
 pType4 = (>>= return . snd) . pType4_internal
 pType2 = (>>= return . snd) . pType2_internal
+pType1 = (>>= return . snd) . pType1_internal
 pListType3 = (>>= return . snd) . pListType3_internal
 pListType2 = (>>= return . snd) . pListType2_internal
-pType1 = (>>= return . snd) . pType1_internal
 pType = (>>= return . snd) . pType_internal
 pType3 = (>>= return . snd) . pType3_internal
 }

@@ -18,8 +18,8 @@ SProc.             Stmt   ::= "func" Ident "(" [Arg] ")" "def" Block ;
 SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type "def" Block ;
 SProcExtern.       Stmt   ::= "func" Ident "(" [Arg] ")" "extern" ;
 SFuncExtern.       Stmt   ::= "func" Ident "(" [Arg] ")" Type "extern" ;
-ANoDef.            Arg    ::= Type Ident ;
---ADef.              Arg    ::= Type Ident "=" Expr ;
+ANoDefault.        Arg    ::= Type Ident ;
+ADefault.          Arg    ::= Type Ident ":" Expr2 ;
 separator          Arg        "," ;
 SRetVoid.          Stmt   ::= "return" ;
 SRetExpr.          Stmt   ::= "return" Expr ;
@@ -58,7 +58,6 @@ EFalse.            Expr10 ::= "false" ;
 EChar.             Expr10 ::= Char ;
 EString.           Expr10 ::= String ;
 EArray.            Expr10 ::= "[" [Expr2] "]" ;
-separator          Expr2      "," ;
 
 EVar.              Expr10 ::= Ident ;
 EElem.             Expr10 ::= Expr10 "." Integer ;
@@ -94,9 +93,11 @@ EAnd.              Expr4  ::= Expr5 "and" Expr4 ;
 EOr.               Expr3  ::= Expr4 "or" Expr3 ;
 
 ETuple.            Expr1  ::= [Expr3] ;
-separator nonempty Expr3      "," ;
 
--- when ECond is above ETuple, strange things happen
+separator nonempty Expr3      "," ;
+separator          Expr2      "," ;
+
+-- when ECond is above separator for Expr3, strange things happen
 ECond.             Expr2  ::= Expr3 "?" Expr3 ":" Expr2 ;
 
 coercions          Expr       10 ;
@@ -115,9 +116,12 @@ TObject.           Type4  ::= "Object" ;
 TString.           Type4  ::= "String" ;
 TArray.            Type4  ::= "[" Type "]" ;
 TTuple.            Type2  ::= [Type3] ;
+internal TArgN.    Type2  ::= Type1 ;
+internal TArgD.    Type2  ::= Type1 String ;
+TFunc.             Type1  ::= [Type2] "->" Type2 ;
+
 separator nonempty Type3      "*" ;
 separator nonempty Type2      "," ;
-TFunc.             Type1  ::= [Type2] "->" Type2 ;
 
 coercions          Type       4 ;
 

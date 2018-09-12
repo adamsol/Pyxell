@@ -1,0 +1,6 @@
+
+func f(Int x: 9) def
+    print x
+
+f()
+f(42)

@@ -1,6 +1,5 @@
 
-if true do
-    func h() def
-        return
+func f(Int a, Bool b, Char c: 'c') def
+    return
 
-h()
+f(10)

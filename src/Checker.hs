@@ -24,7 +24,7 @@ data StaticError = NotComparable Type Type
                  | IllegalAssignment Type Type
                  | NoBinaryOperator String Type Type
                  | NoUnaryOperator String Type
-                 | WrongFunctionCall Type Int
+                 | WrongFunctionCall Int
                  | ClosureRequired Ident
                  | UnexpectedStatement String
                  | NotPrintable Type
@@ -32,6 +32,7 @@ data StaticError = NotComparable Type Type
                  | RedeclaredIdentifier Ident
                  | VoidDeclaration
                  | NotLvalue
+                 | MissingDefault
                  | InvalidExpression String
                  | UnknownType
                  | NotTuple Type
@@ -49,7 +50,7 @@ instance Show StaticError where
         IllegalAssignment typ1 typ2 -> "Illegal assignment from `" ++ show typ1 ++ "` to `" ++ show typ2 ++ "`."
         NoBinaryOperator op typ1 typ2 -> "No binary operator `" ++ op ++ "` defined for `" ++ show typ1 ++ "` and `" ++ show typ2 ++ "`."
         NoUnaryOperator op typ -> "No unary operator `" ++ op ++ "` defined for `" ++ show typ ++ "`."
-        WrongFunctionCall typ n -> "Type `" ++ show typ ++ "` is not a function taking " ++ show n ++ " arguments."
+        WrongFunctionCall n -> "Not a function taking " ++ show n ++ " arguments."
         ClosureRequired (Ident x) -> "Cannot access a non-global and non-local variable `" ++ x ++ "`."
         UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
         NotPrintable typ -> "Variable of type `" ++ show typ ++ "` cannot be printed."
@@ -57,6 +58,7 @@ instance Show StaticError where
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
+        MissingDefault -> "Missing default value for an argument."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
         UnknownType -> "Cannot settle type of the expression."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
@@ -249,20 +251,27 @@ checkStmt stmt cont = case stmt of
             case r of
                 Nothing -> skip
                 Just _ -> throw pos $ RedeclaredIdentifier id
-            let as = map (\(ANoDef _ t _) -> reduceType t) args
+            as <- forM args $ \a -> case a of
+                ANoDefault _ t _ -> return $ tArgN (reduceType t)
+                ADefault _ t _ _ -> return $ tArgD (reduceType t) ""
             let r = reduceType ret
             declare pos (tFunc as r) id $ do  -- so global functions are global
                 case block of
                     Just b -> nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
-                        checkArgs args $ local (M.insert "#return" (r, 0)) $ local (M.delete "#loop") $ checkBlock b
+                        checkArgs args False $ local (M.insert "#return" (r, 0)) $ local (M.delete "#loop") $ checkBlock b
                     Nothing -> skip
                 cont
-        checkArgs args cont = case args of
+        checkArgs args def cont = case args of
              [] -> cont
-             a:as -> checkArg a (checkArgs as cont)
-        checkArg arg cont = case arg of
-            ANoDef pos typ id -> do
-                declare pos (reduceType typ) id cont
+             a:as -> checkArg a def (\d -> checkArgs as (def || d) cont)
+        checkArg arg def cont = case arg of
+            ANoDefault pos typ id -> case def of
+                False -> declare pos (reduceType typ) id (cont False)
+                True -> throw pos $ MissingDefault
+            ADefault pos typ id expr -> do
+                (t, _) <- checkExpr expr
+                checkCast pos t (reduceType typ)
+                declare pos (reduceType typ) id (cont True)
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
             (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
@@ -377,13 +386,16 @@ checkExpr expr =
                 otherwise -> return $ es
             case t of
                 TFunc _ args ret -> do
-                    case length es == length args of
+                    case length es <= length args of
                         True -> skip
-                        False -> throw pos $ WrongFunctionCall t (length es)
+                        False -> throw pos $ WrongFunctionCall (length es)
+                    forM (drop (length es) args) $ \a -> case a of
+                        TArgD _ _ _ -> skip
+                        otherwise -> throw pos $ WrongFunctionCall (length es)
                     as <- mapM checkExpr es
                     forM (zip (map fst as) args) (uncurry $ checkCast pos)
                     return $ (ret, False)
-                otherwise -> throw pos $ WrongFunctionCall t (length es)
+                otherwise -> throw pos $ WrongFunctionCall (length es)
         EPow pos e1 e2 -> checkBinary pos "**" e1 e2
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2

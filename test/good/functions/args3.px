@@ -1,0 +1,14 @@
+
+func set(Int n, [Int] a: [0]) [Int] def
+    a[0] = n
+    return a
+
+a = set(2)
+print a[0]
+b = set(3, a)
+print b[0], a[0]
+
+set(9)
+print a[0], b[0]
+
+print set(-5, [8, 1])[0], a[0] + b[0]

@@ -59,12 +59,14 @@ instance Functor Stmt where
         SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
-data Arg a = ANoDef a (Type a) Ident
+data Arg a
+    = ANoDefault a (Type a) Ident | ADefault a (Type a) Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Arg where
     fmap f x = case x of
-        ANoDef a type_ ident -> ANoDef (f a) (fmap f type_) ident
+        ANoDefault a type_ ident -> ANoDefault (f a) (fmap f type_) ident
+        ADefault a type_ ident expr -> ADefault (f a) (fmap f type_) ident (fmap f expr)
 data Block a = SBlock a [Stmt a]
   deriving (Eq, Ord, Show, Read)
 
@@ -178,6 +180,8 @@ data Type a
     | TString a
     | TArray a (Type a)
     | TTuple a [Type a]
+    | TArgN a (Type a)
+    | TArgD a (Type a) String
     | TFunc a [Type a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
@@ -194,4 +198,6 @@ instance Functor Type where
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
+        TArgN a type_ -> TArgN (f a) (fmap f type_)
+        TArgD a type_ string -> TArgD (f a) (fmap f type_) string
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)

@@ -39,7 +39,8 @@ transStmt x = case x of
   SBreak _ -> failure x
 transArg :: Show a => Arg a -> Result
 transArg x = case x of
-  ANoDef _ type_ ident -> failure x
+  ANoDefault _ type_ ident -> failure x
+  ADefault _ type_ ident expr -> failure x
 transBlock :: Show a => Block a -> Result
 transBlock x = case x of
   SBlock _ stmts -> failure x
@@ -105,5 +106,7 @@ transType x = case x of
   TString _ -> failure x
   TArray _ type_ -> failure x
   TTuple _ types -> failure x
+  TArgN _ type_ -> failure x
+  TArgD _ type_ string -> failure x
   TFunc _ types type_ -> failure x
 

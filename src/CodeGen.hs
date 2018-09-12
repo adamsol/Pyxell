@@ -66,7 +66,7 @@ getIdent (Ident x) = asks (M.lookup x)
 
 -- | LLVM string representation for a given type.
 strType :: Type -> String
-strType typ = case typ of
+strType typ = case reduceType typ of
     TPtr _ t -> strType t ++ "*"
     TDeref _ t -> init (strType t)
     TVoid _ -> "void"
@@ -76,8 +76,8 @@ strType typ = case typ of
     TObject _ -> "i8*"
     TString _ -> strType (tArray tChar)
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
-    TTuple _ ts -> if length ts == 1 then strType (head ts) else "{" ++ intercalate ", " (map strType ts) ++ "}*"
-    TFunc _ as r -> strType r ++ " (" ++ intercalate ", " (map strType as) ++ ")*"
+    TTuple _ ts -> "{" ++ intercalate ", " (map strType ts) ++ "}*"
+    TFunc _ as r -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
 
 -- | Returns a default value for a given type.
 -- | This function is for LLVM code and only serves its internal requirements.
@@ -120,7 +120,6 @@ label lbl = do
 getLabel :: Run String
 getLabel = do
     s <- getScope
-    e <- ask
     Label l <- lift $ gets (M.! ("$label-" ++ s))
     return $ l
 
