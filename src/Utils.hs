@@ -68,6 +68,7 @@ reduceType t = do
 
 -- | Helper functions for initializing types without a position.
 tPtr = TPtr Nothing
+tArr = TArr Nothing
 tDeref = TDeref Nothing
 tLabel = TLabel Nothing
 tVoid = TVoid Nothing

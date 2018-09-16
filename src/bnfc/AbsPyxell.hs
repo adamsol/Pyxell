@@ -170,6 +170,7 @@ instance Functor Expr where
         ECond a expr1 expr2 expr3 -> ECond (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
 data Type a
     = TPtr a (Type a)
+    | TArr a Integer (Type a)
     | TDeref a (Type a)
     | TLabel a
     | TVoid a
@@ -188,6 +189,7 @@ data Type a
 instance Functor Type where
     fmap f x = case x of
         TPtr a type_ -> TPtr (f a) (fmap f type_)
+        TArr a integer type_ -> TArr (f a) integer (fmap f type_)
         TDeref a type_ -> TDeref (f a) (fmap f type_)
         TLabel a -> TLabel (f a)
         TVoid a -> TVoid (f a)

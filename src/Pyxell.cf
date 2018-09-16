@@ -106,6 +106,7 @@ coercions          Expr       10 ;
 -- types --
 
 internal TPtr.     Type4  ::= Type4 ;
+internal TArr.     Type4  ::= Integer Type4 ;
 internal TDeref.   Type4  ::= Type4 ;
 internal TLabel.   Type4  ::= "Label" ;
 TVoid.             Type4  ::= "Void" ;

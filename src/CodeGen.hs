@@ -67,6 +67,7 @@ getIdent (Ident x) = asks (M.lookup x)
 strType :: Type -> String
 strType typ = case reduceType typ of
     TPtr _ t -> strType t ++ "*"
+    TArr _ n t -> "[" ++ show n ++ " x " ++ strType t ++ "]"
     TDeref _ t -> init (strType t)
     TVoid _ -> "void"
     TInt _ -> "i64"
@@ -109,6 +110,12 @@ nextGlobal :: Run String
 nextGlobal = do
     n <- nextNumber
     return $ "@g" ++ show n
+
+-- | Returns an unused constant name in the form: '@c\d+'.
+nextConst :: Run String
+nextConst = do
+    n <- nextNumber
+    return $ "@c" ++ show n
 
 -- | Returns an unused label name in the form: 'L\d+'.
 nextLabel :: Run String
@@ -173,6 +180,13 @@ global typ val = do
     g <- nextGlobal
     write $ [ g ++ " = global " ++ strType typ ++ " " ++ val ]
     return $ g
+
+-- | Outputs LLVM constant command.
+constant :: Type -> String -> Run String
+constant typ val = do
+    c <- nextConst
+    write $ [ c ++ " = constant " ++ strType typ ++ " " ++ val ]
+    return $ c
 
 -- | Outputs LLVM 'external global' command.
 external :: String -> Type -> Run String
@@ -284,8 +298,15 @@ ret typ val = do
 -- | Outputs LLVM code for string initialization.
 initString :: String -> Run Result
 initString s = do
-    (_, p) <- initArray tChar (map (show . ord) s) []
-    return $ (tString, p)
+    let l = length s
+    let t = (tArr (toInteger l) tChar)
+    c <- scope "!global" $ constant t ("[" ++ intercalate ", " [strType tChar ++ " " ++ show (ord c) | c <- s] ++ "]")
+    v <- gep tString "null" ["1"] [] >>= ptrtoint tString
+    p1 <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) tString
+    p2 <- gep (tPtr t) c ["0"] [0]
+    gep tString p1 ["0"] [0] >>= store (tPtr tChar) p2
+    gep tString p1 ["0"] [1] >>= store tInt (show l)
+    return $ (tString, p1)
 
 -- | Outputs LLVM code for array initialization.
 -- |   'lens' is an array of two optional values:

@@ -96,6 +96,7 @@ transExpr x = case x of
 transType :: Show a => Type a -> Result
 transType x = case x of
   TPtr _ type_ -> failure x
+  TArr _ integer type_ -> failure x
   TDeref _ type_ -> failure x
   TLabel _ -> failure x
   TVoid _ -> failure x
