@@ -19,30 +19,21 @@ import CodeGen
 import Utils
 
 
+initCompiler :: Run Env
+initCompiler = do
+    lift $ modify (M.insert "$number" (Number 0))
+    lift $ modify (M.insert "$label-main" (Label "entry"))
+    write $ [ "" ]
+    declare (tFunc [tInt] (tPtr tChar)) "@malloc"
+    declare (tFunc [tPtr tChar, tPtr tChar, tInt] (tPtr tChar)) "@memcpy"
+    declare (tFunc [tChar] (tInt)) "@putchar"
+    declare (tFunc [tPtr tChar, tInt, tPtr tChar] (tInt)) "@printf"
+    ask
+
 -- | Outputs LLVM code for all statements in the program.
-compileProgram :: Program Pos -> M.Map String Type -> Bool -> Run ()
-compileProgram prog env main = case prog of
-    Program _ stmts -> do
-        lift $ modify (M.insert "$number" (Number 0))
-        write $ [ "" ]
-        declare (tFunc [tInt] (tPtr tChar)) "@malloc"
-        declare (tFunc [tPtr tChar, tPtr tChar, tInt] (tPtr tChar)) "@memcpy"
-        declare (tFunc [tChar] (tInt)) "@putchar"
-        write $ [ "" ]
-        list <- forM (M.assocs env) $ \(f, t) -> do
-            p <- external ("@." ++ f) t
-            return $ (f, (t, p))
-        write $ [ "" ]
-        local (\_ -> M.fromList list) $ do
-            if main then scope "main" $ do
-                write $ [ "",
-                    "define i64 @main() {",
-                    "entry:" ]
-                lift $ modify (M.insert ("$label-main") (Label "entry"))
-                compileStmts stmts skip
-                ret tInt "0"
-                write $ [ "}" ]
-            else compileStmts stmts skip
+compileProgram :: Program Pos -> Run Env
+compileProgram prog = case prog of
+    Program _ stmts -> scope "main" $ compileStmts stmts ask
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
@@ -50,13 +41,13 @@ compileBlock block = case block of
     SBlock _ stmts -> compileStmts stmts skip
 
 -- | Outputs LLVM code for a bunch of statements and runs the continuation.
-compileStmts :: [Stmt Pos] -> Run () -> Run ()
+compileStmts :: [Stmt Pos] -> Run a -> Run a
 compileStmts stmts cont = case stmts of
     [] -> cont
     s:ss -> compileStmt s (compileStmts ss cont)
 
 -- | Outputs LLVM code for a single statement and runs the continuation.
-compileStmt :: Stmt Pos -> Run () -> Run ()
+compileStmt :: Stmt Pos -> Run a -> Run a
 compileStmt stmt cont = case stmt of
     SProc _ (Ident f) args block -> do
         compileFunc f args tVoid (Just block) cont
@@ -68,9 +59,11 @@ compileStmt stmt cont = case stmt of
         compileFunc f args rt Nothing cont
     SRetVoid _ -> do
         ret tVoid ""
+        cont
     SRetExpr _ expr -> do
         (t, v) <- compileExpr expr
         ret t v
+        cont
     SSkip _ -> do
         cont
     SPrint _  expr -> do
@@ -169,26 +162,27 @@ compileStmt stmt cont = case stmt of
     SBreak _ -> do
         (_, l) <- asks (M.! "#break")
         goto l
+        cont
     SContinue _ -> do
         (_, l) <- asks (M.! "#continue")
         goto l
+        cont
     where
         compileFunc name args rt block cont = do
             s <- getScope
-            let f = (if s /= "main" && s /= "!global" then s else "") ++ "." ++ escapeName name
+            let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName name
             as <- forM args $ \a -> case a of
                 ANoDefault _ t _ -> return $ tArgN (reduceType t)
                 ADefault _ t (Ident x) e -> do
                     t <- return $ reduceType t
-                    n <- nextNumber
-                    p <- global ("@" ++ f ++ "." ++ escapeName x ++ show n) t (defaultValue t)
+                    p <- scope f $ global t (defaultValue t)
                     scope "main" $ do
                         (_, v) <- compileExpr e
                         store t v p
                     return $ tArgD t p
             let r = reduceType rt
             let t = tFunc as r
-            let p = "@" ++ f
+            let p = "@f" ++ f
             local (M.insert name (t, p)) $ do
                 case block of
                     Just b -> define t name $ compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
@@ -197,7 +191,7 @@ compileStmt stmt cont = case stmt of
                         compileBlock b
                         ret r (defaultValue r)
                     Nothing -> do
-                        external p t
+                        scope "!global" $ external p t
                         skip
                 cont
         compileArgs args i cont = case args of

@@ -14,21 +14,20 @@ import AbsPyxell hiding (Type)
 import Utils
 
 
--- | Runs compilation and writes generated LLVM code to a file.
-outputCode :: Run () -> String -> IO ()
-outputCode compiler path = do
-    scopes <- execStateT (runStateT (runReaderT compiler M.empty) M.empty) M.empty
-    writeFile path (concat [unlines (reverse f) | f <- M.elems scopes])
-
-
 -- | Type and name of LLVM register(s).
 type Result = (Type, String)
+
+-- | Identifier environment.
+type Env = M.Map String Result
 
 -- | State item (for storing different data).
 data StateItem = Number Int | Label String
 
+-- | LLVM code for each scope (function or global).
+type Output = M.Map String [String]
+
 -- | Compiler monad: Reader for identifier environment, State to store some useful values and the output LLVM code.
-type Run r = ReaderT (M.Map String Result) (StateT (M.Map String StateItem) (StateT (M.Map String [String]) IO)) r
+type Run r = ReaderT (M.Map String Result) (StateT (M.Map String StateItem) (StateT Output IO)) r
 
 
 -- | Does nothing.
@@ -78,6 +77,8 @@ strType typ = case reduceType typ of
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> "{" ++ intercalate ", " (map strType ts) ++ "}*"
     TFunc _ as r -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
+    TArgN _ t' -> strType t'
+    TArgD _ t' _ -> strType t'
 
 -- | Returns a default value for a given type.
 -- | This function is for LLVM code and only serves its internal requirements.
@@ -97,13 +98,19 @@ nextNumber = do
     lift $ modify (M.insert "$number" (Number (n+1)))
     return $ n+1
 
--- | Returns an unused register name in the form: '%t\d'.
+-- | Returns an unused register name in the form: '%t\d+'.
 nextTemp :: Run String
 nextTemp = do
     n <- nextNumber
     return $ "%t" ++ show n
 
--- | Returns an unused label name in the form: 'L\d'.
+-- | Returns an unused variable name in the form: '@g\d+'.
+nextGlobal :: Run String
+nextGlobal = do
+    n <- nextNumber
+    return $ "@g" ++ show n
+
+-- | Returns an unused label name in the form: 'L\d+'.
 nextLabel :: Run String
 nextLabel = do
     n <- nextNumber
@@ -133,10 +140,10 @@ define :: Type -> String -> Run () -> Run ()
 define typ name body = do
     let (TFunc _ args rt) = typ
     s <- getScope
-    let f = (if s /= "main" && s /= "!global" then s else "") ++ "." ++ escapeName name
-    global ("@" ++ f) typ ("@func" ++ f)
+    let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName name
     scope f $ do
-        write $ [ "",
+        write $ [
+            "@f" ++ f ++ " = global " ++ strType typ ++ " @func" ++ f,
             "define " ++ strType rt ++ " @func" ++ f ++ "(" ++ intercalate ", " (map strType args) ++ ") {",
             "entry:" ]
         lift $ modify (M.insert ("$label-" ++ f) (Label "entry"))
@@ -160,16 +167,17 @@ alloca typ = do
     write $ indent [ p ++ " = alloca " ++ strType typ ]
     return $ p
 
--- | Outputs LLVM 'global' command in the global scope.
-global :: String -> Type -> String -> Run String
-global name typ val = do
-    scope "!global" $ write $ [ name ++ " = global " ++ strType typ ++ " " ++ val ]
-    return $ name
+-- | Outputs LLVM 'global' command.
+global :: Type -> String -> Run String
+global typ val = do
+    g <- nextGlobal
+    write $ [ g ++ " = global " ++ strType typ ++ " " ++ val ]
+    return $ g
 
--- | Outputs LLVM 'external global' command in the global scope.
+-- | Outputs LLVM 'external global' command.
 external :: String -> Type -> Run String
 external name typ = do
-    scope "!global" $ write $ [ name ++ " = external global " ++ strType typ ]
+    write $ [ name ++ " = external global " ++ strType typ ]
     return $ name
 
 -- | Outputs LLVM 'store' command.
@@ -186,13 +194,11 @@ load typ ptr = do
     return $ v
 
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
-variable :: Type -> Ident -> String -> Run () -> Run ()
+variable :: Type -> Ident -> String -> Run a -> Run a
 variable typ (Ident x) val cont = do
     s <- getScope
     p <- case s of
-        "main" -> do
-            n <- nextNumber
-            global ("@" ++ escapeName x ++ show n) typ (defaultValue typ)
+        "main" -> scope "!global" $ global typ (defaultValue typ)
         otherwise -> alloca typ
     store typ val p
     local (M.insert x (typ, p)) cont

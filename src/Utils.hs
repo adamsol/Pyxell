@@ -28,6 +28,8 @@ instance {-# OVERLAPS #-} Show Type where
         TArray _ t' -> "[" ++ show t' ++ "]"
         TTuple _ ts -> intercalate "*" (map show ts)
         TFunc _ as r -> "(" ++ intercalate "," (map show as) ++ ")->" ++ show r
+        TArgN _ t' -> show t'
+        TArgD _ t' _ -> show t'
 
 -- | Unification function. Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
@@ -62,8 +64,6 @@ reduceType t = do
         TArray _ t' -> tArray (reduceType t')
         TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
         TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
-        TArgN _ t' -> reduceType t'
-        TArgD _ t' _ -> reduceType t'
         otherwise -> t
 
 -- | Helper functions for initializing types without a position.

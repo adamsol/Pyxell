@@ -2,5 +2,5 @@
 s = [123.toString(), 789.toString()].join(456.toString())
 print s, s.length
 
-print ["AB", "C", "GHIJKL"].join("")
+print ["AB", "C", "GHIJKL"].join()
 print ["test"].join("2")

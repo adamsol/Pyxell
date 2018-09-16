@@ -16,8 +16,11 @@ import ErrM
 import Utils
 
 
+-- | Identifier environment: type and nesting level.
+type Env = M.Map String (Type, Int)
+
 -- | Checker monad: Reader for identifier environment, Error to report compilation errors.
-type Run r = ReaderT (M.Map String (Type, Int)) (ErrorT String IO) r
+type Run r = ReaderT Env (ErrorT String IO) r
 
 -- | Compilation error type.
 data StaticError = NotComparable Type Type
@@ -84,10 +87,8 @@ throw pos err = case pos of
 -- | Returns current nesting level.
 getLevel :: Run Int
 getLevel = do
-    r <- asks (M.lookup "#level")
-    case r of
-        Just (_, l) -> return $ l
-        Nothing -> return $ -1
+    Just (_, l) <- asks (M.lookup "#level")
+    return $ l
 
 -- | Runs continuation on a higher nesting level.
 nextLevel :: Run a -> Run a
@@ -116,11 +117,9 @@ declare pos typ (Ident x) cont = case typ of
 
 
 -- | Checks the whole program and returns environment.
-checkProgram :: Program Pos -> M.Map String Type -> Run (M.Map String Type)
-checkProgram prog env = case prog of
-    Program pos stmts -> do
-        local (\_ -> (M.map (\t -> (t, 0)) env)) $ nextLevel $ do
-            checkStmts stmts (asks ((M.map fst) . (M.delete "#level")))
+checkProgram :: Program Pos -> Run Env
+checkProgram prog = case prog of
+    Program pos stmts -> checkStmts stmts ask
 
 -- | Checks a block with statements.
 checkBlock :: Block Pos -> Run ()
@@ -360,25 +359,30 @@ checkExpr expr =
                     otherwise -> throw pos $ NotIndexable t1
                 otherwise -> throw pos $ IllegalAssignment t2 tInt
         EAttr pos e id -> do
-            (t, m) <- checkExpr e
-            case t of
+            (t1, m) <- checkExpr e
+            Just t2 <- case t1 of
                 TInt _ -> case fromIdent id of
-                    "toString" -> return $ (tFunc [tInt] tString, False)
+                    "toString" -> getIdent _pos (Ident "Int_toString")
                 TBool _ -> case fromIdent id of
-                    "toString" -> return $ (tFunc [tBool] tString, False)
+                    "toString" -> getIdent _pos (Ident "Bool_toString")
                 TChar _ -> case fromIdent id of
-                    "toString" -> return $ (tFunc [tChar] tString, False)
+                    "toString" -> getIdent _pos (Ident "Char_toString")
                 TString _ -> case fromIdent id of
-                    "length" -> return $ (tInt, False)
-                    "toString" -> return $ (tFunc [tString] tString, False)
-                    "toInt" -> return $ (tFunc [tString] tInt, False)
-                    otherwise -> throw pos $ InvalidAttr t id
+                    "length" -> return $ Just tInt
+                    "toString" -> getIdent _pos (Ident "String_toString")
+                    "toInt" -> getIdent _pos (Ident "String_toInt")
+                    otherwise -> throw pos $ InvalidAttr t1 id
                 TArray _ t' -> case (t', fromIdent id) of
-                    (_, "length") -> return $ (tInt, False)
-                    (TChar _, "join") -> return $ (tFunc [tArray tChar, tString] tString, False)
-                    (TString _, "join") -> return $ (tFunc [tArray tString, tString] tString, False)
-                    otherwise -> throw pos $ InvalidAttr t id
-                otherwise -> throw pos $ InvalidAttr t id
+                    (_, "length") -> return $ Just tInt
+                    (TChar _, "join") -> do
+                        t'' <- getIdent _pos (Ident "CharArray_join")
+                        return $ t''
+                    (TString _, "join") -> do
+                        t'' <- getIdent _pos (Ident "StringArray_join")
+                        return $ t''
+                    otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1 id
+            return $ (t2, False)
         ECall pos e es -> do
             (t, _) <- checkExpr e
             es <- case e of
