@@ -96,10 +96,10 @@ instance Print [Stmt a] where
 
 instance Print (Stmt a) where
   prt i e = case e of
-    SProc _ id args block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "def"), prt 0 block])
-    SFunc _ id args type_ block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), prt 0 type_, doc (showString "def"), prt 0 block])
-    SProcExtern _ id args -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), doc (showString "extern")])
-    SFuncExtern _ id args type_ -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 args, doc (showString ")"), prt 0 type_, doc (showString "extern")])
+    SProc _ id argfs block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 argfs, doc (showString ")"), doc (showString "def"), prt 0 block])
+    SFunc _ id argfs type_ block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 argfs, doc (showString ")"), prt 0 type_, doc (showString "def"), prt 0 block])
+    SProcExtern _ id argfs -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 argfs, doc (showString ")"), doc (showString "extern")])
+    SFuncExtern _ id argfs type_ -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 argfs, doc (showString ")"), prt 0 type_, doc (showString "extern")])
     SRetVoid _ -> prPrec i 0 (concatD [doc (showString "return")])
     SRetExpr _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
@@ -120,7 +120,7 @@ instance Print (Stmt a) where
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
 
-instance Print (Arg a) where
+instance Print (ArgF a) where
   prt i e = case e of
     ANoDefault _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
     ADefault _ type_ id expr -> prPrec i 0 (concatD [prt 0 type_, prt 0 id, doc (showString ":"), prt 2 expr])
@@ -128,7 +128,7 @@ instance Print (Arg a) where
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
-instance Print [Arg a] where
+instance Print [ArgF a] where
   prt = prtList
 
 instance Print (Block a) where
@@ -152,6 +152,17 @@ instance Print (Else a) where
   prt i e = case e of
     EElse _ block -> prPrec i 0 (concatD [doc (showString "else"), doc (showString "do"), prt 0 block])
     EEmpty _ -> prPrec i 0 (concatD [])
+
+instance Print (ArgC a) where
+  prt i e = case e of
+    APos _ expr -> prPrec i 0 (concatD [prt 2 expr])
+    ANamed _ id expr -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 2 expr])
+  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
+
+instance Print [ArgC a] where
+  prt = prtList
 
 instance Print (Cmp a) where
   prt i e = case e of
@@ -179,7 +190,7 @@ instance Print (Expr a) where
     EElem _ expr n -> prPrec i 10 (concatD [prt 10 expr, doc (showString "."), prt 0 n])
     EIndex _ expr1 expr2 -> prPrec i 10 (concatD [prt 10 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
     EAttr _ expr id -> prPrec i 10 (concatD [prt 10 expr, doc (showString "."), prt 0 id])
-    ECall _ expr exprs -> prPrec i 10 (concatD [prt 10 expr, doc (showString "("), prt 2 exprs, doc (showString ")")])
+    ECall _ expr argcs -> prPrec i 10 (concatD [prt 10 expr, doc (showString "("), prt 0 argcs, doc (showString ")")])
     EPow _ expr1 expr2 -> prPrec i 9 (concatD [prt 10 expr1, doc (showString "**"), prt 9 expr2])
     EMul _ expr1 expr2 -> prPrec i 8 (concatD [prt 8 expr1, doc (showString "*"), prt 9 expr2])
     EDiv _ expr1 expr2 -> prPrec i 8 (concatD [prt 8 expr1, doc (showString "/"), prt 9 expr2])
@@ -219,8 +230,8 @@ instance Print (Type a) where
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])
     TArray _ type_ -> prPrec i 4 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
-    TArgN _ type_ -> prPrec i 2 (concatD [prt 1 type_])
-    TArgD _ type_ str -> prPrec i 2 (concatD [prt 1 type_, prt 0 str])
+    TArgN _ type_ id -> prPrec i 2 (concatD [prt 1 type_, prt 0 id])
+    TArgD _ type_ id str -> prPrec i 2 (concatD [prt 1 type_, prt 0 id, prt 0 str])
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 2 type_])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]

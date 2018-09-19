@@ -1,0 +1,9 @@
+
+func f(Int x) def
+    return
+
+func f'(Int y: 0) def
+    return
+
+f = f'
+f(y=1)

@@ -1,0 +1,5 @@
+
+func f(String s) def
+    return
+
+f("", s="")

@@ -29,7 +29,7 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * String interpolation (+)
 * Mutable arrays (+)
 * First-class functions (+)
-* Default and keyword arguments
+* Default and named arguments (+)
 * Closures and lambdas
 * Arbitrary-precision arithmetic
 * Classes with multiple inheritance and safe references

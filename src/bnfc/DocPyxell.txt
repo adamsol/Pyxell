@@ -67,10 +67,10 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
-  | //Stmt// | -> | ``func`` //Ident// ``(`` //[Arg]// ``)`` ``def`` //Block// 
-  |  |  **|**  | ``func`` //Ident// ``(`` //[Arg]// ``)`` //Type// ``def`` //Block// 
-  |  |  **|**  | ``func`` //Ident// ``(`` //[Arg]// ``)`` ``extern`` 
-  |  |  **|**  | ``func`` //Ident// ``(`` //[Arg]// ``)`` //Type// ``extern`` 
+  | //Stmt// | -> | ``func`` //Ident// ``(`` //[ArgF]// ``)`` ``def`` //Block// 
+  |  |  **|**  | ``func`` //Ident// ``(`` //[ArgF]// ``)`` //Type// ``def`` //Block// 
+  |  |  **|**  | ``func`` //Ident// ``(`` //[ArgF]// ``)`` ``extern`` 
+  |  |  **|**  | ``func`` //Ident// ``(`` //[ArgF]// ``)`` //Type// ``extern`` 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``skip`` 
@@ -87,11 +87,11 @@ All other symbols are terminals.
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
-  | //Arg// | -> | //Type// //Ident// 
+  | //ArgF// | -> | //Type// //Ident// 
   |  |  **|**  | //Type// //Ident// ``:`` //Expr2// 
-  | //[Arg]// | -> | **eps**
-  |  |  **|**  | //Arg// 
-  |  |  **|**  | //Arg// ``,`` //[Arg]// 
+  | //[ArgF]// | -> | **eps**
+  |  |  **|**  | //ArgF// 
+  |  |  **|**  | //ArgF// ``,`` //[ArgF]// 
   | //Block// | -> | ``{`` //[Stmt]// ``}`` 
   | //[Expr]// | -> | //Expr// 
   |  |  **|**  | //Expr// ``=`` //[Expr]// 
@@ -111,8 +111,13 @@ All other symbols are terminals.
   |  |  **|**  | //Expr10// ``.`` //Integer// 
   |  |  **|**  | //Expr10// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr10// ``.`` //Ident// 
-  |  |  **|**  | //Expr10// ``(`` //[Expr2]// ``)`` 
+  |  |  **|**  | //Expr10// ``(`` //[ArgC]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
+  | //ArgC// | -> | //Expr2// 
+  |  |  **|**  | //Ident// ``=`` //Expr2// 
+  | //[ArgC]// | -> | **eps**
+  |  |  **|**  | //ArgC// 
+  |  |  **|**  | //ArgC// ``,`` //[ArgC]// 
   | //Expr9// | -> | //Expr10// ``**`` //Expr9// 
   |  |  **|**  | //Expr10// 
   | //Expr8// | -> | //Expr8// ``*`` //Expr9// 

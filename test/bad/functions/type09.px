@@ -1,0 +1,8 @@
+
+func neg(Bool b: false) Bool def
+    return not b
+
+func f(Bool->Bool g) Bool def
+    return g(b=true)
+
+print f(neg)

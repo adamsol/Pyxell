@@ -172,14 +172,15 @@ compileStmt stmt cont = case stmt of
             s <- getScope
             let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName name
             as <- forM args $ \a -> case a of
-                ANoDefault _ t _ -> return $ tArgN (reduceType t)
-                ADefault _ t (Ident x) e -> do
+                ANoDefault _ t id -> do
+                    return $ tArgN (reduceType t) id
+                ADefault _ t id e -> do
                     t <- return $ reduceType t
                     p <- scope f $ global t (defaultValue t)
                     scope "main" $ do
                         (_, v) <- compileExpr e
                         store t v p
-                    return $ tArgD t p
+                    return $ tArgD t id p
             let r = reduceType rt
             let t = tFunc as r
             let p = "@f" ++ f
@@ -306,17 +307,30 @@ compileExpr expr =
                     return $ (ts !! i, v)
         EIndex _ _ _ -> compileRval expr
         EAttr _ _ _ -> compileRval expr
-        ECall _ e es -> do
-            (TFunc _ args ret, f) <- compileExpr e
-            es <- case e of
-                EAttr _ e' _ -> return $ e':es
-                otherwise -> return $ es
-            as1 <- forM (zip args es) $ \(_, e) -> compileExpr e
-            as2 <- forM (drop (length es) args) $ \(TArgD _ t p) -> do
-                v <- load t p
-                return $ (t, v)
-            v <- call ret f (as1 ++ as2)
-            return $ (ret, v)
+        ECall _ e as -> do
+            as <- case e of
+                EAttr _ e' _ -> return $ APos _pos e' : as
+                otherwise -> return $ as
+            (TFunc _ args rt, f) <- compileExpr e
+            -- Build a map of arguments and their positions.
+            let m = M.empty
+            m <- foldM' m (zip [0..] as) $ \m (i, a) -> case a of
+                APos _ e -> do
+                    (t, v) <- compileExpr e
+                    return $ M.insert i (t, v) m
+                ANamed _ id e -> do
+                    (t, v) <- compileExpr e
+                    let Just (i', _) = getArgument args id
+                    return $ M.insert i' (t, v) m
+            -- Extend the map using default arguments.
+            m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
+                (TArgD _ t _ p, Nothing) -> do
+                    v <- load t p
+                    return $ M.insert i (t, v) m
+                otherwise -> return $ m
+            -- Call the function.
+            v <- call rt f (M.elems m)
+            return $ (rt, v)
         EPow _ e1 e2 -> compileBinary "pow" e1 e2
         EMul _ e1 e2 -> compileBinary "mul" e1 e2
         EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2

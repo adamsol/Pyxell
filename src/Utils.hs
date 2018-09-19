@@ -3,6 +3,7 @@
 
 module Utils where
 
+import Control.Monad
 import Data.List
 import Text.Regex
 
@@ -28,8 +29,13 @@ instance {-# OVERLAPS #-} Show Type where
         TArray _ t' -> "[" ++ show t' ++ "]"
         TTuple _ ts -> intercalate "*" (map show ts)
         TFunc _ as r -> "(" ++ intercalate "," (map show as) ++ ")->" ++ show r
-        TArgN _ t' -> show t'
-        TArgD _ t' _ -> show t'
+        TArgN _ t' _ -> show t'
+        TArgD _ t' _ _ -> show t'
+
+
+-- | Some useful versions of standard functions.
+find' a f = find f a
+foldM' b a f = foldM f b a
 
 -- | Unification function. Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
@@ -51,10 +57,10 @@ unifyTypes t1 t2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
-        (TArgN _ t1', _) -> unifyTypes t1' t2
-        (TArgD _ t1' _, _) -> unifyTypes t1' t2
-        (_, TArgN _ t2') -> unifyTypes t1 t2'
-        (_, TArgD _ t2' _) -> unifyTypes t1 t2'
+        (TArgN _ t1' _, _) -> unifyTypes t1' t2
+        (TArgD _ t1' _ _, _) -> unifyTypes t1' t2
+        (_, TArgN _ t2' _) -> unifyTypes t1 t2'
+        (_, TArgD _ t2' _ _) -> unifyTypes t1 t2'
         otherwise -> Nothing
 
 -- | Try to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
@@ -101,3 +107,10 @@ interpolateString str =
             let (txts, tags) = interpolateString after in
             (before : txts, tail (init match) : tags)
         Nothing -> ([str], [""])
+
+-- Gets function argument by its name.
+getArgument :: [Type] -> Ident -> Maybe (Int, Type)
+getArgument args id = find' (zip [0..] args) $ \(_, a) -> case a of
+    TArgN _ _ id' -> id == id'
+    TArgD _ _ id' _ -> id == id'
+    otherwise -> False

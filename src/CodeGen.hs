@@ -78,8 +78,8 @@ strType typ = case reduceType typ of
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> "{" ++ intercalate ", " (map strType ts) ++ "}*"
     TFunc _ as r -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
-    TArgN _ t' -> strType t'
-    TArgD _ t' _ -> strType t'
+    TArgN _ t' _ -> strType t'
+    TArgD _ t' _ _ -> strType t'
 
 -- | Returns a default value for a given type.
 -- | This function is for LLVM code and only serves its internal requirements.

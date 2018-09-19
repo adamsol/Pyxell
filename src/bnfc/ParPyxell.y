@@ -14,14 +14,16 @@ import ErrM
 %name pProgram_internal Program
 %name pListStmt_internal ListStmt
 %name pStmt_internal Stmt
-%name pArg_internal Arg
-%name pListArg_internal ListArg
+%name pArgF_internal ArgF
+%name pListArgF_internal ListArgF
 %name pBlock_internal Block
 %name pListExpr_internal ListExpr
 %name pBranch_internal Branch
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
 %name pExpr10_internal Expr10
+%name pArgC_internal ArgC
+%name pListArgC_internal ListArgC
 %name pExpr9_internal Expr9
 %name pExpr8_internal Expr8
 %name pExpr7_internal Expr7
@@ -163,16 +165,16 @@ ListStmt :: {
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'func' Ident '(' ListArg ')' 'def' Block {
+: 'func' Ident '(' ListArgF ')' 'def' Block {
   (Just (tokenLineCol $1), AbsPyxell.SProc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $7)) 
 }
-| 'func' Ident '(' ListArg ')' Type 'def' Block {
+| 'func' Ident '(' ListArgF ')' Type 'def' Block {
   (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
 }
-| 'func' Ident '(' ListArg ')' 'extern' {
+| 'func' Ident '(' ListArgF ')' 'extern' {
   (Just (tokenLineCol $1), AbsPyxell.SProcExtern (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
 }
-| 'func' Ident '(' ListArg ')' Type 'extern' {
+| 'func' Ident '(' ListArgF ')' Type 'extern' {
   (Just (tokenLineCol $1), AbsPyxell.SFuncExtern (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
 }
 | 'return' {
@@ -224,8 +226,8 @@ Stmt :: {
   (Just (tokenLineCol $1), AbsPyxell.SBreak (Just (tokenLineCol $1)))
 }
 
-Arg :: {
-  (Maybe (Int, Int), Arg (Maybe (Int, Int)))
+ArgF :: {
+  (Maybe (Int, Int), ArgF (Maybe (Int, Int)))
 }
 : Type Ident {
   (fst $1, AbsPyxell.ANoDefault (fst $1)(snd $1)(snd $2)) 
@@ -234,16 +236,16 @@ Arg :: {
   (fst $1, AbsPyxell.ADefault (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
 
-ListArg :: {
-  (Maybe (Int, Int), [Arg (Maybe (Int, Int))]) 
+ListArgF :: {
+  (Maybe (Int, Int), [ArgF (Maybe (Int, Int))]) 
 }
 : {
   (Nothing, [])
 }
-| Arg {
+| ArgF {
   (fst $1, (:[]) (snd $1)) 
 }
-| Arg ',' ListArg {
+| ArgF ',' ListArgF {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
@@ -327,11 +329,34 @@ Expr10 :: {
 | Expr10 '.' Ident {
   (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
 }
-| Expr10 '(' ListExpr2 ')' {
+| Expr10 '(' ListArgC ')' {
   (fst $1, AbsPyxell.ECall (fst $1)(snd $1)(snd $3)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
+}
+
+ArgC :: {
+  (Maybe (Int, Int), ArgC (Maybe (Int, Int)))
+}
+: Expr2 {
+  (fst $1, AbsPyxell.APos (fst $1)(snd $1)) 
+}
+| Ident '=' Expr2 {
+  (fst $1, AbsPyxell.ANamed (fst $1)(snd $1)(snd $3)) 
+}
+
+ListArgC :: {
+  (Maybe (Int, Int), [ArgC (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| ArgC {
+  (fst $1, (:[]) (snd $1)) 
+}
+| ArgC ',' ListArgC {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 Expr9 :: {
@@ -613,14 +638,16 @@ myLexer = tokens
 pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pStmt = (>>= return . snd) . pStmt_internal
-pArg = (>>= return . snd) . pArg_internal
-pListArg = (>>= return . snd) . pListArg_internal
+pArgF = (>>= return . snd) . pArgF_internal
+pListArgF = (>>= return . snd) . pListArgF_internal
 pBlock = (>>= return . snd) . pBlock_internal
 pListExpr = (>>= return . snd) . pListExpr_internal
 pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
 pExpr10 = (>>= return . snd) . pExpr10_internal
+pArgC = (>>= return . snd) . pArgC_internal
+pListArgC = (>>= return . snd) . pListArgC_internal
 pExpr9 = (>>= return . snd) . pExpr9_internal
 pExpr8 = (>>= return . snd) . pExpr8_internal
 pExpr7 = (>>= return . snd) . pExpr7_internal

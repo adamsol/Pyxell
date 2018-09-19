@@ -15,10 +15,10 @@ instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
 data Stmt a
-    = SProc a Ident [Arg a] (Block a)
-    | SFunc a Ident [Arg a] (Type a) (Block a)
-    | SProcExtern a Ident [Arg a]
-    | SFuncExtern a Ident [Arg a] (Type a)
+    = SProc a Ident [ArgF a] (Block a)
+    | SFunc a Ident [ArgF a] (Type a) (Block a)
+    | SProcExtern a Ident [ArgF a]
+    | SFuncExtern a Ident [ArgF a] (Type a)
     | SRetVoid a
     | SRetExpr a (Expr a)
     | SSkip a
@@ -39,10 +39,10 @@ data Stmt a
 
 instance Functor Stmt where
     fmap f x = case x of
-        SProc a ident args block -> SProc (f a) ident (map (fmap f) args) (fmap f block)
-        SFunc a ident args type_ block -> SFunc (f a) ident (map (fmap f) args) (fmap f type_) (fmap f block)
-        SProcExtern a ident args -> SProcExtern (f a) ident (map (fmap f) args)
-        SFuncExtern a ident args type_ -> SFuncExtern (f a) ident (map (fmap f) args) (fmap f type_)
+        SProc a ident argfs block -> SProc (f a) ident (map (fmap f) argfs) (fmap f block)
+        SFunc a ident argfs type_ block -> SFunc (f a) ident (map (fmap f) argfs) (fmap f type_) (fmap f block)
+        SProcExtern a ident argfs -> SProcExtern (f a) ident (map (fmap f) argfs)
+        SFuncExtern a ident argfs type_ -> SFuncExtern (f a) ident (map (fmap f) argfs) (fmap f type_)
         SRetVoid a -> SRetVoid (f a)
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
         SSkip a -> SSkip (f a)
@@ -59,11 +59,11 @@ instance Functor Stmt where
         SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
-data Arg a
+data ArgF a
     = ANoDefault a (Type a) Ident | ADefault a (Type a) Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
 
-instance Functor Arg where
+instance Functor ArgF where
     fmap f x = case x of
         ANoDefault a type_ ident -> ANoDefault (f a) (fmap f type_) ident
         ADefault a type_ ident expr -> ADefault (f a) (fmap f type_) ident (fmap f expr)
@@ -86,6 +86,13 @@ instance Functor Else where
     fmap f x = case x of
         EElse a block -> EElse (f a) (fmap f block)
         EEmpty a -> EEmpty (f a)
+data ArgC a = APos a (Expr a) | ANamed a Ident (Expr a)
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor ArgC where
+    fmap f x = case x of
+        APos a expr -> APos (f a) (fmap f expr)
+        ANamed a ident expr -> ANamed (f a) ident (fmap f expr)
 data Cmp a
     = Cmp1 a (Expr a) (CmpOp a) (Expr a)
     | Cmp2 a (Expr a) (CmpOp a) (Cmp a)
@@ -118,7 +125,7 @@ data Expr a
     | EElem a (Expr a) Integer
     | EIndex a (Expr a) (Expr a)
     | EAttr a (Expr a) Ident
-    | ECall a (Expr a) [Expr a]
+    | ECall a (Expr a) [ArgC a]
     | EPow a (Expr a) (Expr a)
     | EMul a (Expr a) (Expr a)
     | EDiv a (Expr a) (Expr a)
@@ -150,7 +157,7 @@ instance Functor Expr where
         EElem a expr integer -> EElem (f a) (fmap f expr) integer
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
-        ECall a expr exprs -> ECall (f a) (fmap f expr) (map (fmap f) exprs)
+        ECall a expr argcs -> ECall (f a) (fmap f expr) (map (fmap f) argcs)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMul a expr1 expr2 -> EMul (f a) (fmap f expr1) (fmap f expr2)
         EDiv a expr1 expr2 -> EDiv (f a) (fmap f expr1) (fmap f expr2)
@@ -181,8 +188,8 @@ data Type a
     | TString a
     | TArray a (Type a)
     | TTuple a [Type a]
-    | TArgN a (Type a)
-    | TArgD a (Type a) String
+    | TArgN a (Type a) Ident
+    | TArgD a (Type a) Ident String
     | TFunc a [Type a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
@@ -200,6 +207,6 @@ instance Functor Type where
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
-        TArgN a type_ -> TArgN (f a) (fmap f type_)
-        TArgD a type_ string -> TArgD (f a) (fmap f type_) string
+        TArgN a type_ ident -> TArgN (f a) (fmap f type_) ident
+        TArgD a type_ ident string -> TArgD (f a) (fmap f type_) ident string
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)

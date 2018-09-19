@@ -1,0 +1,5 @@
+
+func f(Bool b) def
+    return
+
+f(b=true, b=true)

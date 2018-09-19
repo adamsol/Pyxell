@@ -27,20 +27,25 @@ data StaticError = NotComparable Type Type
                  | IllegalAssignment Type Type
                  | NoBinaryOperator String Type Type
                  | NoUnaryOperator String Type
-                 | WrongFunctionCall Int
-                 | ClosureRequired Ident
                  | UnexpectedStatement String
                  | NotPrintable Type
                  | UndeclaredIdentifier Ident
                  | RedeclaredIdentifier Ident
                  | VoidDeclaration
                  | NotLvalue
-                 | MissingDefault
                  | InvalidExpression String
                  | UnknownType
                  | NotTuple Type
                  | InvalidTupleElem Type Int
                  | CannotUnpack Type Int
+                 | NotFunction Type
+                 | TooManyArguments Type
+                 | TooFewArguments Type
+                 | MissingDefault Ident
+                 | RepeatedArgument Ident
+                 | UnexpectedArgument Ident
+                 | ExpectedNamedArgument
+                 | ClosureRequired Ident
                  | NotIndexable Type
                  | NotIterable Type
                  | NotClass Type
@@ -53,20 +58,25 @@ instance Show StaticError where
         IllegalAssignment typ1 typ2 -> "Illegal assignment from `" ++ show typ1 ++ "` to `" ++ show typ2 ++ "`."
         NoBinaryOperator op typ1 typ2 -> "No binary operator `" ++ op ++ "` defined for `" ++ show typ1 ++ "` and `" ++ show typ2 ++ "`."
         NoUnaryOperator op typ -> "No unary operator `" ++ op ++ "` defined for `" ++ show typ ++ "`."
-        WrongFunctionCall n -> "Not a function taking " ++ show n ++ " arguments."
-        ClosureRequired (Ident x) -> "Cannot access a non-global and non-local variable `" ++ x ++ "`."
         UnexpectedStatement str -> "Unexpected `" ++ str ++ "` statement."
         NotPrintable typ -> "Variable of type `" ++ show typ ++ "` cannot be printed."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
-        MissingDefault -> "Missing default value for an argument."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
         UnknownType -> "Cannot settle type of the expression."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
+        NotFunction typ -> "Type `" ++ show typ ++ "` is not a function."
+        TooManyArguments typ -> "Too many arguments for function `" ++ show typ ++ "`."
+        TooFewArguments typ -> "Too few arguments for function `" ++ show typ ++ "`."
+        MissingDefault (Ident x) -> "Missing default value for argument `" ++ x ++ "`."
+        RepeatedArgument (Ident x) -> "Repeated argument `" ++ x ++ "`."
+        UnexpectedArgument (Ident x) -> "Unexpected argument `" ++ x ++ "`."
+        ExpectedNamedArgument -> "Expected named argument."
+        ClosureRequired (Ident x) -> "Cannot access a non-global and non-local variable `" ++ x ++ "`."
         NotIndexable typ -> "Type `" ++ show typ ++ "` is not indexable."
         NotIterable typ -> "Type `" ++ show typ ++ "` is not iterable."
         NotClass typ -> "Type `" ++ show typ ++ "` is not a class."
@@ -251,8 +261,8 @@ checkStmt stmt cont = case stmt of
                 Nothing -> skip
                 Just _ -> throw pos $ RedeclaredIdentifier id
             as <- forM args $ \a -> case a of
-                ANoDefault _ t _ -> return $ tArgN (reduceType t)
-                ADefault _ t _ _ -> return $ tArgD (reduceType t) ""
+                ANoDefault _ t id -> return $ tArgN (reduceType t) id
+                ADefault _ t id _ -> return $ tArgD (reduceType t) id ""
             let r = reduceType ret
             declare pos (tFunc as r) id $ do  -- so global functions are global
                 case block of
@@ -266,7 +276,7 @@ checkStmt stmt cont = case stmt of
         checkArg arg def cont = case arg of
             ANoDefault pos typ id -> case def of
                 False -> declare pos (reduceType typ) id (cont False)
-                True -> throw pos $ MissingDefault
+                True -> throw pos $ MissingDefault id
             ADefault pos typ id expr -> do
                 (t, _) <- checkExpr expr
                 checkCast pos t (reduceType typ)
@@ -383,23 +393,39 @@ checkExpr expr =
                     otherwise -> throw pos $ InvalidAttr t1 id
                 otherwise -> throw pos $ InvalidAttr t1 id
             return $ (t2, False)
-        ECall pos e es -> do
+        ECall pos e as -> do
             (t, _) <- checkExpr e
-            es <- case e of
-                EAttr _ e' _ -> return $ e':es
-                otherwise -> return $ es
+            as <- case e of
+                EAttr _ e' _ -> return $ APos _pos e' : as
+                otherwise -> return $ as
             case t of
                 TFunc _ args ret -> do
-                    case length es <= length args of
-                        True -> skip
-                        False -> throw pos $ WrongFunctionCall (length es)
-                    forM (drop (length es) args) $ \a -> case a of
-                        TArgD _ _ _ -> skip
-                        otherwise -> throw pos $ WrongFunctionCall (length es)
-                    as <- mapM checkExpr es
-                    forM (zip (map fst as) args) (uncurry $ checkCast pos)
+                    -- Build a map of arguments and their positions.
+                    let m = M.empty
+                    (m, _) <- foldM' (m, False) (zip [0..] as) $ \(m, named) (i, a) -> case (a, named) of
+                        (APos _ e, False) -> do
+                            (t, _) <- checkExpr e
+                            return $ (M.insert i t m, False)
+                        (ANamed _ id e, _) -> do
+                            (t, _) <- checkExpr e
+                            case getArgument args id of
+                                Just (i', _) -> case M.lookup i' m of
+                                    Nothing -> return $ (M.insert i' t m, True)
+                                    Just _ -> throw pos $ RepeatedArgument id
+                                Nothing -> throw pos $ UnexpectedArgument id
+                        otherwise -> throw pos $ ExpectedNamedArgument
+                    -- Extend the map using default arguments.
+                    m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
+                        (TArgD _ t _ _, Nothing) -> return $ M.insert i t m
+                        otherwise -> return $ m
+                    -- Check whether all (and no redundant) arguments have been provided.
+                    if any (>= length args) (M.keys m) then throw pos $ TooManyArguments t
+                    else if M.size m < length args then throw pos $ TooFewArguments t
+                    else skip
+                    -- Check if all arguments have correct types.
+                    forM (zip (M.elems m) args) (uncurry $ checkCast pos)
                     return $ (ret, False)
-                otherwise -> throw pos $ WrongFunctionCall (length es)
+                otherwise -> throw pos $ NotFunction t
         EPow pos e1 e2 -> checkBinary pos "**" e1 e2
         EMul pos e1 e2 -> checkBinary pos "*" e1 e2
         EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
@@ -430,10 +456,10 @@ checkExpr expr =
             case t1 of
                 TBool _ -> skip
                 otherwise -> throw pos $ IllegalAssignment t1 tBool
-            (t2, m1) <- checkExpr e2
-            (t3, m2) <- checkExpr e3
+            (t2, _) <- checkExpr e2
+            (t3, _) <- checkExpr e3
             case unifyTypes (reduceType t2) (reduceType t3) of
-                Just t4 -> return $ (t4, m1 && m2)
+                Just t4 -> return $ (t4, False)
                 Nothing -> throw pos $ UnknownType
         ETuple pos es -> do
             rs <- mapM checkExpr es

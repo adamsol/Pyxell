@@ -1,0 +1,12 @@
+
+func f(Int x) Int def
+    return x
+
+func f'(Int y: 0) Int def
+    return y
+
+g = f
+f = f'
+print f(x=5)
+print g(x=9)
+print f'(1), f'()

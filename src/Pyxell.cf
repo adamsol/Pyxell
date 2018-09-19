@@ -14,13 +14,13 @@ separator          Stmt        ";" ;
 
 -- statements --
 
-SProc.             Stmt   ::= "func" Ident "(" [Arg] ")" "def" Block ;
-SFunc.             Stmt   ::= "func" Ident "(" [Arg] ")" Type "def" Block ;
-SProcExtern.       Stmt   ::= "func" Ident "(" [Arg] ")" "extern" ;
-SFuncExtern.       Stmt   ::= "func" Ident "(" [Arg] ")" Type "extern" ;
-ANoDefault.        Arg    ::= Type Ident ;
-ADefault.          Arg    ::= Type Ident ":" Expr2 ;
-separator          Arg        "," ;
+SProc.             Stmt   ::= "func" Ident "(" [ArgF] ")" "def" Block ;
+SFunc.             Stmt   ::= "func" Ident "(" [ArgF] ")" Type "def" Block ;
+SProcExtern.       Stmt   ::= "func" Ident "(" [ArgF] ")" "extern" ;
+SFuncExtern.       Stmt   ::= "func" Ident "(" [ArgF] ")" Type "extern" ;
+ANoDefault.        ArgF   ::= Type Ident ;
+ADefault.          ArgF   ::= Type Ident ":" Expr2 ;
+separator          ArgF       "," ;
 SRetVoid.          Stmt   ::= "return" ;
 SRetExpr.          Stmt   ::= "return" Expr ;
 
@@ -63,7 +63,10 @@ EVar.              Expr10 ::= Ident ;
 EElem.             Expr10 ::= Expr10 "." Integer ;
 EIndex.            Expr10 ::= Expr10 "[" Expr "]" ;
 EAttr.             Expr10 ::= Expr10 "." Ident ;
-ECall.             Expr10 ::= Expr10 "(" [Expr2] ")";
+ECall.             Expr10 ::= Expr10 "(" [ArgC] ")";
+APos.              ArgC   ::= Expr2 ;
+ANamed.            ArgC   ::= Ident "=" Expr2 ;
+separator          ArgC       "," ;
 
 EPow.              Expr9  ::= Expr10 "**" Expr9 ;
 EMul.              Expr8  ::= Expr8 "*" Expr9 ;
@@ -117,8 +120,8 @@ TObject.           Type4  ::= "Object" ;
 TString.           Type4  ::= "String" ;
 TArray.            Type4  ::= "[" Type "]" ;
 TTuple.            Type2  ::= [Type3] ;
-internal TArgN.    Type2  ::= Type1 ;
-internal TArgD.    Type2  ::= Type1 String ;
+internal TArgN.    Type2  ::= Type1 Ident ;
+internal TArgD.    Type2  ::= Type1 Ident String ;
 TFunc.             Type1  ::= [Type2] "->" Type2 ;
 
 separator nonempty Type3      "*" ;

@@ -17,10 +17,10 @@ transProgram x = case x of
   Program _ stmts -> failure x
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
-  SProc _ ident args block -> failure x
-  SFunc _ ident args type_ block -> failure x
-  SProcExtern _ ident args -> failure x
-  SFuncExtern _ ident args type_ -> failure x
+  SProc _ ident argfs block -> failure x
+  SFunc _ ident argfs type_ block -> failure x
+  SProcExtern _ ident argfs -> failure x
+  SFuncExtern _ ident argfs type_ -> failure x
   SRetVoid _ -> failure x
   SRetExpr _ expr -> failure x
   SSkip _ -> failure x
@@ -37,8 +37,8 @@ transStmt x = case x of
   SFor _ expr1 expr2 block -> failure x
   SContinue _ -> failure x
   SBreak _ -> failure x
-transArg :: Show a => Arg a -> Result
-transArg x = case x of
+transArgF :: Show a => ArgF a -> Result
+transArgF x = case x of
   ANoDefault _ type_ ident -> failure x
   ADefault _ type_ ident expr -> failure x
 transBlock :: Show a => Block a -> Result
@@ -51,6 +51,10 @@ transElse :: Show a => Else a -> Result
 transElse x = case x of
   EElse _ block -> failure x
   EEmpty _ -> failure x
+transArgC :: Show a => ArgC a -> Result
+transArgC x = case x of
+  APos _ expr -> failure x
+  ANamed _ ident expr -> failure x
 transCmp :: Show a => Cmp a -> Result
 transCmp x = case x of
   Cmp1 _ expr1 cmpop expr2 -> failure x
@@ -75,7 +79,7 @@ transExpr x = case x of
   EElem _ expr integer -> failure x
   EIndex _ expr1 expr2 -> failure x
   EAttr _ expr ident -> failure x
-  ECall _ expr exprs -> failure x
+  ECall _ expr argcs -> failure x
   EPow _ expr1 expr2 -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
@@ -107,7 +111,7 @@ transType x = case x of
   TString _ -> failure x
   TArray _ type_ -> failure x
   TTuple _ types -> failure x
-  TArgN _ type_ -> failure x
-  TArgD _ type_ string -> failure x
+  TArgN _ type_ ident -> failure x
+  TArgD _ type_ ident string -> failure x
   TFunc _ types type_ -> failure x
 

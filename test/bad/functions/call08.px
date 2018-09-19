@@ -1,0 +1,5 @@
+
+func f(Int a, Bool b, Char c: 'd', String s: "") def
+    return
+
+f(a=6, s="s", c='x')
