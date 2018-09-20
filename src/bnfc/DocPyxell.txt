@@ -42,7 +42,8 @@ The reserved words used in Pyxell are the following:
   | ``elif`` | ``else`` | ``extern`` | ``false``
   | ``for`` | ``func`` | ``if`` | ``in``
   | ``not`` | ``or`` | ``print`` | ``return``
-  | ``skip`` | ``true`` | ``until`` | ``while``
+  | ``skip`` | ``step`` | ``true`` | ``until``
+  | ``while`` |  |  | 
 
 The symbols used in Pyxell are the following:
   | ; | ( | ) | :
@@ -85,6 +86,7 @@ All other symbols are terminals.
   |  |  **|**  | ``while`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``until`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``do`` //Block// 
+  |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``step`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
   | //ArgF// | -> | //Type// //Ident// 
@@ -130,8 +132,6 @@ All other symbols are terminals.
   |  |  **|**  | //Expr8// 
   | //Expr6// | -> | //Expr7// ``..`` //Expr7// 
   |  |  **|**  | //Expr7// ``...`` //Expr7// 
-  |  |  **|**  | //Expr7// ``..`` //Expr7// ``..`` //Expr7// 
-  |  |  **|**  | //Expr7// ``...`` //Expr7// ``..`` //Expr7// 
   |  |  **|**  | //Expr7// 
   | //Expr5// | -> | //Cmp// 
   |  |  **|**  | ``not`` //Expr5// 

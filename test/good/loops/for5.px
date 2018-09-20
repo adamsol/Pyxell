@@ -3,5 +3,5 @@ for c in 'g'..'k' do
     write(c.toString())
 print ""
 
-for c in 'U'...'O'..-3 do
+for c in 'U'...'O' step -3 do
     print c

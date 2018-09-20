@@ -217,33 +217,16 @@ checkStmt stmt cont = case stmt of
         local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> case expr2 of
-        ERangeIncl _ e1 e2 -> do
-            checkStmt (SFor pos expr1 (ERangeInclStep _pos e1 e2 (EInt _pos 1)) block) cont
-        ERangeExcl _ e1 e2 -> do
-            checkStmt (SFor pos expr1 (ERangeExclStep _pos e1 e2 (EInt _pos 1)) block) cont
-        ERangeInclStep _ e1 e2 e3 -> do
-            checkStmt (SFor pos expr1 (ERangeExclStep _pos e1 e2 e3) block) cont
-        ERangeExclStep _ e1 e2 e3 -> do
-            rs <- mapM checkExpr [e1, e2, e3]
-            let (ts, _) = unzip rs
-            case map fst rs of
-                [TInt _, TInt _, TInt _] -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tInt (checkBlock block >> cont)
-                [TInt _, TInt _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
-                [TInt _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tInt
-                [TChar _, TChar _, TInt _] -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
-                [TChar _, TChar _, _] -> throw pos $ IllegalAssignment (ts !! 2) tInt
-                [TChar _, _, _] -> throw pos $ IllegalAssignment (ts !! 1) tChar
-                otherwise -> throw pos $ UnknownType
-        otherwise -> do
-            (t, _) <- checkExpr expr2
-            case t of
-                TString _ -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 tChar (checkBlock block >> cont)
-                TArray _ t' -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos expr1 t' (checkBlock block >> cont)
-                otherwise -> throw pos $ NotIterable t
+        ERangeIncl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
+        ERangeExcl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
+        otherwise -> checkForIterable pos expr1 expr2 block cont
+    SForStep pos expr1 expr2 expr3 block -> do
+        (t, _) <- checkExpr expr3
+        checkCast pos t tInt
+        case expr2 of
+            ERangeIncl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
+            ERangeExcl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
+            otherwise -> checkForIterable pos expr1 expr2 block cont
     SBreak pos -> do
         r <- asks (M.lookup "#loop")
         case r of
@@ -318,6 +301,25 @@ checkStmt stmt cont = case stmt of
                 TBool _ -> return $ ()
                 otherwise -> throw pos $ IllegalAssignment t tBool
             checkBlock block
+        checkForRange pos var from to block cont = do
+            (t1, _) <- checkExpr from
+            (t2, _) <- checkExpr to
+            case (t1, t2) of
+                (TInt _, TInt _) -> do
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var tInt (checkBlock block >> cont)
+                (TInt _, _) -> throw pos $ IllegalAssignment t2 tInt
+                (TChar _, TChar _) -> do
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var tChar (checkBlock block >> cont)
+                (TChar _, _) -> throw pos $ IllegalAssignment t2 tChar
+                otherwise -> throw pos $ UnknownType
+        checkForIterable pos var iter block cont = do
+            (t, _) <- checkExpr iter
+            case t of
+                TString _ -> do
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var tChar (checkBlock block >> cont)
+                TArray _ t' -> do
+                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var t' (checkBlock block >> cont)
+                otherwise -> throw pos $ NotIterable t
 
 -- | Check if one type can be cast to another.
 checkCast :: Pos -> Type -> Type -> Run ()
@@ -435,8 +437,6 @@ checkExpr expr =
         ENeg pos e -> checkUnary pos "-" e
         ERangeIncl pos _ _ -> throw pos $ UnknownType
         ERangeExcl pos _ _ -> throw pos $ UnknownType
-        ERangeInclStep pos _ _ _ -> throw pos $ UnknownType
-        ERangeExclStep pos _ _ _ -> throw pos $ UnknownType
         ECmp pos cmp -> case cmp of
             Cmp1 pos e1 op e2 -> do
                 (t1, _) <- checkExpr e1

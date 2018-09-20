@@ -33,6 +33,7 @@ data Stmt a
     | SWhile a (Expr a) (Block a)
     | SUntil a (Expr a) (Block a)
     | SFor a (Expr a) (Expr a) (Block a)
+    | SForStep a (Expr a) (Expr a) (Expr a) (Block a)
     | SContinue a
     | SBreak a
   deriving (Eq, Ord, Show, Read)
@@ -57,6 +58,7 @@ instance Functor Stmt where
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
         SUntil a expr block -> SUntil (f a) (fmap f expr) (fmap f block)
         SFor a expr1 expr2 block -> SFor (f a) (fmap f expr1) (fmap f expr2) (fmap f block)
+        SForStep a expr1 expr2 expr3 block -> SForStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
 data ArgF a
@@ -135,8 +137,6 @@ data Expr a
     | ENeg a (Expr a)
     | ERangeIncl a (Expr a) (Expr a)
     | ERangeExcl a (Expr a) (Expr a)
-    | ERangeInclStep a (Expr a) (Expr a) (Expr a)
-    | ERangeExclStep a (Expr a) (Expr a) (Expr a)
     | ECmp a (Cmp a)
     | ENot a (Expr a)
     | EAnd a (Expr a) (Expr a)
@@ -167,8 +167,6 @@ instance Functor Expr where
         ENeg a expr -> ENeg (f a) (fmap f expr)
         ERangeIncl a expr1 expr2 -> ERangeIncl (f a) (fmap f expr1) (fmap f expr2)
         ERangeExcl a expr1 expr2 -> ERangeExcl (f a) (fmap f expr1) (fmap f expr2)
-        ERangeInclStep a expr1 expr2 expr3 -> ERangeInclStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
-        ERangeExclStep a expr1 expr2 expr3 -> ERangeExclStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ECmp a cmp -> ECmp (f a) (fmap f cmp)
         ENot a expr -> ENot (f a) (fmap f expr)
         EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)

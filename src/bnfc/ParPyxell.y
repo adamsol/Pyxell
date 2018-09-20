@@ -101,11 +101,12 @@ import ErrM
   'print' { PT _ (TS _ 53) }
   'return' { PT _ (TS _ 54) }
   'skip' { PT _ (TS _ 55) }
-  'true' { PT _ (TS _ 56) }
-  'until' { PT _ (TS _ 57) }
-  'while' { PT _ (TS _ 58) }
-  '{' { PT _ (TS _ 59) }
-  '}' { PT _ (TS _ 60) }
+  'step' { PT _ (TS _ 56) }
+  'true' { PT _ (TS _ 57) }
+  'until' { PT _ (TS _ 58) }
+  'while' { PT _ (TS _ 59) }
+  '{' { PT _ (TS _ 60) }
+  '}' { PT _ (TS _ 61) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -218,6 +219,9 @@ Stmt :: {
 }
 | 'for' Expr 'in' Expr 'do' Block {
   (Just (tokenLineCol $1), AbsPyxell.SFor (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
+}
+| 'for' Expr 'in' Expr 'step' Expr 'do' Block {
+  (Just (tokenLineCol $1), AbsPyxell.SForStep (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
 }
 | 'continue' {
   (Just (tokenLineCol $1), AbsPyxell.SContinue (Just (tokenLineCol $1)))
@@ -409,12 +413,6 @@ Expr6 :: {
 }
 | Expr7 '...' Expr7 {
   (fst $1, AbsPyxell.ERangeExcl (fst $1)(snd $1)(snd $3)) 
-}
-| Expr7 '..' Expr7 '..' Expr7 {
-  (fst $1, AbsPyxell.ERangeInclStep (fst $1)(snd $1)(snd $3)(snd $5)) 
-}
-| Expr7 '...' Expr7 '..' Expr7 {
-  (fst $1, AbsPyxell.ERangeExclStep (fst $1)(snd $1)(snd $3)(snd $5)) 
 }
 | Expr7 {
   (fst $1, snd $1)

@@ -122,43 +122,19 @@ compileStmt stmt cont = case stmt of
         branch v l2 l1
         label l2
         cont
-    SFor _ expr1 expr2 block -> case expr2 of
-        ERangeIncl _ e1 e2 -> do
-            compileStmt (SFor _pos expr1 (ERangeInclStep _pos e1 e2 (EInt _pos 1)) block) cont
-        ERangeExcl _ e1 e2 -> do
-            compileStmt (SFor _pos expr1 (ERangeExclStep _pos e1 e2 (EInt _pos 1)) block) cont
-        ERangeInclStep _ e1 e2 e3 -> do
-            [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
-            v3 <- case t of
-                TInt _ -> return $ v3
-                otherwise -> trunc tInt t v3
-            v4 <- binop "icmp sgt" t v3 "0"
-            let cmp v = do
-                v5 <- binop "icmp sle" t v v2
-                v6 <- binop "icmp sge" t v v2
-                select v4 tBool v5 v6
-            compileFor t t expr1 v1 v2 v3 cmp return block cont
-        ERangeExclStep _ e1 e2 e3 -> do
-            [(t, v1), (_, v2), (_, v3)] <- mapM compileExpr [e1, e2, e3]
-            v3 <- case t of
-                TInt _ -> return $ v3
-                otherwise -> trunc tInt t v3
-            v4 <- binop "icmp sgt" t v3 "0"
-            let cmp v = do
-                v5 <- binop "icmp slt" t v v2
-                v6 <- binop "icmp sgt" t v v2
-                select v4 tBool v5 v6
-            compileFor t t expr1 v1 v2 v3 cmp return block cont
-        otherwise -> do
-            (t, v1) <- compileExpr expr2
-            t' <- case t of
-                TString _ -> return $ tChar
-                TArray _ t' -> return $ t'
-            v2 <- gep t v1 ["0"] [0] >>= load (tPtr t')
-            v3 <- gep t v1 ["0"] [1] >>= load tInt
-            let cmp v = binop "icmp slt" tInt v v3
-            let get v = gep (tPtr t') v2 [v] [] >>= load t'
-            compileFor tInt t' expr1 "0" v3 "1" cmp get block cont
+    SFor _ expr1 expr2 block -> do
+        (t1, t2, v1, v2, cmp, get) <- case expr2 of
+            ERangeIncl _ e1 e2 -> initForRangeIncl e1 e2 "1"
+            ERangeExcl _ e1 e2 -> initForRangeExcl e1 e2 "1"
+            otherwise -> initForIterable expr2 "1"
+        compileFor t1 t2 expr1 v1 v2 cmp get block cont
+    SForStep _ expr1 expr2 expr3 block -> do
+        (_, v) <- compileExpr expr3
+        (t1, t2, v1, v2, cmp, get) <- case expr2 of
+            ERangeIncl _ e1 e2 -> initForRangeIncl e1 e2 v
+            ERangeExcl _ e1 e2 -> initForRangeExcl e1 e2 v
+            otherwise -> initForIterable expr2 v
+        compileFor t1 t2 expr1 v1 v2 cmp get block cont
     SBreak _ -> do
         (_, l) <- asks (M.! "#break")
         goto l
@@ -243,7 +219,45 @@ compileStmt stmt cont = case stmt of
                     goto exit
                     label l2
                     compileBranches bs exit
-        compileFor typ1 typ2 var start end step cmp get block cont = do
+        initForRangeIncl from to step = do
+            [(t, v1), (_, v2)] <- mapM compileExpr [from, to]
+            v3 <- case t of
+                TInt _ -> return $ step
+                otherwise -> trunc tInt t step
+            v4 <- binop "icmp sgt" t v3 "0"
+            let cmp v = do
+                v5 <- binop "icmp sle" t v v2
+                v6 <- binop "icmp sge" t v v2
+                select v4 tBool v5 v6
+            return $ (t, t, v1, v3, cmp, return)
+        initForRangeExcl from to step = do
+            [(t, v1), (_, v2)] <- mapM compileExpr [from, to]
+            v3 <- case t of
+                TInt _ -> return $ step
+                otherwise -> trunc tInt t step
+            v4 <- binop "icmp sgt" t v3 "0"
+            let cmp v = do
+                v5 <- binop "icmp slt" t v v2
+                v6 <- binop "icmp sgt" t v v2
+                select v4 tBool v5 v6
+            return $ (t, t, v1, v3, cmp, return)
+        initForIterable iter step = do
+            (t, v1) <- compileExpr iter
+            t' <- case t of
+                TString _ -> return $ tChar
+                TArray _ t' -> return $ t'
+            v2 <- gep t v1 ["0"] [0] >>= load (tPtr t')
+            v3 <- gep t v1 ["0"] [1] >>= load tInt
+            v4 <- binop "sub" tInt v3 "1"
+            v5 <- binop "icmp sgt" tInt step "0"
+            v6 <- select v5 tInt "0" v4
+            let cmp v = do
+                v7 <- binop "icmp sle" tInt v v4
+                v8 <- binop "icmp sge" tInt v "0"
+                select v5 tBool v7 v8
+            let get v = gep (tPtr t') v2 [v] [] >>= load t'
+            return $ (tInt, t', v6, step, cmp, get)
+        compileFor typ1 typ2 var start step cmp get block cont = do
             p <- alloca typ1
             store typ1 start p
             [l1, l2, l3, l4] <- sequence (replicate 4 nextLabel)

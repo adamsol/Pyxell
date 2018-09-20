@@ -114,6 +114,7 @@ instance Print (Stmt a) where
     SWhile _ expr block -> prPrec i 0 (concatD [doc (showString "while"), prt 0 expr, doc (showString "do"), prt 0 block])
     SUntil _ expr block -> prPrec i 0 (concatD [doc (showString "until"), prt 0 expr, doc (showString "do"), prt 0 block])
     SFor _ expr1 expr2 block -> prPrec i 0 (concatD [doc (showString "for"), prt 0 expr1, doc (showString "in"), prt 0 expr2, doc (showString "do"), prt 0 block])
+    SForStep _ expr1 expr2 expr3 block -> prPrec i 0 (concatD [doc (showString "for"), prt 0 expr1, doc (showString "in"), prt 0 expr2, doc (showString "step"), prt 0 expr3, doc (showString "do"), prt 0 block])
     SContinue _ -> prPrec i 0 (concatD [doc (showString "continue")])
     SBreak _ -> prPrec i 0 (concatD [doc (showString "break")])
   prtList _ [] = concatD []
@@ -200,8 +201,6 @@ instance Print (Expr a) where
     ENeg _ expr -> prPrec i 7 (concatD [doc (showString "-"), prt 8 expr])
     ERangeIncl _ expr1 expr2 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString ".."), prt 7 expr2])
     ERangeExcl _ expr1 expr2 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString "..."), prt 7 expr2])
-    ERangeInclStep _ expr1 expr2 expr3 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString ".."), prt 7 expr2, doc (showString ".."), prt 7 expr3])
-    ERangeExclStep _ expr1 expr2 expr3 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString "..."), prt 7 expr2, doc (showString ".."), prt 7 expr3])
     ECmp _ cmp -> prPrec i 5 (concatD [prt 0 cmp])
     ENot _ expr -> prPrec i 5 (concatD [doc (showString "not"), prt 5 expr])
     EAnd _ expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "and"), prt 4 expr2])

@@ -35,6 +35,7 @@ transStmt x = case x of
   SWhile _ expr block -> failure x
   SUntil _ expr block -> failure x
   SFor _ expr1 expr2 block -> failure x
+  SForStep _ expr1 expr2 expr3 block -> failure x
   SContinue _ -> failure x
   SBreak _ -> failure x
 transArgF :: Show a => ArgF a -> Result
@@ -89,8 +90,6 @@ transExpr x = case x of
   ENeg _ expr -> failure x
   ERangeIncl _ expr1 expr2 -> failure x
   ERangeExcl _ expr1 expr2 -> failure x
-  ERangeInclStep _ expr1 expr2 expr3 -> failure x
-  ERangeExclStep _ expr1 expr2 expr3 -> failure x
   ECmp _ cmp -> failure x
   ENot _ expr -> failure x
   EAnd _ expr1 expr2 -> failure x
