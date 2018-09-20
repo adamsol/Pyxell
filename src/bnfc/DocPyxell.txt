@@ -51,7 +51,7 @@ The symbols used in Pyxell are the following:
   | -= | [ | ] | .
   | ** | * | / | %
   | + | - | .. | ...
-  | == | <> | < | <=
+  | == | != | < | <=
   | > | >= | ? | ->
 
 ===Comments===
@@ -139,7 +139,7 @@ All other symbols are terminals.
   | //Cmp// | -> | //Expr6// //CmpOp// //Expr6// 
   |  |  **|**  | //Expr6// //CmpOp// //Cmp// 
   | //CmpOp// | -> | ``==`` 
-  |  |  **|**  | ``<>`` 
+  |  |  **|**  | ``!=`` 
   |  |  **|**  | ``<`` 
   |  |  **|**  | ``<=`` 
   |  |  **|**  | ``>`` 

@@ -172,7 +172,7 @@ instance Print (Cmp a) where
 instance Print (CmpOp a) where
   prt i e = case e of
     CmpEQ _ -> prPrec i 0 (concatD [doc (showString "==")])
-    CmpNE _ -> prPrec i 0 (concatD [doc (showString "<>")])
+    CmpNE _ -> prPrec i 0 (concatD [doc (showString "!=")])
     CmpLT _ -> prPrec i 0 (concatD [doc (showString "<")])
     CmpLE _ -> prPrec i 0 (concatD [doc (showString "<=")])
     CmpGT _ -> prPrec i 0 (concatD [doc (showString ">")])

@@ -85,7 +85,7 @@ ECmp.              Expr5  ::= Cmp ;
 Cmp1.              Cmp    ::= Expr6 CmpOp Expr6 ;
 Cmp2.              Cmp    ::= Expr6 CmpOp Cmp ;
 CmpEQ.             CmpOp  ::= "==" ;
-CmpNE.             CmpOp  ::= "<>" ;
+CmpNE.             CmpOp  ::= "!=" ;
 CmpLT.             CmpOp  ::= "<" ;
 CmpLE.             CmpOp  ::= "<=" ;
 CmpGT.             CmpOp  ::= ">" ;

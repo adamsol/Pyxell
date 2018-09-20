@@ -7,7 +7,7 @@ if b < (not b) do
 else do
     r = r + 1
 
-if false == true or b <> b do
+if false == true or b != b do
     r = r - 10
 elif false < true do
     r = r + 10

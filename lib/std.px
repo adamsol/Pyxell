@@ -74,7 +74,7 @@ func Int_toString(Int n) String def
         n = -n
     r = [' '] * 22
     p = 0
-    while n <> 0 do
+    while n != 0 do
         r[p] = chr(n % 10 + 48)
         n /= 10
         p += 1

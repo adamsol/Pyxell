@@ -4,5 +4,5 @@ x = "x"
 y = "y"
 if x > y or x == y do
     print 2
-elif x <= y and x <> y and "abc" > "ab" do
+elif x <= y and x != y and "abc" > "ab" do
     print "ok"

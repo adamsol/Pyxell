@@ -46,29 +46,29 @@ import ErrM
 %name pType_internal Type
 %name pType3_internal Type3
 %token
-  '%' { PT _ (TS _ 1) }
-  '%=' { PT _ (TS _ 2) }
-  '(' { PT _ (TS _ 3) }
-  ')' { PT _ (TS _ 4) }
-  '*' { PT _ (TS _ 5) }
-  '**' { PT _ (TS _ 6) }
-  '*=' { PT _ (TS _ 7) }
-  '+' { PT _ (TS _ 8) }
-  '+=' { PT _ (TS _ 9) }
-  ',' { PT _ (TS _ 10) }
-  '-' { PT _ (TS _ 11) }
-  '-=' { PT _ (TS _ 12) }
-  '->' { PT _ (TS _ 13) }
-  '.' { PT _ (TS _ 14) }
-  '..' { PT _ (TS _ 15) }
-  '...' { PT _ (TS _ 16) }
-  '/' { PT _ (TS _ 17) }
-  '/=' { PT _ (TS _ 18) }
-  ':' { PT _ (TS _ 19) }
-  ';' { PT _ (TS _ 20) }
-  '<' { PT _ (TS _ 21) }
-  '<=' { PT _ (TS _ 22) }
-  '<>' { PT _ (TS _ 23) }
+  '!=' { PT _ (TS _ 1) }
+  '%' { PT _ (TS _ 2) }
+  '%=' { PT _ (TS _ 3) }
+  '(' { PT _ (TS _ 4) }
+  ')' { PT _ (TS _ 5) }
+  '*' { PT _ (TS _ 6) }
+  '**' { PT _ (TS _ 7) }
+  '*=' { PT _ (TS _ 8) }
+  '+' { PT _ (TS _ 9) }
+  '+=' { PT _ (TS _ 10) }
+  ',' { PT _ (TS _ 11) }
+  '-' { PT _ (TS _ 12) }
+  '-=' { PT _ (TS _ 13) }
+  '->' { PT _ (TS _ 14) }
+  '.' { PT _ (TS _ 15) }
+  '..' { PT _ (TS _ 16) }
+  '...' { PT _ (TS _ 17) }
+  '/' { PT _ (TS _ 18) }
+  '/=' { PT _ (TS _ 19) }
+  ':' { PT _ (TS _ 20) }
+  ';' { PT _ (TS _ 21) }
+  '<' { PT _ (TS _ 22) }
+  '<=' { PT _ (TS _ 23) }
   '=' { PT _ (TS _ 24) }
   '==' { PT _ (TS _ 25) }
   '>' { PT _ (TS _ 26) }
@@ -449,7 +449,7 @@ CmpOp :: {
 : '==' {
   (Just (tokenLineCol $1), AbsPyxell.CmpEQ (Just (tokenLineCol $1)))
 }
-| '<>' {
+| '!=' {
   (Just (tokenLineCol $1), AbsPyxell.CmpNE (Just (tokenLineCol $1)))
 }
 | '<' {

@@ -1,5 +1,5 @@
 
-if (1, 2) <> (2, 1) do
+if (1, 2) != (2, 1) do
     print 0
 
 if (1, 2 == 3) < (3 - 2, true) <= (-(-1), false or true) do
@@ -8,7 +8,7 @@ if (1, 2 == 3) < (3 - 2, true) <= (-(-1), false or true) do
 if ("xyz", 5) > ("abc", 8) >= ("a"+"bc"+"", (10+2, 10-2).1) do
     print 2
 
-if (-1, 1) <> (-1, 1) do
+if (-1, 1) != (-1, 1) do
     -1
-elif ("a" == "b", 3 <> 4) <> (false, false) do
+elif ("a" == "b", 3 != 4) != (false, false) do
     print 3

@@ -13,7 +13,7 @@ elif -1 <= 0 do
 else do
     print 0
 
-if 4 >= 4 and 0 == -0 and 1 <> -1 do
+if 4 >= 4 and 0 == -0 and 1 != -1 do
     print 3
 
 if 2 + 2 * 2 == 8 or (2 + 2) * 2 == 6 do
