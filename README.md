@@ -75,7 +75,8 @@ Note: you might get compilation errors when using GHC 8.4 (https://github.com/BN
 To compile and link a Pyxell program correctly, a C++ standard library is required for Clang.
 This shouldn't be a problem on Linux, but on Windows this may not work out of the box.
 In some cases Windows SDK installation may be required
-or it may be necessary to run `clang` with `-target x86_64-pc-windows-gnu` in `Main.hs`.
+or it may be necessary to run `pyxell` with `-target x86_64-pc-windows-gnu`
+(run `test.py` with `-t` argument to use this).
 
 
 Usage

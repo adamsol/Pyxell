@@ -22,6 +22,8 @@ parser.add_argument('pattern', nargs='?', default='',
                     help="file path pattern (relative to test folder)")
 parser.add_argument('-e', '--expect-errors', action='store_true',
                     help="expect compiler errors when running intentionally invalid tests")
+parser.add_argument('-t', '--target-windows-gnu', action='store_true',
+                    help="run compiler with -target x86_64-pc-windows-gnu")
 args = parser.parse_args()
 
 # Run tests that satisfy a given pattern.
@@ -33,7 +35,8 @@ for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
     print(f"{B}> TEST {i}:{E} {path}")
     with open('tmp.out', 'w') as outfile:
         try:
-            subprocess.check_output(f'pyxell.exe {path}', stderr=subprocess.STDOUT)
+            params = '-target x86_64-pc-windows-gnu' if args.target_windows_gnu else ''
+            subprocess.check_output(f'pyxell.exe {path} {params}', stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             if args.expect_errors:
                 print(f"{G}{e.output.decode()}{E}")

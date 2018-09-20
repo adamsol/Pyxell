@@ -44,7 +44,7 @@ main = do
         [] -> hPutStrLn stderr $ "File path needed!"
         "-l":_ -> do
             outputCode [libBase] "lib/base.ll" False
-        path:_ -> do
+        path:clangArgs -> do
             let file = fst $ splitExtension path
             let paths = ["lib/std.px", path]
             -- Type-check all files, passing down the environment.
@@ -67,5 +67,5 @@ main = do
             -- Compile all units to one LLVM file.
             outputCode (reverse units) (file ++ ".ll") True
             -- Generate executable file.
-            readProcess "clang" [file ++ ".ll", "lib/base.ll", "-o", file ++ ".exe", "-O2"] ""
+            readProcess "clang" ([file ++ ".ll", "lib/base.ll", "-o", file ++ ".exe", "-O2"] ++ clangArgs) ""
             return $ ()
