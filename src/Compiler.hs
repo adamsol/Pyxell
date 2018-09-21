@@ -422,33 +422,43 @@ compileExpr expr =
             (t2, v2) <- compileExpr e2
             (t, v) <- case (t1, t2, op) of
                 (TString _, TString _, "add") -> do
-                    p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
-                    p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
-                    v3 <- gep tString v1 ["0"] [1] >>= load tInt
-                    v4 <- gep tString v2 ["0"] [1] >>= load tInt
-                    v5 <- binop "add" tInt v3 v4
-                    (_, p3) <- initArray tChar [] [v5, v5]
-                    p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
-                    call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v3)]
-                    p5 <- gep (tPtr tChar) p4 [v3] []
-                    call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v4)]
-                    return (tString, p3)
+                    compileStringConcat v1 v2
+                (TString _, TChar _, "add") -> do
+                    (_, v3) <- compileMethod tChar "toString" [v2]
+                    compileStringConcat v1 v3
+                (TChar _, TString _, "add") -> do
+                    (_, v3) <- compileMethod tChar "toString" [v1]
+                    compileStringConcat v3 v2
                 (TString _, TInt _, "mul") -> do
                     p <- compileArrayMul tChar v1 v2
                     return $ (tString, p)
                 (TInt _, TString _, "mul") -> do
-                    compileBinary op e2 e1
+                    p <- compileArrayMul tChar v2 v1
+                    return $ (tString, p)
                 (TArray _ t', TInt _, "mul") -> do
                     p <- compileArrayMul t' v1 v2
                     return $ (t1, p)
-                (TInt _, TArray _ _, "mul") -> do
-                    compileBinary op e2 e1
+                (TInt _, TArray _ t', "mul") -> do
+                    p <- compileArrayMul t' v2 v1
+                    return $ (t2, p)
                 (_, _, "pow") -> do
                     compileMethod t1 "pow" [v1, v2]
                 otherwise -> do
                     v3 <- binop op t1 v1 v2
                     return $ (t1, v3)
             return $ (t, v)
+        compileStringConcat v1 v2 = do
+            p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
+            p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
+            v3 <- gep tString v1 ["0"] [1] >>= load tInt
+            v4 <- gep tString v2 ["0"] [1] >>= load tInt
+            v5 <- binop "add" tInt v3 v4
+            (_, p3) <- initArray tChar [] [v5, v5]
+            p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v3)]
+            p5 <- gep (tPtr tChar) p4 [v3] []
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v4)]
+            return (tString, p3)
         compileArrayMul t' v1 v2 = do
             p1 <- gep (tArray t') v1 ["0"] [0] >>= load (tPtr t')
             v3 <- gep (tArray t') v1 ["0"] [1] >>= load tInt

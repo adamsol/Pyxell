@@ -1,0 +1,5 @@
+
+c = '6'
+s = "$-" + 'a'
+s += c
+print 'x' + s, s.length

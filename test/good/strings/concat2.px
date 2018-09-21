@@ -8,4 +8,3 @@ while n > 0 do
         b = "0" + b
     n = n / 2
 print b
-

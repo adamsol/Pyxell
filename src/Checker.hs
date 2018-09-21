@@ -500,6 +500,8 @@ checkExpr expr =
                 "+" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
                     (TString _, TString _) -> return $ (tString, False)
+                    (TString _, TChar _) -> return $ (tString, False)
+                    (TChar _, TString _) -> return $ (tString, False)
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
                 "-" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
