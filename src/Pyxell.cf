@@ -28,6 +28,7 @@ SBlock.            Block   ::= "{" [Stmt] "}" ;
 
 SSkip.             Stmt   ::= "skip" ;
 SPrint.            Stmt   ::= "print" Expr ;
+SPrintEmpty.       Stmt   ::= "print" ;
 
 SAssg.             Stmt   ::= [Expr];
 separator nonempty Expr       "=" ;

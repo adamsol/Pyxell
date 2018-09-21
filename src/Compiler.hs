@@ -66,9 +66,12 @@ compileStmt stmt cont = case stmt of
         cont
     SSkip _ -> do
         cont
-    SPrint _  expr -> do
+    SPrint _ expr -> do
         (t, v) <- compileExpr expr
         compilePrint t v
+        call tInt "@putchar" [(tChar, "10")]
+        cont
+    SPrintEmpty _ -> do
         call tInt "@putchar" [(tChar, "10")]
         cont
     SAssg _ exprs -> case exprs of

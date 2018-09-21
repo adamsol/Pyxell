@@ -1,7 +1,7 @@
 
 for c in 'g'..'k' do
     write(c.toString())
-print ""
+print
 
 for c in 'U'...'O' step -3 do
     print c

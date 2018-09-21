@@ -1,6 +1,8 @@
 
 print 42
 print true
+
+print
 f = true and false
 print f
 s = "ab" + "c"

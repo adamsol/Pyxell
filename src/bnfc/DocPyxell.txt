@@ -76,6 +76,7 @@ All other symbols are terminals.
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``skip`` 
   |  |  **|**  | ``print`` //Expr// 
+  |  |  **|**  | ``print`` 
   |  |  **|**  | //[Expr]// 
   |  |  **|**  | //Expr// ``*=`` //Expr// 
   |  |  **|**  | //Expr// ``/=`` //Expr// 

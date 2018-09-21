@@ -104,6 +104,7 @@ instance Print (Stmt a) where
     SRetExpr _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
     SPrint _ expr -> prPrec i 0 (concatD [doc (showString "print"), prt 0 expr])
+    SPrintEmpty _ -> prPrec i 0 (concatD [doc (showString "print")])
     SAssg _ exprs -> prPrec i 0 (concatD [prt 0 exprs])
     SAssgMul _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "*="), prt 0 expr2])
     SAssgDiv _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "/="), prt 0 expr2])

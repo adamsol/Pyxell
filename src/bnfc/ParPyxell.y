@@ -190,6 +190,9 @@ Stmt :: {
 | 'print' Expr {
   (Just (tokenLineCol $1), AbsPyxell.SPrint (Just (tokenLineCol $1)) (snd $2)) 
 }
+| 'print' {
+  (Just (tokenLineCol $1), AbsPyxell.SPrintEmpty (Just (tokenLineCol $1)))
+}
 | ListExpr {
   (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)) 
 }

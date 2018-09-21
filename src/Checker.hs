@@ -177,6 +177,8 @@ checkStmt stmt cont = case stmt of
             TArray _ _ -> throw pos $ NotPrintable t
             TFunc _ _ _ -> throw pos $ NotPrintable t
             otherwise -> cont
+    SPrintEmpty pos -> do
+        cont
     SAssg pos exprs -> case exprs of
         e:[] -> do
             checkExpr e

@@ -23,6 +23,7 @@ data Stmt a
     | SRetExpr a (Expr a)
     | SSkip a
     | SPrint a (Expr a)
+    | SPrintEmpty a
     | SAssg a [Expr a]
     | SAssgMul a (Expr a) (Expr a)
     | SAssgDiv a (Expr a) (Expr a)
@@ -48,6 +49,7 @@ instance Functor Stmt where
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
         SSkip a -> SSkip (f a)
         SPrint a expr -> SPrint (f a) (fmap f expr)
+        SPrintEmpty a -> SPrintEmpty (f a)
         SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
         SAssgMul a expr1 expr2 -> SAssgMul (f a) (fmap f expr1) (fmap f expr2)
         SAssgDiv a expr1 expr2 -> SAssgDiv (f a) (fmap f expr1) (fmap f expr2)

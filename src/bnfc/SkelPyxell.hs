@@ -25,6 +25,7 @@ transStmt x = case x of
   SRetExpr _ expr -> failure x
   SSkip _ -> failure x
   SPrint _ expr -> failure x
+  SPrintEmpty _ -> failure x
   SAssg _ exprs -> failure x
   SAssgMul _ expr1 expr2 -> failure x
   SAssgDiv _ expr1 expr2 -> failure x
