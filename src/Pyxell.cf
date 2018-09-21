@@ -79,6 +79,7 @@ ENeg.              Expr7  ::= "-" Expr8;
 
 ERangeIncl.        Expr6  ::= Expr7 ".." Expr7 ;
 ERangeExcl.        Expr6  ::= Expr7 "..." Expr7 ;
+ERangeInf.         Expr6  ::= Expr7 "..." ;
 
 ECmp.              Expr5  ::= Cmp ;
 Cmp1.              Cmp    ::= Expr6 CmpOp Expr6 ;

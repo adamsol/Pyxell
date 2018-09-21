@@ -219,6 +219,7 @@ checkStmt stmt cont = case stmt of
     SFor pos expr1 expr2 block -> case expr2 of
         ERangeIncl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
         ERangeExcl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
+        ERangeInf _ e1 -> checkForRange pos expr1 e1 e1 block cont
         otherwise -> checkForIterable pos expr1 expr2 block cont
     SForStep pos expr1 expr2 expr3 block -> do
         (t, _) <- checkExpr expr3
@@ -226,6 +227,7 @@ checkStmt stmt cont = case stmt of
         case expr2 of
             ERangeIncl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
             ERangeExcl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
+            ERangeInf _ e1 -> checkForRange pos expr1 e1 e1 block cont
             otherwise -> checkForIterable pos expr1 expr2 block cont
     SBreak pos -> do
         r <- asks (M.lookup "#loop")

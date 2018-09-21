@@ -414,6 +414,9 @@ Expr6 :: {
 | Expr7 '...' Expr7 {
   (fst $1, AbsPyxell.ERangeExcl (fst $1)(snd $1)(snd $3)) 
 }
+| Expr7 '...' {
+  (fst $1, AbsPyxell.ERangeInf (fst $1)(snd $1)) 
+}
 | Expr7 {
   (fst $1, snd $1)
 }

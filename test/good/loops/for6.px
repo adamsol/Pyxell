@@ -1,0 +1,9 @@
+
+m = 10 ** 6
+
+for n in -5... do
+    if n < m do
+        continue
+    print n
+    if n > m do
+        break

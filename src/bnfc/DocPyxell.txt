@@ -132,6 +132,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr8// 
   | //Expr6// | -> | //Expr7// ``..`` //Expr7// 
   |  |  **|**  | //Expr7// ``...`` //Expr7// 
+  |  |  **|**  | //Expr7// ``...`` 
   |  |  **|**  | //Expr7// 
   | //Expr5// | -> | //Cmp// 
   |  |  **|**  | ``not`` //Expr5// 

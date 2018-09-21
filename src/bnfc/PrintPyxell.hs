@@ -201,6 +201,7 @@ instance Print (Expr a) where
     ENeg _ expr -> prPrec i 7 (concatD [doc (showString "-"), prt 8 expr])
     ERangeIncl _ expr1 expr2 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString ".."), prt 7 expr2])
     ERangeExcl _ expr1 expr2 -> prPrec i 6 (concatD [prt 7 expr1, doc (showString "..."), prt 7 expr2])
+    ERangeInf _ expr -> prPrec i 6 (concatD [prt 7 expr, doc (showString "...")])
     ECmp _ cmp -> prPrec i 5 (concatD [prt 0 cmp])
     ENot _ expr -> prPrec i 5 (concatD [doc (showString "not"), prt 5 expr])
     EAnd _ expr1 expr2 -> prPrec i 4 (concatD [prt 5 expr1, doc (showString "and"), prt 4 expr2])

@@ -1,0 +1,8 @@
+
+s = ""
+for c in 'z'... step -14 do
+    s = "{c}{s}"
+    if c < '0' do
+        break
+
+print s

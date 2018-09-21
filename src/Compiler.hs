@@ -126,6 +126,7 @@ compileStmt stmt cont = case stmt of
         (t1, t2, v1, v2, cmp, get) <- case expr2 of
             ERangeIncl _ e1 e2 -> initForRangeIncl e1 e2 "1"
             ERangeExcl _ e1 e2 -> initForRangeExcl e1 e2 "1"
+            ERangeInf _ e1 -> initForRangeInf e1 "1"
             otherwise -> initForIterable expr2 "1"
         compileFor t1 t2 expr1 v1 v2 cmp get block cont
     SForStep _ expr1 expr2 expr3 block -> do
@@ -133,6 +134,7 @@ compileStmt stmt cont = case stmt of
         (t1, t2, v1, v2, cmp, get) <- case expr2 of
             ERangeIncl _ e1 e2 -> initForRangeIncl e1 e2 v
             ERangeExcl _ e1 e2 -> initForRangeExcl e1 e2 v
+            ERangeInf _ e1 -> initForRangeInf e1 v
             otherwise -> initForIterable expr2 v
         compileFor t1 t2 expr1 v1 v2 cmp get block cont
     SBreak _ -> do
@@ -241,6 +243,13 @@ compileStmt stmt cont = case stmt of
                 v6 <- binop "icmp sgt" t v v2
                 select v4 tBool v5 v6
             return $ (t, t, v1, v3, cmp, return)
+        initForRangeInf from step = do
+            (t, v1) <- compileExpr from
+            v2 <- case t of
+                TInt _ -> return $ step
+                otherwise -> trunc tInt t step
+            let cmp _ = return $ "true"
+            return $ (t, t, v1, v2, cmp, return)
         initForIterable iter step = do
             (t, v1) <- compileExpr iter
             t' <- case t of

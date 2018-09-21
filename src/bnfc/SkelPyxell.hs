@@ -90,6 +90,7 @@ transExpr x = case x of
   ENeg _ expr -> failure x
   ERangeIncl _ expr1 expr2 -> failure x
   ERangeExcl _ expr1 expr2 -> failure x
+  ERangeInf _ expr -> failure x
   ECmp _ cmp -> failure x
   ENot _ expr -> failure x
   EAnd _ expr1 expr2 -> failure x
