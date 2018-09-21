@@ -1,0 +1,15 @@
+
+func palindrome(Int n) Bool def
+    s = n.toString()
+    for i in 0..s.length/2 do
+        if s[i] != s[-i-1] do
+            return false
+    return true
+
+r = 0
+for i in 100..999 do
+    for j in 100..999 do
+        n = i * j
+        if palindrome(n) do
+            r = max(r, n)
+print r

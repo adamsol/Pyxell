@@ -1,0 +1,16 @@
+
+func divisors(Int n) Int def
+    d = 0
+    i = 1
+    while i*i < n do
+        if n % i == 0 do
+            d += 2
+        i += 1
+    return i*i == n ? d : d+1
+
+n = 0
+for i in 1... do
+    n += i
+    if divisors(n) > 500 do
+        print n
+        break

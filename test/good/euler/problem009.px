@@ -1,0 +1,7 @@
+
+r = 0
+for a in 1..1000 do
+    for b in a..1000 do
+        for c in b..1000 do
+            if a + b + c == 1000 and a*a + b*b == c*c do
+                print a * b * c

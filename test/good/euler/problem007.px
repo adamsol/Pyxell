@@ -1,5 +1,5 @@
 
-func is_prime(Int p) Bool def
+func prime(Int p) Bool def
     i = 2
     while i * i <= p do
         if p % i == 0 do
@@ -11,6 +11,6 @@ p = 1
 n = 0
 while n < 10001 do
     p += 1
-    if is_prime(p) do
+    if prime(p) do
         n += 1
 print p
