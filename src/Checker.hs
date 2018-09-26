@@ -187,8 +187,7 @@ checkStmt stmt cont = case stmt of
             (t, _) <- checkExpr e2
             case (e1, t) of
                 (ETuple _ es, TTuple _ ts) -> do
-                    if length es == length ts then do
-                        checkAssgs pos es ts cont
+                    if length es == length ts then checkAssgs pos es ts cont
                     else throw pos $ CannotUnpack t (length es)
                 (ETuple _ es, _) -> throw pos $ CannotUnpack t (length es)
                 otherwise -> do
@@ -218,19 +217,17 @@ checkStmt stmt cont = case stmt of
     SUntil pos expr block -> do
         local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
         cont
-    SFor pos expr1 expr2 block -> case expr2 of
-        ERangeIncl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
-        ERangeExcl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
-        ERangeInf _ e1 -> checkForRange pos expr1 e1 e1 block cont
-        otherwise -> checkForIterable pos expr1 expr2 block cont
+    SFor pos expr1 expr2 block -> do
+        checkStmt (SForStep pos expr1 expr2 (EInt _pos 1) block) cont
     SForStep pos expr1 expr2 expr3 block -> do
-        (t, _) <- checkExpr expr3
-        checkCast pos t tInt
-        case expr2 of
-            ERangeIncl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
-            ERangeExcl _ e1 e2 -> checkForRange pos expr1 e1 e2 block cont
-            ERangeInf _ e1 -> checkForRange pos expr1 e1 e1 block cont
-            otherwise -> checkForIterable pos expr1 expr2 block cont
+        (t1, _) <- checkExpr expr3
+        checkCast pos t1 tInt
+        t2 <- checkFor pos expr2
+        local (M.insert "#loop" (tLabel, 0)) $ case (expr1, t2) of
+            (ETuple _ es, TTuple _ ts) -> do
+                if length es == length ts then checkAssgs pos es ts (checkBlock block >> cont)
+                else throw pos $ CannotUnpack t2 (length es)
+            otherwise -> checkAssg pos expr1 t2 (checkBlock block >> cont)
     SBreak pos -> do
         r <- asks (M.lookup "#loop")
         case r of
@@ -305,25 +302,29 @@ checkStmt stmt cont = case stmt of
                 TBool _ -> return $ ()
                 otherwise -> throw pos $ IllegalAssignment t tBool
             checkBlock block
-        checkForRange pos var from to block cont = do
+        checkForRange pos from to = do
             (t1, _) <- checkExpr from
             (t2, _) <- checkExpr to
             case (t1, t2) of
-                (TInt _, TInt _) -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var tInt (checkBlock block >> cont)
+                (TInt _, TInt _) -> return $ t1
                 (TInt _, _) -> throw pos $ IllegalAssignment t2 tInt
-                (TChar _, TChar _) -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var tChar (checkBlock block >> cont)
+                (TChar _, TChar _) -> return $ t1
                 (TChar _, _) -> throw pos $ IllegalAssignment t2 tChar
                 otherwise -> throw pos $ UnknownType
-        checkForIterable pos var iter block cont = do
+        checkForIterable pos iter = do
             (t, _) <- checkExpr iter
             case t of
-                TString _ -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var tChar (checkBlock block >> cont)
-                TArray _ t' -> do
-                    local (M.insert "#loop" (tLabel, 0)) $ checkAssg pos var t' (checkBlock block >> cont)
+                TString _ -> return $ tChar
+                TArray _ t' -> return $ t'
                 otherwise -> throw pos $ NotIterable t
+        checkFor pos expr = case expr of
+                ERangeIncl _ e1 e2 -> checkForRange pos e1 e2
+                ERangeExcl _ e1 e2 -> checkForRange pos e1 e2
+                ERangeInf _ e1 -> checkForRange pos e1 e1
+                ETuple _ es -> do
+                    ts <- forM es $ \e -> checkFor pos e
+                    return $ tTuple ts
+                otherwise -> checkForIterable pos expr
 
 -- | Check if one type can be cast to another.
 checkCast :: Pos -> Type -> Type -> Run ()

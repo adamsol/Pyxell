@@ -1,0 +1,4 @@
+
+t = 0, 'x'
+for t in 1..2, 3...4 do
+    skip

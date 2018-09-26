@@ -1,0 +1,5 @@
+
+for x, y, z in "abcdefg", "ABCDE", "123456789" step 2 do
+    print "" + z + y + x
+    if y >= 'D' do
+        break

@@ -1,0 +1,4 @@
+
+c = d = 'x'
+for c, d in 'a'..'b', 3...4 do
+    skip

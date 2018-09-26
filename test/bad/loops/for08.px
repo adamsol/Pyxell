@@ -1,0 +1,3 @@
+
+for i, j in 1..2, 3...'a' step 1 do
+    skip
