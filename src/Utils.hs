@@ -4,6 +4,7 @@
 module Utils where
 
 import Control.Monad
+import Control.Monad.IO.Class
 import Data.List
 import Text.Regex
 
@@ -92,6 +93,9 @@ tArgD = TArgD Nothing
 -- | Shorter name for none position.
 _pos = Nothing
 
+-- | Debug logging function.
+debug x = liftIO $ print x
+
 -- | Gets name from an identifier.
 fromIdent (Ident x) = x
 
@@ -114,3 +118,4 @@ getArgument args id = find' (zip [0..] args) $ \(_, a) -> case a of
     TArgN _ _ id' -> id == id'
     TArgD _ _ id' _ -> id == id'
     otherwise -> False
+

@@ -7,7 +7,6 @@ import Control.Monad.Identity
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Reader
-import Control.Monad.IO.Class
 import Data.Char
 import Data.List
 import qualified Data.Map as M
@@ -273,7 +272,7 @@ compileStmt stmt cont = case stmt of
                     return $ head r
                 otherwise -> forM [step] $ initForIterable expr
         compileFor expr1 expr2 step block cont = do
-            vars <- case expr1 of
+            es <- case expr1 of
                 ETuple _ es -> return $ es
                 otherwise -> return $ [expr1]
             rs <- initFor expr2 step
@@ -281,7 +280,11 @@ compileStmt stmt cont = case stmt of
             ps <- mapM alloca ts1
             forM (zip3 ts1 starts ps) $ \(t, v, p) -> store t v p
             [l1, l2, l3] <- sequence (replicate 3 nextLabel)
-            compileAssgs (zip3 ts2 vars [0..]) (tTuple ts2) "" $ do
+            ts3 <- case (es, ts2) of
+                (_:_:_, [TTuple _ ts']) -> return $ ts'  -- for a, b in [(1, 2)] do
+                ([_], _:_:_) -> return $ [tTuple ts2]  -- for t in 1..2, 3..4 do
+                otherwise -> return $ ts2
+            compileAssgs (zip3 ts3 es [0..]) (tTuple ts3) "" $ do
                 goto l1 >> label l1
                 vs1 <- forM (zip ts1 ps) $ \(t, p) -> load t p
                 forM (zip cmps vs1) $ \(cmp, v) -> do
@@ -290,7 +293,13 @@ compileStmt stmt cont = case stmt of
                     branch v' l4 l2
                     label l4
                 vs2 <- forM (zip gets vs1) $ \(get, v) -> get v
-                forM (zip3 ts2 vars vs2) $ \(t, p, v) -> compileAssg t p v skip
+                case (es, ts2) of
+                    (_:_:_, [TTuple _ ts']) -> compileAssgs (zip3 ts' es [0..]) (head ts2) (head vs2) skip  -- for a, b in [(1, 2)] do
+                    ([e], _:_:_) -> do  -- for t in 1..2, 3..4 do
+                        p <- alloca (tDeref (tTuple ts2))
+                        forM (zip3 ts2 vs2 [0..]) $ \(t, v, i) -> gep (tTuple ts2) p ["0"] [i] >>= store t v
+                        compileAssg (tTuple ts2) e p skip
+                    otherwise -> forM_ (zip3 ts2 es vs2) $ \(t, e, v) -> compileAssg t e v skip
                 local (M.insert "#break" (tLabel, l2)) $ local (M.insert "#continue" (tLabel, l3)) $ compileBlock block
                 goto l3 >> label l3
                 vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> binop "add" t v s
