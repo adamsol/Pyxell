@@ -1,0 +1,8 @@
+
+-- test
+x = "{--2"  -- + "x"
+{-
+multi
+line
+ -}
+print{---}x

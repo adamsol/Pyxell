@@ -5,7 +5,7 @@ for i in 0...n do
     a[i] = 10 - i % 10
 print a[n-7]
 
-# Bubble sort
+-- Bubble sort
 for i in 0...n do
     for j in 0...n-1 do
         if a[j] > a[j+1] do

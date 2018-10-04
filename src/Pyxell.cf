@@ -133,5 +133,5 @@ coercions          Type       4 ;
 
 -- comments --
 
-comment            "#" ;
-comment            "/*" "*/" ;
+comment            "--" ;
+comment            "{-" "-}" ;

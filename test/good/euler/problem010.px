@@ -2,7 +2,7 @@
 n = 2000000
 a = [true] * n
 
-# Sieve of Eratosthenes
+-- Sieve of Eratosthenes
 i = 2
 while i * i <= n do
     if a[i] do
