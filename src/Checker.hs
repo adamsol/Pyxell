@@ -17,7 +17,8 @@ import Utils
 
 
 -- | Identifier environment: type and nesting level.
-type Env = M.Map String (Type, Int)
+type Level = Int
+type Env = M.Map Ident (Type, Level)
 
 -- | Checker monad: Reader for identifier environment, Error to report compilation errors.
 type Run r = ReaderT Env (ErrorT String IO) r
@@ -95,40 +96,40 @@ throw pos err = case pos of
     Nothing -> fail $ ": " ++ show err
 
 -- | Returns current nesting level.
-getLevel :: Run Int
+getLevel :: Run Level
 getLevel = do
-    Just (_, l) <- asks (M.lookup "#level")
+    Just (_, l) <- asks (M.lookup (Ident "#level"))
     return $ l
 
 -- | Runs continuation on a higher nesting level.
 nextLevel :: Run a -> Run a
 nextLevel cont = do
     l <- getLevel
-    local (M.insert "#level" (tLabel, l+1)) cont
+    local (M.insert (Ident "#level") (tLabel, l+1)) cont
 
 -- | Gets an identifier from the environment.
 getIdent :: Pos -> Ident -> Run (Maybe Type)
-getIdent pos (Ident x) = do
+getIdent pos id = do
     l1 <- getLevel
-    r <- asks (M.lookup x)
+    r <- asks (M.lookup id)
     case r of
         Just (t, l2) -> do
-            if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired (Ident x)
+            if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
             else return $ Just t
         Nothing -> return $ Nothing
 
 -- | Adds an identifier to the environment.
 declare :: Pos -> Type -> Ident -> Run a -> Run a
-declare pos typ (Ident x) cont = case typ of
+declare pos typ id cont = case typ of
     TVoid _ -> throw pos $ VoidDeclaration
     otherwise -> do
         l <- getLevel
-        local (M.insert x (typ, l)) cont
+        local (M.insert id (typ, l)) cont
 
 
 -- | Checks the whole program and returns environment.
 checkProgram :: Program Pos -> Run Env
-checkProgram prog = case prog of
+checkProgram program = case program of
     Program pos stmts -> checkStmts stmts ask
 
 -- | Checks a block with statements.
@@ -138,13 +139,13 @@ checkBlock block = case block of
 
 -- | Checks a bunch of statements.
 checkStmts :: [Stmt Pos] -> Run a -> Run a
-checkStmts stmts cont = case stmts of
+checkStmts statements cont = case statements of
     [] -> cont
     s:ss -> checkStmt s (checkStmts ss cont)
 
 -- | Checks a single statement.
 checkStmt :: Stmt Pos -> Run a -> Run a
-checkStmt stmt cont = case stmt of
+checkStmt statement cont = case statement of
     SProc pos id args block -> do
         checkFunc pos id args tVoid (Just block) cont
     SFunc pos id args ret block -> do
@@ -154,7 +155,7 @@ checkStmt stmt cont = case stmt of
     SFuncExtern pos id args ret -> do
         checkFunc pos id args ret Nothing cont
     SRetVoid pos -> do
-        r <- asks (M.lookup "#return")
+        r <- asks (M.lookup (Ident "#return"))
         case r of
             Just (t, _) -> do
                 checkCast pos tVoid t
@@ -162,7 +163,7 @@ checkStmt stmt cont = case stmt of
             Nothing -> throw pos $ UnexpectedStatement "return"
     SRetExpr pos expr -> do
         (t1, _) <- checkExpr expr
-        r <- asks (M.lookup "#return")
+        r <- asks (M.lookup (Ident "#return"))
         case r of
             Just (t2, _) -> do
                 checkCast pos t1 t2
@@ -212,10 +213,10 @@ checkStmt stmt cont = case stmt of
                 cont
             EEmpty pos -> cont
     SWhile pos expr block -> do
-        local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
+        local (M.insert (Ident "#loop") (tLabel, 0)) $ checkCond pos expr block
         cont
     SUntil pos expr block -> do
-        local (M.insert "#loop" (tLabel, 0)) $ checkCond pos expr block
+        local (M.insert (Ident "#loop") (tLabel, 0)) $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> do
         checkStmt (SForStep pos expr1 expr2 (EInt _pos 1) block) cont
@@ -223,18 +224,18 @@ checkStmt stmt cont = case stmt of
         (t1, _) <- checkExpr expr3
         checkCast pos t1 tInt
         t2 <- checkFor pos expr2
-        local (M.insert "#loop" (tLabel, 0)) $ case (expr1, t2) of
+        local (M.insert (Ident "#loop") (tLabel, 0)) $ case (expr1, t2) of
             (ETuple _ es, TTuple _ ts) -> do
                 if length es == length ts then checkAssgs pos es ts (checkBlock block >> cont)
                 else throw pos $ CannotUnpack t2 (length es)
             otherwise -> checkAssg pos expr1 t2 (checkBlock block >> cont)
     SBreak pos -> do
-        r <- asks (M.lookup "#loop")
+        r <- asks (M.lookup (Ident "#loop"))
         case r of
             Just _ -> cont
             otherwise -> throw pos $ UnexpectedStatement "break"
     SContinue pos -> do
-        r <- asks (M.lookup "#loop")
+        r <- asks (M.lookup (Ident "#loop"))
         case r of
             Just _ -> cont
             otherwise -> throw pos $ UnexpectedStatement "continue"
@@ -251,7 +252,7 @@ checkStmt stmt cont = case stmt of
             declare pos (tFunc as r) id $ do  -- so global functions are global
                 case block of
                     Just b -> nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
-                        checkArgs args False $ local (M.insert "#return" (r, 0)) $ local (M.delete "#loop") $ checkBlock b
+                        checkArgs args False $ local (M.insert (Ident "#return") (r, 0)) $ local (M.delete (Ident "#loop")) $ checkBlock b
                     Nothing -> skip
                 cont
         checkArgs args def cont = case args of
@@ -335,152 +336,152 @@ checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
 
 -- | Checks an expression and returns its type and whether it is mutable.
 checkExpr :: Expr Pos -> Run (Type, Bool)
-checkExpr expr =
-    case expr of
-        EInt pos _ -> return $ (tInt, False)
-        ETrue pos -> return $ (tBool, False)
-        EFalse pos -> return $ (tBool, False)
-        EChar pos _ -> return $ (tChar, False)
-        EString pos s -> do
-            let (_, tags) = interpolateString (read s)
-            forM tags $ \tag -> do
-                if tag == "" then skip
-                else case pExpr $ resolveLayout False $ myLexer tag of
-                    Bad err -> throw pos $ InvalidExpression tag
-                    Ok expr -> checkExpr (ECall _pos (EAttr _pos expr (Ident "toString")) []) >> skip
-            return $ (tString, False)
-        EArray pos es -> do
-            rs <- mapM checkExpr es
-            let (ts, _) = unzip rs
-            case ts of
-                [] -> return $ (tArray tObject, False)
-                t:ts -> case foldM unifyTypes t ts of
-                    Just t' -> return $ (tArray t', False)
-                    Nothing -> throw pos $ UnknownType
-        EVar pos id -> checkIdent pos id
-        EElem pos e n -> do
-            (t, m) <- checkExpr e
-            let i = fromInteger n
-            case t of
-                TTuple _ ts -> do
-                    if i < length ts then return $ (ts !! i, m)
-                    else throw pos $ InvalidTupleElem t (i+1)
-                otherwise -> throw pos $ NotTuple t
-        EIndex pos e1 e2 -> do
-            (t1, m1) <- checkExpr e1
-            (t2, m2) <- checkExpr e2
-            case t2 of
-                TInt _ -> case t1 of
-                    TString _ -> return $ (tChar, False)
-                    TArray _ t1' -> return $ (t1', True)
-                    otherwise -> throw pos $ NotIndexable t1
-                otherwise -> throw pos $ IllegalAssignment t2 tInt
-        EAttr pos e id -> do
-            (t1, m) <- checkExpr e
-            Just t2 <- case t1 of
-                TInt _ -> case fromIdent id of
-                    "toString" -> getIdent _pos (Ident "Int_toString")
-                TBool _ -> case fromIdent id of
-                    "toString" -> getIdent _pos (Ident "Bool_toString")
-                TChar _ -> case fromIdent id of
-                    "toString" -> getIdent _pos (Ident "Char_toString")
-                TString _ -> case fromIdent id of
-                    "length" -> return $ Just tInt
-                    "toString" -> getIdent _pos (Ident "String_toString")
-                    "toInt" -> getIdent _pos (Ident "String_toInt")
-                    otherwise -> throw pos $ InvalidAttr t1 id
-                TArray _ t' -> case (t', fromIdent id) of
-                    (_, "length") -> return $ Just tInt
-                    (TChar _, "join") -> do
-                        t'' <- getIdent _pos (Ident "CharArray_join")
-                        return $ t''
-                    (TString _, "join") -> do
-                        t'' <- getIdent _pos (Ident "StringArray_join")
-                        return $ t''
-                    otherwise -> throw pos $ InvalidAttr t1 id
-                otherwise -> throw pos $ InvalidAttr t1 id
-            return $ (t2, False)
-        ECall pos e as -> do
-            (t, _) <- checkExpr e
-            as <- case e of
-                EAttr _ e' _ -> return $ APos _pos e' : as
-                otherwise -> return $ as
-            case t of
-                TFunc _ args ret -> do
-                    -- Build a map of arguments and their positions.
-                    let m = M.empty
-                    (m, _) <- foldM' (m, False) (zip [0..] as) $ \(m, named) (i, a) -> case (a, named) of
-                        (APos _ e, False) -> do
-                            (t, _) <- checkExpr e
-                            return $ (M.insert i t m, False)
-                        (ANamed _ id e, _) -> do
-                            (t, _) <- checkExpr e
-                            case getArgument args id of
-                                Just (i', _) -> case M.lookup i' m of
-                                    Nothing -> return $ (M.insert i' t m, True)
-                                    Just _ -> throw pos $ RepeatedArgument id
-                                Nothing -> throw pos $ UnexpectedArgument id
-                        otherwise -> throw pos $ ExpectedNamedArgument
-                    -- Extend the map using default arguments.
-                    m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
-                        (TArgD _ t _ _, Nothing) -> return $ M.insert i t m
-                        otherwise -> return $ m
-                    -- Check whether all (and no redundant) arguments have been provided.
-                    if any (>= length args) (M.keys m) then throw pos $ TooManyArguments t
-                    else if M.size m < length args then throw pos $ TooFewArguments t
-                    else skip
-                    -- Check if all arguments have correct types.
-                    forM (zip (M.elems m) args) (uncurry $ checkCast pos)
-                    return $ (ret, False)
-                otherwise -> throw pos $ NotFunction t
-        EPow pos e1 e2 -> checkBinary pos "**" e1 e2
-        EMul pos e1 e2 -> checkBinary pos "*" e1 e2
-        EDiv pos e1 e2 -> checkBinary pos "/" e1 e2
-        EMod pos e1 e2 -> checkBinary pos "%" e1 e2
-        EAdd pos e1 e2 -> checkBinary pos "+" e1 e2
-        ESub pos e1 e2 -> checkBinary pos "-" e1 e2
-        ENeg pos e -> checkUnary pos "-" e
-        ERangeIncl pos _ _ -> throw pos $ UnknownType
-        ERangeExcl pos _ _ -> throw pos $ UnknownType
-        ECmp pos cmp -> case cmp of
-            Cmp1 pos e1 op e2 -> do
-                (t1, _) <- checkExpr e1
-                (t2, _) <- checkExpr e2
-                checkCmp pos op t1 t2
-            Cmp2 pos e1 op cmp -> do
-                e2 <- case cmp of
-                    Cmp1 _ e2 _ _ -> return $ e2
-                    Cmp2 _ e2 _ _ -> return $ e2
-                checkExpr (ECmp _pos (Cmp1 pos e1 op e2))
-                checkExpr (ECmp _pos cmp)
-        ENot pos e -> checkUnary pos "not" e
-        EAnd pos e1 e2 -> checkBinary pos "and" e1 e2
-        EOr pos e1 e2 -> checkBinary pos "or" e1 e2
-        ECond pos e1 e2 e3 -> do
-            (t1, _) <- checkExpr e1
-            case t1 of
-                TBool _ -> skip
-                otherwise -> throw pos $ IllegalAssignment t1 tBool
-            (t2, _) <- checkExpr e2
-            (t3, _) <- checkExpr e3
-            case unifyTypes (reduceType t2) (reduceType t3) of
-                Just t4 -> return $ (t4, False)
+checkExpr expression = case expression of
+    EInt pos _ -> return $ (tInt, False)
+    ETrue pos -> return $ (tBool, False)
+    EFalse pos -> return $ (tBool, False)
+    EChar pos _ -> return $ (tChar, False)
+    EString pos str -> do
+        let (_, tags) = interpolateString (read str)
+        forM tags $ \tag -> do
+            if tag == "" then skip
+            else case pExpr $ resolveLayout False $ myLexer tag of
+                Bad err -> throw pos $ InvalidExpression tag
+                Ok expr -> checkExpr (ECall _pos (EAttr _pos expr (Ident "toString")) []) >> skip
+        return $ (tString, False)
+    EArray pos exprs -> do
+        rs <- mapM checkExpr exprs
+        let (ts, _) = unzip rs
+        case ts of
+            [] -> return $ (tArray tObject, False)
+            t:ts -> case foldM unifyTypes t ts of
+                Just t' -> return $ (tArray t', False)
                 Nothing -> throw pos $ UnknownType
-        ETuple pos es -> do
-            rs <- mapM checkExpr es
-            let (ts, ms) = unzip rs
-            case ts of
-                t:[] -> return $ (t, all (== True) ms)
-                otherwise -> return $ (tTuple ts, all (== True) ms)
+    EVar pos id -> checkIdent pos id
+    EElem pos expr n -> do
+        (t, m) <- checkExpr expr
+        let i = fromInteger n
+        case t of
+            TTuple _ ts -> do
+                if i < length ts then return $ (ts !! i, m)
+                else throw pos $ InvalidTupleElem t (i+1)
+            otherwise -> throw pos $ NotTuple t
+    EIndex pos expr1 expr2 -> do
+        (t1, m1) <- checkExpr expr1
+        (t2, m2) <- checkExpr expr2
+        case t2 of
+            TInt _ -> case t1 of
+                TString _ -> return $ (tChar, False)
+                TArray _ t1' -> return $ (t1', True)
+                otherwise -> throw pos $ NotIndexable t1
+            otherwise -> throw pos $ IllegalAssignment t2 tInt
+    EAttr pos expr id -> do
+        (t1, m) <- checkExpr expr
+        let Ident attr = id
+        Just t2 <- case t1 of
+            TInt _ -> case attr of
+                "toString" -> getIdent _pos (Ident "Int_toString")
+            TBool _ -> case attr of
+                "toString" -> getIdent _pos (Ident "Bool_toString")
+            TChar _ -> case attr of
+                "toString" -> getIdent _pos (Ident "Char_toString")
+            TString _ -> case attr of
+                "length" -> return $ Just tInt
+                "toString" -> getIdent _pos (Ident "String_toString")
+                "toInt" -> getIdent _pos (Ident "String_toInt")
+                otherwise -> throw pos $ InvalidAttr t1 id
+            TArray _ t' -> case (t', attr) of
+                (_, "length") -> return $ Just tInt
+                (TChar _, "join") -> do
+                    t'' <- getIdent _pos (Ident "CharArray_join")
+                    return $ t''
+                (TString _, "join") -> do
+                    t'' <- getIdent _pos (Ident "StringArray_join")
+                    return $ t''
+                otherwise -> throw pos $ InvalidAttr t1 id
+            otherwise -> throw pos $ InvalidAttr t1 id
+        return $ (t2, False)
+    ECall pos expr exprs -> do
+        (t, _) <- checkExpr expr
+        as <- case expr of
+            EAttr _ e _ -> return $ APos _pos e : exprs
+            otherwise -> return $ exprs
+        case t of
+            TFunc _ args ret -> do
+                -- Build a map of arguments and their positions.
+                let m = M.empty
+                (m, _) <- foldM' (m, False) (zip [0..] as) $ \(m, named) (i, a) -> case (a, named) of
+                    (APos _ e, False) -> do
+                        (t, _) <- checkExpr e
+                        return $ (M.insert i t m, False)
+                    (ANamed _ id e, _) -> do
+                        (t, _) <- checkExpr e
+                        case getArgument args id of
+                            Just (i', _) -> case M.lookup i' m of
+                                Nothing -> return $ (M.insert i' t m, True)
+                                Just _ -> throw pos $ RepeatedArgument id
+                            Nothing -> throw pos $ UnexpectedArgument id
+                    otherwise -> throw pos $ ExpectedNamedArgument
+                -- Extend the map using default arguments.
+                m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
+                    (TArgD _ t _ _, Nothing) -> return $ M.insert i t m
+                    otherwise -> return $ m
+                -- Check whether all (and no redundant) arguments have been provided.
+                if any (>= length args) (M.keys m) then throw pos $ TooManyArguments t
+                else if M.size m < length args then throw pos $ TooFewArguments t
+                else skip
+                -- Check if all arguments have correct types.
+                forM (zip (M.elems m) args) (uncurry $ checkCast pos)
+                return $ (ret, False)
+            otherwise -> throw pos $ NotFunction t
+    EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
+    EMul pos expr1 expr2 -> checkBinary pos "*" expr1 expr2
+    EDiv pos expr1 expr2 -> checkBinary pos "/" expr1 expr2
+    EMod pos expr1 expr2 -> checkBinary pos "%" expr1 expr2
+    EAdd pos expr1 expr2 -> checkBinary pos "+" expr1 expr2
+    ESub pos expr1 expr2 -> checkBinary pos "-" expr1 expr2
+    ENeg pos expr -> checkUnary pos "-" expr
+    ERangeIncl pos _ _ -> throw pos $ UnknownType
+    ERangeExcl pos _ _ -> throw pos $ UnknownType
+    ECmp pos cmp -> case cmp of
+        Cmp1 pos e1 op e2 -> do
+            (t1, _) <- checkExpr e1
+            (t2, _) <- checkExpr e2
+            checkCmp pos op t1 t2
+        Cmp2 pos e1 op cmp -> do
+            e2 <- case cmp of
+                Cmp1 _ e2 _ _ -> return $ e2
+                Cmp2 _ e2 _ _ -> return $ e2
+            checkExpr (ECmp _pos (Cmp1 pos e1 op e2))
+            checkExpr (ECmp _pos cmp)
+    ENot pos expr -> checkUnary pos "not" expr
+    EAnd pos expr1 expr2 -> checkBinary pos "and" expr1 expr2
+    EOr pos expr1 expr2 -> checkBinary pos "or" expr1 expr2
+    ECond pos expr1 expr2 expr3 -> do
+        (t1, _) <- checkExpr expr1
+        case t1 of
+            TBool _ -> skip
+            otherwise -> throw pos $ IllegalAssignment t1 tBool
+        (t2, _) <- checkExpr expr2
+        (t3, _) <- checkExpr expr3
+        case unifyTypes (reduceType t2) (reduceType t3) of
+            Just t4 -> return $ (t4, False)
+            Nothing -> throw pos $ UnknownType
+    ETuple pos exprs -> do
+        rs <- mapM checkExpr exprs
+        let (ts, ms) = unzip rs
+        case ts of
+            t:[] -> return $ (t, all (== True) ms)
+            otherwise -> return $ (tTuple ts, all (== True) ms)
     where
         checkIdent pos id = do
             r <- getIdent pos id
             case r of
                 Just t -> return $ (t, True)
                 Nothing -> throw pos $ UndeclaredIdentifier id
-        checkBinary pos op e1 e2 = do
-            (t1, _) <- checkExpr e1
-            (t2, _) <- checkExpr e2
+        checkBinary pos op expr1 expr2 = do
+            (t1, _) <- checkExpr expr1
+            (t2, _) <- checkExpr expr2
             case op of
                 "**" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
@@ -513,8 +514,8 @@ checkExpr expr =
                 "or" -> case (t1, t2) of
                     (TBool _, TBool _) -> return $ (tBool, False)
                     otherwise -> throw pos $ NoBinaryOperator "or" t1 t2
-        checkUnary pos op e = do
-            (t, _) <- checkExpr e
+        checkUnary pos op expr = do
+            (t, _) <- checkExpr expr
             case op of
                 "-" -> case t of
                     TInt _ -> return $ (tInt, False)
@@ -522,11 +523,11 @@ checkExpr expr =
                 "not" -> case t of
                     TBool _ -> return $ (tBool, False)
                     otherwise -> throw pos $ NoUnaryOperator "not" t
-        checkCmp pos op t1 t2 = do
-            case unifyTypes t1 t2 of
+        checkCmp pos op typ1 typ2 = do
+            case unifyTypes typ1 typ2 of
                 Just t -> case t of
-                    TObject _ -> throw pos $ NotComparable t1 t2
-                    TArray _ _ -> throw pos $ NotComparable t1 t2
-                    TFunc _ _ _ -> throw pos $ NotComparable t1 t2
+                    TObject _ -> throw pos $ NotComparable typ1 typ2
+                    TArray _ _ -> throw pos $ NotComparable typ1 typ2
+                    TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
                     otherwise -> return $ (tBool, False)
-                Nothing -> throw pos $ NotComparable t1 t2
+                Nothing -> throw pos $ NotComparable typ1 typ2

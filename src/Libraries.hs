@@ -5,6 +5,8 @@ module Libraries where
 
 import Control.Monad.Trans.Reader
 
+import AbsPyxell
+
 import CodeGen
 import Utils
 
@@ -16,15 +18,15 @@ libBase = do
         "" ]
 
     -- Char <-> Int (ASCII)
-    define (tFunc [tChar] tInt) "ord" $ do
+    define (tFunc [tChar] tInt) (Ident "ord") $ do
         v <- zext tChar tInt "%0"
         ret tInt v
-    define (tFunc [tInt] tChar) "chr" $ do
+    define (tFunc [tInt] tChar) (Ident "chr") $ do
         v <- trunc tInt tChar "%0"
         ret tChar v
 
     -- [Char] to String
-    define (tFunc [tArray tChar] tString) "str" $ do
+    define (tFunc [tArray tChar] tString) (Ident "str") $ do
         p1 <- gep tString "%0" ["0"] [0] >>= load (tPtr tChar)
         v <- gep tString "%0" ["0"] [1] >>= load tInt
         (_, p2) <- initArray tChar [] [v]
@@ -33,7 +35,7 @@ libBase = do
         ret tString p2
 
     -- Standard output
-    define (tFunc [tString] tVoid) "write" $ do
+    define (tFunc [tString] tVoid) (Ident "write") $ do
         p <- gep tString "%0" ["0"] [0] >>= load (tPtr tChar)
         v <- gep tString "%0" ["0"] [1] >>= load tInt
         write $ indent [ "%s = getelementptr [5 x i8], [5 x i8]* @s, i32 0, i32 0" ]

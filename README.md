@@ -16,18 +16,41 @@ Do you keep looking back at C++ for its speed and power, though can't stand its 
 That's why I started creating Pyxell - to bring together the best features of different programming languages.
 
 
+Examples
+--------
+
+```
+func fib(Int n) Int def
+    if n <= 0 do
+        return 0
+    a, b = 0, 1
+    for i in 2..n do
+        a, b = b, a + b
+    return b
+        
+print fib(10)
+```
+
+```
+a = ['A', 'B', 'C'] * 5
+for x, i in a, 0... do
+    print "a[{i}] = {x}" 
+```
+
+
 Features
 --------
 
 This is a list of features planned for the 1.0 release. It will probably grow, maybe indefinitely :)
 
 * Python-like syntax with semantic indentation (+)
-* Strongly static typing with partial type inference (+)
+* Strongly static typing with partial type inference (+/-)
 * Full compilation to machine code (+)
 * Native tuples (+)
 * Immutable strings (+)
 * String interpolation (+)
 * Mutable arrays (+)
+* Extensive for-loops with ranges, steps, and zipping (+)
 * First-class functions (+)
 * Default and named arguments (+)
 * Closures and lambdas
@@ -101,8 +124,8 @@ There is a Python script `test.py`.
 You can pass a path pattern to run only selected tests (e.g. `python test.py good` or `python test.py bad/arrays -e`).
 To see all options, run it with `-h`.
 
-Tests serve currently as documentation of the language.
-You can browse them to learn the syntax and semantics (which are similar to Python's, though not exactly).
+Tests serve currently also as a documentation of the language.
+You can browse them to learn the syntax and semantics.
 
 
 Final thoughts

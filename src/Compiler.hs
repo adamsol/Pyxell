@@ -33,7 +33,7 @@ initCompiler = do
 
 -- | Outputs LLVM code for all statements in the program.
 compileProgram :: Program Pos -> Run Env
-compileProgram prog = case prog of
+compileProgram program = case program of
     Program _ stmts -> scope "main" $ compileStmts stmts ask
 
 -- | Outputs LLVM code for a block of statements.
@@ -43,21 +43,21 @@ compileBlock block = case block of
 
 -- | Outputs LLVM code for a bunch of statements and runs the continuation.
 compileStmts :: [Stmt Pos] -> Run a -> Run a
-compileStmts stmts cont = case stmts of
+compileStmts statements cont = case statements of
     [] -> cont
     s:ss -> compileStmt s (compileStmts ss cont)
 
 -- | Outputs LLVM code for a single statement and runs the continuation.
 compileStmt :: Stmt Pos -> Run a -> Run a
-compileStmt stmt cont = case stmt of
-    SProc _ (Ident f) args block -> do
-        compileFunc f args tVoid (Just block) cont
-    SFunc _ (Ident f) args rt block -> do
-        compileFunc f args rt (Just block) cont
-    SProcExtern _ (Ident f) args -> do
-        compileFunc f args tVoid Nothing cont
-    SFuncExtern _ (Ident f) args rt -> do
-        compileFunc f args rt Nothing cont
+compileStmt statement cont = case statement of
+    SProc _ id args block -> do
+        compileFunc id args tVoid (Just block) cont
+    SFunc _ id args rt block -> do
+        compileFunc id args rt (Just block) cont
+    SProcExtern _ id args -> do
+        compileFunc id args tVoid Nothing cont
+    SFuncExtern _ id args rt -> do
+        compileFunc id args rt Nothing cont
     SRetVoid _ -> do
         ret tVoid ""
         cont
@@ -114,14 +114,14 @@ compileStmt stmt cont = case stmt of
         (_, v) <- compileExpr expr
         branch v l2 l3
         label l2
-        local (M.insert "#break" (tLabel, l3)) $ local (M.insert "#continue" (tLabel, l1)) $ compileBlock block
+        local (M.insert (Ident "#break") (tLabel, l3)) $ local (M.insert (Ident "#continue") (tLabel, l1)) $ compileBlock block
         goto l1
         label l3
         cont
     SUntil _ expr block -> do
         [l1, l2] <- sequence (replicate 2 nextLabel)
         goto l1 >> label l1
-        local (M.insert "#break" (tLabel, l2)) $ local (M.insert "#continue" (tLabel, l1)) $ compileBlock block
+        local (M.insert (Ident "#break") (tLabel, l2)) $ local (M.insert (Ident "#continue") (tLabel, l1)) $ compileBlock block
         (_, v) <- compileExpr expr
         branch v l2 l1
         label l2
@@ -132,17 +132,17 @@ compileStmt stmt cont = case stmt of
         (_, v) <- compileExpr expr3
         compileFor expr1 expr2 v block cont
     SBreak _ -> do
-        (_, l) <- asks (M.! "#break")
+        (_, l) <- asks (M.! (Ident "#break"))
         goto l
         cont
     SContinue _ -> do
-        (_, l) <- asks (M.! "#continue")
+        (_, l) <- asks (M.! (Ident "#continue"))
         goto l
         cont
     where
-        compileFunc name args rt block cont = do
+        compileFunc id args rt block cont = do
             s <- getScope
-            let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName name
+            let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
             as <- forM args $ \a -> case a of
                 ANoDefault _ t id -> do
                     return $ tArgN (reduceType t) id
@@ -156,9 +156,9 @@ compileStmt stmt cont = case stmt of
             let r = reduceType rt
             let t = tFunc as r
             let p = "@f" ++ f
-            local (M.insert name (t, p)) $ do
+            local (M.insert id (t, p)) $ do
                 case block of
-                    Just b -> define t name $ compileArgs args 0 $ local (M.insert "#return" (r, "")) $ do
+                    Just b -> define t id $ compileArgs args 0 $ local (M.insert (Ident "#return") (r, "")) $ do
                         l <- nextLabel
                         goto l >> label l
                         compileBlock b
@@ -167,24 +167,24 @@ compileStmt stmt cont = case stmt of
                         scope "!global" $ external p t
                         skip
                 cont
-        compileArgs args i cont = case args of
+        compileArgs args idx cont = case args of
              [] -> cont
-             a:as -> compileArg a i (compileArgs as (i+1) cont)
-        compileArg arg i cont = case arg of
+             a:as -> compileArg a idx (compileArgs as (idx+1) cont)
+        compileArg arg idx cont = case arg of
             ANoDefault pos typ id -> do
-                variable (reduceType typ) id ("%" ++ show i) cont
+                variable (reduceType typ) id ("%" ++ show idx) cont
             ADefault pos typ id _ -> do
-                variable (reduceType typ) id ("%" ++ show i) cont
+                variable (reduceType typ) id ("%" ++ show idx) cont
         compilePrint typ val = case typ of
             TTuple _ ts -> do
-                forM_ (zip [0..] ts) $ \(i, t') -> do
-                    v <- gep typ val ["0"] [i] >>= load t'
-                    compilePrint t' v
+                forM_ (zip [0..] ts) $ \(i, t) -> do
+                    v <- gep typ val ["0"] [i] >>= load t
+                    compilePrint t v
                     if i == length ts - 1 then skip
                     else call tInt "@putchar" [(tChar, "32")] >> skip
             otherwise -> do
-                (_, v) <- compileMethod typ "toString" [val]
-                compileMethod tString "write" [v]
+                (_, v) <- compileMethod typ (Ident "toString") [val]
+                compileMethod tString (Ident "write") [v]
                 skip
         compileAssgs rs typ val cont = case rs of
             [] -> cont
@@ -300,7 +300,7 @@ compileStmt stmt cont = case stmt of
                         forM (zip3 ts2 vs2 [0..]) $ \(t, v, i) -> gep (tTuple ts2) p ["0"] [i] >>= store t v
                         compileAssg (tTuple ts2) e p skip
                     otherwise -> forM_ (zip3 ts2 es vs2) $ \(t, e, v) -> compileAssg t e v skip
-                local (M.insert "#break" (tLabel, l2)) $ local (M.insert "#continue" (tLabel, l3)) $ compileBlock block
+                local (M.insert (Ident "#break") (tLabel, l2)) $ local (M.insert (Ident "#continue") (tLabel, l3)) $ compileBlock block
                 goto l3 >> label l3
                 vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> binop "add" t v s
                 forM (zip3 ts1 vs3 ps) $ \(t, v, p) -> store t v p
@@ -311,142 +311,141 @@ compileStmt stmt cont = case stmt of
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.
 compileExpr :: Expr Pos -> Run Result
-compileExpr expr =
-    case expr of
-        EInt _ n -> return $ (tInt, show n)
-        ETrue _ -> return $ (tBool, "true")
-        EFalse _ -> return $ (tBool, "false")
-        EChar _ c -> return $ (tChar, show (ord c))
-        EString _ s -> do
-            let (txts, tags) = interpolateString (read s)
-            if length txts == 1 then initString (txts !! 0)
-            else do
-                (_, p1) <- initArray tString [] (replicate 2 (show (length txts * 2 - 1)))
-                p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
-                forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
-                    p3 <- gep (tPtr tString) p2 [show (2*i)] []
-                    (_, p4) <- initString txt
-                    store tString p4 p3
-                    if tag == "" then skip
-                    else do
-                        p5 <- gep (tPtr tString) p2 [show (2*i+1)] []
-                        (_, v) <- case pExpr $ resolveLayout False $ myLexer tag of
-                            Ok expr -> do
-                                (t, v) <- compileExpr expr
-                                compileMethod t "toString" [v]
-                        store tString v p5
-                (_, p7) <- initString ""
-                compileMethod (tArray tString) "join" [p1, p7]
-        EArray _ es -> do
-            rs <- mapM compileExpr es
-            case rs of
-                [] -> initArray tObject [] []
-                r:_ -> initArray (fst r) (map snd rs) []
-        EVar _ _ -> compileRval expr
-        EElem _ e n -> do
-            (t, p) <- compileExpr e
-            let i = fromInteger n
-            case t of
-                TTuple _ ts -> do
-                    v <- gep t p ["0"] [i] >>= load (ts !! i)
-                    return $ (ts !! i, v)
-        EIndex _ _ _ -> compileRval expr
-        EAttr _ _ _ -> compileRval expr
-        ECall _ e as -> do
-            as <- case e of
-                EAttr _ e' _ -> return $ APos _pos e' : as
-                otherwise -> return $ as
-            (TFunc _ args rt, f) <- compileExpr e
-            -- Build a map of arguments and their positions.
-            let m = M.empty
-            m <- foldM' m (zip [0..] as) $ \m (i, a) -> case a of
-                APos _ e -> do
-                    (t, v) <- compileExpr e
-                    return $ M.insert i (t, v) m
-                ANamed _ id e -> do
-                    (t, v) <- compileExpr e
-                    let Just (i', _) = getArgument args id
-                    return $ M.insert i' (t, v) m
-            -- Extend the map using default arguments.
-            m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
-                (TArgD _ t _ p, Nothing) -> do
-                    v <- load t p
-                    return $ M.insert i (t, v) m
-                otherwise -> return $ m
-            -- Call the function.
-            v <- call rt f (M.elems m)
-            return $ (rt, v)
-        EPow _ e1 e2 -> compileBinary "pow" e1 e2
-        EMul _ e1 e2 -> compileBinary "mul" e1 e2
-        EDiv _ e1 e2 -> compileBinary "sdiv" e1 e2
-        EMod _ e1 e2 -> do
+compileExpr expression = case expression of
+    EInt _ num -> return $ (tInt, show num)
+    ETrue _ -> return $ (tBool, "true")
+    EFalse _ -> return $ (tBool, "false")
+    EChar _ char -> return $ (tChar, show (ord char))
+    EString _ str -> do
+        let (txts, tags) = interpolateString (read str)
+        if length txts == 1 then initString (txts !! 0)
+        else do
+            (_, p1) <- initArray tString [] (replicate 2 (show (length txts * 2 - 1)))
+            p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
+            forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
+                p3 <- gep (tPtr tString) p2 [show (2*i)] []
+                (_, p4) <- initString txt
+                store tString p4 p3
+                if tag == "" then skip
+                else do
+                    p5 <- gep (tPtr tString) p2 [show (2*i+1)] []
+                    (_, v) <- case pExpr $ resolveLayout False $ myLexer tag of
+                        Ok expr -> do
+                            (t, v) <- compileExpr expr
+                            compileMethod t (Ident "toString") [v]
+                    store tString v p5
+            (_, p7) <- initString ""
+            compileMethod (tArray tString) (Ident "join") [p1, p7]
+    EArray _ exprs -> do
+        rs <- mapM compileExpr exprs
+        case rs of
+            [] -> initArray tObject [] []
+            r:_ -> initArray (fst r) (map snd rs) []
+    EVar _ _ -> compileRval expression
+    EElem _ expr idx -> do
+        (t, p) <- compileExpr expr
+        let i = fromInteger idx
+        case t of
+            TTuple _ ts -> do
+                v <- gep t p ["0"] [i] >>= load (ts !! i)
+                return $ (ts !! i, v)
+    EIndex _ _ _ -> compileRval expression
+    EAttr _ _ _ -> compileRval expression
+    ECall _ expr exprs -> do
+        as <- case expr of
+            EAttr _ e _ -> return $ APos _pos e : exprs
+            otherwise -> return $ exprs
+        (TFunc _ args rt, f) <- compileExpr expr
+        -- Build a map of arguments and their positions.
+        let m = M.empty
+        m <- foldM' m (zip [0..] as) $ \m (i, a) -> case a of
+            APos _ e -> do
+                (t, v) <- compileExpr e
+                return $ M.insert i (t, v) m
+            ANamed _ id e -> do
+                (t, v) <- compileExpr e
+                let Just (i', _) = getArgument args id
+                return $ M.insert i' (t, v) m
+        -- Extend the map using default arguments.
+        m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
+            (TArgD _ t _ p, Nothing) -> do
+                v <- load t p
+                return $ M.insert i (t, v) m
+            otherwise -> return $ m
+        -- Call the function.
+        v <- call rt f (M.elems m)
+        return $ (rt, v)
+    EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
+    EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
+    EDiv _ expr1 expr2 -> compileBinary "sdiv" expr1 expr2
+    EMod _ expr1 expr2 -> do
+        (t, v1) <- compileExpr expr1
+        (t, v2) <- compileExpr expr2
+        v3 <- binop "srem" t v1 v2
+        v4 <- binop "add" t v3 v2
+        v5 <- binop "xor" t v1 v2
+        v6 <- binop "icmp slt" t v5 "0"
+        v7 <- select v6 t v4 v3
+        v8 <- binop "icmp eq" t v3 "0"
+        v9 <- select v8 t v3 v7
+        return $ (t, v9)
+    EAdd _ expr1 expr2 -> compileBinary "add" expr1 expr2
+    ESub _ expr1 expr2 -> compileBinary "sub" expr1 expr2
+    ENeg _ expr -> compileBinary "sub" (EInt _pos 0) expr
+    ECmp _ cmp -> case cmp of
+        Cmp1 _ e1 op e2 -> do
             (t, v1) <- compileExpr e1
             (t, v2) <- compileExpr e2
-            v3 <- binop "srem" t v1 v2
-            v4 <- binop "add" t v3 v2
-            v5 <- binop "xor" t v1 v2
-            v6 <- binop "icmp slt" t v5 "0"
-            v7 <- select v6 t v4 v3
-            v8 <- binop "icmp eq" t v3 "0"
-            v9 <- select v8 t v3 v7
-            return $ (t, v9)
-        EAdd _ e1 e2 -> compileBinary "add" e1 e2
-        ESub _ e1 e2 -> compileBinary "sub" e1 e2
-        ENeg _ e -> compileBinary "sub" (EInt _pos 0) e
-        ECmp _ cmp -> case cmp of
-            Cmp1 _ e1 op e2 -> do
-                (t, v1) <- compileExpr e1
-                (t, v2) <- compileExpr e2
-                v <- case op of
-                    CmpEQ _ -> compileCmp "eq" t v1 v2
-                    CmpNE _ -> compileCmp "ne" t v1 v2
-                    CmpLT _ -> compileCmp "lt" t v1 v2
-                    CmpLE _ -> compileCmp "le" t v1 v2
-                    CmpGT _ -> compileCmp "gt" t v1 v2
-                    CmpGE _ -> compileCmp "ge" t v1 v2
-                return $ (tBool, v)
-            Cmp2 _ e1 op cmp -> do
-                e2 <- case cmp of
-                    Cmp1 pos e2 _ _ -> return $ e2
-                    Cmp2 pos e2 _ _ -> return $ e2
-                compileExpr (EAnd _pos (ECmp _pos (Cmp1 _pos e1 op e2)) (ECmp _pos cmp))
-        ENot _ e -> compileBinary "xor" (ETrue _pos) e
-        EAnd _ e1 e2 -> do
-            l <- nextLabel
-            v <- compileAnd e1 e2 [] l
+            v <- case op of
+                CmpEQ _ -> compileCmp "eq" t v1 v2
+                CmpNE _ -> compileCmp "ne" t v1 v2
+                CmpLT _ -> compileCmp "lt" t v1 v2
+                CmpLE _ -> compileCmp "le" t v1 v2
+                CmpGT _ -> compileCmp "gt" t v1 v2
+                CmpGE _ -> compileCmp "ge" t v1 v2
             return $ (tBool, v)
-        EOr _ e1 e2 -> do
-            l <- nextLabel
-            v <- compileOr e1 e2 [] l
-            return $ (tBool, v)
-        ECond _ e1 e2 e3 -> do
-            (t1, v1) <- compileExpr e1
-            (t2, v2) <- compileExpr e2
-            (t3, v3) <- compileExpr e3
-            let Just t4 = unifyTypes t2 t3
-            v4 <- select v1 t4 v2 v3
-            return $ (t4, v4)
-        ETuple _ es -> do
-            rs <- mapM compileExpr es
-            case rs of
-                r:[] -> return $ r
-                otherwise -> do
-                    let t = tTuple (map fst rs)
-                    p <- alloca (tDeref t)
-                    mapM (compileTupleElem t p) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
-                    return $ (t, p)
+        Cmp2 _ e1 op cmp -> do
+            e2 <- case cmp of
+                Cmp1 pos e2 _ _ -> return $ e2
+                Cmp2 pos e2 _ _ -> return $ e2
+            compileExpr (EAnd _pos (ECmp _pos (Cmp1 _pos e1 op e2)) (ECmp _pos cmp))
+    ENot _ expr -> compileBinary "xor" (ETrue _pos) expr
+    EAnd _ expr1 expr2 -> do
+        l <- nextLabel
+        v <- compileAnd expr1 expr2 [] l
+        return $ (tBool, v)
+    EOr _ expr1 expr2 -> do
+        l <- nextLabel
+        v <- compileOr expr1 expr2 [] l
+        return $ (tBool, v)
+    ECond _ expr1 expr2 expr3 -> do
+        (t1, v1) <- compileExpr expr1
+        (t2, v2) <- compileExpr expr2
+        (t3, v3) <- compileExpr expr3
+        let Just t4 = unifyTypes t2 t3
+        v4 <- select v1 t4 v2 v3
+        return $ (t4, v4)
+    ETuple _ exprs -> do
+        rs <- mapM compileExpr exprs
+        case rs of
+            r:[] -> return $ r
+            otherwise -> do
+                let t = tTuple (map fst rs)
+                p <- alloca (tDeref t)
+                mapM (compileTupleElem t p) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
+                return $ (t, p)
     where
-        compileBinary op e1 e2 = do
-            (t1, v1) <- compileExpr e1
-            (t2, v2) <- compileExpr e2
+        compileBinary op expr1 expr2 = do
+            (t1, v1) <- compileExpr expr1
+            (t2, v2) <- compileExpr expr2
             (t, v) <- case (t1, t2, op) of
                 (TString _, TString _, "add") -> do
                     compileStringConcat v1 v2
                 (TString _, TChar _, "add") -> do
-                    (_, v3) <- compileMethod tChar "toString" [v2]
+                    (_, v3) <- compileMethod tChar (Ident "toString") [v2]
                     compileStringConcat v1 v3
                 (TChar _, TString _, "add") -> do
-                    (_, v3) <- compileMethod tChar "toString" [v1]
+                    (_, v3) <- compileMethod tChar (Ident "toString") [v1]
                     compileStringConcat v3 v2
                 (TString _, TInt _, "mul") -> do
                     p <- compileArrayMul tChar v1 v2
@@ -461,62 +460,63 @@ compileExpr expr =
                     p <- compileArrayMul t' v2 v1
                     return $ (t2, p)
                 (_, _, "pow") -> do
-                    compileMethod t1 "pow" [v1, v2]
+                    compileMethod t1 (Ident "pow") [v1, v2]
                 otherwise -> do
                     v3 <- binop op t1 v1 v2
                     return $ (t1, v3)
             return $ (t, v)
-        compileStringConcat v1 v2 = do
-            p1 <- gep tString v1 ["0"] [0] >>= load (tPtr tChar)
-            p2 <- gep tString v2 ["0"] [0] >>= load (tPtr tChar)
-            v3 <- gep tString v1 ["0"] [1] >>= load tInt
-            v4 <- gep tString v2 ["0"] [1] >>= load tInt
-            v5 <- binop "add" tInt v3 v4
-            (_, p3) <- initArray tChar [] [v5, v5]
+        compileStringConcat val1 val2 = do
+            p1 <- gep tString val1 ["0"] [0] >>= load (tPtr tChar)
+            p2 <- gep tString val2 ["0"] [0] >>= load (tPtr tChar)
+            v1 <- gep tString val1 ["0"] [1] >>= load tInt
+            v2 <- gep tString val2 ["0"] [1] >>= load tInt
+            v3 <- binop "add" tInt v1 v2
+            (_, p3) <- initArray tChar [] [v3, v3]
             p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
-            call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v3)]
-            p5 <- gep (tPtr tChar) p4 [v3] []
-            call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v4)]
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v1)]
+            p5 <- gep (tPtr tChar) p4 [v1] []
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v2)]
             return (tString, p3)
-        compileArrayMul t' v1 v2 = do
-            p1 <- gep (tArray t') v1 ["0"] [0] >>= load (tPtr t')
-            v3 <- gep (tArray t') v1 ["0"] [1] >>= load tInt
-            v4 <- binop "mul" tInt v3 v2
-            (_, p2) <- initArray t' [] [v4, v4]
-            p3 <- gep (tArray t') p2 ["0"] [0] >>= load (tPtr t')
+        compileArrayMul typ val1 val2 = do
+            let t = tArray typ
+            p1 <- gep t val1 ["0"] [0] >>= load (tPtr typ)
+            v1 <- gep t val1 ["0"] [1] >>= load tInt
+            v2 <- binop "mul" tInt v1 val2
+            (_, p2) <- initArray typ [] [v2, v2]
+            p3 <- gep t p2 ["0"] [0] >>= load (tPtr typ)
             p4 <- alloca tInt
             p5 <- alloca tInt
             [l1, l2, l3, l4, l5, l6] <- sequence (replicate 6 nextLabel)
             store tInt "0" p4
             goto l1 >> label l1
-            v5 <- load tInt p4
-            v6 <- binop "icmp slt" tInt v5 v3
-            branch v6 l2 l3
+            v3 <- load tInt p4
+            v4 <- binop "icmp slt" tInt v3 v1
+            branch v4 l2 l3
             label l2
-            v7 <- gep (tPtr t') p1 [v5] [] >>= load t'
+            v5 <- gep (tPtr typ) p1 [v3] [] >>= load typ
             do
-                store tInt v5 p5
+                store tInt v3 p5
                 goto l4 >> label l4
-                v8 <- load tInt p5
-                v9 <- binop "icmp slt" tInt v8 v4
-                branch v9 l5 l6
+                v6 <- load tInt p5
+                v7 <- binop "icmp slt" tInt v6 v2
+                branch v7 l5 l6
                 label l5
-                gep (tPtr t') p3 [v8] [] >>= store t' v7
-                v10 <- binop "add" tInt v8 v3
-                store tInt v10 p5
+                gep (tPtr typ) p3 [v6] [] >>= store typ v5
+                v8 <- binop "add" tInt v6 v1
+                store tInt v8 p5
                 goto l4
                 label l6
-            v11 <- binop "add" tInt v5 "1"
-            store tInt v11 p4
+            v9 <- binop "add" tInt v3 "1"
+            store tInt v9 p4
             goto l1
             label l3
             return $ p2
-        compileCmp op t v1 v2 = do
-            (t, v1, v2) <- case t of
+        compileCmp op typ val1 val2 = do
+            (t, v1, v2) <- case typ of
                 TString _ -> do
-                    (_, v3) <- compileMethod tString "compare" [v1, v2]
+                    (_, v3) <- compileMethod tString (Ident "compare") [val1, val2]
                     return $ (tInt, v3, "0")
-                otherwise -> return $ (t, v1, v2)
+                otherwise -> return $ (typ, val1, val2)
             case (op, t) of
                 (_, TTuple _ ts) -> do
                     lt <- nextLabel
@@ -526,15 +526,15 @@ compileExpr expr =
                 ("ne", _) -> binop ("icmp " ++ op) t v1 v2
                 (_, TBool _) -> binop ("icmp u" ++ op) t v1 v2
                 otherwise -> binop ("icmp s" ++ op) t v1 v2
-        compileTupleCmp op t v1 v2 i lt lf = do
-            t' <- case t of
-                TTuple _ ts -> return $ ts !! i
-            v1' <- gep t v1 ["0"] [i] >>= load t'
-            v2' <- gep t v2 ["0"] [i] >>= load t'
-            v3 <- compileCmp op t' v1' v2'
-            case t of
+        compileTupleCmp op typ val1 val2 idx lt lf = do
+            t <- case typ of
+                TTuple _ ts -> return $ ts !! idx
+            v1 <- gep typ val1 ["0"] [idx] >>= load t
+            v2 <- gep typ val2 ["0"] [idx] >>= load t
+            v3 <- compileCmp op t v1 v2
+            case typ of
                 TTuple _ ts -> do
-                    if i == length ts - 1 then do
+                    if idx == length ts - 1 then do
                         l1 <- getLabel
                         l2 <- nextLabel
                         goto l2
@@ -554,11 +554,11 @@ compileExpr expr =
                             otherwise -> do
                                 branch v3 lt l1
                                 label l1
-                                v4 <- compileCmp "eq" t' v1' v2'
+                                v4 <- compileCmp "eq" t v1 v2
                                 l2 <- nextLabel
                                 branch v4 l2 lf
                                 label l2
-                        compileTupleCmp op t v1 v2 (i+1) lt lf
+                        compileTupleCmp op typ val1 val2 (idx+1) lt lf
         compileAnd expr1 expr2 preds exit = do
             (_, v1) <- compileExpr expr1
             l1 <- getLabel
@@ -620,36 +620,35 @@ compileLval expr = case expr of
             return $ Just (typ, v6)
 
 -- | Outputs LLVM code that evaluates a given attribute as an l-value. Returns type and name (location) of the result or Nothing.
-compileAttr :: Type -> String -> Ident -> Run (Maybe Result)
-compileAttr typ val (Ident attr) = do
-    case typ of
-        -- TODO: toString() for other types
-        TInt _ -> case attr of
-            "toString" -> getIdent (Ident "Int_toString")
-            "pow" -> getIdent (Ident "Int_pow")
-        TBool _ -> case attr of
-            "toString" -> getIdent (Ident "Bool_toString")
-        TChar _ -> case attr of
-            "toString" -> getIdent (Ident "Char_toString")
-        TString _ -> case attr of
-            "write" -> getIdent (Ident "write")
-            "length" -> getAttr (tArray tChar) val tInt 1
-            "toString" -> getIdent (Ident "String_toString")
-            "toInt" -> getIdent (Ident "String_toInt")
-            "compare" -> getIdent (Ident "String_compare")
-        TArray _ t' -> case (t', attr) of
-            (_, "length") -> getAttr typ val tInt 1
-            (TChar _, "join") -> getIdent (Ident "CharArray_join")
-            (TString _, "join") -> getIdent (Ident "StringArray_join")
+compileAttr :: Type -> Value -> Ident -> Run (Maybe Result)
+compileAttr typ val (Ident attr) = case typ of
+    -- TODO: toString() for other types
+    TInt _ -> case attr of
+        "toString" -> getIdent (Ident "Int_toString")
+        "pow" -> getIdent (Ident "Int_pow")
+    TBool _ -> case attr of
+        "toString" -> getIdent (Ident "Bool_toString")
+    TChar _ -> case attr of
+        "toString" -> getIdent (Ident "Char_toString")
+    TString _ -> case attr of
+        "write" -> getIdent (Ident "write")
+        "length" -> getAttr (tArray tChar) val tInt 1
+        "toString" -> getIdent (Ident "String_toString")
+        "toInt" -> getIdent (Ident "String_toInt")
+        "compare" -> getIdent (Ident "String_compare")
+    TArray _ t' -> case (t', attr) of
+        (_, "length") -> getAttr typ val tInt 1
+        (TChar _, "join") -> getIdent (Ident "CharArray_join")
+        (TString _, "join") -> getIdent (Ident "StringArray_join")
     where
         getAttr typ1 obj typ2 idx = do
             p <- gep typ1 obj ["0"] [idx]
             return $ Just (typ2, p)
 
 -- | Outputs LLVM code that calls a method with given arguments. Returns type and name of the result.
-compileMethod :: Type -> String -> [String] -> Run Result
-compileMethod typ func args = do
-    Just (t, p1) <- compileAttr typ "" (Ident func)
+compileMethod :: Type -> Ident -> [Value] -> Run Result
+compileMethod typ id args = do
+    Just (t, p1) <- compileAttr typ "" id
     let TFunc _ as r = t
     p2 <- load t p1
     v <- call r p2 (zip as args)

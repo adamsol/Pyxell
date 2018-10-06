@@ -96,11 +96,8 @@ _pos = Nothing
 -- | Debug logging function.
 debug x = liftIO $ print x
 
--- | Gets name from an identifier.
-fromIdent (Ident x) = x
-
 -- | Changes apostrophes to hyphens.
-escapeName name = [if c == '\'' then '-' else c | c <- name]
+escapeName (Ident name) = [if c == '\'' then '-' else c | c <- name]
 
 -- | Splits a string into formatting parts.
 interpolateString :: String -> ([String], [String])
