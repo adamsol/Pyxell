@@ -1,0 +1,5 @@
+
+func f(Char->Char g) Char def
+    return g('x')
+
+f(lambda -> 'y')

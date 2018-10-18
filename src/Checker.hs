@@ -240,32 +240,6 @@ checkStmt statement cont = case statement of
             Just _ -> cont
             otherwise -> throw pos $ UnexpectedStatement "continue"
     where
-        checkFunc pos id args ret block cont = do
-            r <- getIdent pos id
-            case r of
-                Nothing -> skip
-                Just _ -> throw pos $ RedeclaredIdentifier id
-            as <- forM args $ \a -> case a of
-                ANoDefault _ t id -> return $ tArgN (reduceType t) id
-                ADefault _ t id _ -> return $ tArgD (reduceType t) id ""
-            let r = reduceType ret
-            declare pos (tFunc as r) id $ do  -- so global functions are global
-                case block of
-                    Just b -> nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
-                        checkArgs args False $ local (M.insert (Ident "#return") (r, 0)) $ local (M.delete (Ident "#loop")) $ checkBlock b
-                    Nothing -> skip
-                cont
-        checkArgs args def cont = case args of
-             [] -> cont
-             a:as -> checkArg a def (\d -> checkArgs as (def || d) cont)
-        checkArg arg def cont = case arg of
-            ANoDefault pos typ id -> case def of
-                False -> declare pos (reduceType typ) id (cont False)
-                True -> throw pos $ MissingDefault id
-            ADefault pos typ id expr -> do
-                (t, _) <- checkExpr expr
-                checkCast pos t (reduceType typ)
-                declare pos (reduceType typ) id (cont True)
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
             (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
@@ -327,7 +301,37 @@ checkStmt statement cont = case statement of
                     return $ tTuple ts
                 otherwise -> checkForIterable pos expr
 
--- | Check if one type can be cast to another.
+-- | Checks function's arguments and body.
+checkFunc :: Pos -> Ident -> [ArgF Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
+checkFunc pos id args ret block cont = do
+    r <- getIdent pos id
+    case r of
+        Nothing -> skip
+        Just _ -> throw pos $ RedeclaredIdentifier id
+    as <- forM args $ \a -> case a of
+        ANoDefault _ t id -> return $ tArgN (reduceType t) id
+        ADefault _ t id _ -> return $ tArgD (reduceType t) id ""
+    let r = reduceType ret
+    declare pos (tFunc as r) id $ do  -- so global functions are global
+        case block of
+            Just b -> nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
+                checkArgs args False $ local (M.insert (Ident "#return") (r, 0)) $ local (M.delete (Ident "#loop")) $ checkBlock b
+            Nothing -> skip
+        cont
+    where
+        checkArgs args def cont = case args of
+             [] -> cont
+             a:as -> checkArg a def (\d -> checkArgs as (def || d) cont)
+        checkArg arg def cont = case arg of
+            ANoDefault pos typ id -> case def of
+                False -> declare pos (reduceType typ) id (cont False)
+                True -> throw pos $ MissingDefault id
+            ADefault pos typ id expr -> do
+                (t, _) <- checkExpr expr
+                checkCast pos t (reduceType typ)
+                declare pos (reduceType typ) id (cont True)
+
+-- | Checks if one type can be cast to another.
 checkCast :: Pos -> Type -> Type -> Run ()
 checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
     Just _ -> skip
@@ -403,35 +407,51 @@ checkExpr expression = case expression of
         return $ (t2, False)
     ECall pos expr exprs -> do
         (t, _) <- checkExpr expr
-        as <- case expr of
+        args2 <- case expr of
             EAttr _ e _ -> return $ APos _pos e : exprs
             otherwise -> return $ exprs
         case t of
-            TFunc _ args ret -> do
+            TFunc _ args1 ret -> do
                 -- Build a map of arguments and their positions.
                 let m = M.empty
-                (m, _) <- foldM' (m, False) (zip [0..] as) $ \(m, named) (i, a) -> case (a, named) of
-                    (APos _ e, False) -> do
-                        (t, _) <- checkExpr e
-                        return $ (M.insert i t m, False)
-                    (ANamed _ id e, _) -> do
-                        (t, _) <- checkExpr e
-                        case getArgument args id of
-                            Just (i', _) -> case M.lookup i' m of
-                                Nothing -> return $ (M.insert i' t m, True)
-                                Just _ -> throw pos $ RepeatedArgument id
-                            Nothing -> throw pos $ UnexpectedArgument id
-                    otherwise -> throw pos $ ExpectedNamedArgument
+                (m, _) <- foldM' (m, False) (zip [0..] args2) $ \(m, named) (i, a) -> do
+                    (e, i, named) <- case (a, named) of
+                        (APos _ e, False) -> return $ (e, i, False)
+                        (ANamed _ id e, _) -> do
+                            case getArgument args1 id of
+                                Just (i', _) -> case M.lookup i' m of
+                                    Nothing -> return $ (e, i', True)
+                                    Just _ -> throw pos $ RepeatedArgument id
+                                Nothing -> throw pos $ UnexpectedArgument id
+                        otherwise -> throw pos $ ExpectedNamedArgument
+                    t <- case e of
+                        ELambda pos' ids e' -> do
+                            t <- case args1 !! i of
+                                TArgN _ t _ -> return $ t
+                                TArgD _ t _ _ -> return $ t
+                            let TFunc _ args rt = t
+                            if length ids < length args then throw pos' $ TooFewArguments t
+                            else if length ids > length args then throw pos' $ TooManyArguments t
+                            else skip
+                            let id = Ident ".lambda"
+                            let as = [ANoDefault _pos t id | (t, id) <- zip args ids]
+                            let b = SBlock pos' [SRetExpr pos' e']
+                            checkFunc pos' id as rt (Just b) skip
+                            return $ t
+                        otherwise -> do
+                            (t, _) <- checkExpr e
+                            return $ t
+                    return $ (M.insert i t m, named)
                 -- Extend the map using default arguments.
-                m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
+                m <- foldM' m (zip [0..] args1) $ \m (i, a) -> case (a, M.lookup i m) of
                     (TArgD _ t _ _, Nothing) -> return $ M.insert i t m
                     otherwise -> return $ m
                 -- Check whether all (and no redundant) arguments have been provided.
-                if any (>= length args) (M.keys m) then throw pos $ TooManyArguments t
-                else if M.size m < length args then throw pos $ TooFewArguments t
+                if any (>= length args1) (M.keys m) then throw pos $ TooManyArguments t
+                else if M.size m < length args1 then throw pos $ TooFewArguments t
                 else skip
                 -- Check if all arguments have correct types.
-                forM (zip (M.elems m) args) (uncurry $ checkCast pos)
+                forM (zip (M.elems m) args1) (uncurry $ checkCast pos)
                 return $ (ret, False)
             otherwise -> throw pos $ NotFunction t
     EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
@@ -473,6 +493,8 @@ checkExpr expression = case expression of
         case ts of
             t:[] -> return $ (t, all (== True) ms)
             otherwise -> return $ (tTuple ts, all (== True) ms)
+    ELambda pos expr1 expr2 -> do
+        throw pos $ UnknownType
     where
         checkIdent pos id = do
             r <- getIdent pos id

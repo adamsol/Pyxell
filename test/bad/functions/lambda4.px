@@ -1,0 +1,5 @@
+
+func f(Int->Int g) Int def
+    return g(5)
+
+f(lambda x, y -> x)

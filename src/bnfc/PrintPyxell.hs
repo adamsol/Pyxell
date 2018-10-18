@@ -86,6 +86,9 @@ instance Print Double where
 
 instance Print Ident where
   prt _ (Ident i) = doc (showString i)
+  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
 instance Print (Program a) where
   prt i e = case e of
@@ -180,6 +183,9 @@ instance Print (CmpOp a) where
     CmpGT _ -> prPrec i 0 (concatD [doc (showString ">")])
     CmpGE _ -> prPrec i 0 (concatD [doc (showString ">=")])
 
+instance Print [Ident] where
+  prt = prtList
+
 instance Print (Expr a) where
   prt i e = case e of
     EInt _ n -> prPrec i 10 (concatD [prt 0 n])
@@ -209,6 +215,7 @@ instance Print (Expr a) where
     EOr _ expr1 expr2 -> prPrec i 3 (concatD [prt 4 expr1, doc (showString "or"), prt 3 expr2])
     ETuple _ exprs -> prPrec i 1 (concatD [prt 3 exprs])
     ECond _ expr1 expr2 expr3 -> prPrec i 2 (concatD [prt 3 expr1, doc (showString "?"), prt 3 expr2, doc (showString ":"), prt 2 expr3])
+    ELambda _ ids expr -> prPrec i 2 (concatD [doc (showString "lambda"), prt 0 ids, doc (showString "->"), prt 2 expr])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString ","), prt 3 xs]
   prtList 2 [] = concatD []

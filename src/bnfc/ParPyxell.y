@@ -37,6 +37,7 @@ import ErrM
 %name pListExpr3_internal ListExpr3
 %name pListExpr2_internal ListExpr2
 %name pExpr2_internal Expr2
+%name pListIdent_internal ListIdent
 %name pExpr_internal Expr
 %name pType4_internal Type4
 %name pType2_internal Type2
@@ -96,17 +97,18 @@ import ErrM
   'func' { PT _ (TS _ 48) }
   'if' { PT _ (TS _ 49) }
   'in' { PT _ (TS _ 50) }
-  'not' { PT _ (TS _ 51) }
-  'or' { PT _ (TS _ 52) }
-  'print' { PT _ (TS _ 53) }
-  'return' { PT _ (TS _ 54) }
-  'skip' { PT _ (TS _ 55) }
-  'step' { PT _ (TS _ 56) }
-  'true' { PT _ (TS _ 57) }
-  'until' { PT _ (TS _ 58) }
-  'while' { PT _ (TS _ 59) }
-  '{' { PT _ (TS _ 60) }
-  '}' { PT _ (TS _ 61) }
+  'lambda' { PT _ (TS _ 51) }
+  'not' { PT _ (TS _ 52) }
+  'or' { PT _ (TS _ 53) }
+  'print' { PT _ (TS _ 54) }
+  'return' { PT _ (TS _ 55) }
+  'skip' { PT _ (TS _ 56) }
+  'step' { PT _ (TS _ 57) }
+  'true' { PT _ (TS _ 58) }
+  'until' { PT _ (TS _ 59) }
+  'while' { PT _ (TS _ 60) }
+  '{' { PT _ (TS _ 61) }
+  '}' { PT _ (TS _ 62) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -528,8 +530,24 @@ Expr2 :: {
 : Expr3 '?' Expr3 ':' Expr2 {
   (fst $1, AbsPyxell.ECond (fst $1)(snd $1)(snd $3)(snd $5)) 
 }
+| 'lambda' ListIdent '->' Expr2 {
+  (Just (tokenLineCol $1), AbsPyxell.ELambda (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
+}
 | Expr3 {
   (fst $1, snd $1)
+}
+
+ListIdent :: {
+  (Maybe (Int, Int), [Ident]) 
+}
+: {
+  (Nothing, [])
+}
+| Ident {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Ident ',' ListIdent {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 Expr :: {
@@ -665,6 +683,7 @@ pExpr1 = (>>= return . snd) . pExpr1_internal
 pListExpr3 = (>>= return . snd) . pListExpr3_internal
 pListExpr2 = (>>= return . snd) . pListExpr2_internal
 pExpr2 = (>>= return . snd) . pExpr2_internal
+pListIdent = (>>= return . snd) . pListIdent_internal
 pExpr = (>>= return . snd) . pExpr_internal
 pType4 = (>>= return . snd) . pType4_internal
 pType2 = (>>= return . snd) . pType2_internal

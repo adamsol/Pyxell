@@ -41,9 +41,9 @@ The reserved words used in Pyxell are the following:
   | ``break`` | ``continue`` | ``def`` | ``do``
   | ``elif`` | ``else`` | ``extern`` | ``false``
   | ``for`` | ``func`` | ``if`` | ``in``
-  | ``not`` | ``or`` | ``print`` | ``return``
-  | ``skip`` | ``step`` | ``true`` | ``until``
-  | ``while`` |  |  | 
+  | ``lambda`` | ``not`` | ``or`` | ``print``
+  | ``return`` | ``skip`` | ``step`` | ``true``
+  | ``until`` | ``while`` |  | 
 
 The symbols used in Pyxell are the following:
   | ; | ( | ) | :
@@ -158,7 +158,11 @@ All other symbols are terminals.
   |  |  **|**  | //Expr2// 
   |  |  **|**  | //Expr2// ``,`` //[Expr2]// 
   | //Expr2// | -> | //Expr3// ``?`` //Expr3// ``:`` //Expr2// 
+  |  |  **|**  | ``lambda`` //[Ident]// ``->`` //Expr2// 
   |  |  **|**  | //Expr3// 
+  | //[Ident]// | -> | **eps**
+  |  |  **|**  | //Ident// 
+  |  |  **|**  | //Ident// ``,`` //[Ident]// 
   | //Expr// | -> | //Expr1// 
   | //Type4// | -> | ``Void`` 
   |  |  **|**  | ``Int`` 

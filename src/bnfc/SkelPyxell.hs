@@ -98,6 +98,7 @@ transExpr x = case x of
   EOr _ expr1 expr2 -> failure x
   ETuple _ exprs -> failure x
   ECond _ expr1 expr2 expr3 -> failure x
+  ELambda _ idents expr -> failure x
 transType :: Show a => Type a -> Result
 transType x = case x of
   TPtr _ type_ -> failure x

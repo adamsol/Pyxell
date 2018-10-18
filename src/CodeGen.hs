@@ -142,7 +142,7 @@ declare :: Type -> Value -> Run ()
 declare (TFunc _ args rt) name = do
     scope "!global" $ write $ [ "declare " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ")" ]
 
--- | Outputs new Ident definition with given body.
+-- | Outputs new function definition with given body.
 define :: Type -> Ident -> Run () -> Run ()
 define typ id body = do
     let (TFunc _ args rt) = typ

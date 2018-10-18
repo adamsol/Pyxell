@@ -51,13 +51,13 @@ compileStmts statements cont = case statements of
 compileStmt :: Stmt Pos -> Run a -> Run a
 compileStmt statement cont = case statement of
     SProc _ id args block -> do
-        compileFunc id args tVoid (Just block) cont
+        compileFunc id args tVoid (Just block) (\_ -> cont)
     SFunc _ id args rt block -> do
-        compileFunc id args rt (Just block) cont
+        compileFunc id args rt (Just block) (\_ -> cont)
     SProcExtern _ id args -> do
-        compileFunc id args tVoid Nothing cont
+        compileFunc id args tVoid Nothing (\_ -> cont)
     SFuncExtern _ id args rt -> do
-        compileFunc id args rt Nothing cont
+        compileFunc id args rt Nothing (\_ -> cont)
     SRetVoid _ -> do
         ret tVoid ""
         cont
@@ -140,41 +140,6 @@ compileStmt statement cont = case statement of
         goto l
         cont
     where
-        compileFunc id args rt block cont = do
-            s <- getScope
-            let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
-            as <- forM args $ \a -> case a of
-                ANoDefault _ t id -> do
-                    return $ tArgN (reduceType t) id
-                ADefault _ t id e -> do
-                    t <- return $ reduceType t
-                    p <- scope f $ global t (defaultValue t)
-                    scope "main" $ do
-                        (_, v) <- compileExpr e
-                        store t v p
-                    return $ tArgD t id p
-            let r = reduceType rt
-            let t = tFunc as r
-            let p = "@f" ++ f
-            local (M.insert id (t, p)) $ do
-                case block of
-                    Just b -> define t id $ compileArgs args 0 $ local (M.insert (Ident "#return") (r, "")) $ do
-                        l <- nextLabel
-                        goto l >> label l
-                        compileBlock b
-                        ret r (defaultValue r)
-                    Nothing -> do
-                        scope "!global" $ external p t
-                        skip
-                cont
-        compileArgs args idx cont = case args of
-             [] -> cont
-             a:as -> compileArg a idx (compileArgs as (idx+1) cont)
-        compileArg arg idx cont = case arg of
-            ANoDefault pos typ id -> do
-                variable (reduceType typ) id ("%" ++ show idx) cont
-            ADefault pos typ id _ -> do
-                variable (reduceType typ) id ("%" ++ show idx) cont
         compilePrint typ val = case typ of
             TTuple _ ts -> do
                 forM_ (zip [0..] ts) $ \(i, t) -> do
@@ -308,6 +273,45 @@ compileStmt statement cont = case statement of
                 label l2
                 cont
 
+-- | Outputs LLVM code for a function definition and initialization of its default arguments.
+compileFunc :: Ident -> [ArgF Pos] -> Type -> Maybe (Block Pos) -> (Value -> Run a) -> Run a
+compileFunc id args rt block cont = do
+    s <- getScope
+    let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
+    as <- forM args $ \a -> case a of
+        ANoDefault _ t id -> do
+            return $ tArgN (reduceType t) id
+        ADefault _ t id e -> do
+            t <- return $ reduceType t
+            p <- scope f $ global t (defaultValue t)
+            scope "main" $ do
+                (_, v) <- compileExpr e
+                store t v p
+            return $ tArgD t id p
+    let r = reduceType rt
+    let t = tFunc as r
+    let p = "@f" ++ f
+    local (M.insert id (t, p)) $ do
+        case block of
+            Just b -> define t id $ compileArgs args 0 $ local (M.insert (Ident "#return") (r, "")) $ do
+                l <- nextLabel
+                goto l >> label l
+                compileBlock b
+                ret r (defaultValue r)
+            Nothing -> do
+                scope "!global" $ external p t
+                skip
+        cont p
+    where
+        compileArgs args idx cont = case args of
+             [] -> cont
+             a:as -> compileArg a idx (compileArgs as (idx+1) cont)
+        compileArg arg idx cont = case arg of
+            ANoDefault pos typ id -> do
+                variable (reduceType typ) id ("%" ++ show idx) cont
+            ADefault pos typ id _ -> do
+                variable (reduceType typ) id ("%" ++ show idx) cont
+
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.
 compileExpr :: Expr Pos -> Run Result
@@ -352,22 +356,36 @@ compileExpr expression = case expression of
     EIndex _ _ _ -> compileRval expression
     EAttr _ _ _ -> compileRval expression
     ECall _ expr exprs -> do
-        as <- case expr of
+        (TFunc _ args1 rt, f) <- compileExpr expr
+        args2 <- case expr of
             EAttr _ e _ -> return $ APos _pos e : exprs
             otherwise -> return $ exprs
-        (TFunc _ args rt, f) <- compileExpr expr
         -- Build a map of arguments and their positions.
         let m = M.empty
-        m <- foldM' m (zip [0..] as) $ \m (i, a) -> case a of
-            APos _ e -> do
-                (t, v) <- compileExpr e
-                return $ M.insert i (t, v) m
-            ANamed _ id e -> do
-                (t, v) <- compileExpr e
-                let Just (i', _) = getArgument args id
-                return $ M.insert i' (t, v) m
+        m <- foldM' m (zip [0..] args2) $ \m (i, a) -> do
+            (e, i) <- case a of
+                APos _ e -> return $ (e, i)
+                ANamed _ id e -> do
+                    let Just (i', _) = getArgument args1 id
+                    return $ (e, i')
+            (t, v) <- case e of
+                ELambda _ ids e' -> do
+                    t <- case args1 !! i of
+                        TArgN _ t _ -> return $ t
+                        TArgD _ t _ _ -> return $ t
+                    let TFunc _ args rt = t
+                    n <- nextNumber
+                    let id = Ident (".lambda" ++ show n)
+                    let as = [ANoDefault _pos t id | (t, id) <- zip args ids]
+                    let b = SBlock _pos [SRetExpr _pos e']
+                    p <- compileFunc id as rt (Just b) return
+                    v <- load t p
+                    return $ (t, v)
+                otherwise -> do
+                    compileExpr e
+            return $ M.insert i (t, v) m
         -- Extend the map using default arguments.
-        m <- foldM' m (zip [0..] args) $ \m (i, a) -> case (a, M.lookup i m) of
+        m <- foldM' m (zip [0..] args1) $ \m (i, a) -> case (a, M.lookup i m) of
             (TArgD _ t _ p, Nothing) -> do
                 v <- load t p
                 return $ M.insert i (t, v) m

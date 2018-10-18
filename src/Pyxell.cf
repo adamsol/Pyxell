@@ -101,8 +101,11 @@ ETuple.            Expr1  ::= [Expr3] ;
 separator nonempty Expr3      "," ;
 separator          Expr2      "," ;
 
--- when ECond is above separator for Expr3, strange things happen
+-- when these are above separator for Expr3, strange things happen
 ECond.             Expr2  ::= Expr3 "?" Expr3 ":" Expr2 ;
+ELambda.           Expr2  ::= "lambda" [Ident] "->" Expr2 ;
+
+separator          Ident      "," ;
 
 coercions          Expr       10 ;
 
