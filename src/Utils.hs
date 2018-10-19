@@ -29,7 +29,7 @@ instance {-# OVERLAPS #-} Show Type where
         TString _ -> "String"
         TArray _ t' -> "[" ++ show t' ++ "]"
         TTuple _ ts -> intercalate "*" (map show ts)
-        TFunc _ as r -> "(" ++ intercalate "," (map show as) ++ ")->" ++ show r
+        TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
         TArgN _ t' _ -> show t'
         TArgD _ t' _ _ -> show t'
 

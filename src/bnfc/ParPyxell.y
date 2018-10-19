@@ -598,7 +598,7 @@ Type2 :: {
 Type1 :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
-: ListType2 '->' Type2 {
+: ListType2 '->' Type1 {
   (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
 }
 | Type2 {
@@ -618,7 +618,10 @@ ListType3 :: {
 ListType2 :: {
   (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
 }
-: Type2 {
+: {
+  (Nothing, [])
+}
+| Type2 {
   (fst $1, (:[]) (snd $1)) 
 }
 | Type2 ',' ListType2 {

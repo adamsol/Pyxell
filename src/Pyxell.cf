@@ -126,10 +126,10 @@ TArray.            Type4  ::= "[" Type "]" ;
 TTuple.            Type2  ::= [Type3] ;
 internal TArgN.    Type2  ::= Type1 Ident ;
 internal TArgD.    Type2  ::= Type1 Ident String ;
-TFunc.             Type1  ::= [Type2] "->" Type2 ;
+TFunc.             Type1  ::= [Type2] "->" Type1 ;
 
 separator nonempty Type3      "*" ;
-separator nonempty Type2      "," ;
+separator          Type2      "," ;
 
 coercions          Type       4 ;
 

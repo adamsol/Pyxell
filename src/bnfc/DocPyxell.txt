@@ -174,11 +174,12 @@ All other symbols are terminals.
   |  |  **|**  | ``(`` //Type// ``)`` 
   | //Type2// | -> | //[Type3]// 
   |  |  **|**  | //Type3// 
-  | //Type1// | -> | //[Type2]// ``->`` //Type2// 
+  | //Type1// | -> | //[Type2]// ``->`` //Type1// 
   |  |  **|**  | //Type2// 
   | //[Type3]// | -> | //Type3// 
   |  |  **|**  | //Type3// ``*`` //[Type3]// 
-  | //[Type2]// | -> | //Type2// 
+  | //[Type2]// | -> | **eps**
+  |  |  **|**  | //Type2// 
   |  |  **|**  | //Type2// ``,`` //[Type2]// 
   | //Type// | -> | //Type1// 
   | //Type3// | -> | //Type4// 
