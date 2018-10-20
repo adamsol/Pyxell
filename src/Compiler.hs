@@ -377,7 +377,9 @@ compileExpr expression = case expression of
                     n <- nextNumber
                     let id = Ident (".lambda" ++ show n)
                     let as = [ANoDefault _pos t id | (t, id) <- zip args ids]
-                    let b = SBlock _pos [SRetExpr _pos e']
+                    b <- case rt of
+                        TVoid _ -> return $ SBlock _pos [SAssg _pos [e']]
+                        otherwise -> return $ SBlock _pos [SRetExpr _pos e']
                     p <- compileFunc id as rt (Just b) return
                     v <- load t p
                     return $ (t, v)

@@ -1,0 +1,5 @@
+
+func f(String->String g) def
+    return
+
+f(write(_))

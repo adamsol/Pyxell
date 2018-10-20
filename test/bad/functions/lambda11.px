@@ -1,0 +1,5 @@
+
+func f(Bool->Void g) def
+    return
+
+f(_)
