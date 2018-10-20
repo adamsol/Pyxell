@@ -4,6 +4,10 @@
 module Utils where
 
 import Control.Monad
+import Control.Monad.Identity
+import Control.Monad.Trans.Class
+import Control.Monad.Trans.State
+import Control.Monad.Trans.Writer
 import Control.Monad.IO.Class
 import Data.List
 import Text.Regex
@@ -109,10 +113,78 @@ interpolateString str =
             (before : txts, tail (init match) : tags)
         Nothing -> ([str], [""])
 
--- Gets function argument by its name.
+-- | Gets function argument by its name.
 getArgument :: [Type] -> Ident -> Maybe (Int, Type)
 getArgument args id = find' (zip [0..] args) $ \(_, a) -> case a of
     TArgN _ _ id' -> id == id'
     TArgD _ _ id' _ -> id == id'
     otherwise -> False
+
+-- | Builds a lambda expression from expression with placeholders.
+convertLambda :: Pos -> Expr Pos -> Expr Pos
+convertLambda pos expression = do
+    case runIdentity (evalStateT (runWriterT (convertExpr expression)) 0) of
+        (e, []) -> e
+        (e, ids) -> ELambda pos ids e
+    where
+        convertExpr :: Expr Pos -> WriterT [Ident] (StateT Int Identity) (Expr Pos)
+        convertExpr expr = case expr of
+            EStub pos -> do
+                n <- lift $ get
+                lift $ put (n+1)
+                let id = Ident ("_" ++ show n)
+                tell [id]
+                return $ EVar pos id
+            EArray pos es -> convertMultiary (EArray pos) es
+            EElem pos e idx -> convertUnary (\e -> EElem pos e idx) e
+            EIndex pos e1 e2 -> convertBinary (EIndex pos) e1 e2
+            EAttr pos e id -> convertUnary (\e -> EAttr pos e id) e
+            ECall pos e args -> do
+                e <- convertExpr e
+                as <- mapM convertArg args
+                return $ ECall pos e as
+            EPow pos e1 e2 -> convertBinary (EPow pos) e1 e2
+            EMul pos e1 e2 -> convertBinary (EMul pos) e1 e2
+            EDiv pos e1 e2 -> convertBinary (EDiv pos) e1 e2
+            EMod pos e1 e2 -> convertBinary (EMod pos) e1 e2
+            EAdd pos e1 e2 -> convertBinary (EAdd pos) e1 e2
+            ESub pos e1 e2 -> convertBinary (ESub pos) e1 e2
+            ENeg pos e -> convertUnary (ENeg pos) e
+            ECmp pos cmp -> do
+                cmp <- convertCmp cmp
+                return $ ECmp pos cmp
+            ENot pos e -> convertUnary (ENot pos) e
+            EAnd pos e1 e2 -> convertBinary (EAnd pos) e1 e2
+            EOr pos e1 e2 -> convertBinary (EOr pos) e1 e2
+            ECond pos e1 e2 e3 -> convertTernary (ECond pos) e1 e2 e3
+            ETuple pos es -> convertMultiary (ETuple pos) es
+            otherwise -> return $ expr
+        convertUnary op e = do
+            e <- convertExpr e
+            return $ op e
+        convertBinary op e1 e2 = do
+            [e1, e2] <- mapM convertExpr [e1, e2]
+            return $ op e1 e2
+        convertTernary op e1 e2 e3 = do
+            [e1, e2, e3] <- mapM convertExpr [e1, e2, e3]
+            return $ op e1 e2 e3
+        convertMultiary op es = do
+            es <- mapM convertExpr es
+            return $ op es
+        convertArg arg = case arg of
+            APos pos e -> do
+                e' <- convertExpr e
+                return $ APos pos e'
+            ANamed pos id e -> do
+                e' <- convertExpr e
+                return $ ANamed pos id e'
+        convertCmp cmp = case cmp of
+            Cmp1 pos e1 op e2 -> do
+                e1' <- convertExpr e1
+                e2' <- convertExpr e2
+                return $ Cmp1 pos e1' op e2'
+            Cmp2 pos e op c -> do
+                e' <- convertExpr e
+                c' <- convertCmp c
+                return $ Cmp2 pos e' op c'
 

@@ -188,6 +188,7 @@ instance Print [Ident] where
 
 instance Print (Expr a) where
   prt i e = case e of
+    EStub _ -> prPrec i 10 (concatD [doc (showString "_")])
     EInt _ n -> prPrec i 10 (concatD [prt 0 n])
     ETrue _ -> prPrec i 10 (concatD [doc (showString "true")])
     EFalse _ -> prPrec i 10 (concatD [doc (showString "false")])

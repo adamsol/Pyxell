@@ -71,6 +71,7 @@ transCmpOp x = case x of
   CmpGE _ -> failure x
 transExpr :: Show a => Expr a -> Result
 transExpr x = case x of
+  EStub _ -> failure x
   EInt _ integer -> failure x
   ETrue _ -> failure x
   EFalse _ -> failure x

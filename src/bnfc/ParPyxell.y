@@ -84,31 +84,32 @@ import ErrM
   'Void' { PT _ (TS _ 35) }
   '[' { PT _ (TS _ 36) }
   ']' { PT _ (TS _ 37) }
-  'and' { PT _ (TS _ 38) }
-  'break' { PT _ (TS _ 39) }
-  'continue' { PT _ (TS _ 40) }
-  'def' { PT _ (TS _ 41) }
-  'do' { PT _ (TS _ 42) }
-  'elif' { PT _ (TS _ 43) }
-  'else' { PT _ (TS _ 44) }
-  'extern' { PT _ (TS _ 45) }
-  'false' { PT _ (TS _ 46) }
-  'for' { PT _ (TS _ 47) }
-  'func' { PT _ (TS _ 48) }
-  'if' { PT _ (TS _ 49) }
-  'in' { PT _ (TS _ 50) }
-  'lambda' { PT _ (TS _ 51) }
-  'not' { PT _ (TS _ 52) }
-  'or' { PT _ (TS _ 53) }
-  'print' { PT _ (TS _ 54) }
-  'return' { PT _ (TS _ 55) }
-  'skip' { PT _ (TS _ 56) }
-  'step' { PT _ (TS _ 57) }
-  'true' { PT _ (TS _ 58) }
-  'until' { PT _ (TS _ 59) }
-  'while' { PT _ (TS _ 60) }
-  '{' { PT _ (TS _ 61) }
-  '}' { PT _ (TS _ 62) }
+  '_' { PT _ (TS _ 38) }
+  'and' { PT _ (TS _ 39) }
+  'break' { PT _ (TS _ 40) }
+  'continue' { PT _ (TS _ 41) }
+  'def' { PT _ (TS _ 42) }
+  'do' { PT _ (TS _ 43) }
+  'elif' { PT _ (TS _ 44) }
+  'else' { PT _ (TS _ 45) }
+  'extern' { PT _ (TS _ 46) }
+  'false' { PT _ (TS _ 47) }
+  'for' { PT _ (TS _ 48) }
+  'func' { PT _ (TS _ 49) }
+  'if' { PT _ (TS _ 50) }
+  'in' { PT _ (TS _ 51) }
+  'lambda' { PT _ (TS _ 52) }
+  'not' { PT _ (TS _ 53) }
+  'or' { PT _ (TS _ 54) }
+  'print' { PT _ (TS _ 55) }
+  'return' { PT _ (TS _ 56) }
+  'skip' { PT _ (TS _ 57) }
+  'step' { PT _ (TS _ 58) }
+  'true' { PT _ (TS _ 59) }
+  'until' { PT _ (TS _ 60) }
+  'while' { PT _ (TS _ 61) }
+  '{' { PT _ (TS _ 62) }
+  '}' { PT _ (TS _ 63) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -308,7 +309,10 @@ Else :: {
 Expr10 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Integer {
+: '_' {
+  (Just (tokenLineCol $1), AbsPyxell.EStub (Just (tokenLineCol $1)))
+}
+| Integer {
   (fst $1, AbsPyxell.EInt (fst $1)(snd $1)) 
 }
 | 'true' {

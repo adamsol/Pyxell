@@ -119,7 +119,8 @@ instance Functor CmpOp where
         CmpGT a -> CmpGT (f a)
         CmpGE a -> CmpGE (f a)
 data Expr a
-    = EInt a Integer
+    = EStub a
+    | EInt a Integer
     | ETrue a
     | EFalse a
     | EChar a Char
@@ -151,6 +152,7 @@ data Expr a
 
 instance Functor Expr where
     fmap f x = case x of
+        EStub a -> EStub (f a)
         EInt a integer -> EInt (f a) integer
         ETrue a -> ETrue (f a)
         EFalse a -> EFalse (f a)

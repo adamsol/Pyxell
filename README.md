@@ -37,6 +37,15 @@ for x, i in a, 0... do
     print "a[{i}] = {x}" 
 ```
 
+```
+func fold(Int,Int->Int f, Int a, [Int] t) Int def
+    for x in t do
+        a = f(a, x)
+    return a
+
+print fold(_*_, 1, [2, 3, 4])  -- factorial
+```
+
 
 Features
 --------
@@ -53,7 +62,8 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Extensive for-loops with ranges, steps, and zipping (+)
 * First-class functions (+)
 * Default and named arguments (+)
-* Closures and lambdas
+* Lambda expressions (+)
+* Closures
 * Arbitrary-precision arithmetic
 * Classes with multiple inheritance and safe references
 * Separate nullable types

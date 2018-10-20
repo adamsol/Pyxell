@@ -355,11 +355,11 @@ compileExpr expression = case expression of
                 return $ (ts !! i, v)
     EIndex _ _ _ -> compileRval expression
     EAttr _ _ _ -> compileRval expression
-    ECall _ expr exprs -> do
+    ECall _ expr args -> do
         (TFunc _ args1 rt, f) <- compileExpr expr
         args2 <- case expr of
-            EAttr _ e _ -> return $ APos _pos e : exprs
-            otherwise -> return $ exprs
+            EAttr _ e _ -> return $ APos _pos e : args
+            otherwise -> return $ args
         -- Build a map of arguments and their positions.
         let m = M.empty
         m <- foldM' m (zip [0..] args2) $ \m (i, a) -> do
@@ -368,7 +368,7 @@ compileExpr expression = case expression of
                 ANamed _ id e -> do
                     let Just (i', _) = getArgument args1 id
                     return $ (e, i')
-            (t, v) <- case e of
+            (t, v) <- case convertLambda _pos e of
                 ELambda _ ids e' -> do
                     t <- case args1 !! i of
                         TArgN _ t _ -> return $ t

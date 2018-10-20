@@ -1,0 +1,12 @@
+
+func call(Int->String f, Int n) String def
+    return f(n)
+
+print call("42"*_, 5)
+print call(_.toString()+' '+"ABC", -78)
+print call(["x", "y", "z"][_], 1)
+
+func array(String->[String] f, String s) def
+    print f(s)[0]
+
+array((3, [_]).1, "###")

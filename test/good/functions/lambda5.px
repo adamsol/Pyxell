@@ -1,0 +1,16 @@
+
+func fold(Bool,Bool->Bool f, Bool a, [Bool] t) Bool def
+    for x in t do
+        a = f(a, x)
+    return a
+
+t = [false, false, true]
+
+print fold(_ and _, true, t)
+print fold(_ or _, false, t)
+
+print fold(_ != _, false, t)  -- xor
+
+print fold(false ? _ : _, true, t)  -- last value
+print fold(_ ? true : _, false, t)  -- is any true
+print fold(not _ ? not _ : false, false, t)  -- odd number of falses at the end

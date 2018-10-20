@@ -341,6 +341,7 @@ checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
 -- | Checks an expression and returns its type and whether it is mutable.
 checkExpr :: Expr Pos -> Run (Type, Bool)
 checkExpr expression = case expression of
+    EStub pos -> throw pos $ UnknownType
     EInt pos _ -> return $ (tInt, False)
     ETrue pos -> return $ (tBool, False)
     EFalse pos -> return $ (tBool, False)
@@ -405,27 +406,27 @@ checkExpr expression = case expression of
                 otherwise -> throw pos $ InvalidAttr t1 id
             otherwise -> throw pos $ InvalidAttr t1 id
         return $ (t2, False)
-    ECall pos expr exprs -> do
+    ECall pos expr args -> do
         (t, _) <- checkExpr expr
         args2 <- case expr of
-            EAttr _ e _ -> return $ APos _pos e : exprs
-            otherwise -> return $ exprs
+            EAttr _ e _ -> return $ APos _pos e : args
+            otherwise -> return $ args
         case t of
             TFunc _ args1 ret -> do
                 -- Build a map of arguments and their positions.
                 let m = M.empty
                 (m, _) <- foldM' (m, False) (zip [0..] args2) $ \(m, named) (i, a) -> do
-                    (e, i, named) <- case (a, named) of
-                        (APos _ e, False) -> return $ (e, i, False)
-                        (ANamed _ id e, _) -> do
+                    (pos', e, i, named) <- case (a, named) of
+                        (APos pos' e, False) -> return $ (pos', e, i, False)
+                        (ANamed pos' id e, _) -> do
                             case getArgument args1 id of
                                 Just (i', _) -> case M.lookup i' m of
-                                    Nothing -> return $ (e, i', True)
-                                    Just _ -> throw pos $ RepeatedArgument id
-                                Nothing -> throw pos $ UnexpectedArgument id
-                        otherwise -> throw pos $ ExpectedNamedArgument
-                    t <- case e of
-                        ELambda pos' ids e' -> do
+                                    Nothing -> return $ (pos', e, i', True)
+                                    Just _ -> throw pos' $ RepeatedArgument id
+                                Nothing -> throw pos' $ UnexpectedArgument id
+                        (APos pos' _, True) -> throw pos' $ ExpectedNamedArgument
+                    t <- case convertLambda pos' e of
+                        ELambda _ ids e' -> do
                             t <- case args1 !! i of
                                 TArgN _ t _ -> return $ t
                                 TArgD _ t _ _ -> return $ t

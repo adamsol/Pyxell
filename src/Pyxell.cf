@@ -54,6 +54,7 @@ SBreak.            Stmt   ::= "break" ;
 
 -- expressions --
 
+EStub.             Expr10 ::= "_" ;
 EInt.              Expr10 ::= Integer ;
 ETrue.             Expr10 ::= "true" ;
 EFalse.            Expr10 ::= "false" ;
