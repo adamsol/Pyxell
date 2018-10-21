@@ -295,34 +295,46 @@ ret typ val = do
     write $ indent [ "ret " ++ strType typ ++ " " ++ val ]
 
 
+-- | Outputs LLVM code to allocate memory for objects of a given type.
+initMemory :: Type -> Value -> Run Value
+initMemory typ len = do
+    v <- gep typ "null" [len] [] >>= ptrtoint typ
+    call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) typ
+
+-- | Outputs LLVM code for tuple initialization.
+initTuple :: [Result] -> Run Value
+initTuple rs = do
+    let t = tTuple (map fst rs)
+    p <- initMemory t "1"
+    forM (zipWith (\r i -> (fst r, snd r, i)) rs [0..]) $ \(t', v', i) -> do
+        gep t p ["0"] [i] >>= store t' v'
+    return $ p
+
 -- | Outputs LLVM code for string initialization.
-initString :: Value -> Run Result
-initString s = do
-    let l = length s
+initString :: String -> Run Value
+initString str = do
+    let l = length str
     let t = (tArr (toInteger l) tChar)
-    c <- scope "!global" $ constant t ("[" ++ intercalate ", " [strType tChar ++ " " ++ show (ord c) | c <- s] ++ "]")
-    v <- gep tString "null" ["1"] [] >>= ptrtoint tString
-    p1 <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) tString
+    c <- scope "!global" $ constant t ("[" ++ intercalate ", " [strType tChar ++ " " ++ show (ord c) | c <- str] ++ "]")
+    p1 <- initMemory tString "1"
     p2 <- gep (tPtr t) c ["0"] [0]
     gep tString p1 ["0"] [0] >>= store (tPtr tChar) p2
     gep tString p1 ["0"] [1] >>= store tInt (show l)
-    return $ (tString, p1)
+    return $ p1
 
 -- | Outputs LLVM code for array initialization.
 -- |   'lens' is an array of two optional values:
 -- |   - length which will be saved in the .length attribute,
 -- |   - size of allocated memory.
 -- |   Any omitted value will default to the length of 'vals'.
-initArray :: Type -> [Value] -> [Value] -> Run Result
+initArray :: Type -> [Value] -> [Value] -> Run Value
 initArray typ vals lens = do
     let t1 = tArray typ
     let t2 = tPtr typ
     let len1:len2:_ = lens ++ replicate 2 (show (length vals))
-    v1 <- gep t1 "null" ["1"] [] >>= ptrtoint t1
-    p1 <- call (tPtr tChar) "@malloc" [(tInt, v1)] >>= bitcast (tPtr tChar) t1
-    v2 <- gep t2 "null" [len2] [] >>= ptrtoint t2
-    p2 <- call (tPtr tChar) "@malloc" [(tInt, v2)] >>= bitcast (tPtr tChar) t2
+    p1 <- initMemory t1 "1"
+    p2 <- initMemory t2 len2
     gep t1 p1 ["0"] [0] >>= store t2 p2
     gep t1 p1 ["0"] [1] >>= store tInt len1
     forM (zip [0..] vals) (\(i, v) -> gep t2 p2 [show i] [] >>= store typ v)
-    return $ (t1, p1)
+    return $ p1

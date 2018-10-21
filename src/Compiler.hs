@@ -322,13 +322,15 @@ compileExpr expression = case expression of
     EChar _ char -> return $ (tChar, show (ord char))
     EString _ str -> do
         let (txts, tags) = interpolateString (read str)
-        if length txts == 1 then initString (txts !! 0)
+        if length txts == 1 then do
+            p <- initString (txts !! 0)
+            return $ (tString, p)
         else do
-            (_, p1) <- initArray tString [] (replicate 2 (show (length txts * 2 - 1)))
+            p1 <- initArray tString [] (replicate 2 (show (length txts * 2 - 1)))
             p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
             forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
                 p3 <- gep (tPtr tString) p2 [show (2*i)] []
-                (_, p4) <- initString txt
+                p4 <- initString txt
                 store tString p4 p3
                 if tag == "" then skip
                 else do
@@ -338,13 +340,15 @@ compileExpr expression = case expression of
                             (t, v) <- compileExpr expr
                             compileMethod t (Ident "toString") [v]
                     store tString v p5
-            (_, p7) <- initString ""
+            p7 <- initString ""
             compileMethod (tArray tString) (Ident "join") [p1, p7]
     EArray _ exprs -> do
         rs <- mapM compileExpr exprs
-        case rs of
-            [] -> initArray tObject [] []
-            r:_ -> initArray (fst r) (map snd rs) []
+        t <- case rs of
+            [] -> return $ tObject
+            r:_ -> return $ fst r
+        p <- initArray t (map snd rs) []
+        return $ (tArray t, p)
     EVar _ _ -> compileRval expression
     EElem _ expr idx -> do
         (t, p) <- compileExpr expr
@@ -451,8 +455,7 @@ compileExpr expression = case expression of
             r:[] -> return $ r
             otherwise -> do
                 let t = tTuple (map fst rs)
-                p <- alloca (tDeref t)
-                mapM (compileTupleElem t p) (zipWith (\r i -> (fst r, snd r, i)) rs [0..])
+                p <- initTuple rs
                 return $ (t, p)
     where
         compileBinary op expr1 expr2 = do
@@ -491,7 +494,7 @@ compileExpr expression = case expression of
             v1 <- gep tString val1 ["0"] [1] >>= load tInt
             v2 <- gep tString val2 ["0"] [1] >>= load tInt
             v3 <- binop "add" tInt v1 v2
-            (_, p3) <- initArray tChar [] [v3, v3]
+            p3 <- initArray tChar [] [v3, v3]
             p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
             call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v1)]
             p5 <- gep (tPtr tChar) p4 [v1] []
@@ -502,7 +505,7 @@ compileExpr expression = case expression of
             p1 <- gep t val1 ["0"] [0] >>= load (tPtr typ)
             v1 <- gep t val1 ["0"] [1] >>= load tInt
             v2 <- binop "mul" tInt v1 val2
-            (_, p2) <- initArray typ [] [v2, v2]
+            p2 <- initArray typ [] [v2, v2]
             p3 <- gep t p2 ["0"] [0] >>= load (tPtr typ)
             p4 <- alloca tInt
             p5 <- alloca tInt
@@ -605,8 +608,6 @@ compileExpr expression = case expression of
                     l3 <- getLabel
                     goto exit >> label exit
                     phi ([("true", l) | l <- l1:preds] ++ [(v2, l3)])
-        compileTupleElem typ ptr (t, v, i) = do
-            gep typ ptr ["0"] [i] >>= store t v
 
 -- | Outputs LLVM code that evaluates a given expression as an r-value. Returns type and name of the result.
 compileRval :: Expr Pos -> Run Result

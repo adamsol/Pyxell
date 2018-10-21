@@ -1,0 +1,6 @@
+
+func f(Int*String*Bool t) Bool*Int*String def
+    print t
+    return not t.2, t.0 + 42, t.1 + "#$"
+
+print f((2, "!@", false))

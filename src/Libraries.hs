@@ -29,7 +29,7 @@ libBase = do
     define (tFunc [tArray tChar] tString) (Ident "str") $ do
         p1 <- gep tString "%0" ["0"] [0] >>= load (tPtr tChar)
         v <- gep tString "%0" ["0"] [1] >>= load tInt
-        (_, p2) <- initArray tChar [] [v]
+        p2 <- initArray tChar [] [v]
         p3 <- gep tString p2 ["0"] [0] >>= load (tPtr tChar)
         call (tPtr tChar) "@memcpy" [(tPtr tChar, p3), (tPtr tChar, p1), (tInt, v)]
         ret tString p2
