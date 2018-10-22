@@ -316,6 +316,7 @@ compileFunc id args rt block cont = do
 compileExpr :: Expr Pos -> Run Result
 compileExpr expression = case expression of
     EInt _ num -> return $ (tInt, show num)
+    EFloat _ num -> return $ (tFloat, show num)
     ETrue _ -> return $ (tBool, "true")
     EFalse _ -> return $ (tBool, "false")
     EChar _ char -> return $ (tChar, show (ord char))
@@ -399,11 +400,21 @@ compileExpr expression = case expression of
         v <- call rt f (M.elems m)
         return $ (rt, v)
     EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
-    EMinus _ expr -> compileBinary "sub" (EInt _pos 0) expr
-    EPlus _ expr -> compileExpr expr
+    EMinus _ expr -> do
+        (t, v1) <- compileExpr expr
+        v2 <- case t of
+            TInt _ -> binop "sub" t "0" v1
+            TFloat _ -> binop "fsub" t "0.0" v1
+        return $ (t, v2)
+    EPlus _ expr -> do
+        (t, v1) <- compileExpr expr
+        v2 <- case t of
+            TInt _ -> binop "add" t "0" v1
+            TFloat _ -> binop "fadd" t "0.0" v1
+        return $ (t, v2)
     EBNot _ expr -> compileBinary "xor" (EInt _pos (-1)) expr
     EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
-    EDiv _ expr1 expr2 -> compileBinary "sdiv" expr1 expr2
+    EDiv _ expr1 expr2 -> compileBinary "div" expr1 expr2
     EMod _ expr1 expr2 -> do
         (t, v1) <- compileExpr expr1
         (t, v2) <- compileExpr expr2
@@ -424,8 +435,9 @@ compileExpr expression = case expression of
     EBXor _ expr1 expr2 -> compileBinary "xor" expr1 expr2
     ECmp _ cmp -> case cmp of
         Cmp1 _ e1 op e2 -> do
-            (t, v1) <- compileExpr e1
-            (t, v2) <- compileExpr e2
+            (t1, v1) <- compileExpr e1
+            (t2, v2) <- compileExpr e2
+            let Just t = unifyTypes t1 t2
             v <- case op of
                 CmpEQ _ -> compileCmp "eq" t v1 v2
                 CmpNE _ -> compileCmp "ne" t v1 v2
@@ -490,8 +502,18 @@ compileExpr expression = case expression of
                     return $ (t2, p)
                 (_, _, "pow") -> do
                     compileMethod t1 (Ident "pow") [v1, v2]
-                otherwise -> do
+                (TInt _, TInt _, _) -> do
+                    op <- case op of
+                        "div" -> return $ "sdiv"
+                        "rem" -> return $ "srem"
+                        otherwise -> return $ op
                     v3 <- binop op t1 v1 v2
+                    return $ (t1, v3)
+                (TBool _, TBool _, _) -> do
+                    v3 <- binop op t1 v1 v2
+                    return $ (t1, v3)
+                (TFloat _, TFloat _, _) -> do
+                    v3 <- binop ("f" ++ op) t1 v1 v2
                     return $ (t1, v3)
             return $ (t, v)
         compileStringConcat val1 val2 = do
@@ -551,9 +573,12 @@ compileExpr expression = case expression of
                     lt <- nextLabel
                     lf <- nextLabel
                     compileTupleCmp op t v1 v2 0 lt lf
+                ("eq", TFloat _) -> binop ("fcmp o" ++ op) t v1 v2
                 ("eq", _) -> binop ("icmp " ++ op) t v1 v2
+                ("ne", TFloat _) -> binop ("fcmp o" ++ op) t v1 v2
                 ("ne", _) -> binop ("icmp " ++ op) t v1 v2
                 (_, TBool _) -> binop ("icmp u" ++ op) t v1 v2
+                (_, TFloat _) -> binop ("fcmp o" ++ op) t v1 v2
                 otherwise -> binop ("icmp s" ++ op) t v1 v2
         compileTupleCmp op typ val1 val2 idx lt lf = do
             t <- case typ of
@@ -653,6 +678,9 @@ compileAttr typ val (Ident attr) = case typ of
     TInt _ -> case attr of
         "toString" -> getIdent (Ident "Int_toString")
         "pow" -> getIdent (Ident "Int_pow")
+    TFloat _ -> case attr of
+        "toString" -> getIdent (Ident "Float_toString")
+        "pow" -> getIdent (Ident "Float_pow")
     TBool _ -> case attr of
         "toString" -> getIdent (Ident "Bool_toString")
     TChar _ -> case attr of
@@ -662,6 +690,7 @@ compileAttr typ val (Ident attr) = case typ of
         "length" -> getAttr (tArray tChar) val tInt 1
         "toString" -> getIdent (Ident "String_toString")
         "toInt" -> getIdent (Ident "String_toInt")
+        "toFloat" -> getIdent (Ident "String_toFloat")
         "compare" -> getIdent (Ident "String_compare")
     TArray _ t' -> case (t', attr) of
         (_, "length") -> getAttr typ val tInt 1

@@ -27,6 +27,7 @@ instance {-# OVERLAPS #-} Show Type where
     show typ = case reduceType typ of
         TVoid _ -> "Void"
         TInt _ -> "Int"
+        TFloat _ -> "Float"
         TBool _ -> "Bool"
         TChar _ -> "Char"
         TObject _ -> "Object"
@@ -42,12 +43,13 @@ instance {-# OVERLAPS #-} Show Type where
 find' a f = find f a
 foldM' b a f = foldM f b a
 
--- | Unification function. Returns a common supertype of given types.
+-- | Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
 unifyTypes t1 t2 = do
     case (t1, t2) of
         (TVoid _, TVoid _) -> Just tInt
         (TInt _, TInt _) -> Just tInt
+        (TFloat _, TFloat _) -> Just tFloat
         (TBool _, TBool _) -> Just tBool
         (TChar _, TChar _) -> Just tChar
         --(TObject _, _) -> tObject
@@ -84,6 +86,7 @@ tDeref = TDeref Nothing
 tLabel = TLabel Nothing
 tVoid = TVoid Nothing
 tInt = TInt Nothing
+tFloat = TFloat Nothing
 tBool = TBool Nothing
 tChar = TChar Nothing
 tObject = TObject Nothing
@@ -194,4 +197,3 @@ convertLambda pos expression = do
                 e' <- convertExpr e
                 c' <- convertCmp c
                 return $ Cmp2 pos e' op c'
-

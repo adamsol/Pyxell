@@ -190,6 +190,7 @@ instance Print (Expr a) where
   prt i e = case e of
     EStub _ -> prPrec i 13 (concatD [doc (showString "_")])
     EInt _ n -> prPrec i 13 (concatD [prt 0 n])
+    EFloat _ d -> prPrec i 13 (concatD [prt 0 d])
     ETrue _ -> prPrec i 13 (concatD [doc (showString "true")])
     EFalse _ -> prPrec i 13 (concatD [doc (showString "false")])
     EChar _ c -> prPrec i 13 (concatD [prt 0 c])
@@ -240,6 +241,7 @@ instance Print (Type a) where
     TLabel _ -> prPrec i 4 (concatD [doc (showString "Label")])
     TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
+    TFloat _ -> prPrec i 4 (concatD [doc (showString "Float")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])
     TObject _ -> prPrec i 4 (concatD [doc (showString "Object")])

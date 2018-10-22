@@ -73,6 +73,7 @@ transExpr :: Show a => Expr a -> Result
 transExpr x = case x of
   EStub _ -> failure x
   EInt _ integer -> failure x
+  EFloat _ double -> failure x
   ETrue _ -> failure x
   EFalse _ -> failure x
   EChar _ char -> failure x
@@ -115,6 +116,7 @@ transType x = case x of
   TLabel _ -> failure x
   TVoid _ -> failure x
   TInt _ -> failure x
+  TFloat _ -> failure x
   TBool _ -> failure x
   TChar _ -> failure x
   TObject _ -> failure x

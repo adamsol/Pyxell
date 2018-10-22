@@ -56,6 +56,7 @@ SBreak.            Stmt   ::= "break" ;
 
 EStub.             Expr13 ::= "_" ;
 EInt.              Expr13 ::= Integer ;
+EFloat.            Expr13 ::= Double ;
 ETrue.             Expr13 ::= "true" ;
 EFalse.            Expr13 ::= "false" ;
 EChar.             Expr13 ::= Char ;
@@ -126,6 +127,7 @@ internal TDeref.   Type4  ::= Type4 ;
 internal TLabel.   Type4  ::= "Label" ;
 TVoid.             Type4  ::= "Void" ;
 TInt.              Type4  ::= "Int" ;
+TFloat.            Type4  ::= "Float" ;
 TBool.             Type4  ::= "Bool" ;
 TChar.             Type4  ::= "Char" ;
 TObject.           Type4  ::= "Object" ;

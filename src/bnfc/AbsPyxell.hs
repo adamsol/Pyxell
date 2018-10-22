@@ -121,6 +121,7 @@ instance Functor CmpOp where
 data Expr a
     = EStub a
     | EInt a Integer
+    | EFloat a Double
     | ETrue a
     | EFalse a
     | EChar a Char
@@ -161,6 +162,7 @@ instance Functor Expr where
     fmap f x = case x of
         EStub a -> EStub (f a)
         EInt a integer -> EInt (f a) integer
+        EFloat a double -> EFloat (f a) double
         ETrue a -> ETrue (f a)
         EFalse a -> EFalse (f a)
         EChar a char -> EChar (f a) char
@@ -202,6 +204,7 @@ data Type a
     | TLabel a
     | TVoid a
     | TInt a
+    | TFloat a
     | TBool a
     | TChar a
     | TObject a
@@ -221,6 +224,7 @@ instance Functor Type where
         TLabel a -> TLabel (f a)
         TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
+        TFloat a -> TFloat (f a)
         TBool a -> TBool (f a)
         TChar a -> TChar (f a)
         TObject a -> TObject (f a)

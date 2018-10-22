@@ -83,45 +83,47 @@ import ErrM
   '?' { PT _ (TS _ 31) }
   'Bool' { PT _ (TS _ 32) }
   'Char' { PT _ (TS _ 33) }
-  'Int' { PT _ (TS _ 34) }
-  'Label' { PT _ (TS _ 35) }
-  'Object' { PT _ (TS _ 36) }
-  'String' { PT _ (TS _ 37) }
-  'Void' { PT _ (TS _ 38) }
-  '[' { PT _ (TS _ 39) }
-  ']' { PT _ (TS _ 40) }
-  '^' { PT _ (TS _ 41) }
-  '_' { PT _ (TS _ 42) }
-  'and' { PT _ (TS _ 43) }
-  'break' { PT _ (TS _ 44) }
-  'continue' { PT _ (TS _ 45) }
-  'def' { PT _ (TS _ 46) }
-  'do' { PT _ (TS _ 47) }
-  'elif' { PT _ (TS _ 48) }
-  'else' { PT _ (TS _ 49) }
-  'extern' { PT _ (TS _ 50) }
-  'false' { PT _ (TS _ 51) }
-  'for' { PT _ (TS _ 52) }
-  'func' { PT _ (TS _ 53) }
-  'if' { PT _ (TS _ 54) }
-  'in' { PT _ (TS _ 55) }
-  'lambda' { PT _ (TS _ 56) }
-  'not' { PT _ (TS _ 57) }
-  'or' { PT _ (TS _ 58) }
-  'print' { PT _ (TS _ 59) }
-  'return' { PT _ (TS _ 60) }
-  'skip' { PT _ (TS _ 61) }
-  'step' { PT _ (TS _ 62) }
-  'true' { PT _ (TS _ 63) }
-  'until' { PT _ (TS _ 64) }
-  'while' { PT _ (TS _ 65) }
-  '{' { PT _ (TS _ 66) }
-  '|' { PT _ (TS _ 67) }
-  '}' { PT _ (TS _ 68) }
-  '~' { PT _ (TS _ 69) }
+  'Float' { PT _ (TS _ 34) }
+  'Int' { PT _ (TS _ 35) }
+  'Label' { PT _ (TS _ 36) }
+  'Object' { PT _ (TS _ 37) }
+  'String' { PT _ (TS _ 38) }
+  'Void' { PT _ (TS _ 39) }
+  '[' { PT _ (TS _ 40) }
+  ']' { PT _ (TS _ 41) }
+  '^' { PT _ (TS _ 42) }
+  '_' { PT _ (TS _ 43) }
+  'and' { PT _ (TS _ 44) }
+  'break' { PT _ (TS _ 45) }
+  'continue' { PT _ (TS _ 46) }
+  'def' { PT _ (TS _ 47) }
+  'do' { PT _ (TS _ 48) }
+  'elif' { PT _ (TS _ 49) }
+  'else' { PT _ (TS _ 50) }
+  'extern' { PT _ (TS _ 51) }
+  'false' { PT _ (TS _ 52) }
+  'for' { PT _ (TS _ 53) }
+  'func' { PT _ (TS _ 54) }
+  'if' { PT _ (TS _ 55) }
+  'in' { PT _ (TS _ 56) }
+  'lambda' { PT _ (TS _ 57) }
+  'not' { PT _ (TS _ 58) }
+  'or' { PT _ (TS _ 59) }
+  'print' { PT _ (TS _ 60) }
+  'return' { PT _ (TS _ 61) }
+  'skip' { PT _ (TS _ 62) }
+  'step' { PT _ (TS _ 63) }
+  'true' { PT _ (TS _ 64) }
+  'until' { PT _ (TS _ 65) }
+  'while' { PT _ (TS _ 66) }
+  '{' { PT _ (TS _ 67) }
+  '|' { PT _ (TS _ 68) }
+  '}' { PT _ (TS _ 69) }
+  '~' { PT _ (TS _ 70) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
+  L_doubl {PT _ (TD _)}
   L_charac {PT _ (TC _)}
   L_quoted {PT _ (TL _)}
 
@@ -138,6 +140,13 @@ Integer :: {
   (Maybe (Int, Int), Integer)
 }
 : L_integ {
+  (Just (tokenLineCol $1), read (prToken $1)) 
+}
+
+Double :: {
+  (Maybe (Int, Int), Double)
+}
+: L_doubl {
   (Just (tokenLineCol $1), read (prToken $1)) 
 }
 
@@ -323,6 +332,9 @@ Expr13 :: {
 }
 | Integer {
   (fst $1, AbsPyxell.EInt (fst $1)(snd $1)) 
+}
+| Double {
+  (fst $1, AbsPyxell.EFloat (fst $1)(snd $1)) 
 }
 | 'true' {
   (Just (tokenLineCol $1), AbsPyxell.ETrue (Just (tokenLineCol $1)))
@@ -620,6 +632,9 @@ Type4 :: {
 }
 | 'Int' {
   (Just (tokenLineCol $1), AbsPyxell.TInt (Just (tokenLineCol $1)))
+}
+| 'Float' {
+  (Just (tokenLineCol $1), AbsPyxell.TFloat (Just (tokenLineCol $1)))
 }
 | 'Bool' {
   (Just (tokenLineCol $1), AbsPyxell.TBool (Just (tokenLineCol $1)))

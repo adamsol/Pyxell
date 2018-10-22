@@ -71,6 +71,7 @@ strType typ = case reduceType typ of
     TDeref _ t -> init (strType t)
     TVoid _ -> "void"
     TInt _ -> "i64"
+    TFloat _ -> "double"
     TBool _ -> "i1"
     TChar _ -> "i8"
     TObject _ -> "i8*"
@@ -88,6 +89,7 @@ defaultValue :: Type -> Value
 defaultValue typ = case typ of
     TVoid _ -> ""
     TInt _ -> "42"
+    TFloat _ -> "6.0"
     TBool _ -> "true"
     TChar _ -> show (ord '$')
     otherwise -> "null"

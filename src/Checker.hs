@@ -343,6 +343,7 @@ checkExpr :: Expr Pos -> Run (Type, Bool)
 checkExpr expression = case expression of
     EStub pos -> throw pos $ UnknownType
     EInt pos _ -> return $ (tInt, False)
+    EFloat pos _ -> return $ (tFloat, False)
     ETrue pos -> return $ (tBool, False)
     EFalse pos -> return $ (tBool, False)
     EChar pos _ -> return $ (tChar, False)
@@ -386,6 +387,8 @@ checkExpr expression = case expression of
         Just t2 <- case t1 of
             TInt _ -> case attr of
                 "toString" -> getIdent _pos (Ident "Int_toString")
+            TFloat _ -> case attr of
+                "toString" -> getIdent _pos (Ident "Float_toString")
             TBool _ -> case attr of
                 "toString" -> getIdent _pos (Ident "Bool_toString")
             TChar _ -> case attr of
@@ -394,6 +397,7 @@ checkExpr expression = case expression of
                 "length" -> return $ Just tInt
                 "toString" -> getIdent _pos (Ident "String_toString")
                 "toInt" -> getIdent _pos (Ident "String_toInt")
+                "toFloat" -> getIdent _pos (Ident "String_toFloat")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TArray _ t' -> case (t', attr) of
                 (_, "length") -> return $ Just tInt
@@ -513,55 +517,45 @@ checkExpr expression = case expression of
             (t1, _) <- checkExpr expr1
             (t2, _) <- checkExpr expr2
             case op of
-                "**" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoBinaryOperator "**" t1 t2
                 "*" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
-                    (TString _, TInt _) -> return $ (t1, False)
-                    (TInt _, TString _) -> return $ (t2, False)
+                    (TFloat _, TFloat _) -> return $ (tFloat, False)
+                    (TString _, TInt _) -> return $ (tString, False)
+                    (TInt _, TString _) -> return $ (tString, False)
                     (TArray _ _, TInt _) -> return $ (t1, False)
                     (TInt _, TArray _ _) -> return $ (t2, False)
                     otherwise -> throw pos $ NoBinaryOperator "*" t1 t2
-                "/" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoBinaryOperator "/" t1 t2
-                "%" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoBinaryOperator "%" t1 t2
                 "+" -> case (t1, t2) of
                     (TInt _, TInt _) -> return $ (tInt, False)
+                    (TFloat _, TFloat _) -> return $ (tFloat, False)
                     (TString _, TString _) -> return $ (tString, False)
                     (TString _, TChar _) -> return $ (tString, False)
                     (TChar _, TString _) -> return $ (tString, False)
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
-                "-" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoBinaryOperator "-" t1 t2
-                "and" -> case (t1, t2) of
-                    (TBool _, TBool _) -> return $ (tBool, False)
-                    otherwise -> throw pos $ NoBinaryOperator "and" t1 t2
-                "or" -> case (t1, t2) of
-                    (TBool _, TBool _) -> return $ (tBool, False)
-                    otherwise -> throw pos $ NoBinaryOperator "or" t1 t2
-                otherwise -> case (t1, t2) of  -- bitwise operators
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoBinaryOperator op t1 t2
+                otherwise -> do
+                    if op == "and" || op == "or" then case (t1, t2) of
+                        (TBool _, TBool _) -> return $ (tBool, False)
+                        otherwise -> throw pos $ NoBinaryOperator op t1 t2
+                    else if op == "**" || op == "/" || op == "-" then case (t1, t2) of
+                        (TInt _, TInt _) -> return $ (tInt, False)
+                        (TFloat _, TFloat _) -> return $ (tFloat, False)
+                        otherwise -> throw pos $ NoBinaryOperator op t1 t2
+                    else case (t1, t2) of  -- modulo and bitwise operators
+                        (TInt _, TInt _) -> return $ (tInt, False)
+                        otherwise -> throw pos $ NoBinaryOperator op t1 t2
         checkUnary pos op expr = do
             (t, _) <- checkExpr expr
             case op of
-                "-" -> case t of
-                    TInt _ -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoUnaryOperator "-" t
-                "+" -> case t of
-                    TInt _ -> return $ (tInt, False)
-                    otherwise -> throw pos $ NoUnaryOperator "+" t
                 "~" -> case t of
                     TInt _ -> return $ (tInt, False)
                     otherwise -> throw pos $ NoUnaryOperator "~" t
                 "not" -> case t of
                     TBool _ -> return $ (tBool, False)
                     otherwise -> throw pos $ NoUnaryOperator "not" t
+                otherwise -> case t of  -- unary minus/plus
+                    TInt _ -> return $ (tInt, False)
+                    TFloat _ -> return $ (tFloat, False)
+                    otherwise -> throw pos $ NoUnaryOperator op t
         checkCmp pos op typ1 typ2 = do
             case unifyTypes typ1 typ2 of
                 Just t -> case t of

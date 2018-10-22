@@ -14,28 +14,24 @@ func readChar() Char extern
 
 
 func min(Int a, Int b) Int def
-    if a < b do
-        return a
-    else do
-        return b
+    return a < b ? a : b
 
 func max(Int a, Int b) Int def
-    if b < a do
-        return a
-    else do
-        return b
+    return b < a ? a : b
 
 
-func Int_pow(Int b, Int p) Int def
-    if p < 0 do
+func Int_pow(Int b, Int e) Int def
+    if e < 0 do
         return 0
     r = 1
-    while p > 0 do
-        if p % 2 > 0 do
+    while e > 0 do
+        if e % 2 > 0 do
             r *= b
         b *= b
-        p /= 2
+        e /= 2
     return r
+
+func Float_pow(Float b, Float e) Float extern
 
 
 func CharArray_join([Char] array, String sep: "") String def
@@ -73,11 +69,10 @@ func StringArray_join([String] array, String sep: "") String def
 
 func Int_toString(Int n) String extern
 
+func Float_toString(Float f) String extern
+
 func Bool_toString(Bool b) String def
-    if b do
-        return "true"
-    else do
-        return "false"
+    return b ? "true" : "false"
 
 func Char_toString(Char c) String def
     return str([c])
@@ -87,6 +82,8 @@ func String_toString(String s) String def
 
 
 func String_toInt(String s) Int extern
+
+func String_toFloat(String s) Float extern
 
 func String_compare(String a, String b) Int def
     for i in 0...min(a.length, b.length) do
