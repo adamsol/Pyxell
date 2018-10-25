@@ -1,0 +1,7 @@
+
+a, x = readLine(), read()
+y, z, b = read(), readLine(), read()
+writeLine(z)
+print x
+write("\n" + b + "__" + a)
+print y

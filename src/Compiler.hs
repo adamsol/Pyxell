@@ -28,7 +28,6 @@ initCompiler = do
     declare (tFunc [tInt] (tPtr tChar)) "@malloc"
     declare (tFunc [tPtr tChar, tPtr tChar, tInt] (tPtr tChar)) "@memcpy"
     declare (tFunc [tChar] (tInt)) "@putchar"
-    declare (tFunc [tPtr tChar, tInt, tPtr tChar] (tInt)) "@printf"
     ask
 
 -- | Outputs LLVM code for all statements in the program.
@@ -59,7 +58,7 @@ compileStmt statement cont = case statement of
     SFuncExtern _ id args rt -> do
         compileFunc id args rt Nothing (\_ -> cont)
     SRetVoid _ -> do
-        ret tVoid ""
+        retVoid
         cont
     SRetExpr _ expr -> do
         (t, v) <- compileExpr expr

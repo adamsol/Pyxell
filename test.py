@@ -33,6 +33,7 @@ for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
         continue
     i += 1
     print(f"{B}> TEST {i}:{E} {path}")
+
     with open('tmp.out', 'w') as outfile:
         try:
             params = '-target x86_64-pc-windows-gnu' if args.target_windows_gnu else ''
@@ -47,7 +48,13 @@ for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
             if args.expect_errors:
                 print(f"{R}Compiler returned code 0, but error expected!{E}")
                 continue
-        subprocess.call(f'{path.replace(".px", ".exe")}', stdout=outfile)
+
+        try:
+            with open(f'{path.replace(".px", ".in")}', 'r') as infile:
+                subprocess.call(f'{path.replace(".px", ".exe")}', stdin=infile, stdout=outfile)
+        except FileNotFoundError:
+            subprocess.call(f'{path.replace(".px", ".exe")}', stdout=outfile)
+
         try:
             subprocess.check_output(f'diff --strip-trailing-cr tmp.out {path.replace(".px", ".out")}', stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:

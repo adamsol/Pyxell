@@ -294,6 +294,11 @@ ret :: Type -> Value -> Run ()
 ret typ val = do
     write $ indent [ "ret " ++ strType typ ++ " " ++ val ]
 
+-- | Outputs LLVM 'ret void' instruction.
+retVoid :: Run ()
+retVoid = do
+    ret tVoid ""
+
 
 -- | Outputs LLVM code to allocate memory for objects of a given type.
 initMemory :: Type -> Value -> Run Value

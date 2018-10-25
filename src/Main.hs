@@ -68,5 +68,5 @@ main = do
             -- Compile all units to one LLVM file.
             outputCode (reverse units) (file ++ ".ll") True
             -- Generate executable file.
-            readProcess "clang" ([file ++ ".ll", "lib/base.ll", "-o", file ++ ".exe", "-O2"] ++ clangArgs) ""
+            readProcess "clang" ([file ++ ".ll", "lib/io.ll", "lib/base.ll", "-o", file ++ ".exe", "-O2"] ++ clangArgs) ""
             return $ ()
