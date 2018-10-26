@@ -456,12 +456,13 @@ checkExpr expression = case expression of
                 return $ (ret, False)
             otherwise -> throw pos $ NotFunction t
     EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
+    EMinus pos expr -> checkUnary pos "-" expr
+    EPlus pos expr -> checkUnary pos "+" expr
     EMul pos expr1 expr2 -> checkBinary pos "*" expr1 expr2
     EDiv pos expr1 expr2 -> checkBinary pos "/" expr1 expr2
     EMod pos expr1 expr2 -> checkBinary pos "%" expr1 expr2
     EAdd pos expr1 expr2 -> checkBinary pos "+" expr1 expr2
     ESub pos expr1 expr2 -> checkBinary pos "-" expr1 expr2
-    ENeg pos expr -> checkUnary pos "-" expr
     ERangeIncl pos _ _ -> throw pos $ UnknownType
     ERangeExcl pos _ _ -> throw pos $ UnknownType
     ECmp pos cmp -> case cmp of
@@ -543,6 +544,9 @@ checkExpr expression = case expression of
                 "-" -> case t of
                     TInt _ -> return $ (tInt, False)
                     otherwise -> throw pos $ NoUnaryOperator "-" t
+                "+" -> case t of
+                    TInt _ -> return $ (tInt, False)
+                    otherwise -> throw pos $ NoUnaryOperator "+" t
                 "not" -> case t of
                     TBool _ -> return $ (tBool, False)
                     otherwise -> throw pos $ NoUnaryOperator "not" t

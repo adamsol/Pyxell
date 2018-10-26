@@ -50,8 +50,8 @@ The symbols used in Pyxell are the following:
   | , | { | } | =
   | *= | /= | %= | +=
   | -= | _ | [ | ]
-  | . | ** | * | /
-  | % | + | - | ..
+  | . | ** | - | +
+  | * | / | % | ..
   | ... | == | != | <
   | <= | > | >= | ?
   | -> |  |  | 
@@ -124,6 +124,8 @@ All other symbols are terminals.
   |  |  **|**  | //ArgC// 
   |  |  **|**  | //ArgC// ``,`` //[ArgC]// 
   | //Expr9// | -> | //Expr10// ``**`` //Expr9// 
+  |  |  **|**  | ``-`` //Expr9// 
+  |  |  **|**  | ``+`` //Expr9// 
   |  |  **|**  | //Expr10// 
   | //Expr8// | -> | //Expr8// ``*`` //Expr9// 
   |  |  **|**  | //Expr8// ``/`` //Expr9// 
@@ -131,7 +133,6 @@ All other symbols are terminals.
   |  |  **|**  | //Expr9// 
   | //Expr7// | -> | //Expr7// ``+`` //Expr8// 
   |  |  **|**  | //Expr7// ``-`` //Expr8// 
-  |  |  **|**  | ``-`` //Expr8// 
   |  |  **|**  | //Expr8// 
   | //Expr6// | -> | //Expr7// ``..`` //Expr7// 
   |  |  **|**  | //Expr7// ``...`` //Expr7// 

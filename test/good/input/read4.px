@@ -2,4 +2,4 @@
 print readInt() * 5, chr(ord(readChar()) + 1), readInt() / 10
 
 x, s, y = readInt() % 17, read() + "-", 42 - readInt()
-print x, '-' + s, 2 ** (-y)
+print x, '-' + s, 2 ** -y

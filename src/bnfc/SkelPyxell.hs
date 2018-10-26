@@ -84,12 +84,13 @@ transExpr x = case x of
   EAttr _ expr ident -> failure x
   ECall _ expr argcs -> failure x
   EPow _ expr1 expr2 -> failure x
+  EMinus _ expr -> failure x
+  EPlus _ expr -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
   EMod _ expr1 expr2 -> failure x
   EAdd _ expr1 expr2 -> failure x
   ESub _ expr1 expr2 -> failure x
-  ENeg _ expr -> failure x
   ERangeIncl _ expr1 expr2 -> failure x
   ERangeExcl _ expr1 expr2 -> failure x
   ERangeInf _ expr -> failure x

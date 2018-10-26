@@ -378,6 +378,12 @@ Expr9 :: {
 : Expr10 '**' Expr9 {
   (fst $1, AbsPyxell.EPow (fst $1)(snd $1)(snd $3)) 
 }
+| '-' Expr9 {
+  (Just (tokenLineCol $1), AbsPyxell.EMinus (Just (tokenLineCol $1)) (snd $2)) 
+}
+| '+' Expr9 {
+  (Just (tokenLineCol $1), AbsPyxell.EPlus (Just (tokenLineCol $1)) (snd $2)) 
+}
 | Expr10 {
   (fst $1, snd $1)
 }
@@ -406,9 +412,6 @@ Expr7 :: {
 }
 | Expr7 '-' Expr8 {
   (fst $1, AbsPyxell.ESub (fst $1)(snd $1)(snd $3)) 
-}
-| '-' Expr8 {
-  (Just (tokenLineCol $1), AbsPyxell.ENeg (Just (tokenLineCol $1)) (snd $2)) 
 }
 | Expr8 {
   (fst $1, snd $1)

@@ -72,12 +72,13 @@ ANamed.            ArgC   ::= Ident "=" Expr2 ;
 separator          ArgC       "," ;
 
 EPow.              Expr9  ::= Expr10 "**" Expr9 ;
+EMinus.            Expr9  ::= "-" Expr9;
+EPlus.             Expr9  ::= "+" Expr9;
 EMul.              Expr8  ::= Expr8 "*" Expr9 ;
 EDiv.              Expr8  ::= Expr8 "/" Expr9 ;
 EMod.              Expr8  ::= Expr8 "%" Expr9 ;
 EAdd.              Expr7  ::= Expr7 "+" Expr8 ;
 ESub.              Expr7  ::= Expr7 "-" Expr8 ;
-ENeg.              Expr7  ::= "-" Expr8;
 
 ERangeIncl.        Expr6  ::= Expr7 ".." Expr7 ;
 ERangeExcl.        Expr6  ::= Expr7 "..." Expr7 ;

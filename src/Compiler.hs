@@ -399,6 +399,8 @@ compileExpr expression = case expression of
         v <- call rt f (M.elems m)
         return $ (rt, v)
     EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
+    EMinus _ expr -> compileBinary "sub" (EInt _pos 0) expr
+    EPlus _ expr -> compileExpr expr
     EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
     EDiv _ expr1 expr2 -> compileBinary "sdiv" expr1 expr2
     EMod _ expr1 expr2 -> do
@@ -414,7 +416,6 @@ compileExpr expression = case expression of
         return $ (t, v9)
     EAdd _ expr1 expr2 -> compileBinary "add" expr1 expr2
     ESub _ expr1 expr2 -> compileBinary "sub" expr1 expr2
-    ENeg _ expr -> compileBinary "sub" (EInt _pos 0) expr
     ECmp _ cmp -> case cmp of
         Cmp1 _ e1 op e2 -> do
             (t, v1) <- compileExpr e1
