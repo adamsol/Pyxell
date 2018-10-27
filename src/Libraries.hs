@@ -22,7 +22,11 @@ libBase = do
         "",
         "declare i64 @printf(i8*, ...)",
         "declare i64 @scanf(i8*, ...)",
+        "declare i64 @sprintf(i8*, i8*, ...)",
+        "declare i64 @sscanf(i8*, i8*, ...)",
         "declare i64 @strlen(i8*)",
+        "declare i8* @strncpy(i8*, i8*, i64)",
+        "declare void @free(i8*)",
         "" ]
 
     -- Char <-> Int (ASCII)
@@ -71,16 +75,37 @@ libBase = do
     define (tFunc [] tInt) (Ident "readInt") $ do
         p <- alloca tInt
         format "d" 5 >>= scanf tInt p
-        v <- load tInt p
-        ret tInt v
+        load tInt p >>= ret tInt
     define (tFunc [] tChar) (Ident "readChar") $ do
         p <- alloca tChar
         format "c" 3 >>= scanf tChar p
-        v <- load tChar p
-        ret tChar v
+        load tChar p >>= ret tChar
+
+    -- Conversions to/from string
+    define (tFunc [tInt] tString) (Ident "Int_toString") $ do
+        p1 <- initArray tChar [] ["21"]
+        p2 <- gep tString p1 ["0"] [0] >>= load (tPtr tChar)
+        format "d" 5 >>= sprintf tInt p2
+        v <- call tInt "@strlen" [(tPtr tChar, p2)]
+        gep tString p1 ["0"] [1] >>= store tInt v
+        ret tString p1
+    define (tFunc [tString] tInt) (Ident "String_toInt") $ do
+        p1 <- alloca tInt
+        p2 <- gep tString "%0" ["0"] [0] >>= load (tPtr tChar)
+        -- sscanf needs a null-terminated string, so we have to copy it and append \0
+        v1 <- gep tString "%0" ["0"] [1] >>= load tInt
+        v2 <- binop "add" tInt v1 "1"
+        p3 <- call (tPtr tChar) "@malloc" [(tInt, v2)]
+        call (tPtr tChar) "@strncpy" [(tPtr tChar, p3), (tPtr tChar, p2), (tInt, v1)]
+        gep (tPtr tChar) p3 [v1] [] >>= store tChar "0"
+        format "d" 5 >>= sscanf tInt p1 p3
+        callVoid "@free" [(tPtr tChar, p3)]
+        load tInt p1 >>= ret tInt
 
     ask
 
     where
         format f n = gep (tPtr (tArr n tChar)) ("@format." ++ f) [] [0, 0]
-        scanf t p f = call tInt "(i8*, ...) @scanf" [(tPtr tChar, f), (tPtr t, p)]
+        scanf t s f = call tInt "(i8*, ...) @scanf" [(tPtr tChar, f), (tPtr t, s)]
+        sprintf t s f = call tInt "(i8*, i8*, ...) @sprintf" [(tPtr tChar, s), (tPtr tChar, f), (t, "%0")]
+        sscanf t p s f = call tInt "(i8*, i8*, ...) @sscanf" [(tPtr tChar, s), (tPtr tChar, f), (tPtr t, p)]

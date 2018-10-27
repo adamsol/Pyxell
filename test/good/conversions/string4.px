@@ -6,4 +6,5 @@ b = ((-387).toString()+"9736"*2).toInt()
 print a + b
 
 print "-000000".toInt() == 0
+print (2**63).toString().toInt() - 2**63
 

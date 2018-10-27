@@ -71,26 +71,7 @@ func StringArray_join([String] array, String sep: "") String def
     return str(r)
 
 
-func Int_toString(Int n) String def
-    if n == 0 do
-        return "0"
-    neg = false
-    if n < 0 do
-        neg = true
-        n = -n
-    r = [' '] * 22
-    p = 0
-    while n != 0 do
-        r[p] = chr(n % 10 + 48)
-        n /= 10
-        p += 1
-    if neg do
-        r[p] = '-'
-        p += 1
-    r' = [' '] * p
-    for i in 0...p do
-        r'[i] = r[p-1-i]
-    return str(r')
+func Int_toString(Int n) String extern
 
 func Bool_toString(Bool b) String def
     if b do
@@ -105,14 +86,7 @@ func String_toString(String s) String def
     return s
 
 
-func String_toInt(String s) Int def
-    n = 0
-    for c in s do
-        if '0' <= c <= '9' do
-            n = n*10 + ord(c)-48
-    if s[0] == '-' do
-        n = -n
-    return n
+func String_toInt(String s) Int extern
 
 func String_compare(String a, String b) Int def
     for i in 0...min(a.length, b.length) do
