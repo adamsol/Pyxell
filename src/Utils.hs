@@ -146,11 +146,17 @@ convertLambda pos expression = do
             EPow pos e1 e2 -> convertBinary (EPow pos) e1 e2
             EMinus pos e -> convertUnary (EMinus pos) e
             EPlus pos e -> convertUnary (EPlus pos) e
+            EBNot pos e -> convertUnary (EBNot pos) e
             EMul pos e1 e2 -> convertBinary (EMul pos) e1 e2
             EDiv pos e1 e2 -> convertBinary (EDiv pos) e1 e2
             EMod pos e1 e2 -> convertBinary (EMod pos) e1 e2
             EAdd pos e1 e2 -> convertBinary (EAdd pos) e1 e2
             ESub pos e1 e2 -> convertBinary (ESub pos) e1 e2
+            EBShl pos e1 e2 -> convertBinary (EBShl pos) e1 e2
+            EBShr pos e1 e2 -> convertBinary (EBShr pos) e1 e2
+            EBAnd pos e1 e2 -> convertBinary (EBAnd pos) e1 e2
+            EBOr pos e1 e2 -> convertBinary (EBOr pos) e1 e2
+            EBXor pos e1 e2 -> convertBinary (EBXor pos) e1 e2
             ECmp pos cmp -> do
                 cmp <- convertCmp cmp
                 return $ ECmp pos cmp

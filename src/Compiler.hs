@@ -401,6 +401,7 @@ compileExpr expression = case expression of
     EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
     EMinus _ expr -> compileBinary "sub" (EInt _pos 0) expr
     EPlus _ expr -> compileExpr expr
+    EBNot _ expr -> compileBinary "xor" (EInt _pos (-1)) expr
     EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
     EDiv _ expr1 expr2 -> compileBinary "sdiv" expr1 expr2
     EMod _ expr1 expr2 -> do
@@ -416,6 +417,11 @@ compileExpr expression = case expression of
         return $ (t, v9)
     EAdd _ expr1 expr2 -> compileBinary "add" expr1 expr2
     ESub _ expr1 expr2 -> compileBinary "sub" expr1 expr2
+    EBShl _ expr1 expr2 -> compileBinary "shl" expr1 expr2
+    EBShr _ expr1 expr2 -> compileBinary "ashr" expr1 expr2
+    EBAnd _ expr1 expr2 -> compileBinary "and" expr1 expr2
+    EBOr _ expr1 expr2 -> compileBinary "or" expr1 expr2
+    EBXor _ expr1 expr2 -> compileBinary "xor" expr1 expr2
     ECmp _ cmp -> case cmp of
         Cmp1 _ e1 op e2 -> do
             (t, v1) <- compileExpr e1

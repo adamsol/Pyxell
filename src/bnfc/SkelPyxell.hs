@@ -86,11 +86,17 @@ transExpr x = case x of
   EPow _ expr1 expr2 -> failure x
   EMinus _ expr -> failure x
   EPlus _ expr -> failure x
+  EBNot _ expr -> failure x
   EMul _ expr1 expr2 -> failure x
   EDiv _ expr1 expr2 -> failure x
   EMod _ expr1 expr2 -> failure x
   EAdd _ expr1 expr2 -> failure x
   ESub _ expr1 expr2 -> failure x
+  EBShl _ expr1 expr2 -> failure x
+  EBShr _ expr1 expr2 -> failure x
+  EBAnd _ expr1 expr2 -> failure x
+  EBOr _ expr1 expr2 -> failure x
+  EBXor _ expr1 expr2 -> failure x
   ERangeIncl _ expr1 expr2 -> failure x
   ERangeExcl _ expr1 expr2 -> failure x
   ERangeInf _ expr -> failure x

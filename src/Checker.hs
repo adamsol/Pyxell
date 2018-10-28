@@ -458,11 +458,17 @@ checkExpr expression = case expression of
     EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
     EMinus pos expr -> checkUnary pos "-" expr
     EPlus pos expr -> checkUnary pos "+" expr
+    EBNot pos expr -> checkUnary pos "~" expr
     EMul pos expr1 expr2 -> checkBinary pos "*" expr1 expr2
     EDiv pos expr1 expr2 -> checkBinary pos "/" expr1 expr2
     EMod pos expr1 expr2 -> checkBinary pos "%" expr1 expr2
     EAdd pos expr1 expr2 -> checkBinary pos "+" expr1 expr2
     ESub pos expr1 expr2 -> checkBinary pos "-" expr1 expr2
+    EBShl pos expr1 expr2 -> checkBinary pos "<<" expr1 expr2
+    EBShr pos expr1 expr2 -> checkBinary pos ">>" expr1 expr2
+    EBAnd pos expr1 expr2 -> checkBinary pos "&" expr1 expr2
+    EBOr pos expr1 expr2 -> checkBinary pos "|" expr1 expr2
+    EBXor pos expr1 expr2 -> checkBinary pos "^" expr1 expr2
     ERangeIncl pos _ _ -> throw pos $ UnknownType
     ERangeExcl pos _ _ -> throw pos $ UnknownType
     ECmp pos cmp -> case cmp of
@@ -538,6 +544,9 @@ checkExpr expression = case expression of
                 "or" -> case (t1, t2) of
                     (TBool _, TBool _) -> return $ (tBool, False)
                     otherwise -> throw pos $ NoBinaryOperator "or" t1 t2
+                otherwise -> case (t1, t2) of  -- bitwise operators
+                    (TInt _, TInt _) -> return $ (tInt, False)
+                    otherwise -> throw pos $ NoBinaryOperator op t1 t2
         checkUnary pos op expr = do
             (t, _) <- checkExpr expr
             case op of
@@ -547,6 +556,9 @@ checkExpr expression = case expression of
                 "+" -> case t of
                     TInt _ -> return $ (tInt, False)
                     otherwise -> throw pos $ NoUnaryOperator "+" t
+                "~" -> case t of
+                    TInt _ -> return $ (tInt, False)
+                    otherwise -> throw pos $ NoUnaryOperator "~" t
                 "not" -> case t of
                     TBool _ -> return $ (tBool, False)
                     otherwise -> throw pos $ NoUnaryOperator "not" t

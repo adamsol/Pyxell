@@ -54,31 +54,37 @@ SBreak.            Stmt   ::= "break" ;
 
 -- expressions --
 
-EStub.             Expr10 ::= "_" ;
-EInt.              Expr10 ::= Integer ;
-ETrue.             Expr10 ::= "true" ;
-EFalse.            Expr10 ::= "false" ;
-EChar.             Expr10 ::= Char ;
-EString.           Expr10 ::= String ;
-EArray.            Expr10 ::= "[" [Expr2] "]" ;
+EStub.             Expr13 ::= "_" ;
+EInt.              Expr13 ::= Integer ;
+ETrue.             Expr13 ::= "true" ;
+EFalse.            Expr13 ::= "false" ;
+EChar.             Expr13 ::= Char ;
+EString.           Expr13 ::= String ;
+EArray.            Expr13 ::= "[" [Expr2] "]" ;
 
-EVar.              Expr10 ::= Ident ;
-EElem.             Expr10 ::= Expr10 "." Integer ;
-EIndex.            Expr10 ::= Expr10 "[" Expr "]" ;
-EAttr.             Expr10 ::= Expr10 "." Ident ;
-ECall.             Expr10 ::= Expr10 "(" [ArgC] ")";
+EVar.              Expr13 ::= Ident ;
+EElem.             Expr13 ::= Expr13 "." Integer ;
+EIndex.            Expr13 ::= Expr13 "[" Expr "]" ;
+EAttr.             Expr13 ::= Expr13 "." Ident ;
+ECall.             Expr13 ::= Expr13 "(" [ArgC] ")";
 APos.              ArgC   ::= Expr2 ;
 ANamed.            ArgC   ::= Ident "=" Expr2 ;
 separator          ArgC       "," ;
 
-EPow.              Expr9  ::= Expr10 "**" Expr9 ;
-EMinus.            Expr9  ::= "-" Expr9;
-EPlus.             Expr9  ::= "+" Expr9;
-EMul.              Expr8  ::= Expr8 "*" Expr9 ;
-EDiv.              Expr8  ::= Expr8 "/" Expr9 ;
-EMod.              Expr8  ::= Expr8 "%" Expr9 ;
-EAdd.              Expr7  ::= Expr7 "+" Expr8 ;
-ESub.              Expr7  ::= Expr7 "-" Expr8 ;
+EPow.              Expr12  ::= Expr13 "**" Expr12 ;
+EMinus.            Expr12  ::= "-" Expr12;
+EPlus.             Expr12  ::= "+" Expr12;
+EBNot.             Expr12  ::= "~" Expr12;
+EMul.              Expr11  ::= Expr11 "*" Expr12 ;
+EDiv.              Expr11  ::= Expr11 "/" Expr12 ;
+EMod.              Expr11  ::= Expr11 "%" Expr12 ;
+EAdd.              Expr10  ::= Expr10 "+" Expr11 ;
+ESub.              Expr10  ::= Expr10 "-" Expr11 ;
+EBShl.             Expr9  ::= Expr9 "<<" Expr10 ;
+EBShr.             Expr9  ::= Expr9 ">>" Expr10 ;
+EBAnd.             Expr8  ::= Expr8 "&" Expr9 ;
+EBOr.              Expr7  ::= Expr7 "|" Expr8 ;
+EBXor.             Expr7  ::= Expr7 "^" Expr8 ;
 
 ERangeIncl.        Expr6  ::= Expr7 ".." Expr7 ;
 ERangeExcl.        Expr6  ::= Expr7 "..." Expr7 ;
@@ -109,7 +115,7 @@ ELambda.           Expr2  ::= "lambda" [Ident] "->" Expr2 ;
 
 separator          Ident      "," ;
 
-coercions          Expr       10 ;
+coercions          Expr       13 ;
 
 
 -- types --

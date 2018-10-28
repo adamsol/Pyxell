@@ -21,9 +21,12 @@ import ErrM
 %name pBranch_internal Branch
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
-%name pExpr10_internal Expr10
+%name pExpr13_internal Expr13
 %name pArgC_internal ArgC
 %name pListArgC_internal ListArgC
+%name pExpr12_internal Expr12
+%name pExpr11_internal Expr11
+%name pExpr10_internal Expr10
 %name pExpr9_internal Expr9
 %name pExpr8_internal Expr8
 %name pExpr7_internal Expr7
@@ -50,66 +53,72 @@ import ErrM
   '!=' { PT _ (TS _ 1) }
   '%' { PT _ (TS _ 2) }
   '%=' { PT _ (TS _ 3) }
-  '(' { PT _ (TS _ 4) }
-  ')' { PT _ (TS _ 5) }
-  '*' { PT _ (TS _ 6) }
-  '**' { PT _ (TS _ 7) }
-  '*=' { PT _ (TS _ 8) }
-  '+' { PT _ (TS _ 9) }
-  '+=' { PT _ (TS _ 10) }
-  ',' { PT _ (TS _ 11) }
-  '-' { PT _ (TS _ 12) }
-  '-=' { PT _ (TS _ 13) }
-  '->' { PT _ (TS _ 14) }
-  '.' { PT _ (TS _ 15) }
-  '..' { PT _ (TS _ 16) }
-  '...' { PT _ (TS _ 17) }
-  '/' { PT _ (TS _ 18) }
-  '/=' { PT _ (TS _ 19) }
-  ':' { PT _ (TS _ 20) }
-  ';' { PT _ (TS _ 21) }
-  '<' { PT _ (TS _ 22) }
-  '<=' { PT _ (TS _ 23) }
-  '=' { PT _ (TS _ 24) }
-  '==' { PT _ (TS _ 25) }
-  '>' { PT _ (TS _ 26) }
-  '>=' { PT _ (TS _ 27) }
-  '?' { PT _ (TS _ 28) }
-  'Bool' { PT _ (TS _ 29) }
-  'Char' { PT _ (TS _ 30) }
-  'Int' { PT _ (TS _ 31) }
-  'Label' { PT _ (TS _ 32) }
-  'Object' { PT _ (TS _ 33) }
-  'String' { PT _ (TS _ 34) }
-  'Void' { PT _ (TS _ 35) }
-  '[' { PT _ (TS _ 36) }
-  ']' { PT _ (TS _ 37) }
-  '_' { PT _ (TS _ 38) }
-  'and' { PT _ (TS _ 39) }
-  'break' { PT _ (TS _ 40) }
-  'continue' { PT _ (TS _ 41) }
-  'def' { PT _ (TS _ 42) }
-  'do' { PT _ (TS _ 43) }
-  'elif' { PT _ (TS _ 44) }
-  'else' { PT _ (TS _ 45) }
-  'extern' { PT _ (TS _ 46) }
-  'false' { PT _ (TS _ 47) }
-  'for' { PT _ (TS _ 48) }
-  'func' { PT _ (TS _ 49) }
-  'if' { PT _ (TS _ 50) }
-  'in' { PT _ (TS _ 51) }
-  'lambda' { PT _ (TS _ 52) }
-  'not' { PT _ (TS _ 53) }
-  'or' { PT _ (TS _ 54) }
-  'print' { PT _ (TS _ 55) }
-  'return' { PT _ (TS _ 56) }
-  'skip' { PT _ (TS _ 57) }
-  'step' { PT _ (TS _ 58) }
-  'true' { PT _ (TS _ 59) }
-  'until' { PT _ (TS _ 60) }
-  'while' { PT _ (TS _ 61) }
-  '{' { PT _ (TS _ 62) }
-  '}' { PT _ (TS _ 63) }
+  '&' { PT _ (TS _ 4) }
+  '(' { PT _ (TS _ 5) }
+  ')' { PT _ (TS _ 6) }
+  '*' { PT _ (TS _ 7) }
+  '**' { PT _ (TS _ 8) }
+  '*=' { PT _ (TS _ 9) }
+  '+' { PT _ (TS _ 10) }
+  '+=' { PT _ (TS _ 11) }
+  ',' { PT _ (TS _ 12) }
+  '-' { PT _ (TS _ 13) }
+  '-=' { PT _ (TS _ 14) }
+  '->' { PT _ (TS _ 15) }
+  '.' { PT _ (TS _ 16) }
+  '..' { PT _ (TS _ 17) }
+  '...' { PT _ (TS _ 18) }
+  '/' { PT _ (TS _ 19) }
+  '/=' { PT _ (TS _ 20) }
+  ':' { PT _ (TS _ 21) }
+  ';' { PT _ (TS _ 22) }
+  '<' { PT _ (TS _ 23) }
+  '<<' { PT _ (TS _ 24) }
+  '<=' { PT _ (TS _ 25) }
+  '=' { PT _ (TS _ 26) }
+  '==' { PT _ (TS _ 27) }
+  '>' { PT _ (TS _ 28) }
+  '>=' { PT _ (TS _ 29) }
+  '>>' { PT _ (TS _ 30) }
+  '?' { PT _ (TS _ 31) }
+  'Bool' { PT _ (TS _ 32) }
+  'Char' { PT _ (TS _ 33) }
+  'Int' { PT _ (TS _ 34) }
+  'Label' { PT _ (TS _ 35) }
+  'Object' { PT _ (TS _ 36) }
+  'String' { PT _ (TS _ 37) }
+  'Void' { PT _ (TS _ 38) }
+  '[' { PT _ (TS _ 39) }
+  ']' { PT _ (TS _ 40) }
+  '^' { PT _ (TS _ 41) }
+  '_' { PT _ (TS _ 42) }
+  'and' { PT _ (TS _ 43) }
+  'break' { PT _ (TS _ 44) }
+  'continue' { PT _ (TS _ 45) }
+  'def' { PT _ (TS _ 46) }
+  'do' { PT _ (TS _ 47) }
+  'elif' { PT _ (TS _ 48) }
+  'else' { PT _ (TS _ 49) }
+  'extern' { PT _ (TS _ 50) }
+  'false' { PT _ (TS _ 51) }
+  'for' { PT _ (TS _ 52) }
+  'func' { PT _ (TS _ 53) }
+  'if' { PT _ (TS _ 54) }
+  'in' { PT _ (TS _ 55) }
+  'lambda' { PT _ (TS _ 56) }
+  'not' { PT _ (TS _ 57) }
+  'or' { PT _ (TS _ 58) }
+  'print' { PT _ (TS _ 59) }
+  'return' { PT _ (TS _ 60) }
+  'skip' { PT _ (TS _ 61) }
+  'step' { PT _ (TS _ 62) }
+  'true' { PT _ (TS _ 63) }
+  'until' { PT _ (TS _ 64) }
+  'while' { PT _ (TS _ 65) }
+  '{' { PT _ (TS _ 66) }
+  '|' { PT _ (TS _ 67) }
+  '}' { PT _ (TS _ 68) }
+  '~' { PT _ (TS _ 69) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -306,7 +315,7 @@ Else :: {
   (Nothing, AbsPyxell.EEmpty Nothing)
 }
 
-Expr10 :: {
+Expr13 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
 : '_' {
@@ -333,16 +342,16 @@ Expr10 :: {
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
 }
-| Expr10 '.' Integer {
+| Expr13 '.' Integer {
   (fst $1, AbsPyxell.EElem (fst $1)(snd $1)(snd $3)) 
 }
-| Expr10 '[' Expr ']' {
+| Expr13 '[' Expr ']' {
   (fst $1, AbsPyxell.EIndex (fst $1)(snd $1)(snd $3)) 
 }
-| Expr10 '.' Ident {
+| Expr13 '.' Ident {
   (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
 }
-| Expr10 '(' ListArgC ')' {
+| Expr13 '(' ListArgC ')' {
   (fst $1, AbsPyxell.ECall (fst $1)(snd $1)(snd $3)) 
 }
 | '(' Expr ')' {
@@ -372,17 +381,62 @@ ListArgC :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+Expr12 :: {
+  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
+}
+: Expr13 '**' Expr12 {
+  (fst $1, AbsPyxell.EPow (fst $1)(snd $1)(snd $3)) 
+}
+| '-' Expr12 {
+  (Just (tokenLineCol $1), AbsPyxell.EMinus (Just (tokenLineCol $1)) (snd $2)) 
+}
+| '+' Expr12 {
+  (Just (tokenLineCol $1), AbsPyxell.EPlus (Just (tokenLineCol $1)) (snd $2)) 
+}
+| '~' Expr12 {
+  (Just (tokenLineCol $1), AbsPyxell.EBNot (Just (tokenLineCol $1)) (snd $2)) 
+}
+| Expr13 {
+  (fst $1, snd $1)
+}
+
+Expr11 :: {
+  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
+}
+: Expr11 '*' Expr12 {
+  (fst $1, AbsPyxell.EMul (fst $1)(snd $1)(snd $3)) 
+}
+| Expr11 '/' Expr12 {
+  (fst $1, AbsPyxell.EDiv (fst $1)(snd $1)(snd $3)) 
+}
+| Expr11 '%' Expr12 {
+  (fst $1, AbsPyxell.EMod (fst $1)(snd $1)(snd $3)) 
+}
+| Expr12 {
+  (fst $1, snd $1)
+}
+
+Expr10 :: {
+  (Maybe (Int, Int), Expr (Maybe (Int, Int)))
+}
+: Expr10 '+' Expr11 {
+  (fst $1, AbsPyxell.EAdd (fst $1)(snd $1)(snd $3)) 
+}
+| Expr10 '-' Expr11 {
+  (fst $1, AbsPyxell.ESub (fst $1)(snd $1)(snd $3)) 
+}
+| Expr11 {
+  (fst $1, snd $1)
+}
+
 Expr9 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr10 '**' Expr9 {
-  (fst $1, AbsPyxell.EPow (fst $1)(snd $1)(snd $3)) 
+: Expr9 '<<' Expr10 {
+  (fst $1, AbsPyxell.EBShl (fst $1)(snd $1)(snd $3)) 
 }
-| '-' Expr9 {
-  (Just (tokenLineCol $1), AbsPyxell.EMinus (Just (tokenLineCol $1)) (snd $2)) 
-}
-| '+' Expr9 {
-  (Just (tokenLineCol $1), AbsPyxell.EPlus (Just (tokenLineCol $1)) (snd $2)) 
+| Expr9 '>>' Expr10 {
+  (fst $1, AbsPyxell.EBShr (fst $1)(snd $1)(snd $3)) 
 }
 | Expr10 {
   (fst $1, snd $1)
@@ -391,14 +445,8 @@ Expr9 :: {
 Expr8 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr8 '*' Expr9 {
-  (fst $1, AbsPyxell.EMul (fst $1)(snd $1)(snd $3)) 
-}
-| Expr8 '/' Expr9 {
-  (fst $1, AbsPyxell.EDiv (fst $1)(snd $1)(snd $3)) 
-}
-| Expr8 '%' Expr9 {
-  (fst $1, AbsPyxell.EMod (fst $1)(snd $1)(snd $3)) 
+: Expr8 '&' Expr9 {
+  (fst $1, AbsPyxell.EBAnd (fst $1)(snd $1)(snd $3)) 
 }
 | Expr9 {
   (fst $1, snd $1)
@@ -407,11 +455,11 @@ Expr8 :: {
 Expr7 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr7 '+' Expr8 {
-  (fst $1, AbsPyxell.EAdd (fst $1)(snd $1)(snd $3)) 
+: Expr7 '|' Expr8 {
+  (fst $1, AbsPyxell.EBOr (fst $1)(snd $1)(snd $3)) 
 }
-| Expr7 '-' Expr8 {
-  (fst $1, AbsPyxell.ESub (fst $1)(snd $1)(snd $3)) 
+| Expr7 '^' Expr8 {
+  (fst $1, AbsPyxell.EBXor (fst $1)(snd $1)(snd $3)) 
 }
 | Expr8 {
   (fst $1, snd $1)
@@ -677,9 +725,12 @@ pListExpr = (>>= return . snd) . pListExpr_internal
 pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
-pExpr10 = (>>= return . snd) . pExpr10_internal
+pExpr13 = (>>= return . snd) . pExpr13_internal
 pArgC = (>>= return . snd) . pArgC_internal
 pListArgC = (>>= return . snd) . pListArgC_internal
+pExpr12 = (>>= return . snd) . pExpr12_internal
+pExpr11 = (>>= return . snd) . pExpr11_internal
+pExpr10 = (>>= return . snd) . pExpr10_internal
 pExpr9 = (>>= return . snd) . pExpr9_internal
 pExpr8 = (>>= return . snd) . pExpr8_internal
 pExpr7 = (>>= return . snd) . pExpr7_internal
