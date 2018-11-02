@@ -45,6 +45,8 @@ main = do
         [] -> hPutStrLn stderr $ "File path needed!"
         "-l":_ -> do
             outputCode [libBase] "lib/base.ll" False
+            readProcess "clang" ["lib/io.c", "-S", "-emit-llvm", "-o", "lib/io.ll"] ""
+            return $ ()
         path:clangArgs -> do
             let file = fst $ splitExtension path
             let paths = ["lib/std.px", path]

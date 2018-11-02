@@ -23,4 +23,3 @@ tmp.*
 _*
 *.bc
 *.ll
-!lib/io.ll
