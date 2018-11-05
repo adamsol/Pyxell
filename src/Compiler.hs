@@ -50,13 +50,13 @@ compileStmts statements cont = case statements of
 compileStmt :: Stmt Pos -> Run a -> Run a
 compileStmt statement cont = case statement of
     SProc _ id args block -> do
-        compileFunc id args tVoid (Just block) (\_ -> cont)
+        compileFunc id args tVoid (Just block) (const cont)
     SFunc _ id args rt block -> do
-        compileFunc id args rt (Just block) (\_ -> cont)
+        compileFunc id args rt (Just block) (const cont)
     SProcExtern _ id args -> do
-        compileFunc id args tVoid Nothing (\_ -> cont)
+        compileFunc id args tVoid Nothing (const cont)
     SFuncExtern _ id args rt -> do
-        compileFunc id args rt Nothing (\_ -> cont)
+        compileFunc id args rt Nothing (const cont)
     SRetVoid _ -> do
         retVoid
         cont
@@ -437,14 +437,14 @@ compileExpr expression = case expression of
         Cmp1 _ e1 op e2 -> do
             (t1, v1) <- compileExpr e1
             (t2, v2) <- compileExpr e2
-            let Just t = unifyTypes t1 t2
+            (t, v1', v2') <- unifyValues t1 v1 t2 v2
             v <- case op of
-                CmpEQ _ -> compileCmp "eq" t v1 v2
-                CmpNE _ -> compileCmp "ne" t v1 v2
-                CmpLT _ -> compileCmp "lt" t v1 v2
-                CmpLE _ -> compileCmp "le" t v1 v2
-                CmpGT _ -> compileCmp "gt" t v1 v2
-                CmpGE _ -> compileCmp "ge" t v1 v2
+                CmpEQ _ -> compileCmp "eq" t v1' v2'
+                CmpNE _ -> compileCmp "ne" t v1' v2'
+                CmpLT _ -> compileCmp "lt" t v1' v2'
+                CmpLE _ -> compileCmp "le" t v1' v2'
+                CmpGT _ -> compileCmp "gt" t v1' v2'
+                CmpGE _ -> compileCmp "ge" t v1' v2'
             return $ (tBool, v)
         Cmp2 _ e1 op cmp -> do
             e2 <- case cmp of
@@ -479,7 +479,7 @@ compileExpr expression = case expression of
         compileBinary op expr1 expr2 = do
             (t1, v1) <- compileExpr expr1
             (t2, v2) <- compileExpr expr2
-            (t, v) <- case (t1, t2, op) of
+            case (t1, t2, op) of
                 (TString _, TString _, "add") -> do
                     compileStringConcat v1 v2
                 (TString _, TChar _, "add") -> do
@@ -501,7 +501,8 @@ compileExpr expression = case expression of
                     p <- compileArrayMul t' v2 v1
                     return $ (t2, p)
                 (_, _, "pow") -> do
-                    compileMethod t1 (Ident "pow") [v1, v2]
+                    (t, v1', v2') <- unifyValues t1 v1 t2 v2
+                    compileMethod t (Ident "pow") [v1', v2']
                 (TInt _, TInt _, _) -> do
                     op <- case op of
                         "div" -> return $ "sdiv"
@@ -509,13 +510,12 @@ compileExpr expression = case expression of
                         otherwise -> return $ op
                     v3 <- binop op t1 v1 v2
                     return $ (t1, v3)
-                (TBool _, TBool _, _) -> do
-                    v3 <- binop op t1 v1 v2
-                    return $ (t1, v3)
-                (TFloat _, TFloat _, _) -> do
-                    v3 <- binop ("f" ++ op) t1 v1 v2
-                    return $ (t1, v3)
-            return $ (t, v)
+                otherwise -> do
+                    (t, v1', v2') <- unifyValues t1 v1 t2 v2
+                    v3 <- case t of
+                        TFloat _ -> binop ("f" ++ op) t v1' v2'
+                        otherwise -> binop op t v1' v2'
+                    return $ (t, v3)
         compileStringConcat val1 val2 = do
             p1 <- gep tString val1 ["0"] [0] >>= load (tPtr tChar)
             p2 <- gep tString val2 ["0"] [0] >>= load (tPtr tChar)
@@ -527,7 +527,7 @@ compileExpr expression = case expression of
             call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v1)]
             p5 <- gep (tPtr tChar) p4 [v1] []
             call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v2)]
-            return (tString, p3)
+            return $ (tString, p3)
         compileArrayMul typ val1 val2 = do
             let t = tArray typ
             p1 <- gep t val1 ["0"] [0] >>= load (tPtr typ)

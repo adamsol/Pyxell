@@ -518,19 +518,23 @@ checkExpr expression = case expression of
             (t2, _) <- checkExpr expr2
             case op of
                 "*" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    (TFloat _, TFloat _) -> return $ (tFloat, False)
                     (TString _, TInt _) -> return $ (tString, False)
                     (TInt _, TString _) -> return $ (tString, False)
                     (TArray _ _, TInt _) -> return $ (t1, False)
                     (TInt _, TArray _ _) -> return $ (t2, False)
+                    (TInt _, TInt _) -> return $ (tInt, False)
+                    (TFloat _, TInt _) -> return $ (tFloat, False)
+                    (TInt _, TFloat _) -> return $ (tFloat, False)
+                    (TFloat _, TFloat _) -> return $ (tFloat, False)
                     otherwise -> throw pos $ NoBinaryOperator "*" t1 t2
                 "+" -> case (t1, t2) of
-                    (TInt _, TInt _) -> return $ (tInt, False)
-                    (TFloat _, TFloat _) -> return $ (tFloat, False)
                     (TString _, TString _) -> return $ (tString, False)
                     (TString _, TChar _) -> return $ (tString, False)
                     (TChar _, TString _) -> return $ (tString, False)
+                    (TInt _, TInt _) -> return $ (tInt, False)
+                    (TFloat _, TInt _) -> return $ (tFloat, False)
+                    (TInt _, TFloat _) -> return $ (tFloat, False)
+                    (TFloat _, TFloat _) -> return $ (tFloat, False)
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
                 otherwise -> do
                     if op == "and" || op == "or" then case (t1, t2) of
@@ -538,6 +542,8 @@ checkExpr expression = case expression of
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
                     else if op == "**" || op == "/" || op == "-" then case (t1, t2) of
                         (TInt _, TInt _) -> return $ (tInt, False)
+                        (TFloat _, TInt _) -> return $ (tFloat, False)
+                        (TInt _, TFloat _) -> return $ (tFloat, False)
                         (TFloat _, TFloat _) -> return $ (tFloat, False)
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
                     else case (t1, t2) of  -- modulo and bitwise operators
@@ -563,4 +569,7 @@ checkExpr expression = case expression of
                     TArray _ _ -> throw pos $ NotComparable typ1 typ2
                     TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
                     otherwise -> return $ (tBool, False)
-                Nothing -> throw pos $ NotComparable typ1 typ2
+                Nothing -> case (typ1, typ2) of
+                    (TFloat _, TInt _) -> return $ (tBool, False)
+                    (TInt _, TFloat _) -> return $ (tBool, False)
+                    otherwise -> throw pos $ NotComparable typ1 typ2

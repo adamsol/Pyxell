@@ -94,6 +94,23 @@ defaultValue typ = case typ of
     TChar _ -> show (ord '$')
     otherwise -> "null"
 
+-- | Casts value to a given type.
+castValue :: Type -> Value -> Type -> Run Value
+castValue typ1 val typ2 = case (typ1, typ2) of
+    (TInt _, TFloat _) -> sitofp typ1 typ2 val
+    otherwise -> return $ val
+
+-- | Casts given values to a common type.
+unifyValues :: Type -> Value -> Type -> Value -> Run (Type, Value, Value)
+unifyValues typ1 val1 typ2 val2 = do
+    t <- case (typ1, typ2) of
+        (TInt _, TFloat _) -> return $ typ2
+        otherwise -> return $ typ1
+    v1 <- castValue typ1 val1 t
+    v2 <- castValue typ2 val2 t
+    return $ (t, v1, v2)
+
+
 -- | Returns an unused index for temporary names.
 nextNumber :: Run Int
 nextNumber = do
@@ -238,6 +255,13 @@ ptrtoint :: Type -> Value -> Run Value
 ptrtoint typ ptr = do
     v <- nextTemp
     write $ indent [ v ++ " = ptrtoint " ++ strType typ ++ " " ++ ptr ++ " to i64" ]
+    return $ v
+
+-- | Outputs LLVM 'sitofp' command.
+sitofp :: Type -> Type -> Value -> Run Value
+sitofp typ1 typ2 val = do
+    v <- nextTemp
+    write $ indent [ v ++ " = sitofp " ++ strType typ1 ++ " " ++ val ++ " to " ++ strType typ2 ]
     return $ v
 
 -- | Outputs LLVM 'trunc' command.
