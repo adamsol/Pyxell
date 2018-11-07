@@ -1,0 +1,4 @@
+
+print pi / 2
+print e ** -1
+print -inf

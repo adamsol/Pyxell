@@ -1,0 +1,4 @@
+
+print cos(pi/3), sin(-pi/3), tan(rad(60.0))
+print asin(0.0), deg(acos(0.0))
+print atan(0.0), deg(atan2(-1.0, -1.0))

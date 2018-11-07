@@ -1,0 +1,27 @@
+
+pi = 3.1415926535897932384626
+e = 2.7182818284590452353603
+inf = "inf".toFloat()
+
+func exp(Float x) Float extern
+func log(Float x) Float extern
+func log10(Float x) Float extern
+func sqrt(Float x) Float extern
+
+func cos(Float x) Float extern
+func sin(Float x) Float extern
+func tan(Float x) Float extern
+
+func acos(Float x) Float extern
+func asin(Float x) Float extern
+func atan(Float x) Float extern
+func atan2(Float y, Float x) Float extern
+
+func rad(Float x) Float def
+    return x * pi / 180
+func deg(Float x) Float def
+    return x * 180 / pi
+
+func round(Float x) Float extern
+func floor(Float x) Float extern
+func ceil(Float x) Float extern

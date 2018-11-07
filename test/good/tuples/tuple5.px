@@ -1,5 +1,5 @@
 
 a, b, c = t = 1, 2, true
-d = e, f = t.1, t.0
+x = y, z = t.1, t.0
 if c do
-    print f - e
+    print z - y

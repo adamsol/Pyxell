@@ -1,0 +1,4 @@
+
+print round(4.2), round(987.63), round(-46.18), round(-1734.5)
+print floor(9.01), floor(-9.01)
+print ceil(9.01), ceil(-9.01)

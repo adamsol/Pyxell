@@ -29,8 +29,6 @@ libBase = do
         "declare i64 @strlen(i8*)",
         "declare i8* @strncpy(i8*, i8*, i64)",
         "declare void @free(i8*)",
-        "",
-        "declare double @pow(double, double)",
         "" ]
 
     -- Char <-> Int (ASCII)
@@ -125,10 +123,6 @@ libBase = do
         callVoid "@free" [(tPtr tChar, p3)]
         load tFloat p1 >>= ret tFloat
 
-    -- Math functions
-    define (tFunc [tFloat, tFloat] tFloat) (Ident "Float_pow") $ do
-        call tFloat "@pow" [(tFloat, "%0"), (tFloat, "%1")] >>= ret tFloat
-
     ask
 
     where
@@ -136,3 +130,63 @@ libBase = do
         scanf t s f = call tInt "(i8*, ...) @scanf" [(tPtr tChar, f), (tPtr t, s)]
         sprintf t s f = call tInt "(i8*, i8*, ...) @sprintf" [(tPtr tChar, s), (tPtr tChar, f), (t, "%0")]
         sscanf t p s f = call tInt "(i8*, i8*, ...) @sscanf" [(tPtr tChar, s), (tPtr tChar, f), (tPtr t, p)]
+
+
+libMath :: Run Env
+libMath = do
+    write $ [ "",
+        "declare double @exp(double)",
+        "declare double @log(double)",
+        "declare double @log10(double)",
+        "declare double @pow(double, double)",
+        "declare double @sqrt(double)",
+        "",
+        "declare double @cos(double)",
+        "declare double @sin(double)",
+        "declare double @tan(double)",
+        "",
+        "declare double @acos(double)",
+        "declare double @asin(double)",
+        "declare double @atan(double)",
+        "declare double @atan2(double, double)",
+        "",
+        "declare double @round(double)",
+        "declare double @floor(double)",
+        "declare double @ceil(double)",
+        "" ]
+
+    define (tFunc [tFloat] tFloat) (Ident "exp") $ do
+        call tFloat "@exp" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "log") $ do
+        call tFloat "@log" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "log10") $ do
+        call tFloat "@log10" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat, tFloat] tFloat) (Ident "Float_pow") $ do
+        call tFloat "@pow" [(tFloat, "%0"), (tFloat, "%1")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "sqrt") $ do
+        call tFloat "@sqrt" [(tFloat, "%0")] >>= ret tFloat
+
+    define (tFunc [tFloat] tFloat) (Ident "cos") $ do
+        call tFloat "@cos" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "sin") $ do
+        call tFloat "@sin" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "tan") $ do
+        call tFloat "@tan" [(tFloat, "%0")] >>= ret tFloat
+
+    define (tFunc [tFloat] tFloat) (Ident "acos") $ do
+        call tFloat "@acos" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "asin") $ do
+        call tFloat "@asin" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "atan") $ do
+        call tFloat "@atan" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat, tFloat] tFloat) (Ident "atan2") $ do
+        call tFloat "@atan2" [(tFloat, "%0"), (tFloat, "%1")] >>= ret tFloat
+
+    define (tFunc [tFloat] tFloat) (Ident "round") $ do
+        call tFloat "@round" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "floor") $ do
+        call tFloat "@floor" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "ceil") $ do
+        call tFloat "@ceil" [(tFloat, "%0")] >>= ret tFloat
+
+    ask

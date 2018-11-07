@@ -1,0 +1,4 @@
+
+print exp(0.0), log(e)
+print log10(1000.0)
+print sqrt(2.0)
