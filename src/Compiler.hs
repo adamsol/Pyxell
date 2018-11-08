@@ -677,9 +677,11 @@ compileAttr typ val (Ident attr) = case typ of
     -- TODO: toString() for other types
     TInt _ -> case attr of
         "toString" -> getIdent (Ident "Int_toString")
+        "toFloat" -> getIdent (Ident "Int_toFloat")
         "pow" -> getIdent (Ident "Int_pow")
     TFloat _ -> case attr of
         "toString" -> getIdent (Ident "Float_toString")
+        "toInt" -> getIdent (Ident "Float_toInt")
         "pow" -> getIdent (Ident "Float_pow")
     TBool _ -> case attr of
         "toString" -> getIdent (Ident "Bool_toString")

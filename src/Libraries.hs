@@ -123,6 +123,12 @@ libBase = do
         callVoid "@free" [(tPtr tChar, p3)]
         load tFloat p1 >>= ret tFloat
 
+    -- Numeric conversions
+    define (tFunc [tInt] tFloat) (Ident "Int_toFloat") $ do
+        sitofp "%0" >>= ret tFloat
+    define (tFunc [tFloat] tInt) (Ident "Float_toInt") $ do
+        fptosi "%0" >>= ret tInt
+
     ask
 
     where

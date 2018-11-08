@@ -96,3 +96,8 @@ func String_compare(String a, String b) Int def
     elif b.length < a.length do
         return 1
     return 0
+
+
+func Int_toFloat(Int n) Float extern
+
+func Float_toInt(Float f) Int extern

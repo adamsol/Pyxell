@@ -387,12 +387,18 @@ checkExpr expression = case expression of
         Just t2 <- case t1 of
             TInt _ -> case attr of
                 "toString" -> getIdent _pos (Ident "Int_toString")
+                "toFloat" -> getIdent _pos (Ident "Int_toFloat")
+                otherwise -> throw pos $ InvalidAttr t1 id
             TFloat _ -> case attr of
                 "toString" -> getIdent _pos (Ident "Float_toString")
+                "toInt" -> getIdent _pos (Ident "Float_toInt")
+                otherwise -> throw pos $ InvalidAttr t1 id
             TBool _ -> case attr of
                 "toString" -> getIdent _pos (Ident "Bool_toString")
+                otherwise -> throw pos $ InvalidAttr t1 id
             TChar _ -> case attr of
                 "toString" -> getIdent _pos (Ident "Char_toString")
+                otherwise -> throw pos $ InvalidAttr t1 id
             TString _ -> case attr of
                 "length" -> return $ Just tInt
                 "toString" -> getIdent _pos (Ident "String_toString")

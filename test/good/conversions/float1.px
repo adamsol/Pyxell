@@ -1,0 +1,7 @@
+
+x = 43.toFloat()
+x /= 5
+print x
+
+y = x.toInt()
+print y / 5

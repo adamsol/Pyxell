@@ -97,7 +97,7 @@ defaultValue typ = case typ of
 -- | Casts value to a given type.
 castValue :: Type -> Value -> Type -> Run Value
 castValue typ1 val typ2 = case (typ1, typ2) of
-    (TInt _, TFloat _) -> sitofp typ1 typ2 val
+    (TInt _, TFloat _) -> sitofp val
     otherwise -> return $ val
 
 -- | Casts given values to a common type.
@@ -257,11 +257,18 @@ ptrtoint typ ptr = do
     write $ indent [ v ++ " = ptrtoint " ++ strType typ ++ " " ++ ptr ++ " to i64" ]
     return $ v
 
--- | Outputs LLVM 'sitofp' command.
-sitofp :: Type -> Type -> Value -> Run Value
-sitofp typ1 typ2 val = do
+-- | Outputs LLVM 'sitofp' command to convert from Int to Float.
+sitofp :: Value -> Run Value
+sitofp val = do
     v <- nextTemp
-    write $ indent [ v ++ " = sitofp " ++ strType typ1 ++ " " ++ val ++ " to " ++ strType typ2 ]
+    write $ indent [ v ++ " = sitofp " ++ strType tInt ++ " " ++ val ++ " to " ++ strType tFloat ]
+    return $ v
+
+-- | Outputs LLVM 'fptosi' command to convert from Float to Int.
+fptosi :: Value -> Run Value
+fptosi val = do
+    v <- nextTemp
+    write $ indent [ v ++ " = fptosi " ++ strType tFloat ++ " " ++ val ++ " to " ++ strType tInt ]
     return $ v
 
 -- | Outputs LLVM 'trunc' command.
