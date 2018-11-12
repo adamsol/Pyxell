@@ -80,7 +80,6 @@ transExpr x = case x of
   EString _ string -> failure x
   EArray _ exprs -> failure x
   EVar _ ident -> failure x
-  EElem _ expr integer -> failure x
   EIndex _ expr1 expr2 -> failure x
   EAttr _ expr ident -> failure x
   ECall _ expr argcs -> failure x

@@ -64,7 +64,6 @@ EString.           Expr13 ::= String ;
 EArray.            Expr13 ::= "[" [Expr2] "]" ;
 
 EVar.              Expr13 ::= Ident ;
-EElem.             Expr13 ::= Expr13 "." Integer ;
 EIndex.            Expr13 ::= Expr13 "[" Expr "]" ;
 EAttr.             Expr13 ::= Expr13 "." Ident ;
 ECall.             Expr13 ::= Expr13 "(" [ArgC] ")";

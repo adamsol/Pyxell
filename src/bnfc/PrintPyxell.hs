@@ -197,7 +197,6 @@ instance Print (Expr a) where
     EString _ str -> prPrec i 13 (concatD [prt 0 str])
     EArray _ exprs -> prPrec i 13 (concatD [doc (showString "["), prt 2 exprs, doc (showString "]")])
     EVar _ id -> prPrec i 13 (concatD [prt 0 id])
-    EElem _ expr n -> prPrec i 13 (concatD [prt 13 expr, doc (showString "."), prt 0 n])
     EIndex _ expr1 expr2 -> prPrec i 13 (concatD [prt 13 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
     EAttr _ expr id -> prPrec i 13 (concatD [prt 13 expr, doc (showString "."), prt 0 id])
     ECall _ expr argcs -> prPrec i 13 (concatD [prt 13 expr, doc (showString "("), prt 0 argcs, doc (showString ")")])

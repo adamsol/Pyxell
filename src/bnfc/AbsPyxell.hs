@@ -128,7 +128,6 @@ data Expr a
     | EString a String
     | EArray a [Expr a]
     | EVar a Ident
-    | EElem a (Expr a) Integer
     | EIndex a (Expr a) (Expr a)
     | EAttr a (Expr a) Ident
     | ECall a (Expr a) [ArgC a]
@@ -169,7 +168,6 @@ instance Functor Expr where
         EString a string -> EString (f a) string
         EArray a exprs -> EArray (f a) (map (fmap f) exprs)
         EVar a ident -> EVar (f a) ident
-        EElem a expr integer -> EElem (f a) (fmap f expr) integer
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         ECall a expr argcs -> ECall (f a) (fmap f expr) (map (fmap f) argcs)

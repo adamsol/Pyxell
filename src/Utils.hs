@@ -139,7 +139,6 @@ convertLambda pos expression = do
                 tell [id]
                 return $ EVar pos id
             EArray pos es -> convertMultiary (EArray pos) es
-            EElem pos e idx -> convertUnary (\e -> EElem pos e idx) e
             EIndex pos e1 e2 -> convertBinary (EIndex pos) e1 e2
             EAttr pos e id -> convertUnary (\e -> EAttr pos e id) e
             ECall pos e args -> do

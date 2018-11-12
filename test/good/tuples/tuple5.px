@@ -1,5 +1,5 @@
 
 a, b, c = t = 1, 2, true
-x = y, z = t.1, t.0
+x = y, z = t.b, t.a
 if c do
     print z - y

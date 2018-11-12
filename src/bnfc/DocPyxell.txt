@@ -121,7 +121,6 @@ All other symbols are terminals.
   |  |  **|**  | //String// 
   |  |  **|**  | ``[`` //[Expr2]// ``]`` 
   |  |  **|**  | //Ident// 
-  |  |  **|**  | //Expr13// ``.`` //Integer// 
   |  |  **|**  | //Expr13// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr13// ``.`` //Ident// 
   |  |  **|**  | //Expr13// ``(`` //[ArgC]// ``)`` 

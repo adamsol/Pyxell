@@ -350,13 +350,6 @@ compileExpr expression = case expression of
         p <- initArray t (map snd rs) []
         return $ (tArray t, p)
     EVar _ _ -> compileRval expression
-    EElem _ expr idx -> do
-        (t, p) <- compileExpr expr
-        let i = fromInteger idx
-        case t of
-            TTuple _ ts -> do
-                v <- gep t p ["0"] [i] >>= load (ts !! i)
-                return $ (ts !! i, v)
     EIndex _ _ _ -> compileRval expression
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
@@ -698,6 +691,9 @@ compileAttr typ val (Ident attr) = case typ of
         (_, "length") -> getAttr typ val tInt 1
         (TChar _, "join") -> getIdent (Ident "CharArray_join")
         (TString _, "join") -> getIdent (Ident "StringArray_join")
+    TTuple _ ts -> do
+        let i = ord (attr !! 0) - ord 'a'
+        getAttr typ val (ts !! i) i
     where
         getAttr typ1 obj typ2 idx = do
             p <- gep typ1 obj ["0"] [idx]

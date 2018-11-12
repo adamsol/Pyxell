@@ -354,9 +354,6 @@ Expr13 :: {
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
 }
-| Expr13 '.' Integer {
-  (fst $1, AbsPyxell.EElem (fst $1)(snd $1)(snd $3)) 
-}
 | Expr13 '[' Expr ']' {
   (fst $1, AbsPyxell.EIndex (fst $1)(snd $1)(snd $3)) 
 }

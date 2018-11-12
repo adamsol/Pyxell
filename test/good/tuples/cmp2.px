@@ -5,7 +5,7 @@ if (1, 2) != (2, 1) do
 if (1, 2 == 3) < (3 - 2, true) <= (-(-1), false or true) do
     print 1
 
-if ("xyz", 5) > ("abc", 8) >= ("a"+"bc"+"", (10+2, 10-2).1) do
+if ("xyz", 5) > ("abc", 8) >= ("a"+"bc"+"", (10+2, 10-2).b) do
     print 2
 
 if (-1, 1) != (-1, 1) do

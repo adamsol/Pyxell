@@ -6,6 +6,7 @@ module Checker where
 import Control.Monad
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Error
+import Data.Char
 import qualified Data.Map as M
 
 import AbsPyxell hiding (Type)
@@ -37,7 +38,6 @@ data StaticError = NotComparable Type Type
                  | InvalidExpression String
                  | UnknownType
                  | NotTuple Type
-                 | InvalidTupleElem Type Int
                  | CannotUnpack Type Int
                  | NotFunction Type
                  | TooManyArguments Type
@@ -68,7 +68,6 @@ instance Show StaticError where
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
         UnknownType -> "Cannot settle type of the expression."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
-        InvalidTupleElem typ n -> "Tuple `" ++ show typ ++ "` does not contain " ++ show n ++ " elements."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
         NotFunction typ -> "Type `" ++ show typ ++ "` is not a function."
         TooManyArguments typ -> "Too many arguments for function `" ++ show typ ++ "`."
@@ -364,14 +363,6 @@ checkExpr expression = case expression of
                 Just t' -> return $ (tArray t', False)
                 Nothing -> throw pos $ UnknownType
     EVar pos id -> checkIdent pos id
-    EElem pos expr n -> do
-        (t, m) <- checkExpr expr
-        let i = fromInteger n
-        case t of
-            TTuple _ ts -> do
-                if i < length ts then return $ (ts !! i, m)
-                else throw pos $ InvalidTupleElem t (i+1)
-            otherwise -> throw pos $ NotTuple t
     EIndex pos expr1 expr2 -> do
         (t1, m1) <- checkExpr expr1
         (t2, m2) <- checkExpr expr2
@@ -414,6 +405,10 @@ checkExpr expression = case expression of
                     t'' <- getIdent _pos (Ident "StringArray_join")
                     return $ t''
                 otherwise -> throw pos $ InvalidAttr t1 id
+            TTuple _ ts -> do
+                let i = ord (attr !! 0) - ord 'a'
+                if "a" <= attr && attr <= "z" && i < length ts then return $ Just (ts !! i)
+                else throw pos $ InvalidAttr t1 id
             otherwise -> throw pos $ InvalidAttr t1 id
         return $ (t2, False)
     ECall pos expr args -> do
