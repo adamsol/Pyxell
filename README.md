@@ -55,6 +55,7 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Python-like syntax with semantic indentation (+)
 * Strongly static typing with partial type inference (+/-)
 * Full compilation to machine code (+)
+* 64-bit integers and double-precision floating-point numbers (+)
 * Native tuples (+)
 * Immutable strings (+)
 * String interpolation (+)
@@ -63,14 +64,15 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * First-class functions (+)
 * Default and named arguments (+)
 * Lambda expressions (+)
-* Closures
-* Arbitrary-precision arithmetic
+* Generic types
+* Module system
 * Classes with multiple inheritance and safe references
 * Separate nullable types
-* Coroutines
-* Module system
+* Arbitrary-precision arithmetic
 * Variety of containers: mutable/immutable, hash/tree-based
 * List and dictionary comprehensions
+* Closures
+* Coroutines
 
 These features would be also nice to have, but are more complicated and have less priority for me:
 
@@ -94,7 +96,7 @@ These are the software versions that I use. Pyxell may work with others versions
 * GHC 8.2.2 with `regex-compat` package
 * Clang 6.0.0 with C++ standard library
 * BNFC 2.8.1 with `176-source-position` branch (to recompile grammar)
-* Python 3.6.4 with `colorama` and `argparse` packages (to run tests)
+* Python 3.6.4 with packages from `requirements.txt` installed (to run tests)
 
 For BNFC to store source code position, install it from source:
 

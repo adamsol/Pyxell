@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
-import os
-import glob
-import subprocess
-import colorama
 import argparse
+import colorama
+import glob
+import os
+import subprocess
+from timeit import default_timer as timer
 
 # Setup terminal colors.
 R = colorama.Style.BRIGHT + colorama.Fore.RED
@@ -49,11 +50,13 @@ for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
                 print(f"{R}Compiler returned code 0, but error expected!{E}")
                 continue
 
+        start = timer()
         try:
             with open(f'{path.replace(".px", ".in")}', 'r') as infile:
                 subprocess.call(f'{path.replace(".px", ".exe")}', stdin=infile, stdout=outfile)
         except FileNotFoundError:
             subprocess.call(f'{path.replace(".px", ".exe")}', stdout=outfile)
+        end = timer()
 
         try:
             subprocess.check_output(f'diff --strip-trailing-cr tmp.out {path.replace(".px", ".out")}', stderr=subprocess.STDOUT)
@@ -63,4 +66,4 @@ for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
             else:
                 print(f"{R}WA: {e.output.decode()}{E}")
         else:
-            print(f"{G}OK{E}")
+            print(f"{G}OK{E} ({end-start:.3f}s)")
