@@ -24,7 +24,7 @@ initCompiler :: Run Env
 initCompiler = do
     lift $ modify (M.insert "$number" (Number 0))
     lift $ modify (M.insert "$label-main" (Label "entry"))
-    write $ [ "" ]
+    writeTop $ [ "" ]
     declare (tFunc [tInt] (tPtr tChar)) "@malloc"
     declare (tFunc [tPtr tChar, tPtr tChar, tInt] (tPtr tChar)) "@memcpy"
     declare (tFunc [tChar] (tInt)) "@putchar"
@@ -290,13 +290,18 @@ compileFunc id args rt block cont = do
     let r = reduceType rt
     let t = tFunc as r
     let p = "@f" ++ f
+    i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
+        TTuple _ _ -> return $ 1
+        otherwise -> return $ 0
     local (M.insert id (t, p)) $ do
         case block of
-            Just b -> define t id $ compileArgs args 0 $ local (M.insert (Ident "#return") (r, "")) $ do
+            Just b -> define t id $ compileArgs args i $ local (M.insert (Ident "#return") (r, "")) $ do
                 l <- nextLabel
                 goto l >> label l
                 compileBlock b
-                ret r (defaultValue r)
+                case r of
+                    TTuple _ _ -> retVoid
+                    otherwise -> ret r (defaultValue r)
             Nothing -> do
                 scope "!global" $ external p t
                 skip

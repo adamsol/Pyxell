@@ -48,11 +48,17 @@ getScope = do
         Just (_, name) -> return $ name
         Nothing -> return $ "!global"
 
--- | Outputs several lines of LLVM code.
+-- | Outputs several lines of LLVM code in the current scope.
 write :: [String] -> Run ()
 write lines = do
     s <- getScope
-    lift $ lift $ modify (M.insertWith (++) s (reverse lines))
+    lift $ lift $ modify (M.insertWith (++) (s ++ "-2") (reverse lines))
+
+-- | Outputs several lines of LLVM code at the top of the current scope.
+writeTop :: [String] -> Run ()
+writeTop lines = do
+    s <- getScope
+    lift $ lift $ modify (M.insertWith (++) (s ++ "-1") (reverse lines))
 
 -- | Adds an indent to given lines.
 indent :: [String] -> [String]
@@ -78,7 +84,9 @@ strType typ = case reduceType typ of
     TString _ -> strType (tArray tChar)
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> "{" ++ intercalate ", " (map strType ts) ++ "}*"
-    TFunc _ as r -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
+    TFunc _ as r -> case r of
+        TTuple _ _ -> strType (tFunc (r:as) tVoid)
+        otherwise -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
     TArgN _ t' _ -> strType t'
     TArgD _ t' _ _ -> strType t'
 
@@ -168,9 +176,12 @@ define typ id body = do
     s <- getScope
     let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
     scope f $ do
-        write $ [
+        (as, r) <- case rt of
+            TTuple _ _ -> return $ (rt : args, tVoid)
+            otherwise -> return $ (args, rt)
+        writeTop $ [ "",
             "@f" ++ f ++ " = global " ++ strType typ ++ " @func" ++ f,
-            "define " ++ strType rt ++ " @func" ++ f ++ "(" ++ intercalate ", " (map strType args) ++ ") {",
+            "define " ++ strType r ++ " @func" ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
             "entry:" ]
         lift $ modify (M.insert ("$label-" ++ f) (Label "entry"))
         body
@@ -190,27 +201,27 @@ branch val lbl1 lbl2 = do
 alloca :: Type -> Run Value
 alloca typ = do
     p <- nextTemp
-    write $ indent [ p ++ " = alloca " ++ strType typ ]
+    writeTop $ indent [ p ++ " = alloca " ++ strType typ ]
     return $ p
 
 -- | Outputs LLVM 'global' command.
 global :: Type -> Value -> Run Value
 global typ val = do
     g <- nextGlobal
-    write $ [ g ++ " = global " ++ strType typ ++ " " ++ val ]
+    writeTop $ [ g ++ " = global " ++ strType typ ++ " " ++ val ]
     return $ g
 
 -- | Outputs LLVM constant command.
 constant :: Type -> Value -> Run Value
 constant typ val = do
     c <- nextConst
-    write $ [ c ++ " = constant " ++ strType typ ++ " " ++ val ]
+    writeTop $ [ c ++ " = constant " ++ strType typ ++ " " ++ val ]
     return $ c
 
 -- | Outputs LLVM 'external global' command.
 external :: Value -> Type -> Run Value
 external name typ = do
-    write $ [ name ++ " = external global " ++ strType typ ]
+    writeTop $ [ name ++ " = external global " ++ strType typ ]
     return $ name
 
 -- | Outputs LLVM 'store' command.
@@ -312,9 +323,16 @@ call rt name args = do
     v <- nextTemp
     c <- case rt of
         TVoid _ -> return $ "call "
+        TTuple _ _ -> return $ "call "
         otherwise -> return $ v ++ " = call "
-    write $ indent [ c ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- args] ++ ")" ]
-    return $ v
+    case rt of
+        TTuple _ _ -> do
+            p <- alloca (tDeref rt)
+            write $ indent [ c ++ "void " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- (rt, p) : args] ++ ")" ]
+            return $ p
+        otherwise -> do
+            write $ indent [ c ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- args] ++ ")" ]
+            return $ v
 
 -- | Outputs LLVM function 'call' with void return type.
 callVoid :: Value -> [Result] -> Run ()
@@ -324,8 +342,15 @@ callVoid name args = do
 
 -- | Outputs LLVM 'ret' instruction.
 ret :: Type -> Value -> Run ()
-ret typ val = do
-    write $ indent [ "ret " ++ strType typ ++ " " ++ val ]
+ret typ val = case typ of
+    TTuple _ _ -> do
+        p1 <- bitcast typ (tPtr tChar) "%0"
+        p2 <- bitcast typ (tPtr tChar) val
+        v <- sizeof typ "1"
+        call (tPtr tChar) "@memcpy" [(tPtr tChar, p1), (tPtr tChar, p2), (tInt, v)]
+        retVoid
+    otherwise -> do
+        write $ indent [ "ret " ++ strType typ ++ " " ++ val ]
 
 -- | Outputs LLVM 'ret void' instruction.
 retVoid :: Run ()
@@ -333,17 +358,22 @@ retVoid = do
     ret tVoid ""
 
 
+-- | Outputs LLVM code to calculate memory size of an array of objects of a given type.
+sizeof :: Type -> Value -> Run Value
+sizeof typ len = do
+    gep typ "null" [len] [] >>= ptrtoint typ
+
 -- | Outputs LLVM code to allocate memory for objects of a given type.
 initMemory :: Type -> Value -> Run Value
 initMemory typ len = do
-    v <- gep typ "null" [len] [] >>= ptrtoint typ
+    v <- sizeof typ len
     call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) typ
 
 -- | Outputs LLVM code for tuple initialization.
 initTuple :: [Result] -> Run Value
 initTuple rs = do
     let t = tTuple (map fst rs)
-    p <- initMemory t "1"
+    p <- alloca (tDeref t)
     forM (zipWith (\r i -> (fst r, snd r, i)) rs [0..]) $ \(t', v', i) -> do
         gep t p ["0"] [i] >>= store t' v'
     return $ p

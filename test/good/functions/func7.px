@@ -1,6 +1,10 @@
 
-func f(Int*String*Bool t) Bool*Int*String def
+func f(Int*String*Bool t, Int d) Bool*Int*String def
+    if d > 0 do
+        t = t.a - 1, t.b, not t.c
+        return f(t, d-1)
     print t
     return not t.c, t.a + 42, t.b + "#$"
 
-print f((2, "!@", false))
+g = f
+print g((12, "!@", false), 50)
