@@ -412,7 +412,21 @@ compileExpr expression = case expression of
         return $ (t, v2)
     EBNot _ expr -> compileBinary "xor" (EInt _pos (-1)) expr
     EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
-    EDiv _ expr1 expr2 -> compileBinary "div" expr1 expr2
+    EDiv _ expr1 expr2 -> do
+        (t1, v1) <- compileExpr expr1
+        (t2, v2) <- compileExpr expr2
+        case (t1, t2) of
+            (TInt _, TInt _) -> do
+                v3 <- binop "sdiv" t1 v1 v2
+                v4 <- binop "sub" t1 v3 "1"
+                v5 <- binop "xor" t1 v1 v2
+                v6 <- binop "icmp slt" t1 v5 "0"
+                v7 <- select v6 t1 v4 v3
+                v8 <- binop "mul" t1 v3 v2
+                v9 <- binop "icmp ne" t1 v8 v1
+                v10 <- select v9 t1 v7 v3
+                return $ (t1, v10)
+            otherwise -> compileBinary "div" expr1 expr2
     EMod _ expr1 expr2 -> do
         (t, v1) <- compileExpr expr1
         (t, v2) <- compileExpr expr2
@@ -501,13 +515,6 @@ compileExpr expression = case expression of
                 (_, _, "pow") -> do
                     (t, v1', v2') <- unifyValues t1 v1 t2 v2
                     compileMethod t (Ident "pow") [v1', v2']
-                (TInt _, TInt _, _) -> do
-                    op <- case op of
-                        "div" -> return $ "sdiv"
-                        "rem" -> return $ "srem"
-                        otherwise -> return $ op
-                    v3 <- binop op t1 v1 v2
-                    return $ (t1, v3)
                 otherwise -> do
                     (t, v1', v2') <- unifyValues t1 v1 t2 v2
                     v3 <- case t of
