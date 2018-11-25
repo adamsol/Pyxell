@@ -6,6 +6,10 @@ func str([Char] a) String extern
 
 func write(String s) extern
 func writeLine(String s) extern
+func writeInt(Int s) extern
+func writeFloat(Float s) extern
+func writeBool(Bool s) extern
+func writeChar(Char s) extern
 
 func read() String extern
 func readLine() String extern

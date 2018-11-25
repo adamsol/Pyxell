@@ -157,9 +157,7 @@ compileStmt statement cont = case statement of
                     if i == length ts - 1 then skip
                     else call tInt "@putchar" [(tChar, "32")] >> skip
             otherwise -> do
-                (_, v) <- compileMethod typ (Ident "toString") [val]
-                compileMethod tString (Ident "write") [v]
-                skip
+                compileMethod typ (Ident "write") [val] >> skip
         compileAssgs rs typ val cont = case rs of
             [] -> cont
             (t, e, i):rs -> do
@@ -693,16 +691,20 @@ compileAttr :: Type -> Value -> Ident -> Run (Maybe Result)
 compileAttr typ val (Ident attr) = case typ of
     -- TODO: toString() for other types
     TInt _ -> case attr of
+        "write" -> getIdent (Ident "writeInt")
         "toString" -> getIdent (Ident "Int_toString")
         "toFloat" -> getIdent (Ident "Int_toFloat")
         "pow" -> getIdent (Ident "Int_pow")
     TFloat _ -> case attr of
+        "write" -> getIdent (Ident "writeFloat")
         "toString" -> getIdent (Ident "Float_toString")
         "toInt" -> getIdent (Ident "Float_toInt")
         "pow" -> getIdent (Ident "Float_pow")
     TBool _ -> case attr of
+        "write" -> getIdent (Ident "writeBool")
         "toString" -> getIdent (Ident "Bool_toString")
     TChar _ -> case attr of
+        "write" -> getIdent (Ident "writeChar")
         "toString" -> getIdent (Ident "Char_toString")
     TString _ -> case attr of
         "write" -> getIdent (Ident "write")

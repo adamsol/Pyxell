@@ -20,6 +20,8 @@ libBase = do
         "@format.d = internal constant [5 x i8] c\"%lld\\00\"",
         "@format.fw = internal constant [6 x i8] c\"%.15g\\00\"",
         "@format.fr = internal constant [4 x i8] c\"%lg\\00\"",
+        "@format.bt = internal constant [5 x i8] c\"true\\00\"",
+        "@format.bf = internal constant [6 x i8] c\"false\\00\"",
         "@format.c = internal constant [3 x i8] c\"%c\\00\"",
         "",
         "declare i64 @printf(i8*, ...)",
@@ -57,6 +59,21 @@ libBase = do
     define (tFunc [tString] tVoid) (Ident "writeLine") $ do
         callVoid "@func.write" [(tString, "%0")]
         call tInt "@putchar" [(tChar, "10")]
+        retVoid
+    define (tFunc [tInt] tVoid) (Ident "writeInt") $ do
+        format "d" 5 >>= \f -> call tInt "(i8*, ...) @printf" [(tPtr tChar, f), (tInt, "%0")]
+        retVoid
+    define (tFunc [tFloat] tVoid) (Ident "writeFloat") $ do
+        format "fw" 6 >>= \f -> call tInt "(i8*, ...) @printf" [(tPtr tChar, f), (tFloat, "%0")]
+        retVoid
+    define (tFunc [tBool] tVoid) (Ident "writeBool") $ do
+        f1 <- format "bt" 5
+        f2 <- format "bf" 6
+        f <- select "%0" (tPtr tChar) f1 f2
+        call tInt "(i8*, ...) @printf" [(tPtr tChar, f)]
+        retVoid
+    define (tFunc [tChar] tVoid) (Ident "writeChar") $ do
+        format "c" 3 >>= \f -> call tInt "(i8*, ...) @printf" [(tPtr tChar, f), (tChar, "%0")]
         retVoid
 
     -- Standard input
