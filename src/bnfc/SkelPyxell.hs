@@ -32,6 +32,11 @@ transStmt x = case x of
   SAssgMod _ expr1 expr2 -> failure x
   SAssgAdd _ expr1 expr2 -> failure x
   SAssgSub _ expr1 expr2 -> failure x
+  SAssgBShl _ expr1 expr2 -> failure x
+  SAssgBShr _ expr1 expr2 -> failure x
+  SAssgBAnd _ expr1 expr2 -> failure x
+  SAssgBOr _ expr1 expr2 -> failure x
+  SAssgBXor _ expr1 expr2 -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
   SUntil _ expr block -> failure x

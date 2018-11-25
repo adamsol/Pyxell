@@ -195,15 +195,25 @@ checkStmt statement cont = case statement of
         e1:e2:es -> do
             checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
     SAssgMul pos expr1 expr2 -> do
-        checkStmt (SAssg pos [expr1, EMul pos expr1 expr2]) cont
+        checkAssgOp pos EMul expr1 expr2 cont
     SAssgDiv pos expr1 expr2 -> do
-        checkStmt (SAssg pos [expr1, EDiv pos expr1 expr2]) cont
+        checkAssgOp pos EDiv expr1 expr2 cont
     SAssgMod pos expr1 expr2 -> do
-        checkStmt (SAssg pos [expr1, EMod pos expr1 expr2]) cont
+        checkAssgOp pos EMod expr1 expr2 cont
     SAssgAdd pos expr1 expr2 -> do
-        checkStmt (SAssg pos [expr1, EAdd pos expr1 expr2]) cont
+        checkAssgOp pos EAdd expr1 expr2 cont
     SAssgSub pos expr1 expr2 -> do
-        checkStmt (SAssg pos [expr1, ESub pos expr1 expr2]) cont
+        checkAssgOp pos ESub expr1 expr2 cont
+    SAssgBShl pos expr1 expr2 -> do
+        checkAssgOp pos EBShl expr1 expr2 cont
+    SAssgBShr pos expr1 expr2 -> do
+        checkAssgOp pos EBShr expr1 expr2 cont
+    SAssgBAnd pos expr1 expr2 -> do
+        checkAssgOp pos EBAnd expr1 expr2 cont
+    SAssgBOr pos expr1 expr2 -> do
+        checkAssgOp pos EBOr expr1 expr2 cont
+    SAssgBXor pos expr1 expr2 -> do
+        checkAssgOp pos EBXor expr1 expr2 cont
     SIf pos brs el -> do
         checkBranches brs
         case el of
@@ -264,6 +274,8 @@ checkStmt statement cont = case statement of
                     cont
                 else throw pos $ NotLvalue
             otherwise -> throw pos $ NotLvalue
+        checkAssgOp pos op expr1 expr2 cont = do
+            checkStmt (SAssg pos [expr1, op pos expr1 expr2]) cont
         checkBranches brs = case brs of
             [] -> skip
             b:bs -> case b of

@@ -88,15 +88,25 @@ compileStmt statement cont = case statement of
         e1:e2:es -> do
             compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
     SAssgMul _pos expr1 expr2 -> do
-        compileStmt (SAssg _pos [expr1, EMul _pos expr1 expr2]) cont
+        compileAssgOp EMul expr1 expr2 cont
     SAssgDiv pos expr1 expr2 -> do
-        compileStmt (SAssg _pos [expr1, EDiv _pos expr1 expr2]) cont
+        compileAssgOp EDiv expr1 expr2 cont
     SAssgMod pos expr1 expr2 -> do
-        compileStmt (SAssg _pos [expr1, EMod _pos expr1 expr2]) cont
+        compileAssgOp EMod expr1 expr2 cont
     SAssgAdd pos expr1 expr2 -> do
-        compileStmt (SAssg _pos [expr1, EAdd _pos expr1 expr2]) cont
+        compileAssgOp EAdd expr1 expr2 cont
     SAssgSub pos expr1 expr2 -> do
-        compileStmt (SAssg _pos [expr1, ESub _pos expr1 expr2]) cont
+        compileAssgOp ESub expr1 expr2 cont
+    SAssgBShl pos expr1 expr2 -> do
+        compileAssgOp EBShl expr1 expr2 cont
+    SAssgBShr pos expr1 expr2 -> do
+        compileAssgOp EBShr expr1 expr2 cont
+    SAssgBAnd pos expr1 expr2 -> do
+        compileAssgOp EBAnd expr1 expr2 cont
+    SAssgBOr pos expr1 expr2 -> do
+        compileAssgOp EBOr expr1 expr2 cont
+    SAssgBXor pos expr1 expr2 -> do
+        compileAssgOp EBXor expr1 expr2 cont
     SIf _ brs el -> do
         l <- nextLabel
         compileBranches brs l
@@ -168,6 +178,8 @@ compileStmt statement cont = case statement of
                     cont
                 (Nothing, EVar _ id) -> do
                     variable typ id val cont
+        compileAssgOp op expr1 expr2 cont = do
+            compileStmt (SAssg _pos [expr1, op _pos expr1 expr2]) cont
         compileBranches brs exit = case brs of
             [] -> skip
             b:bs -> case b of

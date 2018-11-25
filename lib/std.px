@@ -28,7 +28,7 @@ func Int_pow(Int b, Int e) Int def
         if e % 2 > 0 do
             r *= b
         b *= b
-        e /= 2
+        e >>= 1
     return r
 
 func Float_pow(Float b, Float e) Float extern

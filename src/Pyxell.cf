@@ -37,6 +37,11 @@ SAssgDiv.          Stmt   ::= Expr "/=" Expr;
 SAssgMod.          Stmt   ::= Expr "%=" Expr;
 SAssgAdd.          Stmt   ::= Expr "+=" Expr;
 SAssgSub.          Stmt   ::= Expr "-=" Expr;
+SAssgBShl.         Stmt   ::= Expr "<<=" Expr;
+SAssgBShr.         Stmt   ::= Expr ">>=" Expr;
+SAssgBAnd.         Stmt   ::= Expr "&=" Expr;
+SAssgBOr.          Stmt   ::= Expr "|=" Expr;
+SAssgBXor.         Stmt   ::= Expr "^=" Expr;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
 BElIf.             Branch ::= Expr "do" Block ;
