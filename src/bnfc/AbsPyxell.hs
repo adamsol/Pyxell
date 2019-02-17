@@ -209,7 +209,6 @@ data Type a
     = TPtr a (Type a)
     | TArr a Integer (Type a)
     | TDeref a (Type a)
-    | TLabel a
     | TVoid a
     | TInt a
     | TFloat a
@@ -229,7 +228,6 @@ instance Functor Type where
         TPtr a type_ -> TPtr (f a) (fmap f type_)
         TArr a integer type_ -> TArr (f a) integer (fmap f type_)
         TDeref a type_ -> TDeref (f a) (fmap f type_)
-        TLabel a -> TLabel (f a)
         TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
         TFloat a -> TFloat (f a)

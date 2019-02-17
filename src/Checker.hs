@@ -94,17 +94,21 @@ throw pos err = case pos of
     Just (r, c) -> fail $ ":" ++ show r ++ ":" ++ show c ++ ": " ++ show err
     Nothing -> fail $ ": " ++ show err
 
--- | Returns current nesting level.
-getLevel :: Run Level
-getLevel = do
-    Just (_, l) <- asks (M.lookup (Ident "#level"))
-    return $ l
 
--- | Runs continuation on a higher nesting level.
-nextLevel :: Run a -> Run a
-nextLevel cont = do
-    l <- getLevel
-    local (M.insert (Ident "#level") (tLabel, l+1)) cont
+-- | Inserts a label into the map and continues with changed environment.
+localLevel :: String -> Level -> Run a -> Run a
+localLevel name lvl cont = do
+    local (M.insert (Ident name) (tVoid, lvl)) cont
+
+-- | Inserts a variable into the map and continues with changed environment.
+localType :: Ident -> Type -> Run a -> Run a
+localType id typ cont = do
+    local (M.insert id (typ, 0)) cont
+
+-- | Inserts a variable into the map and continues with changed environment.
+localVar :: Ident -> Type -> Level -> Run a -> Run a
+localVar id typ lvl cont = do
+    local (M.insert id (typ, lvl)) cont
 
 -- | Gets an identifier from the environment.
 getIdent :: Pos -> Ident -> Run (Maybe Type)
@@ -117,13 +121,26 @@ getIdent pos id = do
             else return $ Just t
         Nothing -> return $ Nothing
 
--- | Adds an identifier to the environment.
+-- | Runs continuation on a higher nesting level.
+nextLevel :: Run a -> Run a
+nextLevel cont = do
+    l <- getLevel
+    localLevel "#level" (l+1) cont
+
+-- | Returns current nesting level.
+getLevel :: Run Level
+getLevel = do
+    Just (_, l) <- asks (M.lookup (Ident "#level"))
+    return $ l
+
+
+-- | Declares a variable and continues with changed environment.
 declare :: Pos -> Type -> Ident -> Run a -> Run a
 declare pos typ id cont = case typ of
     TVoid _ -> throw pos $ VoidDeclaration
     otherwise -> do
         l <- getLevel
-        local (M.insert id (typ, l)) cont
+        localVar id typ l cont
 
 
 -- | Checks the whole program and returns environment.
@@ -222,10 +239,10 @@ checkStmt statement cont = case statement of
                 cont
             EEmpty pos -> cont
     SWhile pos expr block -> do
-        local (M.insert (Ident "#loop") (tLabel, 0)) $ checkCond pos expr block
+        localLevel "#loop" 0 $ checkCond pos expr block
         cont
     SUntil pos expr block -> do
-        local (M.insert (Ident "#loop") (tLabel, 0)) $ checkCond pos expr block
+        localLevel "#loop" 0 $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> do
         checkStmt (SForStep pos expr1 expr2 (EInt _pos 1) block) cont
@@ -233,7 +250,7 @@ checkStmt statement cont = case statement of
         (t1, _) <- checkExpr expr3
         checkCast pos t1 tInt
         t2 <- checkFor pos expr2
-        local (M.insert (Ident "#loop") (tLabel, 0)) $ case (expr1, t2) of
+        localLevel "#loop" 0 $ case (expr1, t2) of
             (ETuple _ es, TTuple _ ts) -> do
                 if length es == length ts then checkAssgs pos es ts (checkBlock block >> cont)
                 else throw pos $ CannotUnpack t2 (length es)
@@ -326,7 +343,7 @@ checkFunc pos id args ret block cont = do
     declare pos (tFunc as r) id $ do  -- so global functions are global
         case block of
             Just b -> nextLevel $ declare pos (tFunc as r) id $ do  -- so recursion works inside the function
-                checkArgs args False $ local (M.insert (Ident "#return") (r, 0)) $ local (M.delete (Ident "#loop")) $ checkBlock b
+                checkArgs args False $ localType (Ident "#return") r $ local (M.delete (Ident "#loop")) $ checkBlock b
             Nothing -> skip
         cont
     where

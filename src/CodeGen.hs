@@ -18,10 +18,10 @@ import Utils
 type Value = String
 type Result = (Type, Value)
 
--- | Compiler enviroments.
+-- | Compiler enviroment and state.
 type Env = M.Map Ident Result
 data StateItem = Number Int | Label Value
-type State = (M.Map Value StateItem)
+type State = M.Map Value StateItem
 
 -- | LLVM code for each scope (function or global).
 type Output = M.Map String [String]
@@ -34,19 +34,6 @@ type Run r = ReaderT Env (StateT State (StateT Output IO)) r
 skip :: Run ()
 skip = do
     return $ ()
-
--- | Runs compilation in a given scope (function).
-scope :: Value -> Run a -> Run a
-scope name cont = do
-    local (M.insert (Ident "#scope") (tVoid, name)) cont
-
--- | Returns name of the current scope (function).
-getScope :: Run Value
-getScope = do
-    r <- asks (M.lookup (Ident "#scope"))
-    case r of
-        Just (_, name) -> return $ name
-        Nothing -> return $ "!global"
 
 -- | Outputs several lines of LLVM code in the current scope.
 write :: [String] -> Run ()
@@ -64,9 +51,38 @@ writeTop lines = do
 indent :: [String] -> [String]
 indent lines = map ('\t':) lines
 
+
+-- | Inserts a label into the map and continues with changed environment.
+localLabel :: String -> Value -> Run a -> Run a
+localLabel name lbl cont = do
+    local (M.insert (Ident name) (tVoid, lbl)) cont
+
+-- | Inserts a type into the map and continues with changed environment.
+localType :: Ident -> Type -> Run a -> Run a
+localType id typ cont = do
+    local (M.insert id (typ, "")) $ cont
+
+-- | Inserts a variable into the map and continues with changed environment.
+localVar :: Ident -> Type -> Value -> Run a -> Run a
+localVar id typ val cont = do
+    local (M.insert id (typ, val)) cont
+
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Result)
 getIdent id = asks (M.lookup id)
+
+-- | Runs continuation in a given scope (function).
+localScope :: Value -> Run a -> Run a
+localScope name cont = do
+    localLabel "#scope" name cont
+
+-- | Returns name of the current scope (function).
+getScope :: Run Value
+getScope = do
+    r <- asks (M.lookup (Ident "#scope"))
+    case r of
+        Just (_, name) -> return $ name
+        Nothing -> return $ "!global"
 
 
 -- | LLVM string representation for a given type.
@@ -164,10 +180,11 @@ getLabel = do
     Label l <- lift $ gets (M.! ("$label-" ++ s))
     return $ l
 
+
 -- | Outputs a function declaration.
 declare :: Type -> Value -> Run ()
 declare (TFunc _ args rt) name = do
-    scope "!global" $ write $ [ "declare " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ")" ]
+    localScope "!global" $ write $ [ "declare " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ")" ]
 
 -- | Outputs new function definition with given body.
 define :: Type -> Ident -> Run () -> Run ()
@@ -175,7 +192,7 @@ define typ id body = do
     let (TFunc _ args rt) = typ
     s <- getScope
     let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
-    scope f $ do
+    localScope f $ do
         (as, r) <- case rt of
             TTuple _ _ -> return $ (rt : args, tVoid)
             otherwise -> return $ (args, rt)
@@ -242,10 +259,10 @@ variable :: Type -> Ident -> Value -> Run a -> Run a
 variable typ id val cont = do
     s <- getScope
     p <- case s of
-        "main" -> scope "!global" $ global typ (defaultValue typ)
+        "main" -> localScope "!global" $ global typ (defaultValue typ)
         otherwise -> alloca typ
     store typ val p
-    local (M.insert id (typ, p)) cont
+    localVar id typ p cont
 
 -- | Outputs LLVM 'getelementptr' command with given indices.
 gep :: Type -> Value -> [Value] -> [Int] -> Run Value
@@ -383,7 +400,7 @@ initString :: String -> Run Value
 initString str = do
     let l = length str
     let t = (tArr (toInteger l) tChar)
-    c <- scope "!global" $ constant t ("[" ++ intercalate ", " [strType tChar ++ " " ++ show (ord c) | c <- str] ++ "]")
+    c <- localScope "!global" $ constant t ("[" ++ intercalate ", " [strType tChar ++ " " ++ show (ord c) | c <- str] ++ "]")
     p1 <- initMemory tString "1"
     p2 <- gep (tPtr t) c ["0"] [0]
     gep tString p1 ["0"] [0] >>= store (tPtr tChar) p2

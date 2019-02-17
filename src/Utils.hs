@@ -83,7 +83,6 @@ reduceType t = do
 tPtr = TPtr Nothing
 tArr = TArr Nothing
 tDeref = TDeref Nothing
-tLabel = TLabel Nothing
 tVoid = TVoid Nothing
 tInt = TInt Nothing
 tFloat = TFloat Nothing

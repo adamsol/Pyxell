@@ -53,7 +53,7 @@ main = do
             let file = fst $ splitExtension path
             let paths = [abspath </> "lib/std.px", abspath </> "lib/math.px", path]
             -- Type-check all files, passing down the environment.
-            (_, units) <- foldM' (M.fromList [(Ident "#level", (tLabel, 0))], []) paths $ \(env, units) path -> do
+            (_, units) <- foldM' (M.fromList [(Ident "#level", (tVoid, 0))], []) paths $ \(env, units) path -> do
                 code <- readFile path
                 case pProgram $ resolveLayout True $ myLexer code of
                     Bad err -> do

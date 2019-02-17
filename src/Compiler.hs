@@ -20,6 +20,7 @@ import CodeGen
 import Utils
 
 
+-- | Initializes the environment and outputs LLVM code with function declarations.
 initCompiler :: Run Env
 initCompiler = do
     lift $ modify (M.insert "$number" (Number 0))
@@ -33,7 +34,7 @@ initCompiler = do
 -- | Outputs LLVM code for all statements in the program.
 compileProgram :: Program Pos -> Run Env
 compileProgram program = case program of
-    Program _ stmts -> scope "main" $ compileStmts stmts ask
+    Program _ stmts -> localScope "main" $ compileStmts stmts ask
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
@@ -123,14 +124,14 @@ compileStmt statement cont = case statement of
         (_, v) <- compileExpr expr
         branch v l2 l3
         label l2
-        local (M.insert (Ident "#break") (tLabel, l3)) $ local (M.insert (Ident "#continue") (tLabel, l1)) $ compileBlock block
+        localLabel "#break" l3 $ localLabel "#continue" l1 $ compileBlock block
         goto l1
         label l3
         cont
     SUntil _ expr block -> do
         [l1, l2] <- sequence (replicate 2 nextLabel)
         goto l1 >> label l1
-        local (M.insert (Ident "#break") (tLabel, l2)) $ local (M.insert (Ident "#continue") (tLabel, l1)) $ compileBlock block
+        localLabel "#break" l2 $ localLabel "#continue" l1 $ compileBlock block
         (_, v) <- compileExpr expr
         branch v l2 l1
         label l2
@@ -268,13 +269,14 @@ compileStmt statement cont = case statement of
                     label l4
                 vs2 <- forM (zip gets vs1) $ \(get, v) -> get v
                 case (es, ts2) of
-                    (_:_:_, [TTuple _ ts']) -> compileAssgs (zip3 ts' es [0..]) (head ts2) (head vs2) skip  -- for a, b in [(1, 2)] do
+                    (_:_:_, [TTuple _ ts']) -> do   -- for a, b in [(1, 2)] do
+                        compileAssgs (zip3 ts' es [0..]) (head ts2) (head vs2) skip
                     ([e], _:_:_) -> do  -- for t in 1..2, 3..4 do
                         p <- alloca (tDeref (tTuple ts2))
                         forM (zip3 ts2 vs2 [0..]) $ \(t, v, i) -> gep (tTuple ts2) p ["0"] [i] >>= store t v
                         compileAssg (tTuple ts2) e p skip
                     otherwise -> forM_ (zip3 ts2 es vs2) $ \(t, e, v) -> compileAssg t e v skip
-                local (M.insert (Ident "#break") (tLabel, l2)) $ local (M.insert (Ident "#continue") (tLabel, l3)) $ compileBlock block
+                localLabel "#break" l2 $ localLabel "#continue" l3 $ compileBlock block
                 goto l3 >> label l3
                 vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> binop "add" t v s
                 forM (zip3 ts1 vs3 ps) $ \(t, v, p) -> store t v p
@@ -292,8 +294,8 @@ compileFunc id args rt block cont = do
             return $ tArgN (reduceType t) id
         ADefault _ t id e -> do
             t <- return $ reduceType t
-            p <- scope f $ global t (defaultValue t)
-            scope "main" $ do
+            p <- localScope f $ global t (defaultValue t)
+            localScope "main" $ do
                 (_, v) <- compileExpr e
                 store t v p
             return $ tArgD t id p
@@ -303,9 +305,9 @@ compileFunc id args rt block cont = do
     i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
         TTuple _ _ -> return $ 1
         otherwise -> return $ 0
-    local (M.insert id (t, p)) $ do
+    localVar id t p $ do
         case block of
-            Just b -> define t id $ compileArgs args i $ local (M.insert (Ident "#return") (r, "")) $ do
+            Just b -> define t id $ compileArgs args i $ localType (Ident "#return") r $ do
                 l <- nextLabel
                 goto l >> label l
                 compileBlock b
@@ -313,7 +315,7 @@ compileFunc id args rt block cont = do
                     TTuple _ _ -> retVoid
                     otherwise -> ret r (defaultValue r)
             Nothing -> do
-                scope "!global" $ external p t
+                localScope "!global" $ external p t
                 skip
         cont p
     where

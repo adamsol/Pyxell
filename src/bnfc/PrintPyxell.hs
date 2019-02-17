@@ -242,7 +242,6 @@ instance Print (Type a) where
     TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TArr _ n type_ -> prPrec i 4 (concatD [prt 0 n, prt 4 type_])
     TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
-    TLabel _ -> prPrec i 4 (concatD [doc (showString "Label")])
     TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TFloat _ -> prPrec i 4 (concatD [doc (showString "Float")])
