@@ -103,8 +103,6 @@ strType typ = case reduceType typ of
     TFunc _ as r -> case r of
         TTuple _ _ -> strType (tFunc (r:as) tVoid)
         otherwise -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
-    TArgN _ t' _ -> strType t'
-    TArgD _ t' _ _ -> strType t'
 
 -- | Returns a default value for a given type.
 -- | This function is for LLVM code and only serves its internal requirements.
@@ -196,13 +194,13 @@ define typ id body = do
         (as, r) <- case rt of
             TTuple _ _ -> return $ (rt : args, tVoid)
             otherwise -> return $ (args, rt)
-        writeTop $ [ "",
+        writeTop $ [
             "@f" ++ f ++ " = global " ++ strType typ ++ " @func" ++ f,
             "define " ++ strType r ++ " @func" ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
             "entry:" ]
         lift $ modify (M.insert ("$label-" ++ f) (Label "entry"))
         body
-        write $ [ "}" ]
+        write $ [ "}", "" ]
 
 -- | Outputs LLVM 'br' command with a single goal.
 goto :: Value -> Run ()

@@ -1,10 +1,14 @@
 
-func f(Int x: 7) Int def
-    return x
+func div(Int x, Int y) Int def
+    return x / y
 
-func f'(Int y) Int def
-    return y
+func get(String s) Int,Int->Int def
+    print s
+    return div
 
-g = f
-f = f'
-print f(), g()
+func f(String->Int,Int->Int g, String s, Int b) Int def
+    h = g(s)
+    print h(b, 1)
+    return h(b, 4)
+
+print f(get, "xyz", 8)

@@ -126,7 +126,6 @@ transType x = case x of
   TString _ -> failure x
   TArray _ type_ -> failure x
   TTuple _ types -> failure x
-  TArgN _ type_ ident -> failure x
-  TArgD _ type_ ident string -> failure x
   TFunc _ types type_ -> failure x
+  TDef _ ident argfs type_ -> failure x
 

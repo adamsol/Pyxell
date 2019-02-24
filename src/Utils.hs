@@ -35,8 +35,6 @@ instance {-# OVERLAPS #-} Show Type where
         TArray _ t' -> "[" ++ show t' ++ "]"
         TTuple _ ts -> intercalate "*" (map show ts)
         TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
-        TArgN _ t' _ -> show t'
-        TArgD _ t' _ _ -> show t'
 
 
 -- | Some useful versions of standard functions.
@@ -46,8 +44,8 @@ foldM' b a f = foldM f b a
 -- | Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
 unifyTypes t1 t2 = do
-    case (t1, t2) of
-        (TVoid _, TVoid _) -> Just tInt
+    case (reduceType t1, reduceType t2) of
+        (TVoid _, TVoid _) -> Just tVoid
         (TInt _, TInt _) -> Just tInt
         (TFloat _, TFloat _) -> Just tFloat
         (TBool _, TBool _) -> Just tBool
@@ -64,20 +62,23 @@ unifyTypes t1 t2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
-        (TArgN _ t1' _, _) -> unifyTypes t1' t2
-        (TArgD _ t1' _ _, _) -> unifyTypes t1' t2
-        (_, TArgN _ t2' _) -> unifyTypes t1 t2'
-        (_, TArgD _ t2' _ _) -> unifyTypes t1 t2'
         otherwise -> Nothing
 
--- | Try to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
+-- | Tries to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
 reduceType :: Type -> Type
 reduceType t = do
     case t of
         TArray _ t' -> tArray (reduceType t')
         TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
         TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
+        TDef _ _ as r -> tFunc (map typeArg as) (reduceType r)
         otherwise -> t
+
+-- | Retrieves type from function argument data.
+typeArg :: ArgF Pos -> Type
+typeArg arg = case arg of
+    ANoDefault _ t _ -> reduceType t
+    ADefault _ t _ _ -> reduceType t
 
 -- | Helper functions for initializing types without a position.
 tPtr = TPtr Nothing
@@ -93,8 +94,7 @@ tString = TString Nothing
 tArray = TArray Nothing
 tTuple = TTuple Nothing
 tFunc = TFunc Nothing
-tArgN  = TArgN Nothing
-tArgD = TArgD Nothing
+tDef = TDef Nothing
 
 -- | Shorter name for none position.
 _pos = Nothing
@@ -104,6 +104,12 @@ debug x = liftIO $ print x
 
 -- | Changes apostrophes to hyphens.
 escapeName (Ident name) = [if c == '\'' then '-' else c | c <- name]
+
+-- | Returns a special identifier for function's definition in the environment.
+definitionIdent (Ident name) = Ident ("$" ++ name)
+
+-- | Returns a special identifier for function's argument in the environment.
+argumentIdent (Ident f) (Ident a) = Ident (f ++ "." ++ a)
 
 -- | Splits a string into formatting parts.
 interpolateString :: String -> ([String], [String])
@@ -116,11 +122,13 @@ interpolateString str =
         Nothing -> ([str], [""])
 
 -- | Gets function argument by its name.
-getArgument :: [Type] -> Ident -> Maybe (Int, Type)
-getArgument args id = find' (zip [0..] args) $ \(_, a) -> case a of
-    TArgN _ _ id' -> id == id'
-    TArgD _ _ id' _ -> id == id'
-    otherwise -> False
+getArgument :: [ArgF Pos] -> Ident -> Maybe (Int, Type)
+getArgument args id = getArgument' args id 0
+    where
+        getArgument' args id i = case args of
+            [] -> Nothing
+            (ANoDefault _ t id'):as -> if id == id' then Just (i, t) else getArgument' as id (i+1)
+            (ADefault _ t id' _):as -> if id == id' then Just (i, t) else getArgument' as id (i+1)
 
 -- | Builds a lambda expression from expression with placeholders.
 convertLambda :: Pos -> Expr Pos -> Expr Pos

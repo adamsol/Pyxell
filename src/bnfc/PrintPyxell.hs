@@ -251,9 +251,8 @@ instance Print (Type a) where
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])
     TArray _ type_ -> prPrec i 4 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
-    TArgN _ type_ id -> prPrec i 2 (concatD [prt 1 type_, prt 0 id])
-    TArgD _ type_ id str -> prPrec i 2 (concatD [prt 1 type_, prt 0 id, prt 0 str])
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
+    TDef _ id argfs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 argfs, prt 0 type_])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]
   prtList 2 [] = concatD []

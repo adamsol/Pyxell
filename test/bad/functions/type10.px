@@ -1,0 +1,5 @@
+
+func f(Int x) Int def
+    return x
+
+f = f

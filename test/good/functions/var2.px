@@ -1,12 +1,12 @@
 
-func id(Int x) Int def
-    print("id")
-    return x
+func call(->Void proc) def
+    proc()
 
-func id'(Int x) Int def
-    print("id'")
-    return x
+func p1() def
+    print "p1"
 
-id = id'
-id' = id
-print id(5)
+func p2() def
+    print "p2"
+
+call(p1)
+call(p2)

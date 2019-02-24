@@ -1,0 +1,6 @@
+
+func f(Int x) Int def
+    return x
+
+g = f
+print g(x=9)

@@ -218,9 +218,8 @@ data Type a
     | TString a
     | TArray a (Type a)
     | TTuple a [Type a]
-    | TArgN a (Type a) Ident
-    | TArgD a (Type a) Ident String
     | TFunc a [Type a] (Type a)
+    | TDef a Ident [ArgF a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -237,6 +236,5 @@ instance Functor Type where
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
-        TArgN a type_ ident -> TArgN (f a) (fmap f type_) ident
-        TArgD a type_ ident string -> TArgD (f a) (fmap f type_) ident string
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
+        TDef a ident argfs type_ -> TDef (f a) ident (map (fmap f) argfs) (fmap f type_)

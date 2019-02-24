@@ -1,12 +1,12 @@
 
-func f(Int x) Int def
-    return x
+func f(Int x) def
+    print x
 
-func f'(Int y: 0) Int def
-    return y
+func f'(Int x: 0) def
+    print x
 
-g = f
-f = f'
-print f(x=5)
-print g(x=9)
-print f'(1), f'()
+g = f'
+a = [f']
+a = [f, g]
+a[0](5)
+a[1](9)
