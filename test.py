@@ -27,13 +27,15 @@ parser.add_argument('-t', '--target-windows-gnu', action='store_true',
                     help="run compiler with -target x86_64-pc-windows-gnu")
 args = parser.parse_args()
 
-# Run tests that satisfy a given pattern.
-i = 0
+# Run tests that satisfy the pattern.
+tests = []
 for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
-    if args.pattern.replace('/', os.path.sep) not in path:
-        continue
-    i += 1
-    print(f"{B}> TEST {i}:{E} {path}")
+    if args.pattern.replace('/', os.path.sep) in path:
+        tests.append(path)
+n = len(tests)
+
+for i, path in enumerate(tests, 1):
+    print(f"{B}> TEST {i}/{n}:{E} {path}")
 
     with open('tmp.out', 'w') as outfile:
         try:
