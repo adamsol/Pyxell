@@ -20,7 +20,7 @@ type Result = (Type, Value)
 
 -- | Compiler enviroment and state.
 type Env = M.Map Ident Result
-data StateItem = Number Int | Label Value
+data StateItem = Number Int | Label Value | Function Env
 type State = M.Map Value StateItem
 
 -- | LLVM code for each scope (function or global).
@@ -67,9 +67,15 @@ localVar :: Ident -> Type -> Value -> Run a -> Run a
 localVar id typ val cont = do
     local (M.insert id (typ, val)) cont
 
--- | Gets an identifier from the environment.
-getIdent :: Ident -> Run (Maybe Result)
-getIdent id = asks (M.lookup id)
+-- | Inserts a function into the map and saves environment for later compilation.
+localFunction :: Ident -> Type -> Run a -> Run a
+localFunction id typ cont = do
+    f <- functionName id
+    let p = "@f" ++ f
+    localVar id typ p $ do
+        env <- ask
+        lift $ modify (M.insert p (Function env))
+        cont
 
 -- | Runs continuation in a given scope (function).
 localScope :: Value -> Run a -> Run a
@@ -108,7 +114,7 @@ strType typ = case reduceType typ of
 -- | This function is for LLVM code and only serves its internal requirements.
 -- | Returned values are not to be relied upon.
 defaultValue :: Type -> Value
-defaultValue typ = case typ of
+defaultValue typ = case reduceType typ of
     TVoid _ -> ""
     TInt _ -> "42"
     TFloat _ -> "6.0"
@@ -178,6 +184,17 @@ getLabel = do
     Label l <- lift $ gets (M.! ("$label-" ++ s))
     return $ l
 
+-- | Returns unique function name to use in LLVM code.
+functionName :: Ident -> Run Value
+functionName id = do
+    s <- getScope
+    let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
+    return $ f
+
+-- | Returns a special identifier for function's argument in the environment.
+argumentPointer :: Ident -> Ident -> Value
+argumentPointer f a = "@g." ++ escapeName f ++ "." ++ escapeName a
+
 
 -- | Outputs a function declaration.
 declare :: Type -> Value -> Run ()
@@ -188,8 +205,7 @@ declare (TFunc _ args rt) name = do
 define :: Type -> Ident -> Run () -> Run ()
 define typ id body = do
     let (TFunc _ args rt) = typ
-    s <- getScope
-    let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
+    f <- functionName id
     localScope f $ do
         (as, r) <- case rt of
             TTuple _ _ -> return $ (rt : args, tVoid)

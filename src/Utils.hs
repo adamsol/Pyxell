@@ -71,11 +71,12 @@ reduceType t = do
         TArray _ t' -> tArray (reduceType t')
         TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
         TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
-        TDef _ _ as r -> tFunc (map typeArg as) (reduceType r)
+        TFuncDef _ _ as r _ -> tFunc (map typeArg as) (reduceType r)
+        TFuncExt _ _ as r -> tFunc (map typeArg as) (reduceType r)
         otherwise -> t
 
 -- | Retrieves type from function argument data.
-typeArg :: ArgF Pos -> Type
+typeArg :: FArg Pos -> Type
 typeArg arg = case arg of
     ANoDefault _ t _ -> reduceType t
     ADefault _ t _ _ -> reduceType t
@@ -94,7 +95,8 @@ tString = TString Nothing
 tArray = TArray Nothing
 tTuple = TTuple Nothing
 tFunc = TFunc Nothing
-tDef = TDef Nothing
+tFuncDef = TFuncDef Nothing
+tFuncExt = TFuncExt Nothing
 
 -- | Shorter name for none position.
 _pos = Nothing
@@ -104,12 +106,6 @@ debug x = liftIO $ print x
 
 -- | Changes apostrophes to hyphens.
 escapeName (Ident name) = [if c == '\'' then '-' else c | c <- name]
-
--- | Returns a special identifier for function's definition in the environment.
-definitionIdent (Ident name) = Ident ("$" ++ name)
-
--- | Returns a special identifier for function's argument in the environment.
-argumentIdent (Ident f) (Ident a) = Ident (f ++ "." ++ a)
 
 -- | Splits a string into formatting parts.
 interpolateString :: String -> ([String], [String])
@@ -122,7 +118,7 @@ interpolateString str =
         Nothing -> ([str], [""])
 
 -- | Gets function argument by its name.
-getArgument :: [ArgF Pos] -> Ident -> Maybe (Int, Type)
+getArgument :: [FArg Pos] -> Ident -> Maybe (Int, Type)
 getArgument args id = getArgument' args id 0
     where
         getArgument' args id i = case args of

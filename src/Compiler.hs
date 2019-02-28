@@ -51,14 +51,14 @@ compileStmts statements cont = case statements of
 -- | Outputs LLVM code for a single statement and runs the continuation.
 compileStmt :: Stmt Pos -> Run a -> Run a
 compileStmt statement cont = case statement of
-    SProc _ id args block -> do
-        compileFunc id args tVoid (Just block) (const cont)
-    SFunc _ id args rt block -> do
-        compileFunc id args rt (Just block) (const cont)
-    SProcExtern _ id args -> do
-        compileFunc id args tVoid Nothing (const cont)
-    SFuncExtern _ id args rt -> do
-        compileFunc id args rt Nothing (const cont)
+    SFunc _ id args ret body -> do
+        r <- case ret of
+            FFunc _ t -> return $ t
+            FProc _ -> return $ tVoid
+        t <- case body of
+            FDef _ b -> return $ tFuncDef id args r b
+            FExtern _ -> return $ tFuncExt id args r
+        localFunction id t cont
     SRetVoid _ -> do
         retVoid
         cont
@@ -286,43 +286,43 @@ compileStmt statement cont = case statement of
                 cont
 
 -- | Outputs LLVM code for a function definition and initialization of its default arguments.
-compileFunc :: Ident -> [ArgF Pos] -> Type -> Maybe (Block Pos) -> (Value -> Run a) -> Run a
-compileFunc id args rt block cont = do
-    s <- getScope
-    let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
-    let as = map typeArg args
-    let r = reduceType rt
-    let t = tFunc as r
-    let p = "@f" ++ f
-    i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
-        TTuple _ _ -> return $ 1
-        otherwise -> return $ 0
-    localVar id (tDef id args rt) p $ compileDefaultArgs f args $ do
-        case block of
-            Just b -> define t id $ compileArgs args i $ localType (Ident "#return") r $ do
-                l <- nextLabel
-                goto l >> label l
-                compileBlock b
-                case r of
-                    TTuple _ _ -> retVoid
-                    otherwise -> ret r (defaultValue r)
-            Nothing -> do
-                localScope "!global" $ external p t
-                skip
-        cont p
+compileFunc :: Ident -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run Value
+compileFunc id args rt block = do
+    (_, p) <- asks (M.! id)
+    c <- lift $ gets (M.lookup p)
+    case c of
+        Nothing -> return $ p
+        Just (Function env) -> local (const env) $ do  -- environment is restored to the point of function definition
+            lift $ modify (M.delete p)
+            let as = map typeArg args
+            let r = reduceType rt
+            let t = tFunc as r
+            i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
+                TTuple _ _ -> return $ 1
+                otherwise -> return $ 0
+            f <- functionName id
+            forM args $ compileDefaultArg f
+            case block of
+                Just b -> define t id $ compileArgs args i $ localType (Ident "#return") r $ do
+                    l <- nextLabel
+                    goto l >> label l
+                    compileBlock b
+                    case r of
+                        TTuple _ _ -> retVoid
+                        otherwise -> ret r (defaultValue r)
+                Nothing -> do
+                    localScope "!global" $ external p t
+                    skip
+            return $ p
     where
-        compileDefaultArgs f args cont = case args of
-             [] -> cont
-             a:as -> compileDefaultArg f a (compileDefaultArgs f as cont)
-        compileDefaultArg f arg cont = case arg of
-            ANoDefault _ _ _ -> cont
-            ADefault _ typ id' e -> do
-                let t = reduceType typ
-                p <- localScope f $ global t (defaultValue t)
+        compileDefaultArg f arg = case arg of
+            ANoDefault _ _ _ -> skip
+            ADefault _ t id' e -> do
+                let p = argumentPointer id id'
+                localScope f $ writeTop $ [ p ++ " = global " ++ strType t ++ " " ++ defaultValue t ]
                 localScope "main" $ do
                     (_, v) <- compileExpr e
                     store t v p
-                localVar (argumentIdent id id') t p cont
         compileArgs args idx cont = case args of
              [] -> cont
              a:as -> compileArg a idx (compileArgs as (idx+1) cont)
@@ -332,6 +332,16 @@ compileFunc id args rt block cont = do
             ADefault _ typ id _ -> do
                 variable (reduceType typ) id ("%" ++ show idx) cont
 
+
+-- | Gets an identifier from the environment.
+getIdent :: Ident -> Run (Maybe Result)
+getIdent id = do
+    r <- asks (M.lookup id)
+    case r of
+        Just (TFuncDef _ id as r b, _) -> compileFunc id as r (Just b)
+        Just (TFuncExt _ id as r, _) -> compileFunc id as r Nothing
+        otherwise -> return $ ""
+    return $ r
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.
 compileExpr :: Expr Pos -> Run Result
@@ -374,10 +384,11 @@ compileExpr expression = case expression of
     EIndex _ _ _ -> compileRval expression
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
-        (t, f) <- compileExpr expr
-        (args1, args2, rt) <- case t of
+        (typ, f) <- compileExpr expr
+        (args1, args2, rt) <- case typ of
             TFunc _ as r -> return $ (as, [], r)
-            TDef _ _ as r -> return $ (map typeArg as, as, reduceType r)
+            TFuncDef _ id as r b -> return $ (map typeArg as, as, reduceType r)
+            TFuncExt _ id as r -> return $ (map typeArg as, as, reduceType r)
         args3 <- case expr of
             EAttr _ e _ -> return $ APos _pos e : args  -- if this is a method, the object is passed as the first argument
             otherwise -> return $ args
@@ -386,10 +397,9 @@ compileExpr expression = case expression of
         m <- foldM' m (zip [0..] args3) $ \m (i, a) -> do
             (e, i) <- case a of
                 APos _ e -> return $ (e, i)
-                ANamed _ id e -> case t of
-                    TDef _ _ as _ -> do
-                        let Just (i', _) = getArgument as id
-                        return $ (e, i')
+                ANamed _ id e -> do
+                    let Just (i', _) = getArgument args2 id
+                    return $ (e, i')
             (t, v) <- case convertLambda _pos e of
                 ELambda _ ids e' -> do
                     let t = args1 !! i
@@ -399,17 +409,20 @@ compileExpr expression = case expression of
                     b <- case r of
                         TVoid _ -> return $ SBlock _pos [SAssg _pos [e']]
                         otherwise -> return $ SBlock _pos [SRetExpr _pos e']
-                    p <- compileFunc id [ANoDefault _pos t id | (t, id) <- zip as ids] r (Just b) return
+                    p <- localFunction id t $ compileFunc id [ANoDefault _pos t' id' | (t', id') <- zip as ids] r (Just b)
                     v <- load t p
                     return $ (t, v)
                 otherwise -> do
                     compileExpr e
             return $ M.insert i (t, v) m
         -- Extend the map using default arguments.
-        m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, t, M.lookup i m) of
-            (ADefault _ t id' _, TDef _ id _ _, Nothing) -> do
+        m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
+            (ADefault _ t id' _, Nothing) -> do
+                id <- case typ of
+                    TFuncDef _ id _ _ _ -> return $ id
+                    TFuncExt _ id _ _ -> return $ id
                 t <- return $ reduceType t
-                Just (_, p) <- getIdent (argumentIdent id id')
+                let p = argumentPointer id id'
                 v <- load t p
                 return $ M.insert i (t, v) m
             otherwise -> return $ m
@@ -738,9 +751,7 @@ compileAttr typ val (Ident attr) = case typ of
 compileMethod :: Type -> Ident -> [Value] -> Run Result
 compileMethod typ id args = do
     Just (t, p1) <- compileAttr typ "" id
-    (as, r) <- case t of
-        TFunc _ as r -> return $ (as, r)
-        TDef _ _ as r -> return $ (map typeArg as, reduceType r)
+    let TFunc _ as r = reduceType t
     p2 <- load t p1
     v <- call r p2 (zip as args)
     return $ (r, v)

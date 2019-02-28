@@ -32,7 +32,7 @@ outputCode units path main = do
     -- Compile sequentially all units, passing down the environment and output.
     (_, output) <- foldM (\((e, s), o) unit -> runStateT (runStateT (runReaderT unit e) s) o) ((M.empty, M.empty), M.empty) (initCompiler : units)
     output <- case main of
-        True -> return $ M.insert "main-3" ["}", "\tret i64 0"] (M.insert "main-0" ["entry:", "define i64 @main() {", ""] output)
+        True -> return $ M.insert "main-3" ["}", "\tret i64 0"] (M.insert "main-0" ["entry:", "define i64 @main() {"] output)
         False -> return $ output
     -- Write concatenated output to the file.
     writeFile path (concat [unlines (reverse lines) | lines <- M.elems output])

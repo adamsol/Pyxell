@@ -1,0 +1,7 @@
+
+func f() def
+    x = false
+
+x = 1
+f()
+print x

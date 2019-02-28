@@ -14,13 +14,14 @@ separator          Stmt        ";" ;
 
 -- statements --
 
-SProc.             Stmt   ::= "func" Ident "(" [ArgF] ")" "def" Block ;
-SFunc.             Stmt   ::= "func" Ident "(" [ArgF] ")" Type "def" Block ;
-SProcExtern.       Stmt   ::= "func" Ident "(" [ArgF] ")" "extern" ;
-SFuncExtern.       Stmt   ::= "func" Ident "(" [ArgF] ")" Type "extern" ;
-ANoDefault.        ArgF   ::= Type Ident ;
-ADefault.          ArgF   ::= Type Ident ":" Expr2 ;
-separator          ArgF       "," ;
+SFunc.             Stmt   ::= "func" Ident "(" [FArg] ")" FRet FBody ;
+ANoDefault.        FArg   ::= Type Ident ;
+ADefault.          FArg   ::= Type Ident ":" Expr2 ;
+separator          FArg       "," ;
+FProc.             FRet   ::= "" ;
+FFunc.             FRet   ::= Type ;
+FDef.              FBody  ::= "def" Block ;
+FExtern.           FBody  ::= "extern" ;
 SRetVoid.          Stmt   ::= "return" ;
 SRetExpr.          Stmt   ::= "return" Expr ;
 
@@ -71,10 +72,10 @@ EArray.            Expr13 ::= "[" [Expr2] "]" ;
 EVar.              Expr13 ::= Ident ;
 EIndex.            Expr13 ::= Expr13 "[" Expr "]" ;
 EAttr.             Expr13 ::= Expr13 "." Ident ;
-ECall.             Expr13 ::= Expr13 "(" [ArgC] ")";
-APos.              ArgC   ::= Expr2 ;
-ANamed.            ArgC   ::= Ident "=" Expr2 ;
-separator          ArgC       "," ;
+ECall.             Expr13 ::= Expr13 "(" [CArg] ")";
+APos.              CArg   ::= Expr2 ;
+ANamed.            CArg   ::= Ident "=" Expr2 ;
+separator          CArg       "," ;
 
 EPow.              Expr12  ::= Expr13 "**" Expr12 ;
 EMinus.            Expr12  ::= "-" Expr12;
@@ -138,7 +139,8 @@ TString.           Type4  ::= "String" ;
 TArray.            Type4  ::= "[" Type "]" ;
 TTuple.            Type2  ::= [Type3] ;
 TFunc.             Type1  ::= [Type2] "->" Type1 ;
-internal TDef.     Type1  ::= Ident [ArgF] Type ;
+internal TFuncDef. Type1  ::= Ident [FArg] Type Block ;
+internal TFuncExt. Type1  ::= Ident [FArg] Type ;
 
 separator nonempty Type3      "*" ;
 separator          Type2      "," ;

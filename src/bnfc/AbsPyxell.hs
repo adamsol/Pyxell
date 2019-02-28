@@ -15,10 +15,7 @@ instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
 data Stmt a
-    = SProc a Ident [ArgF a] (Block a)
-    | SFunc a Ident [ArgF a] (Type a) (Block a)
-    | SProcExtern a Ident [ArgF a]
-    | SFuncExtern a Ident [ArgF a] (Type a)
+    = SFunc a Ident [FArg a] (FRet a) (FBody a)
     | SRetVoid a
     | SRetExpr a (Expr a)
     | SSkip a
@@ -46,10 +43,7 @@ data Stmt a
 
 instance Functor Stmt where
     fmap f x = case x of
-        SProc a ident argfs block -> SProc (f a) ident (map (fmap f) argfs) (fmap f block)
-        SFunc a ident argfs type_ block -> SFunc (f a) ident (map (fmap f) argfs) (fmap f type_) (fmap f block)
-        SProcExtern a ident argfs -> SProcExtern (f a) ident (map (fmap f) argfs)
-        SFuncExtern a ident argfs type_ -> SFuncExtern (f a) ident (map (fmap f) argfs) (fmap f type_)
+        SFunc a ident fargs fret fbody -> SFunc (f a) ident (map (fmap f) fargs) (fmap f fret) (fmap f fbody)
         SRetVoid a -> SRetVoid (f a)
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
         SSkip a -> SSkip (f a)
@@ -73,14 +67,28 @@ instance Functor Stmt where
         SForStep a expr1 expr2 expr3 block -> SForStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
-data ArgF a
+data FArg a
     = ANoDefault a (Type a) Ident | ADefault a (Type a) Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
 
-instance Functor ArgF where
+instance Functor FArg where
     fmap f x = case x of
         ANoDefault a type_ ident -> ANoDefault (f a) (fmap f type_) ident
         ADefault a type_ ident expr -> ADefault (f a) (fmap f type_) ident (fmap f expr)
+data FRet a = FProc a | FFunc a (Type a)
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor FRet where
+    fmap f x = case x of
+        FProc a -> FProc (f a)
+        FFunc a type_ -> FFunc (f a) (fmap f type_)
+data FBody a = FDef a (Block a) | FExtern a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor FBody where
+    fmap f x = case x of
+        FDef a block -> FDef (f a) (fmap f block)
+        FExtern a -> FExtern (f a)
 data Block a = SBlock a [Stmt a]
   deriving (Eq, Ord, Show, Read)
 
@@ -219,7 +227,8 @@ data Type a
     | TArray a (Type a)
     | TTuple a [Type a]
     | TFunc a [Type a] (Type a)
-    | TDef a Ident [ArgF a] (Type a)
+    | TFuncDef a Ident [FArg a] (Type a) (Block a)
+    | TFuncExt a Ident [FArg a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -237,4 +246,5 @@ instance Functor Type where
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
-        TDef a ident argfs type_ -> TDef (f a) ident (map (fmap f) argfs) (fmap f type_)
+        TFuncDef a ident fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fargs) (fmap f type_) (fmap f block)
+        TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)

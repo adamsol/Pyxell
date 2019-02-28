@@ -164,14 +164,14 @@ checkStmts statements cont = case statements of
 -- | Checks a single statement.
 checkStmt :: Stmt Pos -> Run a -> Run a
 checkStmt statement cont = case statement of
-    SProc pos id args block -> do
-        checkFunc pos id args tVoid (Just block) cont
-    SFunc pos id args ret block -> do
-        checkFunc pos id args ret (Just block) cont
-    SProcExtern pos id args -> do
-        checkFunc pos id args tVoid Nothing cont
-    SFuncExtern pos id args ret -> do
-        checkFunc pos id args ret Nothing cont
+    SFunc pos id args ret body -> do
+        r <- case ret of
+            FFunc _ t -> return $ t
+            FProc _ -> return $ tVoid
+        b <- case body of
+            FDef _ b -> return $ Just b
+            FExtern _ -> return $ Nothing
+        checkFunc pos id args r b cont
     SRetVoid pos -> do
         r <- asks (M.lookup (Ident "#return"))
         case r of
@@ -279,7 +279,7 @@ checkStmt statement cont = case statement of
                         checkCast pos typ t
                         cont
                     Nothing -> do
-                        -- Call reduceType so it's not possible to create variables of type TDef.
+                        -- Call reduceType so it's not possible to create variables of type TFuncDef.
                         declare pos (reduceType typ) id cont
             EIndex _ _ _ -> do
                 (t, m) <- checkExpr expr
@@ -333,15 +333,18 @@ checkStmt statement cont = case statement of
                 otherwise -> checkForIterable pos expr
 
 -- | Checks function's arguments and body.
-checkFunc :: Pos -> Ident -> [ArgF Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
+checkFunc :: Pos -> Ident -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
 checkFunc pos id args ret block cont = do
     r <- getIdent pos id
     case r of
         Nothing -> skip
         Just _ -> throw pos $ RedeclaredIdentifier id
-    declare pos (tDef id args ret) id $ do  -- so global functions are global
+    t <- case block of
+        Just b -> return $ tFuncDef id args ret b
+        Nothing -> return $ tFuncExt id args ret
+    declare pos t id $ do  -- so global functions are global
         case block of
-            Just b -> nextLevel $ declare pos (tDef id args ret) id $ do  -- so recursion works inside the function
+            Just b -> nextLevel $ declare pos t id $ do  -- so recursion works inside the function
                 checkArgs args False $ localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ checkBlock b
             Nothing -> skip
         cont
@@ -351,18 +354,18 @@ checkFunc pos id args ret block cont = do
              a:as -> checkArg a dflt (\d -> checkArgs as (dflt || d) cont)
         checkArg arg dflt cont = case arg of
             ANoDefault pos typ id -> case dflt of
-                False -> local (M.delete (definitionIdent id)) $ declare pos (reduceType typ) id $ cont False
+                False -> declare pos (reduceType typ) id $ cont False
                 True -> throw pos $ MissingDefault id
             ADefault pos typ id expr -> do
                 (t, _) <- checkExpr expr
                 checkCast pos t (reduceType typ)
-                local (M.delete (definitionIdent id)) $ declare pos (reduceType typ) id $ cont True
+                declare pos (reduceType typ) id $ cont True
 
 -- | Checks if one type can be cast to another.
 checkCast :: Pos -> Type -> Type -> Run ()
 checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
     Just _ -> case typ2 of
-        TDef _ _ _ _ -> throw pos $ IllegalRedefinition typ2
+        TFuncDef _ _ _ _ _ -> throw pos $ IllegalRedefinition typ2
         otherwise -> skip
     Nothing -> throw pos $ IllegalAssignment typ1 typ2
 
@@ -445,7 +448,8 @@ checkExpr expression = case expression of
         (t, _) <- checkExpr expr
         (args1, args2, ret) <- case t of
             TFunc _ as r -> return $ (as, [], r)
-            TDef _ _ as r -> return $ (map typeArg as, as, reduceType r)
+            TFuncDef _ _ as r _ -> return $ (map typeArg as, as, reduceType r)
+            TFuncExt _ _ as r -> return $ (map typeArg as, as, reduceType r)
             otherwise -> throw pos $ NotFunction t
         args3 <- case expr of
             EAttr _ e id -> return $ APos _pos e : args  -- if this is a method, the object will be passed as the first argument

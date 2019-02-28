@@ -77,10 +77,7 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
-  | //Stmt// | -> | ``func`` //Ident// ``(`` //[ArgF]// ``)`` ``def`` //Block// 
-  |  |  **|**  | ``func`` //Ident// ``(`` //[ArgF]// ``)`` //Type// ``def`` //Block// 
-  |  |  **|**  | ``func`` //Ident// ``(`` //[ArgF]// ``)`` ``extern`` 
-  |  |  **|**  | ``func`` //Ident// ``(`` //[ArgF]// ``)`` //Type// ``extern`` 
+  | //Stmt// | -> | ``func`` //Ident// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``skip`` 
@@ -104,11 +101,15 @@ All other symbols are terminals.
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``step`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
-  | //ArgF// | -> | //Type// //Ident// 
+  | //FArg// | -> | //Type// //Ident// 
   |  |  **|**  | //Type// //Ident// ``:`` //Expr2// 
-  | //[ArgF]// | -> | **eps**
-  |  |  **|**  | //ArgF// 
-  |  |  **|**  | //ArgF// ``,`` //[ArgF]// 
+  | //[FArg]// | -> | **eps**
+  |  |  **|**  | //FArg// 
+  |  |  **|**  | //FArg// ``,`` //[FArg]// 
+  | //FRet// | -> | **eps**
+  |  |  **|**  | //Type// 
+  | //FBody// | -> | ``def`` //Block// 
+  |  |  **|**  | ``extern`` 
   | //Block// | -> | ``{`` //[Stmt]// ``}`` 
   | //[Expr]// | -> | //Expr// 
   |  |  **|**  | //Expr// ``=`` //[Expr]// 

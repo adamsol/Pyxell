@@ -17,10 +17,7 @@ transProgram x = case x of
   Program _ stmts -> failure x
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
-  SProc _ ident argfs block -> failure x
-  SFunc _ ident argfs type_ block -> failure x
-  SProcExtern _ ident argfs -> failure x
-  SFuncExtern _ ident argfs type_ -> failure x
+  SFunc _ ident fargs fret fbody -> failure x
   SRetVoid _ -> failure x
   SRetExpr _ expr -> failure x
   SSkip _ -> failure x
@@ -44,10 +41,18 @@ transStmt x = case x of
   SForStep _ expr1 expr2 expr3 block -> failure x
   SContinue _ -> failure x
   SBreak _ -> failure x
-transArgF :: Show a => ArgF a -> Result
-transArgF x = case x of
+transFArg :: Show a => FArg a -> Result
+transFArg x = case x of
   ANoDefault _ type_ ident -> failure x
   ADefault _ type_ ident expr -> failure x
+transFRet :: Show a => FRet a -> Result
+transFRet x = case x of
+  FProc _ -> failure x
+  FFunc _ type_ -> failure x
+transFBody :: Show a => FBody a -> Result
+transFBody x = case x of
+  FDef _ block -> failure x
+  FExtern _ -> failure x
 transBlock :: Show a => Block a -> Result
 transBlock x = case x of
   SBlock _ stmts -> failure x
@@ -127,5 +132,6 @@ transType x = case x of
   TArray _ type_ -> failure x
   TTuple _ types -> failure x
   TFunc _ types type_ -> failure x
-  TDef _ ident argfs type_ -> failure x
+  TFuncDef _ ident fargs type_ block -> failure x
+  TFuncExt _ ident fargs type_ -> failure x
 

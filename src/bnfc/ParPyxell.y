@@ -14,8 +14,10 @@ import ErrM
 %name pProgram_internal Program
 %name pListStmt_internal ListStmt
 %name pStmt_internal Stmt
-%name pArgF_internal ArgF
-%name pListArgF_internal ListArgF
+%name pFArg_internal FArg
+%name pListFArg_internal ListFArg
+%name pFRet_internal FRet
+%name pFBody_internal FBody
 %name pBlock_internal Block
 %name pListExpr_internal ListExpr
 %name pBranch_internal Branch
@@ -191,17 +193,8 @@ ListStmt :: {
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'func' Ident '(' ListArgF ')' 'def' Block {
-  (Just (tokenLineCol $1), AbsPyxell.SProc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $7)) 
-}
-| 'func' Ident '(' ListArgF ')' Type 'def' Block {
-  (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
-}
-| 'func' Ident '(' ListArgF ')' 'extern' {
-  (Just (tokenLineCol $1), AbsPyxell.SProcExtern (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
-}
-| 'func' Ident '(' ListArgF ')' Type 'extern' {
-  (Just (tokenLineCol $1), AbsPyxell.SFuncExtern (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
+: 'func' Ident '(' ListFArg ')' FRet FBody {
+  (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $7)) 
 }
 | 'return' {
   (Just (tokenLineCol $1), AbsPyxell.SRetVoid (Just (tokenLineCol $1)))
@@ -273,8 +266,8 @@ Stmt :: {
   (Just (tokenLineCol $1), AbsPyxell.SBreak (Just (tokenLineCol $1)))
 }
 
-ArgF :: {
-  (Maybe (Int, Int), ArgF (Maybe (Int, Int)))
+FArg :: {
+  (Maybe (Int, Int), FArg (Maybe (Int, Int)))
 }
 : Type Ident {
   (fst $1, AbsPyxell.ANoDefault (fst $1)(snd $1)(snd $2)) 
@@ -283,17 +276,37 @@ ArgF :: {
   (fst $1, AbsPyxell.ADefault (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
 
-ListArgF :: {
-  (Maybe (Int, Int), [ArgF (Maybe (Int, Int))]) 
+ListFArg :: {
+  (Maybe (Int, Int), [FArg (Maybe (Int, Int))]) 
 }
 : {
   (Nothing, [])
 }
-| ArgF {
+| FArg {
   (fst $1, (:[]) (snd $1)) 
 }
-| ArgF ',' ListArgF {
+| FArg ',' ListFArg {
   (fst $1, (:) (snd $1)(snd $3)) 
+}
+
+FRet :: {
+  (Maybe (Int, Int), FRet (Maybe (Int, Int)))
+}
+: {
+  (Nothing, AbsPyxell.FProc Nothing)
+}
+| Type {
+  (fst $1, AbsPyxell.FFunc (fst $1)(snd $1)) 
+}
+
+FBody :: {
+  (Maybe (Int, Int), FBody (Maybe (Int, Int)))
+}
+: 'def' Block {
+  (Just (tokenLineCol $1), AbsPyxell.FDef (Just (tokenLineCol $1)) (snd $2)) 
+}
+| 'extern' {
+  (Just (tokenLineCol $1), AbsPyxell.FExtern (Just (tokenLineCol $1)))
 }
 
 Block :: {
@@ -749,8 +762,10 @@ myLexer = tokens
 pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pStmt = (>>= return . snd) . pStmt_internal
-pArgF = (>>= return . snd) . pArgF_internal
-pListArgF = (>>= return . snd) . pListArgF_internal
+pFArg = (>>= return . snd) . pFArg_internal
+pListFArg = (>>= return . snd) . pListFArg_internal
+pFRet = (>>= return . snd) . pFRet_internal
+pFBody = (>>= return . snd) . pFBody_internal
 pBlock = (>>= return . snd) . pBlock_internal
 pListExpr = (>>= return . snd) . pListExpr_internal
 pBranch = (>>= return . snd) . pBranch_internal
