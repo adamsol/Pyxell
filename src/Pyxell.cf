@@ -134,7 +134,6 @@ TInt.              Type4  ::= "Int" ;
 TFloat.            Type4  ::= "Float" ;
 TBool.             Type4  ::= "Bool" ;
 TChar.             Type4  ::= "Char" ;
-TObject.           Type4  ::= "Object" ;
 TString.           Type4  ::= "String" ;
 TArray.            Type4  ::= "[" Type "]" ;
 TTuple.            Type2  ::= [Type3] ;

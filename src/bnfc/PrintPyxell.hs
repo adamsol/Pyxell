@@ -170,7 +170,7 @@ instance Print (Else a) where
     EElse _ block -> prPrec i 0 (concatD [doc (showString "else"), doc (showString "do"), prt 0 block])
     EEmpty _ -> prPrec i 0 (concatD [])
 
-instance Print (ArgC a) where
+instance Print (CArg a) where
   prt i e = case e of
     APos _ expr -> prPrec i 0 (concatD [prt 2 expr])
     ANamed _ id expr -> prPrec i 0 (concatD [prt 0 id, doc (showString "="), prt 2 expr])
@@ -178,7 +178,7 @@ instance Print (ArgC a) where
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
-instance Print [ArgC a] where
+instance Print [CArg a] where
   prt = prtList
 
 instance Print (Cmp a) where
@@ -211,7 +211,7 @@ instance Print (Expr a) where
     EVar _ id -> prPrec i 13 (concatD [prt 0 id])
     EIndex _ expr1 expr2 -> prPrec i 13 (concatD [prt 13 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
     EAttr _ expr id -> prPrec i 13 (concatD [prt 13 expr, doc (showString "."), prt 0 id])
-    ECall _ expr argcs -> prPrec i 13 (concatD [prt 13 expr, doc (showString "("), prt 0 argcs, doc (showString ")")])
+    ECall _ expr cargs -> prPrec i 13 (concatD [prt 13 expr, doc (showString "("), prt 0 cargs, doc (showString ")")])
     EPow _ expr1 expr2 -> prPrec i 12 (concatD [prt 13 expr1, doc (showString "**"), prt 12 expr2])
     EMinus _ expr -> prPrec i 12 (concatD [doc (showString "-"), prt 12 expr])
     EPlus _ expr -> prPrec i 12 (concatD [doc (showString "+"), prt 12 expr])
@@ -254,7 +254,6 @@ instance Print (Type a) where
     TFloat _ -> prPrec i 4 (concatD [doc (showString "Float")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])
-    TObject _ -> prPrec i 4 (concatD [doc (showString "Object")])
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])
     TArray _ type_ -> prPrec i 4 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])

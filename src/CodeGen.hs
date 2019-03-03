@@ -18,7 +18,7 @@ import Utils
 type Value = String
 type Result = (Type, Value)
 
--- | Compiler enviroment and state.
+-- | Compiler environment and state.
 type Env = M.Map Ident Result
 data StateItem = Number Int | Label Value | Function Env
 type State = M.Map Value StateItem
@@ -102,7 +102,6 @@ strType typ = case reduceType typ of
     TFloat _ -> "double"
     TBool _ -> "i1"
     TChar _ -> "i8"
-    TObject _ -> "i8*"
     TString _ -> strType (tArray tChar)
     TArray _ t -> "{" ++ strType t ++ "*, i64}*"
     TTuple _ ts -> "{" ++ intercalate ", " (map strType ts) ++ "}*"

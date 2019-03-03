@@ -376,7 +376,6 @@ compileExpr expression = case expression of
     EArray _ exprs -> do
         rs <- mapM compileExpr exprs
         t <- case rs of
-            [] -> return $ tObject
             r:_ -> return $ fst r
         p <- initArray t (map snd rs) []
         return $ (tArray t, p)

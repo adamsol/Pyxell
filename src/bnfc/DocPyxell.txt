@@ -43,13 +43,13 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Pyxell are the following:
   | ``Bool`` | ``Char`` | ``Float`` | ``Int``
-  | ``Object`` | ``String`` | ``Void`` | ``and``
-  | ``break`` | ``continue`` | ``def`` | ``do``
-  | ``elif`` | ``else`` | ``extern`` | ``false``
-  | ``for`` | ``func`` | ``if`` | ``in``
-  | ``lambda`` | ``not`` | ``or`` | ``print``
-  | ``return`` | ``skip`` | ``step`` | ``true``
-  | ``until`` | ``while`` |  | 
+  | ``String`` | ``Void`` | ``and`` | ``break``
+  | ``continue`` | ``def`` | ``do`` | ``elif``
+  | ``else`` | ``extern`` | ``false`` | ``for``
+  | ``func`` | ``if`` | ``in`` | ``lambda``
+  | ``not`` | ``or`` | ``print`` | ``return``
+  | ``skip`` | ``step`` | ``true`` | ``until``
+  | ``while`` |  |  | 
 
 The symbols used in Pyxell are the following:
   | ; | ( | ) | :
@@ -130,13 +130,13 @@ All other symbols are terminals.
   |  |  **|**  | //Ident// 
   |  |  **|**  | //Expr13// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr13// ``.`` //Ident// 
-  |  |  **|**  | //Expr13// ``(`` //[ArgC]// ``)`` 
+  |  |  **|**  | //Expr13// ``(`` //[CArg]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
-  | //ArgC// | -> | //Expr2// 
+  | //CArg// | -> | //Expr2// 
   |  |  **|**  | //Ident// ``=`` //Expr2// 
-  | //[ArgC]// | -> | **eps**
-  |  |  **|**  | //ArgC// 
-  |  |  **|**  | //ArgC// ``,`` //[ArgC]// 
+  | //[CArg]// | -> | **eps**
+  |  |  **|**  | //CArg// 
+  |  |  **|**  | //CArg// ``,`` //[CArg]// 
   | //Expr12// | -> | //Expr13// ``**`` //Expr12// 
   |  |  **|**  | ``-`` //Expr12// 
   |  |  **|**  | ``+`` //Expr12// 
@@ -195,7 +195,6 @@ All other symbols are terminals.
   |  |  **|**  | ``Float`` 
   |  |  **|**  | ``Bool`` 
   |  |  **|**  | ``Char`` 
-  |  |  **|**  | ``Object`` 
   |  |  **|**  | ``String`` 
   |  |  **|**  | ``[`` //Type// ``]`` 
   |  |  **|**  | ``(`` //Type// ``)`` 

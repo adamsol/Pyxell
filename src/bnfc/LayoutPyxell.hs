@@ -243,42 +243,41 @@ sToken p s = PT p (TS s i)
       "Char" -> 36
       "Float" -> 37
       "Int" -> 38
-      "Object" -> 39
-      "String" -> 40
-      "Void" -> 41
-      "[" -> 42
-      "]" -> 43
-      "^" -> 44
-      "^=" -> 45
-      "_" -> 46
-      "and" -> 47
-      "break" -> 48
-      "continue" -> 49
-      "def" -> 50
-      "do" -> 51
-      "elif" -> 52
-      "else" -> 53
-      "extern" -> 54
-      "false" -> 55
-      "for" -> 56
-      "func" -> 57
-      "if" -> 58
-      "in" -> 59
-      "lambda" -> 60
-      "not" -> 61
-      "or" -> 62
-      "print" -> 63
-      "return" -> 64
-      "skip" -> 65
-      "step" -> 66
-      "true" -> 67
-      "until" -> 68
-      "while" -> 69
-      "{" -> 70
-      "|" -> 71
-      "|=" -> 72
-      "}" -> 73
-      "~" -> 74
+      "String" -> 39
+      "Void" -> 40
+      "[" -> 41
+      "]" -> 42
+      "^" -> 43
+      "^=" -> 44
+      "_" -> 45
+      "and" -> 46
+      "break" -> 47
+      "continue" -> 48
+      "def" -> 49
+      "do" -> 50
+      "elif" -> 51
+      "else" -> 52
+      "extern" -> 53
+      "false" -> 54
+      "for" -> 55
+      "func" -> 56
+      "if" -> 57
+      "in" -> 58
+      "lambda" -> 59
+      "not" -> 60
+      "or" -> 61
+      "print" -> 62
+      "return" -> 63
+      "skip" -> 64
+      "step" -> 65
+      "true" -> 66
+      "until" -> 67
+      "while" -> 68
+      "{" -> 69
+      "|" -> 70
+      "|=" -> 71
+      "}" -> 72
+      "~" -> 73
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

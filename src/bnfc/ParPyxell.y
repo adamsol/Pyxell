@@ -24,8 +24,8 @@ import ErrM
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
 %name pExpr13_internal Expr13
-%name pArgC_internal ArgC
-%name pListArgC_internal ListArgC
+%name pCArg_internal CArg
+%name pListCArg_internal ListCArg
 %name pExpr12_internal Expr12
 %name pExpr11_internal Expr11
 %name pExpr10_internal Expr10
@@ -90,42 +90,41 @@ import ErrM
   'Char' { PT _ (TS _ 36) }
   'Float' { PT _ (TS _ 37) }
   'Int' { PT _ (TS _ 38) }
-  'Object' { PT _ (TS _ 39) }
-  'String' { PT _ (TS _ 40) }
-  'Void' { PT _ (TS _ 41) }
-  '[' { PT _ (TS _ 42) }
-  ']' { PT _ (TS _ 43) }
-  '^' { PT _ (TS _ 44) }
-  '^=' { PT _ (TS _ 45) }
-  '_' { PT _ (TS _ 46) }
-  'and' { PT _ (TS _ 47) }
-  'break' { PT _ (TS _ 48) }
-  'continue' { PT _ (TS _ 49) }
-  'def' { PT _ (TS _ 50) }
-  'do' { PT _ (TS _ 51) }
-  'elif' { PT _ (TS _ 52) }
-  'else' { PT _ (TS _ 53) }
-  'extern' { PT _ (TS _ 54) }
-  'false' { PT _ (TS _ 55) }
-  'for' { PT _ (TS _ 56) }
-  'func' { PT _ (TS _ 57) }
-  'if' { PT _ (TS _ 58) }
-  'in' { PT _ (TS _ 59) }
-  'lambda' { PT _ (TS _ 60) }
-  'not' { PT _ (TS _ 61) }
-  'or' { PT _ (TS _ 62) }
-  'print' { PT _ (TS _ 63) }
-  'return' { PT _ (TS _ 64) }
-  'skip' { PT _ (TS _ 65) }
-  'step' { PT _ (TS _ 66) }
-  'true' { PT _ (TS _ 67) }
-  'until' { PT _ (TS _ 68) }
-  'while' { PT _ (TS _ 69) }
-  '{' { PT _ (TS _ 70) }
-  '|' { PT _ (TS _ 71) }
-  '|=' { PT _ (TS _ 72) }
-  '}' { PT _ (TS _ 73) }
-  '~' { PT _ (TS _ 74) }
+  'String' { PT _ (TS _ 39) }
+  'Void' { PT _ (TS _ 40) }
+  '[' { PT _ (TS _ 41) }
+  ']' { PT _ (TS _ 42) }
+  '^' { PT _ (TS _ 43) }
+  '^=' { PT _ (TS _ 44) }
+  '_' { PT _ (TS _ 45) }
+  'and' { PT _ (TS _ 46) }
+  'break' { PT _ (TS _ 47) }
+  'continue' { PT _ (TS _ 48) }
+  'def' { PT _ (TS _ 49) }
+  'do' { PT _ (TS _ 50) }
+  'elif' { PT _ (TS _ 51) }
+  'else' { PT _ (TS _ 52) }
+  'extern' { PT _ (TS _ 53) }
+  'false' { PT _ (TS _ 54) }
+  'for' { PT _ (TS _ 55) }
+  'func' { PT _ (TS _ 56) }
+  'if' { PT _ (TS _ 57) }
+  'in' { PT _ (TS _ 58) }
+  'lambda' { PT _ (TS _ 59) }
+  'not' { PT _ (TS _ 60) }
+  'or' { PT _ (TS _ 61) }
+  'print' { PT _ (TS _ 62) }
+  'return' { PT _ (TS _ 63) }
+  'skip' { PT _ (TS _ 64) }
+  'step' { PT _ (TS _ 65) }
+  'true' { PT _ (TS _ 66) }
+  'until' { PT _ (TS _ 67) }
+  'while' { PT _ (TS _ 68) }
+  '{' { PT _ (TS _ 69) }
+  '|' { PT _ (TS _ 70) }
+  '|=' { PT _ (TS _ 71) }
+  '}' { PT _ (TS _ 72) }
+  '~' { PT _ (TS _ 73) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -392,15 +391,15 @@ Expr13 :: {
 | Expr13 '.' Ident {
   (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
 }
-| Expr13 '(' ListArgC ')' {
+| Expr13 '(' ListCArg ')' {
   (fst $1, AbsPyxell.ECall (fst $1)(snd $1)(snd $3)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
 }
 
-ArgC :: {
-  (Maybe (Int, Int), ArgC (Maybe (Int, Int)))
+CArg :: {
+  (Maybe (Int, Int), CArg (Maybe (Int, Int)))
 }
 : Expr2 {
   (fst $1, AbsPyxell.APos (fst $1)(snd $1)) 
@@ -409,16 +408,16 @@ ArgC :: {
   (fst $1, AbsPyxell.ANamed (fst $1)(snd $1)(snd $3)) 
 }
 
-ListArgC :: {
-  (Maybe (Int, Int), [ArgC (Maybe (Int, Int))]) 
+ListCArg :: {
+  (Maybe (Int, Int), [CArg (Maybe (Int, Int))]) 
 }
 : {
   (Nothing, [])
 }
-| ArgC {
+| CArg {
   (fst $1, (:[]) (snd $1)) 
 }
-| ArgC ',' ListArgC {
+| CArg ',' ListCArg {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
@@ -671,9 +670,6 @@ Type4 :: {
 | 'Char' {
   (Just (tokenLineCol $1), AbsPyxell.TChar (Just (tokenLineCol $1)))
 }
-| 'Object' {
-  (Just (tokenLineCol $1), AbsPyxell.TObject (Just (tokenLineCol $1)))
-}
 | 'String' {
   (Just (tokenLineCol $1), AbsPyxell.TString (Just (tokenLineCol $1)))
 }
@@ -772,8 +768,8 @@ pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
 pExpr13 = (>>= return . snd) . pExpr13_internal
-pArgC = (>>= return . snd) . pArgC_internal
-pListArgC = (>>= return . snd) . pListArgC_internal
+pCArg = (>>= return . snd) . pCArg_internal
+pListCArg = (>>= return . snd) . pListCArg_internal
 pExpr12 = (>>= return . snd) . pExpr12_internal
 pExpr11 = (>>= return . snd) . pExpr11_internal
 pExpr10 = (>>= return . snd) . pExpr10_internal

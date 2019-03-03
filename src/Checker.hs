@@ -391,7 +391,7 @@ checkExpr expression = case expression of
         rs <- mapM checkExpr exprs
         let (ts, _) = unzip rs
         case ts of
-            [] -> return $ (tArray tObject, False)
+            [] -> throw pos $ UnknownType
             t:ts -> case foldM unifyTypes t ts of
                 Just t' -> return $ (tArray t', False)
                 Nothing -> throw pos $ UnknownType
@@ -597,7 +597,6 @@ checkExpr expression = case expression of
         checkCmp pos op typ1 typ2 = do
             case unifyTypes typ1 typ2 of
                 Just t -> case t of
-                    TObject _ -> throw pos $ NotComparable typ1 typ2
                     TArray _ _ -> throw pos $ NotComparable typ1 typ2
                     TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
                     otherwise -> return $ (tBool, False)

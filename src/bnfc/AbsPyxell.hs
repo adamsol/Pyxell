@@ -108,10 +108,10 @@ instance Functor Else where
     fmap f x = case x of
         EElse a block -> EElse (f a) (fmap f block)
         EEmpty a -> EEmpty (f a)
-data ArgC a = APos a (Expr a) | ANamed a Ident (Expr a)
+data CArg a = APos a (Expr a) | ANamed a Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
 
-instance Functor ArgC where
+instance Functor CArg where
     fmap f x = case x of
         APos a expr -> APos (f a) (fmap f expr)
         ANamed a ident expr -> ANamed (f a) ident (fmap f expr)
@@ -148,7 +148,7 @@ data Expr a
     | EVar a Ident
     | EIndex a (Expr a) (Expr a)
     | EAttr a (Expr a) Ident
-    | ECall a (Expr a) [ArgC a]
+    | ECall a (Expr a) [CArg a]
     | EPow a (Expr a) (Expr a)
     | EMinus a (Expr a)
     | EPlus a (Expr a)
@@ -188,7 +188,7 @@ instance Functor Expr where
         EVar a ident -> EVar (f a) ident
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
-        ECall a expr argcs -> ECall (f a) (fmap f expr) (map (fmap f) argcs)
+        ECall a expr cargs -> ECall (f a) (fmap f expr) (map (fmap f) cargs)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMinus a expr -> EMinus (f a) (fmap f expr)
         EPlus a expr -> EPlus (f a) (fmap f expr)
@@ -222,7 +222,6 @@ data Type a
     | TFloat a
     | TBool a
     | TChar a
-    | TObject a
     | TString a
     | TArray a (Type a)
     | TTuple a [Type a]
@@ -241,7 +240,6 @@ instance Functor Type where
         TFloat a -> TFloat (f a)
         TBool a -> TBool (f a)
         TChar a -> TChar (f a)
-        TObject a -> TObject (f a)
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)

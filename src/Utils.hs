@@ -30,7 +30,6 @@ instance {-# OVERLAPS #-} Show Type where
         TFloat _ -> "Float"
         TBool _ -> "Bool"
         TChar _ -> "Char"
-        TObject _ -> "Object"
         TString _ -> "String"
         TArray _ t' -> "[" ++ show t' ++ "]"
         TTuple _ ts -> intercalate "*" (map show ts)
@@ -50,8 +49,6 @@ unifyTypes t1 t2 = do
         (TFloat _, TFloat _) -> Just tFloat
         (TBool _, TBool _) -> Just tBool
         (TChar _, TChar _) -> Just tChar
-        --(TObject _, _) -> tObject
-        --(_, TObject _) -> tObject
         (TString _, TString _) -> Just tString
         (TArray _ t1', TArray _ t2') -> fmap tArray (unifyTypes t1' t2')
         (TTuple _ ts1, TTuple _ ts2) ->
@@ -90,7 +87,6 @@ tInt = TInt Nothing
 tFloat = TFloat Nothing
 tBool = TBool Nothing
 tChar = TChar Nothing
-tObject = TObject Nothing
 tString = TString Nothing
 tArray = TArray Nothing
 tTuple = TTuple Nothing
