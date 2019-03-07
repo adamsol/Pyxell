@@ -34,6 +34,8 @@ data StaticError = NotComparable Type Type
                  | NotPrintable Type
                  | UndeclaredIdentifier Ident
                  | RedeclaredIdentifier Ident
+                 | NotType Ident
+                 | NotVariable Ident
                  | VoidDeclaration
                  | NotLvalue
                  | InvalidExpression String
@@ -65,6 +67,8 @@ instance Show StaticError where
         NotPrintable typ -> "Variable of type `" ++ show typ ++ "` cannot be printed."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
+        NotType (Ident x) -> "Identifier `" ++ x ++ "` does not represent a type."
+        NotVariable (Ident x) -> "Identifier `" ++ x ++ "` does not represent a variable."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
@@ -105,7 +109,7 @@ localLevel name lvl cont = do
 -- | Inserts a variable into the map and continues with changed environment.
 localType :: Ident -> Type -> Run a -> Run a
 localType id typ cont = do
-    local (M.insert id (typ, 0)) cont
+    local (M.insert id (typ, -1)) cont
 
 -- | Inserts a variable into the map and continues with changed environment.
 localVar :: Ident -> Type -> Level -> Run a -> Run a
@@ -113,14 +117,11 @@ localVar id typ lvl cont = do
     local (M.insert id (typ, lvl)) cont
 
 -- | Gets an identifier from the environment.
-getIdent :: Pos -> Ident -> Run (Maybe Type)
-getIdent pos id = do
-    l1 <- getLevel
+getIdent :: Ident -> Run (Maybe Type)
+getIdent id = do
     r <- asks (M.lookup id)
     case r of
-        Just (t, l2) -> do
-            if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
-            else return $ Just t
+        Just (t, _) -> return $ Just t
         Nothing -> return $ Nothing
 
 -- | Runs continuation on a higher nesting level.
@@ -136,13 +137,47 @@ getLevel = do
     return $ l
 
 
+-- | Checks whether variable exists in the environment and returns its type.
+checkVar :: Pos -> Ident -> Run Type
+checkVar pos id = do
+    l1 <- getLevel
+    r <- asks (M.lookup id)
+    case r of
+        Just (t, l2) -> do
+            if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
+            else if l2 < 0 then throw pos $ NotVariable id
+            else return $ t
+        Nothing -> throw pos $ UndeclaredIdentifier id
+
+-- | Checks whether type identifier exists in the environment and returns the actual type.
+checkType :: Pos -> Type -> Run Type
+checkType pos typ = case typ of
+    TVar _ id -> do
+        r <- asks (M.lookup id)
+        case r of
+            Just (t, -1) -> return $ t
+            otherwise -> throw pos $ NotType id
+    otherwise -> return $ typ
+
 -- | Declares a variable and continues with changed environment.
-declare :: Pos -> Type -> Ident -> Run a -> Run a
-declare pos typ id cont = case typ of
+checkDecl :: Pos -> Type -> Ident -> Run a -> Run a
+checkDecl pos typ id cont = case typ of
     TVoid _ -> throw pos $ VoidDeclaration
     otherwise -> do
         l <- getLevel
         localVar id typ l cont
+
+-- | Checks if one type can be cast to another and returns the unified type.
+checkCast :: Pos -> Type -> Type -> Run Type
+checkCast pos typ1 typ2 = case (typ1, typ2) of
+    (TInt _, TClass _ (CNum _)) -> return $ typ1
+    (TFloat _, TClass _ (CNum _)) -> return $ typ1
+    (_, TClass _ (CAny _)) -> return $ typ1
+    otherwise -> case unifyTypes typ1 typ2 of
+        Just t' -> case typ2 of
+            TFuncDef _ _ _ _ _ _ -> throw pos $ IllegalRedefinition typ2
+            otherwise -> return $ t'
+        Nothing -> throw pos $ IllegalAssignment typ1 typ2
 
 
 -- | Checks the whole program and returns environment.
@@ -164,14 +199,17 @@ checkStmts statements cont = case statements of
 -- | Checks a single statement.
 checkStmt :: Stmt Pos -> Run a -> Run a
 checkStmt statement cont = case statement of
-    SFunc pos id args ret body -> do
+    SFunc pos id vars args ret body -> do
+        vs <- case vars of
+            FGen _ vs -> return $ vs
+            FStd _ -> return $ []
         r <- case ret of
             FFunc _ t -> return $ t
             FProc _ -> return $ tVoid
         b <- case body of
             FDef _ b -> return $ Just b
             FExtern _ -> return $ Nothing
-        checkFunc pos id args r b cont
+        checkFunc pos id vs args r b cont
     SRetVoid pos -> do
         r <- asks (M.lookup (Ident "#return"))
         case r of
@@ -191,11 +229,11 @@ checkStmt statement cont = case statement of
         cont
     SPrint pos expr -> do
         (t, _) <- checkExpr expr
-        case reduceType t of
-            TVoid _ -> throw pos $ NotPrintable t
-            TArray _ _ -> throw pos $ NotPrintable t
-            TFunc _ _ _ -> throw pos $ NotPrintable t
-            otherwise -> cont
+        t' <- retrieveType t
+        b <- checkPrint t'
+        case b of
+            True -> cont
+            False -> throw pos $ NotPrintable t
     SPrintEmpty pos -> do
         cont
     SAssg pos exprs -> case exprs of
@@ -268,19 +306,29 @@ checkStmt statement cont = case statement of
             Just _ -> cont
             otherwise -> throw pos $ UnexpectedStatement "continue"
     where
+        checkPrint typ = case typ of
+            TVoid _ -> return $ False
+            TTuple _ ts -> do
+                bs <- mapM checkPrint ts
+                return $ all id bs
+            TArray _ _ -> return $ False
+            TFunc _ _ _ -> return $ False
+            TClass _ c -> case c of
+                CNum _ -> return $ True
+                otherwise -> return $ False
+            otherwise -> return $ True
         checkAssgs pos exprs types cont = case (exprs, types) of
             ([], []) -> cont
             (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
         checkAssg pos expr typ cont = case expr of
             EVar _ id -> do
-                r <- getIdent pos id
+                r <- getIdent id
                 case r of
                     Just t -> do
                         checkCast pos typ t
                         cont
                     Nothing -> do
-                        -- Call reduceType so it's not possible to create variables of type TFuncDef.
-                        declare pos (reduceType typ) id cont
+                        checkDecl pos (reduceType typ) id cont
             EIndex _ _ _ -> do
                 (t, m) <- checkExpr expr
                 if m then do
@@ -333,19 +381,20 @@ checkStmt statement cont = case statement of
                 otherwise -> checkForIterable pos expr
 
 -- | Checks function's arguments and body.
-checkFunc :: Pos -> Ident -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
-checkFunc pos id args ret block cont = do
-    r <- getIdent pos id
+checkFunc :: Pos -> Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
+checkFunc pos id vars args ret block cont = do
+    r <- getIdent id
     case r of
         Nothing -> skip
         Just _ -> throw pos $ RedeclaredIdentifier id
     t <- case block of
-        Just b -> return $ tFuncDef id args ret b
+        Just b -> return $ tFuncDef id vars args ret b
         Nothing -> return $ tFuncExt id args ret
-    declare pos t id $ do  -- so global functions are global
+    checkDecl pos t id $ do  -- so global functions are global
         case block of
-            Just b -> nextLevel $ declare pos t id $ do  -- so recursion works inside the function
-                checkArgs args False $ localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ checkBlock b
+            Just b -> nextLevel $ checkDecl pos t id $ do  -- so recursion works inside the function
+                checkTypeVars vars $ checkArgs args False $ do
+                    localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ checkBlock b
             Nothing -> skip
         cont
     where
@@ -354,21 +403,22 @@ checkFunc pos id args ret block cont = do
              a:as -> checkArg a dflt (\d -> checkArgs as (dflt || d) cont)
         checkArg arg dflt cont = case arg of
             ANoDefault pos typ id -> case dflt of
-                False -> declare pos (reduceType typ) id $ cont False
+                False -> do
+                    let t = reduceType typ
+                    checkType pos t
+                    checkDecl pos t id $ cont False
                 True -> throw pos $ MissingDefault id
             ADefault pos typ id expr -> do
-                (t, _) <- checkExpr expr
-                checkCast pos t (reduceType typ)
-                declare pos (reduceType typ) id $ cont True
+                (t1, _) <- checkExpr expr
+                let t2 = reduceType typ
+                checkCast pos t1 t2
+                checkDecl pos t2 id $ cont True
 
--- | Checks if one type can be cast to another.
-checkCast :: Pos -> Type -> Type -> Run ()
-checkCast pos typ1 typ2 = case unifyTypes typ1 typ2 of
-    Just _ -> case typ2 of
-        TFuncDef _ _ _ _ _ -> throw pos $ IllegalRedefinition typ2
-        otherwise -> skip
-    Nothing -> throw pos $ IllegalAssignment typ1 typ2
-
+-- | Adds function's type variables to the environment.
+checkTypeVars :: [FVar Pos] -> Run a -> Run a
+checkTypeVars vars cont = case vars of
+     [] -> cont
+     (FVar _ c id):vs -> localType id (tClass c) $ checkTypeVars vs cont
 
 -- | Checks an expression and returns its type and whether it is mutable.
 checkExpr :: Expr Pos -> Run (Type, Bool)
@@ -392,10 +442,12 @@ checkExpr expression = case expression of
         let (ts, _) = unzip rs
         case ts of
             [] -> throw pos $ UnknownType
-            t:ts -> case foldM unifyTypes t ts of
+            t:ts -> case  foldM unifyTypes t ts of
                 Just t' -> return $ (tArray t', False)
                 Nothing -> throw pos $ UnknownType
-    EVar pos id -> checkIdent pos id
+    EVar pos id -> do
+        t <- checkVar pos id
+        return $ (t, True)
     EIndex pos expr1 expr2 -> do
         (t1, m1) <- checkExpr expr1
         (t2, m2) <- checkExpr expr2
@@ -410,32 +462,32 @@ checkExpr expression = case expression of
         let Ident attr = id
         Just t2 <- case t1 of
             TInt _ -> case attr of
-                "toString" -> getIdent _pos (Ident "Int_toString")
-                "toFloat" -> getIdent _pos (Ident "Int_toFloat")
+                "toString" -> getIdent (Ident "Int_toString")
+                "toFloat" -> getIdent (Ident "Int_toFloat")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TFloat _ -> case attr of
-                "toString" -> getIdent _pos (Ident "Float_toString")
-                "toInt" -> getIdent _pos (Ident "Float_toInt")
+                "toString" -> getIdent (Ident "Float_toString")
+                "toInt" -> getIdent (Ident "Float_toInt")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TBool _ -> case attr of
-                "toString" -> getIdent _pos (Ident "Bool_toString")
+                "toString" -> getIdent (Ident "Bool_toString")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TChar _ -> case attr of
-                "toString" -> getIdent _pos (Ident "Char_toString")
+                "toString" -> getIdent (Ident "Char_toString")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TString _ -> case attr of
                 "length" -> return $ Just tInt
-                "toString" -> getIdent _pos (Ident "String_toString")
-                "toInt" -> getIdent _pos (Ident "String_toInt")
-                "toFloat" -> getIdent _pos (Ident "String_toFloat")
+                "toString" -> getIdent (Ident "String_toString")
+                "toInt" -> getIdent (Ident "String_toInt")
+                "toFloat" -> getIdent (Ident "String_toFloat")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TArray _ t' -> case (t', attr) of
                 (_, "length") -> return $ Just tInt
                 (TChar _, "join") -> do
-                    t'' <- getIdent _pos (Ident "CharArray_join")
+                    t'' <- getIdent (Ident "CharArray_join")
                     return $ t''
                 (TString _, "join") -> do
-                    t'' <- getIdent _pos (Ident "StringArray_join")
+                    t'' <- getIdent (Ident "StringArray_join")
                     return $ t''
                 otherwise -> throw pos $ InvalidAttr t1 id
             TTuple _ ts -> do
@@ -445,12 +497,12 @@ checkExpr expression = case expression of
             otherwise -> throw pos $ InvalidAttr t1 id
         return $ (t2, False)
     ECall pos expr args -> do
-        (t, _) <- checkExpr expr
-        (args1, args2, ret) <- case t of
-            TFunc _ as r -> return $ (as, [], r)
-            TFuncDef _ _ as r _ -> return $ (map typeArg as, as, reduceType r)
-            TFuncExt _ _ as r -> return $ (map typeArg as, as, reduceType r)
-            otherwise -> throw pos $ NotFunction t
+        (typ, _) <- checkExpr expr
+        (vars, args1, args2, ret) <- case typ of
+            TFunc _ as r -> return $ ([], as, [], r)
+            TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, (reduceType r))
+            TFuncExt _ _ as r -> return $ ([], map typeArg as, as, (reduceType r))
+            otherwise -> throw pos $ NotFunction typ
         args3 <- case expr of
             EAttr _ e id -> return $ APos _pos e : args  -- if this is a method, the object will be passed as the first argument
             otherwise -> return $ args
@@ -474,7 +526,7 @@ checkExpr expression = case expression of
                     else skip
                     let id = Ident ".lambda"
                     let b = SBlock pos' [SRetExpr pos' e']
-                    checkFunc pos' id [ANoDefault _pos t id | (t, id) <- zip as ids] r (Just b) skip
+                    checkFunc pos' id [] [ANoDefault _pos t' id' | (t', id') <- zip as ids] r (Just b) skip
                     return $ t
                 otherwise -> do
                     (t, _) <- checkExpr e
@@ -485,12 +537,25 @@ checkExpr expression = case expression of
             (ADefault _ t _ _, Nothing) -> return $ M.insert i t m
             otherwise -> return $ m
         -- Check whether all (and no redundant) arguments have been provided.
-        if any (>= length args1) (M.keys m) then throw pos $ TooManyArguments t
-        else if M.size m < length args1 then throw pos $ TooFewArguments t
+        if any (>= length args1) (M.keys m) then throw pos $ TooManyArguments typ
+        else if M.size m < length args1 then throw pos $ TooFewArguments typ
         else skip
         -- Check if all arguments have correct types.
-        forM (zip (M.elems m) args1) (uncurry $ checkCast pos)
-        return $ (ret, False)
+        checkTypeVars vars $ checkArgs (M.elems m) args1 $ do
+            r <- retrieveType ret
+            return $ (r, False)
+        where
+            checkArgs ts1 ts2 cont = case (ts1, ts2) of
+                (_, []) -> cont
+                (t1:ts1, t2:ts2) -> checkArg t1 t2 (checkArgs ts1 ts2 cont)
+            checkArg t1 t2 cont = case t2 of
+                TVar _ id -> do
+                    t3 <- checkType pos t2
+                    t4 <- checkCast pos t1 t3
+                    localType id t4 cont
+                otherwise -> do
+                    checkCast pos t1 t2
+                    cont
     EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
     EMinus pos expr -> checkUnary pos "-" expr
     EPlus pos expr -> checkUnary pos "+" expr
@@ -528,7 +593,7 @@ checkExpr expression = case expression of
             otherwise -> throw pos $ IllegalAssignment t1 tBool
         (t2, _) <- checkExpr expr2
         (t3, _) <- checkExpr expr3
-        case unifyTypes (reduceType t2) (reduceType t3) of
+        case unifyTypes t2 t3 of
             Just t4 -> return $ (t4, False)
             Nothing -> throw pos $ UnknownType
     ETuple pos exprs -> do
@@ -540,16 +605,13 @@ checkExpr expression = case expression of
     ELambda pos expr1 expr2 -> do
         throw pos $ UnknownType
     where
-        checkIdent pos id = do
-            r <- getIdent pos id
-            case r of
-                Just t -> return $ (t, True)
-                Nothing -> throw pos $ UndeclaredIdentifier id
         checkBinary pos op expr1 expr2 = do
             (t1, _) <- checkExpr expr1
             (t2, _) <- checkExpr expr2
+            t1' <- retrieveType t1
+            t2' <- retrieveType t2
             case op of
-                "*" -> case (t1, t2) of
+                "*" -> case (t1', t2') of
                     (TString _, TInt _) -> return $ (tString, False)
                     (TInt _, TString _) -> return $ (tString, False)
                     (TArray _ _, TInt _) -> return $ (t1, False)
@@ -558,8 +620,9 @@ checkExpr expression = case expression of
                     (TFloat _, TInt _) -> return $ (tFloat, False)
                     (TInt _, TFloat _) -> return $ (tFloat, False)
                     (TFloat _, TFloat _) -> return $ (tFloat, False)
+                    (TClass _ (CNum _), TClass _ (CNum _)) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator "*" t1 t2
                     otherwise -> throw pos $ NoBinaryOperator "*" t1 t2
-                "+" -> case (t1, t2) of
+                "+" -> case (t1', t2') of
                     (TString _, TString _) -> return $ (tString, False)
                     (TString _, TChar _) -> return $ (tString, False)
                     (TChar _, TString _) -> return $ (tString, False)
@@ -567,40 +630,51 @@ checkExpr expression = case expression of
                     (TFloat _, TInt _) -> return $ (tFloat, False)
                     (TInt _, TFloat _) -> return $ (tFloat, False)
                     (TFloat _, TFloat _) -> return $ (tFloat, False)
+                    (TClass _ (CNum _), TClass _ (CNum _)) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator "+" t1 t2
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
                 otherwise -> do
-                    if op == "and" || op == "or" then case (t1, t2) of
+                    if op == "and" || op == "or" then case (t1', t2') of
                         (TBool _, TBool _) -> return $ (tBool, False)
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
-                    else if op == "**" || op == "/" || op == "-" then case (t1, t2) of
+                    else if op == "**" || op == "/" || op == "-" then case (t1', t2') of
                         (TInt _, TInt _) -> return $ (tInt, False)
                         (TFloat _, TInt _) -> return $ (tFloat, False)
                         (TInt _, TFloat _) -> return $ (tFloat, False)
                         (TFloat _, TFloat _) -> return $ (tFloat, False)
+                        (TClass _ (CNum _), TClass _ (CNum _)) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator op t1 t2
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
-                    else case (t1, t2) of  -- modulo and bitwise operators
+                    else case (t1', t2') of  -- modulo and bitwise operators
                         (TInt _, TInt _) -> return $ (tInt, False)
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
         checkUnary pos op expr = do
             (t, _) <- checkExpr expr
+            t' <- retrieveType t
             case op of
-                "~" -> case t of
+                "~" -> case t' of
                     TInt _ -> return $ (tInt, False)
                     otherwise -> throw pos $ NoUnaryOperator "~" t
-                "not" -> case t of
+                "not" -> case t' of
                     TBool _ -> return $ (tBool, False)
                     otherwise -> throw pos $ NoUnaryOperator "not" t
-                otherwise -> case t of  -- unary minus/plus
+                otherwise -> case t' of  -- unary minus/plus
                     TInt _ -> return $ (tInt, False)
                     TFloat _ -> return $ (tFloat, False)
+                    TClass _ (CNum _) -> return $ (t, False)
                     otherwise -> throw pos $ NoUnaryOperator op t
         checkCmp pos op typ1 typ2 = do
+            t1 <- retrieveType typ1
+            t2 <- retrieveType typ2
             case unifyTypes typ1 typ2 of
-                Just t -> case t of
+                Just t' -> case t' of
                     TArray _ _ -> throw pos $ NotComparable typ1 typ2
                     TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
                     otherwise -> return $ (tBool, False)
-                Nothing -> case (typ1, typ2) of
-                    (TFloat _, TInt _) -> return $ (tBool, False)
+                Nothing -> case (t1, t2) of
                     (TInt _, TFloat _) -> return $ (tBool, False)
+                    (TFloat _, TInt _) -> return $ (tBool, False)
+                    (TInt _, TClass _ (CNum _)) -> return $ (tBool, False)
+                    (TFloat _, TClass _ (CNum _)) -> return $ (tBool, False)
+                    (TClass _ (CNum _), TInt _) -> return $ (tBool, False)
+                    (TClass _ (CNum _), TFloat _) -> return $ (tBool, False)
+                    (TClass _ (CNum _), TClass _ (CNum _)) -> return $ (tBool, False)
                     otherwise -> throw pos $ NotComparable typ1 typ2

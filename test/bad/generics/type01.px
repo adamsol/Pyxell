@@ -1,0 +1,3 @@
+
+func f<Num T>(T x) Int def
+    return x

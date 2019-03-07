@@ -1,0 +1,6 @@
+
+func f(Int x) Int def
+    return x
+
+func g<Num T>(T x) def
+    print f(x)

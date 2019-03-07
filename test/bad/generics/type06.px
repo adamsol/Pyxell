@@ -1,0 +1,4 @@
+
+func f<Num T>(T x) def
+    n = 0.0
+    n = x

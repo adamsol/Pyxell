@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Utils where
 
@@ -8,23 +9,28 @@ import Control.Monad.Identity
 import Control.Monad.Trans.Class
 import Control.Monad.Trans.State
 import Control.Monad.Trans.Writer
-import Control.Monad.IO.Class
+import Control.Monad.Reader
+import Data.Char
 import Data.List
+import qualified Data.Map as M
+import Numeric
 import Text.Regex
 
-import AbsPyxell hiding (Type)
-import qualified AbsPyxell as Abs (Type)
+import AbsPyxell hiding (Type, Class)
+import qualified AbsPyxell as Abs (Type, Class)
 
 
 -- | Representation of a position in the program's source code.
 type Pos = Maybe (Int, Int)
 
--- | Alias for Type without passing Pos.
+-- | Aliases for Type and Class without passing Pos.
 type Type = Abs.Type Pos
+type Class = Abs.Class Pos
 
--- | Show instance for displaying types.
+-- | Instances for displaying and comparing types and classes.
 instance {-# OVERLAPS #-} Show Type where
-    show typ = case reduceType typ of
+    show typ = case typ of
+        TVar _ (Ident x) -> x
         TVoid _ -> "Void"
         TInt _ -> "Int"
         TFloat _ -> "Float"
@@ -34,7 +40,25 @@ instance {-# OVERLAPS #-} Show Type where
         TArray _ t' -> "[" ++ show t' ++ "]"
         TTuple _ ts -> intercalate "*" (map show ts)
         TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
+        TFuncDef _ _ _ as r _ -> show (tFunc (map typeArg as) r)
+        TFuncExt _ _ as r -> show (tFunc (map typeArg as) r)
+        TClass _ c -> show c
 
+instance {-# OVERLAPS #-} Eq Type where
+    typ1 == typ2 = case (typ1, typ2) of
+        (TVar _ id1, TVar _ id2) -> id1 == id2
+        otherwise -> False
+
+instance {-# OVERLAPS #-} Show Class where
+    show cls = case cls of
+        CAny _ -> "Any"
+        CNum _ -> "Num"
+
+instance {-# OVERLAPS #-} Eq Class where
+    cls1 == cls2 = case (cls1, cls2) of
+        (CAny _, CAny _) -> True
+        (CNum _, CNum _) -> True
+        otherwise -> False
 
 -- | Some useful versions of standard functions.
 find' a f = find f a
@@ -44,6 +68,7 @@ foldM' b a f = foldM f b a
 unifyTypes :: Type -> Type -> Maybe Type
 unifyTypes t1 t2 = do
     case (reduceType t1, reduceType t2) of
+        (TVar _ id1, TVar _ id2) -> if id1 == id2 then Just t1 else Nothing
         (TVoid _, TVoid _) -> Just tVoid
         (TInt _, TInt _) -> Just tInt
         (TFloat _, TFloat _) -> Just tFloat
@@ -63,45 +88,70 @@ unifyTypes t1 t2 = do
 
 -- | Tries to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
 reduceType :: Type -> Type
-reduceType t = do
-    case t of
-        TArray _ t' -> tArray (reduceType t')
-        TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
-        TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
-        TFuncDef _ _ as r _ -> tFunc (map typeArg as) (reduceType r)
-        TFuncExt _ _ as r -> tFunc (map typeArg as) (reduceType r)
-        otherwise -> t
+reduceType t = case t of
+    TArray _ t' -> tArray (reduceType t')
+    TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
+    TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
+    TFuncDef _ _ _ as r _ -> tFunc (map typeArg as) (reduceType r)
+    TFuncExt _ _ as r -> tFunc (map typeArg as) (reduceType r)
+    otherwise -> t
 
--- | Retrieves type from function argument data.
+-- | Similar to `reduceType`, but runs in a monad and additionally retrieves type from type variables.
+retrieveType :: MonadReader (M.Map Ident (Type, t)) m => Type -> m Type
+retrieveType t = case t of
+    TVar _ id -> do
+        r <- asks (M.lookup id)
+        case r of
+            Just (t', _) -> retrieveType t'
+            otherwise -> return $ t
+    TArray _ t' -> retrieveType t' >>= return.tArray
+    TTuple _ ts -> if length ts == 1 then retrieveType (head ts) else mapM retrieveType ts >>= return.tTuple
+    TFunc _ as r -> do
+        as <- mapM retrieveType as
+        r <- retrieveType r
+        return $ tFunc as r
+    TFuncDef _ _ _ as r _ -> retrieveType (tFunc (map typeArg as) r)
+    TFuncExt _ _ as r -> retrieveType (tFunc (map typeArg as) r)
+    otherwise -> return $ t
+
+-- | Returns type from function type variable data.
+typeFVar :: FVar Pos -> Type
+typeFVar (FVar _ _ id) = tVar id
+
+-- | Returns type from function argument data.
 typeArg :: FArg Pos -> Type
 typeArg arg = case arg of
     ANoDefault _ t _ -> reduceType t
     ADefault _ t _ _ -> reduceType t
 
--- | Helper functions for initializing types without a position.
-tPtr = TPtr Nothing
-tArr = TArr Nothing
-tDeref = TDeref Nothing
-tVoid = TVoid Nothing
-tInt = TInt Nothing
-tFloat = TFloat Nothing
-tBool = TBool Nothing
-tChar = TChar Nothing
-tString = TString Nothing
-tArray = TArray Nothing
-tTuple = TTuple Nothing
-tFunc = TFunc Nothing
-tFuncDef = TFuncDef Nothing
-tFuncExt = TFuncExt Nothing
-
 -- | Shorter name for none position.
 _pos = Nothing
+
+-- | Helper functions for initializing Type and Class without a position.
+tPtr = TPtr _pos
+tArr = TArr _pos
+tDeref = TDeref _pos
+tVar = TVar _pos
+tVoid = TVoid _pos
+tInt = TInt _pos
+tFloat = TFloat _pos
+tBool = TBool _pos
+tChar = TChar _pos
+tString = TString _pos
+tArray = TArray _pos
+tTuple = TTuple _pos
+tFunc = TFunc _pos
+tFuncDef = TFuncDef _pos
+tFuncExt = TFuncExt _pos
+tClass = TClass _pos
+cAny = CAny _pos
+cNum = CNum _pos
 
 -- | Debug logging function.
 debug x = liftIO $ print x
 
 -- | Changes apostrophes to hyphens.
-escapeName (Ident name) = [if c == '\'' then '-' else c | c <- name]
+escapeName (Ident name) = intercalate "" [if isAlphaNum c || c == '_' then [c] else '$' : showHex (ord c) "" | c <- name]
 
 -- | Splits a string into formatting parts.
 interpolateString :: String -> ([String], [String])

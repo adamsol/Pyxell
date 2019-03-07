@@ -1,0 +1,6 @@
+
+func add<Num A>(A x, A y) A def
+    return x + y
+
+print add(3, 4) / 2
+print add(3.0, 4.0) / 2

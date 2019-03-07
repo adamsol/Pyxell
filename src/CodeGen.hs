@@ -8,6 +8,7 @@ import Control.Monad.Trans.Reader
 import Data.Char
 import Data.List
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 import AbsPyxell hiding (Type)
 
@@ -20,7 +21,7 @@ type Result = (Type, Value)
 
 -- | Compiler environment and state.
 type Env = M.Map Ident Result
-data StateItem = Number Int | Label Value | Function Env
+data StateItem = Number Int | Label Value | Function Env (S.Set [Type])
 type State = M.Map Value StateItem
 
 -- | LLVM code for each scope (function or global).
@@ -68,13 +69,13 @@ localVar id typ val cont = do
     local (M.insert id (typ, val)) cont
 
 -- | Inserts a function into the map and saves environment for later compilation.
-localFunction :: Ident -> Type -> Run a -> Run a
-localFunction id typ cont = do
+localFunc :: Ident -> Type -> Run a -> Run a
+localFunc id typ cont = do
     f <- functionName id
     let p = "@f" ++ f
     localVar id typ p $ do
         env <- ask
-        lift $ modify (M.insert p (Function env))
+        lift $ modify (M.insert p (Function env S.empty))
         cont
 
 -- | Runs continuation in a given scope (function).
@@ -91,35 +92,59 @@ getScope = do
         Nothing -> return $ "!global"
 
 
--- | LLVM string representation for a given type.
-strType :: Type -> String
-strType typ = case reduceType typ of
-    TPtr _ t -> strType t ++ "*"
-    TArr _ n t -> "[" ++ show n ++ " x " ++ strType t ++ "]"
-    TDeref _ t -> init (strType t)
-    TVoid _ -> "void"
-    TInt _ -> "i64"
-    TFloat _ -> "double"
-    TBool _ -> "i1"
-    TChar _ -> "i8"
-    TString _ -> strType (tArray tChar)
-    TArray _ t -> "{" ++ strType t ++ "*, i64}*"
-    TTuple _ ts -> "{" ++ intercalate ", " (map strType ts) ++ "}*"
-    TFunc _ as r -> case r of
-        TTuple _ _ -> strType (tFunc (r:as) tVoid)
-        otherwise -> (strType.reduceType) r ++ " (" ++ intercalate ", " (map (strType.reduceType) as) ++ ")*"
+-- | Returns LLVM string representation for a given type.
+strType :: Type -> Run String
+strType typ = do
+    t <- retrieveType typ
+    case t of
+        TVar _ (Ident x) -> return $ x
+        TPtr _ t -> do
+            s <- strType t
+            return $ s ++ "*"
+        TArr _ n t -> do
+            s <- strType t
+            return $ "[" ++ show n ++ " x " ++ s ++ "]"
+        TDeref _ t ->  do
+            s <- strType t
+            return $ init s
+        TVoid _ -> return $ "void"
+        TInt _ -> return $ "i64"
+        TFloat _ -> return $ "double"
+        TBool _ -> return $ "i1"
+        TChar _ -> return $ "i8"
+        TString _ -> strType (tArray tChar)
+        TArray _ t -> do
+            s <- strType t
+            return $ "{" ++ s ++ "*, i64}*"
+        TTuple _ ts -> do
+            ss <- mapM strType ts
+            return $ "{" ++ intercalate ", " ss ++ "}*"
+        TFunc _ as r -> case r of
+            TTuple _ _ -> strType (tFunc (r:as) tVoid)
+            otherwise -> do
+                ss <- mapM strType as
+                s <- strType r
+                return $ s ++ " (" ++ intercalate ", " ss ++ ")*"
+
+-- | Returns LLVM string representation for given type variables.
+strFVars :: [FVar Pos] -> Run String
+strFVars vars = do
+    ts <- mapM (retrieveType.typeFVar) vars
+    return $ "--" ++ intercalate "-" (map (escapeName.Ident) (map show ts))
 
 -- | Returns a default value for a given type.
 -- | This function is for LLVM code and only serves its internal requirements.
 -- | Returned values are not to be relied upon.
-defaultValue :: Type -> Value
-defaultValue typ = case reduceType typ of
-    TVoid _ -> ""
-    TInt _ -> "42"
-    TFloat _ -> "6.0"
-    TBool _ -> "true"
-    TChar _ -> show (ord '$')
-    otherwise -> "null"
+defaultValue :: Type -> Run Value
+defaultValue typ = do
+    t <- retrieveType typ
+    case t of
+        TVoid _ -> return $ ""
+        TInt _ -> return $ "42"
+        TFloat _ -> return $ "6.0"
+        TBool _ -> return $ "true"
+        TChar _ -> return $ show (ord '$')
+        otherwise -> return $ "null"
 
 -- | Casts value to a given type.
 castValue :: Type -> Value -> Type -> Run Value
@@ -198,20 +223,35 @@ argumentPointer f a = "@g." ++ escapeName f ++ "." ++ escapeName a
 -- | Outputs a function declaration.
 declare :: Type -> Value -> Run ()
 declare (TFunc _ args rt) name = do
-    localScope "!global" $ write $ [ "declare " ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " (map strType args) ++ ")" ]
+    ss <- mapM strType args
+    s <- strType rt
+    localScope "!global" $ write $ [ "declare " ++ s ++ " " ++ name ++ "(" ++ intercalate ", " ss ++ ")" ]
 
 -- | Outputs new function definition with given body.
 define :: Type -> Ident -> Run () -> Run ()
 define typ id body = do
-    let (TFunc _ args rt) = typ
     f <- functionName id
+    (args, rt, f) <- case typ of
+        TFunc _ as r -> return $ (as, r, f)
+        TFuncDef _ _ vs as r _ -> do
+            as <- mapM (retrieveType.typeArg) as
+            r <- retrieveType r
+            case vs of
+                [] -> return $ (as, r, f)
+                _:_ -> do
+                    s <- strFVars vs
+                    return $ (as, r, f ++ s)
     localScope f $ do
         (as, r) <- case rt of
             TTuple _ _ -> return $ (rt : args, tVoid)
             otherwise -> return $ (args, rt)
+        s <- strType typ
         writeTop $ [
-            "@f" ++ f ++ " = global " ++ strType typ ++ " @func" ++ f,
-            "define " ++ strType r ++ " @func" ++ f ++ "(" ++ intercalate ", " (map strType as) ++ ") {",
+            "@f" ++ f ++ " = global " ++ s ++ " @func" ++ f ]
+        ss <- mapM strType as
+        s <- strType r
+        writeTop $ [
+            "define " ++ s ++ " @func" ++ f ++ "(" ++ intercalate ", " ss ++ ") {",
             "entry:" ]
         lift $ modify (M.insert ("$label-" ++ f) (Label "entry"))
         body
@@ -231,40 +271,47 @@ branch val lbl1 lbl2 = do
 alloca :: Type -> Run Value
 alloca typ = do
     p <- nextTemp
-    writeTop $ indent [ p ++ " = alloca " ++ strType typ ]
+    s <- strType typ
+    writeTop $ indent [ p ++ " = alloca " ++ s ]
     return $ p
 
 -- | Outputs LLVM 'global' command.
 global :: Type -> Value -> Run Value
 global typ val = do
     g <- nextGlobal
-    writeTop $ [ g ++ " = global " ++ strType typ ++ " " ++ val ]
+    s <- strType typ
+    writeTop $ [ g ++ " = global " ++ s ++ " " ++ val ]
     return $ g
 
 -- | Outputs LLVM constant command.
 constant :: Type -> Value -> Run Value
 constant typ val = do
     c <- nextConst
-    writeTop $ [ c ++ " = constant " ++ strType typ ++ " " ++ val ]
+    s <- strType typ
+    writeTop $ [ c ++ " = constant " ++ s ++ " " ++ val ]
     return $ c
 
 -- | Outputs LLVM 'external global' command.
 external :: Value -> Type -> Run Value
 external name typ = do
-    writeTop $ [ name ++ " = external global " ++ strType typ ]
+    s <- strType typ
+    writeTop $ [ name ++ " = external global " ++ s ]
     return $ name
 
 -- | Outputs LLVM 'store' command.
 store :: Type -> Value -> Value -> Run ()
 store typ val ptr = do
     if val == "" then skip
-    else write $ indent [ "store " ++ strType typ ++ " " ++ val ++ ", " ++ strType typ ++ "* " ++ ptr ]
+    else do
+        s <- strType typ
+        write $ indent [ "store " ++ s ++ " " ++ val ++ ", " ++ s ++ "* " ++ ptr ]
 
 -- | Outputs LLVM 'load' command.
 load :: Type -> Value -> Run Value
 load typ ptr = do
     v <- nextTemp
-    write $ indent [ v ++ " = load " ++ strType typ ++ ", " ++ strType typ ++ "* " ++ ptr ]
+    s <- strType typ
+    write $ indent [ v ++ " = load " ++ s ++ ", " ++ s ++ "* " ++ ptr ]
     return $ v
 
 -- | Allocates a new identifier, outputs corresponding LLVM code, and runs continuation with changed environment.
@@ -272,7 +319,9 @@ variable :: Type -> Ident -> Value -> Run a -> Run a
 variable typ id val cont = do
     s <- getScope
     p <- case s of
-        "main" -> localScope "!global" $ global typ (defaultValue typ)
+        "main" -> do
+            v <- defaultValue typ
+            localScope "!global" $ global typ v
         otherwise -> alloca typ
     store typ val p
     localVar id typ p cont
@@ -281,56 +330,70 @@ variable typ id val cont = do
 gep :: Type -> Value -> [Value] -> [Int] -> Run Value
 gep typ val inds1 inds2 = do
     p <- nextTemp
-    write $ indent [ p ++ " = getelementptr inbounds " ++ strType (tDeref typ) ++ ", " ++ strType typ ++ " " ++ val ++ intercalate "" [", i64 " ++ i | i <- inds1] ++ intercalate "" [", i32 " ++ show i | i <- inds2] ]
+    s <- strType typ
+    s' <- strType (tDeref typ)
+    write $ indent [ p ++ " = getelementptr inbounds " ++ s' ++ ", " ++ s ++ " " ++ val ++ intercalate "" [", i64 " ++ i | i <- inds1] ++ intercalate "" [", i32 " ++ show i | i <- inds2] ]
     return $ p
 
 -- | Outputs LLVM 'bitcast' command.
 bitcast :: Type -> Type -> Value -> Run Value
 bitcast typ1 typ2 ptr = do
     p <- nextTemp
-    write $ indent [ p ++ " = bitcast " ++ strType typ1 ++ " " ++ ptr ++ " to " ++ strType typ2 ]
+    s1 <- strType typ1
+    s2 <- strType typ2
+    write $ indent [ p ++ " = bitcast " ++ s1 ++ " " ++ ptr ++ " to " ++ s2 ]
     return $ p
 
 -- | Outputs LLVM 'ptrtoint' command.
 ptrtoint :: Type -> Value -> Run Value
 ptrtoint typ ptr = do
     v <- nextTemp
-    write $ indent [ v ++ " = ptrtoint " ++ strType typ ++ " " ++ ptr ++ " to i64" ]
+    s <- strType typ
+    write $ indent [ v ++ " = ptrtoint " ++ s ++ " " ++ ptr ++ " to i64" ]
     return $ v
 
 -- | Outputs LLVM 'sitofp' command to convert from Int to Float.
 sitofp :: Value -> Run Value
 sitofp val = do
     v <- nextTemp
-    write $ indent [ v ++ " = sitofp " ++ strType tInt ++ " " ++ val ++ " to " ++ strType tFloat ]
+    s1 <- strType tInt
+    s2 <- strType tFloat
+    write $ indent [ v ++ " = sitofp " ++ s1 ++ " " ++ val ++ " to " ++ s2 ]
     return $ v
 
 -- | Outputs LLVM 'fptosi' command to convert from Float to Int.
 fptosi :: Value -> Run Value
 fptosi val = do
     v <- nextTemp
-    write $ indent [ v ++ " = fptosi " ++ strType tFloat ++ " " ++ val ++ " to " ++ strType tInt ]
+    s1 <- strType tFloat
+    s2 <- strType tInt
+    write $ indent [ v ++ " = fptosi " ++ s1 ++ " " ++ val ++ " to " ++ s2 ]
     return $ v
 
 -- | Outputs LLVM 'trunc' command.
 trunc :: Type -> Type -> Value -> Run Value
 trunc typ1 typ2 val = do
     v <- nextTemp
-    write $ indent [ v ++ " = trunc " ++ strType typ1 ++ " " ++ val ++ " to " ++ strType typ2 ]
+    s1 <- strType typ1
+    s2 <- strType typ2
+    write $ indent [ v ++ " = trunc " ++ s1 ++ " " ++ val ++ " to " ++ s2 ]
     return $ v
 
 -- | Outputs LLVM 'zext' command.
 zext :: Type -> Type -> Value -> Run Value
 zext typ1 typ2 val = do
     v <- nextTemp
-    write $ indent [ v ++ " = zext " ++ strType typ1 ++ " " ++ val ++ " to " ++ strType typ2 ]
+    s1 <- strType typ1
+    s2 <- strType typ2
+    write $ indent [ v ++ " = zext " ++ s1 ++ " " ++ val ++ " to " ++ s2 ]
     return $ v
 
 -- | Outputs LLVM 'select' instruction for given values.
 select :: String -> Type -> Value -> Value -> Run Value
 select val typ opt1 opt2 = do
     v <- nextTemp
-    write $ indent [ v ++ " = select i1 " ++ val ++ ", " ++ strType typ ++ " " ++ opt1 ++ ", " ++ strType typ ++ " " ++ opt2 ]
+    s <- strType typ
+    write $ indent [ v ++ " = select i1 " ++ val ++ ", " ++ s ++ " " ++ opt1 ++ ", " ++ s ++ " " ++ opt2 ]
     return $ v
 
 -- | Outputs LLVM 'phi' instruction for given values and label names.
@@ -344,7 +407,8 @@ phi opts = do
 binop :: String -> Type -> Value -> Value -> Run Value
 binop op typ val1 val2 = do
     v <- nextTemp
-    write $ indent [ v ++ " = " ++ op ++ " " ++ strType typ ++ " " ++ val1 ++ ", " ++ val2 ]
+    s <- strType typ
+    write $ indent [ v ++ " = " ++ op ++ " " ++ s ++ " " ++ val1 ++ ", " ++ val2 ]
     return $ v
 
 -- | Outputs LLVM function 'call' instruction.
@@ -358,10 +422,17 @@ call rt name args = do
     case rt of
         TTuple _ _ -> do
             p <- alloca (tDeref rt)
-            write $ indent [ c ++ "void " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- (rt, p) : args] ++ ")" ]
+            ss <- forM ((rt, p):args) $ \(t, v) -> do
+                s <- strType t
+                return $ s ++ " " ++ v
+            write $ indent [ c ++ "void " ++ name ++ "(" ++ intercalate ", " ss ++ ")" ]
             return $ p
         otherwise -> do
-            write $ indent [ c ++ strType rt ++ " " ++ name ++ "(" ++ intercalate ", " [strType t ++ " " ++ v | (t, v) <- args] ++ ")" ]
+            ss <- forM args $ \(t, v) -> do
+                s <- strType t
+                return $ s ++ " " ++ v
+            s <- strType rt
+            write $ indent [ c ++ s ++ " " ++ name ++ "(" ++ intercalate ", " ss ++ ")" ]
             return $ v
 
 -- | Outputs LLVM function 'call' with void return type.
@@ -380,7 +451,8 @@ ret typ val = case typ of
         call (tPtr tChar) "@memcpy" [(tPtr tChar, p1), (tPtr tChar, p2), (tInt, v)]
         retVoid
     otherwise -> do
-        write $ indent [ "ret " ++ strType typ ++ " " ++ val ]
+        s <- strType typ
+        write $ indent [ "ret " ++ s ++ " " ++ val ]
 
 -- | Outputs LLVM 'ret void' instruction.
 retVoid :: Run ()
@@ -413,7 +485,8 @@ initString :: String -> Run Value
 initString str = do
     let l = length str
     let t = (tArr (toInteger l) tChar)
-    c <- localScope "!global" $ constant t ("[" ++ intercalate ", " [strType tChar ++ " " ++ show (ord c) | c <- str] ++ "]")
+    s <- strType tChar
+    c <- localScope "!global" $ constant t ("[" ++ intercalate ", " [s ++ " " ++ show (ord c) | c <- str] ++ "]")
     p1 <- initMemory tString "1"
     p2 <- gep (tPtr t) c ["0"] [0]
     gep tString p1 ["0"] [0] >>= store (tPtr tChar) p2

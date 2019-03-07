@@ -17,10 +17,10 @@ func readInt() Int extern
 func readChar() Char extern
 
 
-func min(Int a, Int b) Int def
+func min<Num T>(T a, T b) T def
     return a < b ? a : b
 
-func max(Int a, Int b) Int def
+func max<Num T>(T a, T b) T def
     return b < a ? a : b
 
 

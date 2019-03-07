@@ -1,0 +1,7 @@
+
+T' = 'T'
+
+func f'<Any T'>(T' t') T' def
+    return t'
+
+print f'(T')

@@ -42,27 +42,27 @@ except ``"`` unless preceded by ``\``.
 The set of reserved words is the set of terminals appearing in the grammar. Those reserved words that consist of non-letter characters are called symbols, and they are treated in a different way from those that are similar to identifiers. The lexer follows rules familiar from languages like Haskell, C, and Java, including longest match and spacing conventions.
 
 The reserved words used in Pyxell are the following:
-  | ``Bool`` | ``Char`` | ``Float`` | ``Int``
-  | ``String`` | ``Void`` | ``and`` | ``break``
-  | ``continue`` | ``def`` | ``do`` | ``elif``
-  | ``else`` | ``extern`` | ``false`` | ``for``
-  | ``func`` | ``if`` | ``in`` | ``lambda``
-  | ``not`` | ``or`` | ``print`` | ``return``
-  | ``skip`` | ``step`` | ``true`` | ``until``
-  | ``while`` |  |  | 
+  | ``Any`` | ``Bool`` | ``Char`` | ``Float``
+  | ``Int`` | ``Num`` | ``String`` | ``Void``
+  | ``and`` | ``break`` | ``continue`` | ``def``
+  | ``do`` | ``elif`` | ``else`` | ``extern``
+  | ``false`` | ``for`` | ``func`` | ``if``
+  | ``in`` | ``lambda`` | ``not`` | ``or``
+  | ``print`` | ``return`` | ``skip`` | ``step``
+  | ``true`` | ``until`` | ``while`` | 
 
 The symbols used in Pyxell are the following:
-  | ; | ( | ) | :
-  | , | { | } | =
-  | *= | /= | %= | +=
-  | -= | <<= | >>= | &=
-  | |= | ^= | _ | [
-  | ] | . | ** | -
-  | + | ~ | * | /
-  | % | << | >> | &
-  | | | ^ | .. | ...
-  | == | != | < | <=
-  | > | >= | ? | ->
+  | ; | ( | ) | <
+  | > | , | : | {
+  | } | = | *= | /=
+  | %= | += | -= | <<=
+  | >>= | &= | |= | ^=
+  | _ | [ | ] | .
+  | ** | - | + | ~
+  | * | / | % | <<
+  | >> | & | | | ^
+  | .. | ... | == | !=
+  | <= | >= | ? | ->
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -77,7 +77,7 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
-  | //Stmt// | -> | ``func`` //Ident// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
+  | //Stmt// | -> | ``func`` //Ident// //FVars// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``skip`` 
@@ -101,6 +101,12 @@ All other symbols are terminals.
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``step`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
+  | //FVars// | -> | **eps**
+  |  |  **|**  | ``<`` //[FVar]// ``>`` 
+  | //FVar// | -> | //Class// //Ident// 
+  | //[FVar]// | -> | **eps**
+  |  |  **|**  | //FVar// 
+  |  |  **|**  | //FVar// ``,`` //[FVar]// 
   | //FArg// | -> | //Type// //Ident// 
   |  |  **|**  | //Type// //Ident// ``:`` //Expr2// 
   | //[FArg]// | -> | **eps**
@@ -190,14 +196,17 @@ All other symbols are terminals.
   |  |  **|**  | //Ident// 
   |  |  **|**  | //Ident// ``,`` //[Ident]// 
   | //Expr// | -> | //Expr1// 
-  | //Type4// | -> | ``Void`` 
+  | //Type4// | -> | //Ident// 
+  |  |  **|**  | ``Void`` 
   |  |  **|**  | ``Int`` 
   |  |  **|**  | ``Float`` 
   |  |  **|**  | ``Bool`` 
   |  |  **|**  | ``Char`` 
   |  |  **|**  | ``String`` 
-  |  |  **|**  | ``[`` //Type// ``]`` 
+  |  |  **|**  | //Class// 
   |  |  **|**  | ``(`` //Type// ``)`` 
+  | //Type3// | -> | ``[`` //Type// ``]`` 
+  |  |  **|**  | //Type4// 
   | //Type2// | -> | //[Type3]// 
   |  |  **|**  | //Type3// 
   | //Type1// | -> | //[Type2]// ``->`` //Type1// 
@@ -208,6 +217,9 @@ All other symbols are terminals.
   |  |  **|**  | //Type2// 
   |  |  **|**  | //Type2// ``,`` //[Type2]// 
   | //Type// | -> | //Type1// 
-  | //Type3// | -> | //Type4// 
+  | //Class1// | -> | ``Any`` 
+  |  |  **|**  | ``Num`` 
+  |  |  **|**  | ``(`` //Class// ``)`` 
+  | //Class// | -> | //Class1// 
 
 

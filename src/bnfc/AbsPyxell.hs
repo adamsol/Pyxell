@@ -15,7 +15,7 @@ instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
 data Stmt a
-    = SFunc a Ident [FArg a] (FRet a) (FBody a)
+    = SFunc a Ident (FVars a) [FArg a] (FRet a) (FBody a)
     | SRetVoid a
     | SRetExpr a (Expr a)
     | SSkip a
@@ -43,7 +43,7 @@ data Stmt a
 
 instance Functor Stmt where
     fmap f x = case x of
-        SFunc a ident fargs fret fbody -> SFunc (f a) ident (map (fmap f) fargs) (fmap f fret) (fmap f fbody)
+        SFunc a ident fvars fargs fret fbody -> SFunc (f a) ident (fmap f fvars) (map (fmap f) fargs) (fmap f fret) (fmap f fbody)
         SRetVoid a -> SRetVoid (f a)
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
         SSkip a -> SSkip (f a)
@@ -67,6 +67,19 @@ instance Functor Stmt where
         SForStep a expr1 expr2 expr3 block -> SForStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
+data FVars a = FStd a | FGen a [FVar a]
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor FVars where
+    fmap f x = case x of
+        FStd a -> FStd (f a)
+        FGen a fvars -> FGen (f a) (map (fmap f) fvars)
+data FVar a = FVar a (Class a) Ident
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor FVar where
+    fmap f x = case x of
+        FVar a class_ ident -> FVar (f a) (fmap f class_) ident
 data FArg a
     = ANoDefault a (Type a) Ident | ADefault a (Type a) Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
@@ -217,16 +230,18 @@ data Type a
     = TPtr a (Type a)
     | TArr a Integer (Type a)
     | TDeref a (Type a)
+    | TVar a Ident
     | TVoid a
     | TInt a
     | TFloat a
     | TBool a
     | TChar a
     | TString a
+    | TClass a (Class a)
     | TArray a (Type a)
     | TTuple a [Type a]
     | TFunc a [Type a] (Type a)
-    | TFuncDef a Ident [FArg a] (Type a) (Block a)
+    | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
     | TFuncExt a Ident [FArg a] (Type a)
   deriving (Eq, Ord, Show, Read)
 
@@ -235,14 +250,23 @@ instance Functor Type where
         TPtr a type_ -> TPtr (f a) (fmap f type_)
         TArr a integer type_ -> TArr (f a) integer (fmap f type_)
         TDeref a type_ -> TDeref (f a) (fmap f type_)
+        TVar a ident -> TVar (f a) ident
         TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)
         TFloat a -> TFloat (f a)
         TBool a -> TBool (f a)
         TChar a -> TChar (f a)
         TString a -> TString (f a)
+        TClass a class_ -> TClass (f a) (fmap f class_)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
-        TFuncDef a ident fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fargs) (fmap f type_) (fmap f block)
+        TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
         TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
+data Class a = CAny a | CNum a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Class where
+    fmap f x = case x of
+        CAny a -> CAny (f a)
+        CNum a -> CNum (f a)

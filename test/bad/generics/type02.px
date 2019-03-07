@@ -1,0 +1,3 @@
+
+func f<Any T>(Bool b) T def
+    return b

@@ -1,0 +1,5 @@
+
+func f<Num T>(T x) def
+    return
+
+f('x')

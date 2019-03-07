@@ -99,7 +99,7 @@ instance Print [Stmt a] where
 
 instance Print (Stmt a) where
   prt i e = case e of
-    SFunc _ id fargs fret fbody -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, prt 0 fbody])
+    SFunc _ id fvars fargs fret fbody -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, prt 0 fvars, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, prt 0 fbody])
     SRetVoid _ -> prPrec i 0 (concatD [doc (showString "return")])
     SRetExpr _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
@@ -126,6 +126,21 @@ instance Print (Stmt a) where
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
+
+instance Print (FVars a) where
+  prt i e = case e of
+    FStd _ -> prPrec i 0 (concatD [])
+    FGen _ fvars -> prPrec i 0 (concatD [doc (showString "<"), prt 0 fvars, doc (showString ">")])
+
+instance Print (FVar a) where
+  prt i e = case e of
+    FVar _ class_ id -> prPrec i 0 (concatD [prt 0 class_, prt 0 id])
+  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
+
+instance Print [FVar a] where
+  prt = prtList
 
 instance Print (FArg a) where
   prt i e = case e of
@@ -249,20 +264,27 @@ instance Print (Type a) where
     TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TArr _ n type_ -> prPrec i 4 (concatD [prt 0 n, prt 4 type_])
     TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
+    TVar _ id -> prPrec i 4 (concatD [prt 0 id])
     TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
     TFloat _ -> prPrec i 4 (concatD [doc (showString "Float")])
     TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
     TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])
     TString _ -> prPrec i 4 (concatD [doc (showString "String")])
-    TArray _ type_ -> prPrec i 4 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
+    TClass _ class_ -> prPrec i 4 (concatD [prt 0 class_])
+    TArray _ type_ -> prPrec i 3 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
-    TFuncDef _ id fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_, prt 0 block])
+    TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
     TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]
   prtList 2 [] = concatD []
   prtList 2 [x] = concatD [prt 2 x]
   prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
+
+instance Print (Class a) where
+  prt i e = case e of
+    CAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
+    CNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
 

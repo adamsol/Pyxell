@@ -1,0 +1,6 @@
+
+func f<Any T>(T x, T y) def
+    return
+
+func g<Any A, Any B>(A x, B y) def
+    f(x, y)
