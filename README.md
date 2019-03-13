@@ -38,7 +38,7 @@ for x, i in a, 0... do
 ```
 
 ```
-func fold(Int,Int->Int f, Int a, [Int] t) Int def
+func fold<Any T>(T,T->T f, T a, [T] t) T def
     for x in t do
         a = f(a, x)
     return a
@@ -64,9 +64,10 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * First-class functions (+)
 * Default and named arguments (+)
 * Lambda expressions (+)
-* Generic types
+* Generic functions (+)
 * Module system
-* Classes with multiple inheritance and safe references
+* Classes with safe references
+* Multiple inheritance
 * Separate nullable types
 * Arbitrary-precision arithmetic
 * Variety of containers: mutable/immutable, hash/tree-based

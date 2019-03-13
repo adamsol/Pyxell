@@ -102,7 +102,7 @@ retrieveType t = case t of
     TVar _ id -> do
         r <- asks (M.lookup id)
         case r of
-            Just (t', _) -> retrieveType t'
+            Just (t', _) -> return $ t'  -- TODO: recursion for nested types
             otherwise -> return $ t
     TArray _ t' -> retrieveType t' >>= return.tArray
     TTuple _ ts -> if length ts == 1 then retrieveType (head ts) else mapM retrieveType ts >>= return.tTuple

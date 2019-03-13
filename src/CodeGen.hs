@@ -40,6 +40,12 @@ skip = do
 write :: [String] -> Run ()
 write lines = do
     s <- getScope
+    lift $ lift $ modify (M.insertWith (++) (s ++ "-3") (reverse lines))
+
+-- | Outputs several lines of LLVM code at the top of the current scope.
+writeEntry :: [String] -> Run ()
+writeEntry lines = do
+    s <- getScope
     lift $ lift $ modify (M.insertWith (++) (s ++ "-2") (reverse lines))
 
 -- | Outputs several lines of LLVM code at the top of the current scope.
@@ -272,7 +278,7 @@ alloca :: Type -> Run Value
 alloca typ = do
     p <- nextTemp
     s <- strType typ
-    writeTop $ indent [ p ++ " = alloca " ++ s ]
+    writeEntry $ indent [ p ++ " = alloca " ++ s ]
     return $ p
 
 -- | Outputs LLVM 'global' command.

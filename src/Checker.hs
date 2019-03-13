@@ -167,7 +167,7 @@ checkDecl pos typ id cont = case typ of
         l <- getLevel
         localVar id typ l cont
 
--- | Checks if one type can be cast to another and returns the unified type.
+-- | Checks if one type can be cast to another, and returns the unified type.
 checkCast :: Pos -> Type -> Type -> Run Type
 checkCast pos typ1 typ2 = case (typ1, typ2) of
     (TInt _, TClass _ (CNum _)) -> return $ typ1
@@ -177,7 +177,12 @@ checkCast pos typ1 typ2 = case (typ1, typ2) of
         Just t' -> case typ2 of
             TFuncDef _ _ _ _ _ _ -> throw pos $ IllegalRedefinition typ2
             otherwise -> return $ t'
-        Nothing -> throw pos $ IllegalAssignment typ1 typ2
+        Nothing -> do
+            t1 <- retrieveType typ1
+            t2 <- retrieveType typ2
+            case unifyTypes t1 t2 of
+                Just t' -> return $ t'
+                Nothing -> throw pos $ IllegalAssignment typ1 typ2
 
 
 -- | Checks the whole program and returns environment.
@@ -399,8 +404,8 @@ checkFunc pos id vars args ret block cont = do
         cont
     where
         checkArgs args dflt cont = case args of
-             [] -> cont
-             a:as -> checkArg a dflt (\d -> checkArgs as (dflt || d) cont)
+            [] -> cont
+            a:as -> checkArg a dflt (\d -> checkArgs as (dflt || d) cont)
         checkArg arg dflt cont = case arg of
             ANoDefault pos typ id -> case dflt of
                 False -> do
@@ -418,7 +423,7 @@ checkFunc pos id vars args ret block cont = do
 checkTypeVars :: [FVar Pos] -> Run a -> Run a
 checkTypeVars vars cont = case vars of
      [] -> cont
-     (FVar _ c id):vs -> localType id (tClass c) $ checkTypeVars vs cont
+     (FVar _ c id):vs -> localType id (tClass c) $ checkTypeVars vs cont  -- TODO: type scopes
 
 -- | Checks an expression and returns its type and whether it is mutable.
 checkExpr :: Expr Pos -> Run (Type, Bool)
@@ -500,8 +505,8 @@ checkExpr expression = case expression of
         (typ, _) <- checkExpr expr
         (vars, args1, args2, ret) <- case typ of
             TFunc _ as r -> return $ ([], as, [], r)
-            TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, (reduceType r))
-            TFuncExt _ _ as r -> return $ ([], map typeArg as, as, (reduceType r))
+            TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
+            TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
             otherwise -> throw pos $ NotFunction typ
         args3 <- case expr of
             EAttr _ e id -> return $ APos _pos e : args  -- if this is a method, the object will be passed as the first argument
@@ -517,45 +522,77 @@ checkExpr expression = case expression of
                         Just _ -> throw pos' $ RepeatedArgument id
                     Nothing -> throw pos' $ UnexpectedArgument id
                 (APos pos' _, True) -> throw pos' $ ExpectedNamedArgument
-            t <- case convertLambda pos' e of
-                ELambda _ ids e' -> do
-                    let t = args1 !! i
-                    let TFunc _ as r = t
-                    if length ids < length as then throw pos' $ TooFewArguments t
-                    else if length ids > length as then throw pos' $ TooManyArguments t
-                    else skip
-                    let id = Ident ".lambda"
-                    let b = SBlock pos' [SRetExpr pos' e']
-                    checkFunc pos' id [] [ANoDefault _pos t' id' | (t', id') <- zip as ids] r (Just b) skip
-                    return $ t
+            r <- case convertLambda pos' e of
+                e'@(ELambda _ _ _) -> return $ Right e'
                 otherwise -> do
                     (t, _) <- checkExpr e
-                    return $ t
-            return $ (M.insert i t m, named)
+                    return $ Left t
+            return $ (M.insert i r m, named)
         -- Extend the map using default arguments.
         m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
-            (ADefault _ t _ _, Nothing) -> return $ M.insert i t m
+            (ADefault _ t _ _, Nothing) -> return $ M.insert i (Left t) m
             otherwise -> return $ m
         -- Check whether all (and no redundant) arguments have been provided.
         if any (>= length args1) (M.keys m) then throw pos $ TooManyArguments typ
         else if M.size m < length args1 then throw pos $ TooFewArguments typ
         else skip
         -- Check if all arguments have correct types.
-        checkTypeVars vars $ checkArgs (M.elems m) args1 $ do
+        checkTypeVars vars $ checkArgs (M.elems m) args1 $ checkLambdas (M.elems m) args1 $ do
             r <- retrieveType ret
+            r <- case r of
+                TClass _ _ -> return $ ret
+                otherwise -> return $ r
             return $ (r, False)
         where
-            checkArgs ts1 ts2 cont = case (ts1, ts2) of
+            checkArgs as1 as2 cont = case (as1, as2) of
                 (_, []) -> cont
-                (t1:ts1, t2:ts2) -> checkArg t1 t2 (checkArgs ts1 ts2 cont)
-            checkArg t1 t2 cont = case t2 of
-                TVar _ id -> do
-                    t3 <- checkType pos t2
-                    t4 <- checkCast pos t1 t3
-                    localType id t4 cont
+                ((Left t1):as1, t2:as2) -> checkArg t1 t2 $ checkArgs as1 as2 cont
+                (_:as1, _:as2) -> checkArgs as1 as2 cont
+            checkArg t1 t2 cont = case (reduceType t1, reduceType t2) of
+                (_, t2'@(TVar _ id)) -> do
+                    checkType pos t2
+                    t3 <- retrieveType t2
+                    t4 <- case (t1, t3) of
+                        (TInt _, TClass _ (CNum _)) -> return $ t1
+                        (TFloat _, TClass _ (CNum _)) -> return $ t1
+                        (_, TClass _ (CAny _)) -> return $ t1
+                        otherwise -> checkCast pos t1 t2
+                    if t2' == t4 then cont  -- to prevent looping
+                    else localType id t4 cont
+                (TTuple _ ts1, TTuple _ ts2) -> do
+                    if length ts1 == length ts2 then checkArgs (map Left ts1) ts2 cont
+                    else throw pos $ IllegalAssignment t1 t2
+                (TArray _ t1', TArray _ t2') -> do
+                    checkArg t1' t2' cont
+                (TFunc _ as1 r1, TFunc _ as2 r2) -> do
+                    if length as1 == length as2 then checkArgs (map Left as1) as2 (checkArg r1 r2 cont)
+                    else throw pos $ IllegalAssignment t1 t2
                 otherwise -> do
                     checkCast pos t1 t2
                     cont
+            checkLambdas as1 as2 cont = case (as1, as2) of
+                (_, []) -> cont
+                ((Right e):as1, t:as2) -> checkLambda e t (checkLambdas as1 as2 cont)
+                (_:as1, _:as2) -> checkLambdas as1 as2 cont
+            checkLambda e t cont = do
+                let ELambda pos' ids e' = e
+                t <- retrieveType t
+                let TFunc _ as r = t
+                if length ids < length as then throw pos' $ TooFewArguments t
+                else if length ids > length as then throw pos' $ TooManyArguments t
+                else skip
+                let id = Ident ".lambda"
+                let b = SBlock pos' [SRetExpr pos' e']
+                checkFunc pos' id [] [ANoDefault _pos t' id' | (t', id') <- zip as ids] r (Just b) skip
+                (r', _) <- checkLambdaArgs (zip as ids) $ checkExpr e'
+                case r of
+                    TVar _ id' -> localType id' r' $ cont
+                    otherwise -> cont
+            checkLambdaArgs args cont = case args of
+                [] -> cont
+                (t, id):as -> checkLambdaArg t id $ checkLambdaArgs as cont
+            checkLambdaArg typ id cont = do
+                checkDecl _pos typ id $ cont
     EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
     EMinus pos expr -> checkUnary pos "-" expr
     EPlus pos expr -> checkUnary pos "+" expr

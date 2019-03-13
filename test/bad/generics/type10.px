@@ -1,0 +1,8 @@
+
+func f<Any A>(A->A p) def
+    return
+
+func g(Int x) Bool def
+    return true
+
+f(g)

@@ -1,0 +1,6 @@
+
+func f<Any A, Num B, Any C>(A*[B*C] p) B*A def
+    return p.b[0].a, p.a
+
+print f(('$', [(5, 'x')]))
+print f((false, [(-1.11, "X")]))

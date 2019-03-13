@@ -1,0 +1,5 @@
+
+func get<Any T>([[T]] a) [T] def
+    return a[0]
+
+print get([[2, 3]])[1]

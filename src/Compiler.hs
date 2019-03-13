@@ -74,7 +74,8 @@ compileStmt statement cont = case statement of
         cont
     SPrint _ expr -> do
         (t, v) <- compileExpr expr
-        compilePrint t v
+        t' <- retrieveType t
+        compilePrint t' v
         call tInt "@putchar" [(tChar, "10")]
         cont
     SPrintEmpty _ -> do
@@ -297,7 +298,7 @@ compileFunc id vars args1 rt block args2 = do
     let as = map typeArg args1
     case S.member args2 set of
         True -> return $ p
-        False -> local (const env) $ compileTypeVars as args2 $ do  -- environment is restored to the point of function definition
+        False -> local (const env) $ compileTypeVars args2 as $ do  -- environment is restored to the point of function definition
             lift $ modify (M.insert p (Function env (S.insert args2 set)))  -- function is marked as compiled with these types
             r <- retrieveType rt
             i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
@@ -333,9 +334,13 @@ compileFunc id vars args1 rt block args2 = do
                 localScope "main" $ do
                     (_, v) <- compileExpr e
                     store t v p
-        compileArgs args idx cont = case args of
-             [] -> cont
-             a:as -> compileArg a idx (compileArgs as (idx+1) cont)
+
+-- | Outputs LLVM code for initialization of function arguments.
+compileArgs :: [FArg Pos] -> Int -> Run a -> Run a
+compileArgs args idx cont = case args of
+    [] -> cont
+    a:as -> compileArg a idx (compileArgs as (idx+1) cont)
+    where
         compileArg arg idx cont = case arg of
             ANoDefault _ typ id -> do
                 t <- retrieveType typ
@@ -347,11 +352,16 @@ compileFunc id vars args1 rt block args2 = do
 -- | Adds type variables to the environment.
 compileTypeVars :: [Type] -> [Type] -> Run a -> Run a
 compileTypeVars as1 as2 cont = case (as1, as2) of
-    (_, []) -> cont
-    (a1:as1, a2:as2) -> compile a1 a2 (compileTypeVars as1 as2 cont)
+    ([], _) -> cont
+    (t1:as1, t2:as2) -> compile t1 t2 $ compileTypeVars as1 as2 cont
     where
-        compile a1 a2 cont = case a1 of
-            TVar _ id -> localType id a2 cont
+        compile t1 t2 cont = case (reduceType t1, reduceType t2) of
+            (t1', t2'@(TVar _ id)) -> do
+                if t1' == t2' then cont  -- to prevent looping
+                else localType id t1 cont
+            (TTuple _ ts1, TTuple _ ts2) -> compileTypeVars ts1 ts2 cont
+            (TArray _ t1', TArray _ t2') -> compile t1' t2' cont
+            (TFunc _ as1 r1, TFunc _ as2 r2) -> compileTypeVars as1 as2 (compile r1 r2 cont)
             otherwise -> cont
 
 
@@ -410,10 +420,10 @@ compileExpr expression = case expression of
                 Just (t, p) <- getIdent id
                 return $ (t, p)
             otherwise -> compileExpr expr
-        (vars, args1, args2, rt) <- case typ of
-            TFunc _ as r -> return $ ([], as, [], r)
-            TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
-            TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
+        (id, vars, args1, args2, rt) <- case typ of
+            TFunc _ as r -> return $ (Ident "", [], as, [], r)
+            TFuncDef _ id vs as r _ -> return $ (id, vs, map typeArg as, as, reduceType r)
+            TFuncExt _ id as r -> return $ (id, [], map typeArg as, as, reduceType r)
         args3 <- case expr of
             EAttr _ e _ -> return $ APos _pos e : args  -- if this is a method, the object is passed as the first argument
             otherwise -> return $ args
@@ -425,52 +435,69 @@ compileExpr expression = case expression of
                 ANamed _ id e -> do
                     let Just (i', _) = getArgument args2 id
                     return $ (e, i')
-            (t, v) <- case convertLambda _pos e of
-                ELambda _ ids e' -> do
-                    let t = args1 !! i
-                    let TFunc _ as r = t
-                    n <- nextNumber
-                    let id = Ident (".lambda" ++ show n)
-                    b <- case r of
-                        TVoid _ -> return $ SBlock _pos [SAssg _pos [e']]
-                        otherwise -> return $ SBlock _pos [SRetExpr _pos e']
-                    p <- localFunc id t $ compileFunc id [] [ANoDefault _pos t' id' | (t', id') <- zip as ids] r (Just b) []
-                    v <- load t p
-                    return $ (t, v)
+            r <- case convertLambda _pos e of
+                ELambda _ ids e' -> return $ (args1 !! i, Right (ids, e'))
                 otherwise -> do
-                    compileExpr e
-            return $ M.insert i (t, v) m
+                    (t, v) <- compileExpr e
+                    return $ (t, Left v)
+            return $ M.insert i r m
         -- Extend the map using default arguments.
         m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
             (ADefault _ t id' _, Nothing) -> do
-                id <- case typ of
-                    TFuncDef _ id _ _ _ _ -> return $ id
-                    TFuncExt _ id _ _ -> return $ id
                 t <- retrieveType t
                 let p = argumentPointer id id'
                 v <- load t p
-                return $ M.insert i (t, v) m
+                return $ M.insert i (t, Left v) m
             otherwise -> return $ m
         -- Call the function.
-        let args4 = (map fst (M.elems m))
-        case typ of
-            TFuncDef _ id (_:_) _ _ b -> do
-                compileFunc id vars args2 rt (Just b) args4
-            otherwise -> return $ ""
-        compileTypeVars args1 args4 $ do
-            func <- case expr of
-                EVar _ id -> do
-                    Just (t, p) <- getIdent id
-                    p <- case vars of
-                        [] -> return $ p
-                        _:_ -> do
-                            s <- strFVars vars
-                            return $ p ++ s
-                    load typ p
-                otherwise -> return $ func
-            r <- retrieveType rt
-            v <- call r func (M.elems m)
-            return $ (r, v)
+        compileTypeVars (map fst (M.elems m)) args1 $ do
+            args4 <- forM (M.elems m) $ \r -> case r of
+                (t, Left v) -> return $ (t, v)
+                (t, Right (ids, e)) -> do
+                    -- Compile lambda function.
+                    let TFunc _ as r = t
+                    n <- nextNumber
+                    let id = Ident (".lambda" ++ show n)
+                    f <- functionName id
+                    s <- getScope
+                    -- TODO: use compileFunc to get the returned type in a more concise way
+                    i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
+                        TTuple _ _ -> return $ 1
+                        otherwise -> return $ 0
+                    (r', p) <- localFunc id t $ localScope f $ compileArgs [ANoDefault _pos t' id' | (t', id') <- zip as ids] i $ do
+                        l <- nextLabel
+                        goto l >> label l
+                        (r', v) <- compileExpr e
+                        case r' of
+                            TVoid _ -> retVoid
+                            otherwise -> ret r' v
+                        localScope s $ case r of
+                            TVar _ id' -> localType id' r' $ define t id $ skip
+                            otherwise -> define t id $ skip
+                        (_, p) <- asks (M.! id)
+                        return $ (r', p)
+                    let t' = tFunc as r'
+                    v <- load t' p
+                    return $ (t', v)
+            compileTypeVars (map fst args4) args1 $ do
+                case typ of
+                    TFuncDef _ id (_:_) _ _ b -> do
+                        -- Compile generic function.
+                        compileFunc id vars args2 rt (Just b) (map fst args4)
+                    otherwise -> return $ ""
+                r <- retrieveType rt
+                func <- case expr of
+                    EVar _ id -> do
+                        Just (t, p) <- getIdent id
+                        p <- case vars of
+                            [] -> return $ p
+                            _:_ -> do
+                                s <- strFVars vars
+                                return $ p ++ s
+                        load typ p
+                    otherwise -> return $ func
+                v <- call r func args4
+                return $ (r, v)
     EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
     EMinus _ expr -> do
         (t, v1) <- compileExpr expr
