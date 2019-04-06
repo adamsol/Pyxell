@@ -27,6 +27,8 @@ import ErrM
 %name pListBranch_internal ListBranch
 %name pElse_internal Else
 %name pExpr13_internal Expr13
+%name pACpr_internal ACpr
+%name pListACpr_internal ListACpr
 %name pCArg_internal CArg
 %name pListCArg_internal ListCArg
 %name pExpr12_internal Expr12
@@ -419,6 +421,9 @@ Expr13 :: {
 | '[' ListExpr2 ']' {
   (Just (tokenLineCol $1), AbsPyxell.EArray (Just (tokenLineCol $1)) (snd $2)) 
 }
+| '[' Expr2 ListACpr ']' {
+  (Just (tokenLineCol $1), AbsPyxell.EArrayCpr (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
+}
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
 }
@@ -433,6 +438,29 @@ Expr13 :: {
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)
+}
+
+ACpr :: {
+  (Maybe (Int, Int), ACpr (Maybe (Int, Int)))
+}
+: 'for' Expr 'in' Expr {
+  (Just (tokenLineCol $1), AbsPyxell.CprFor (Just (tokenLineCol $1)) (snd $2)(snd $4)) 
+}
+| 'for' Expr 'in' Expr 'step' Expr {
+  (Just (tokenLineCol $1), AbsPyxell.CprForStep (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)) 
+}
+| 'if' Expr {
+  (Just (tokenLineCol $1), AbsPyxell.CprIf (Just (tokenLineCol $1)) (snd $2)) 
+}
+
+ListACpr :: {
+  (Maybe (Int, Int), [ACpr (Maybe (Int, Int))]) 
+}
+: ACpr {
+  (fst $1, (:[]) (snd $1)) 
+}
+| ACpr ListACpr {
+  (fst $1, (:) (snd $1)(snd $2)) 
 }
 
 CArg :: {
@@ -834,6 +862,8 @@ pBranch = (>>= return . snd) . pBranch_internal
 pListBranch = (>>= return . snd) . pListBranch_internal
 pElse = (>>= return . snd) . pElse_internal
 pExpr13 = (>>= return . snd) . pExpr13_internal
+pACpr = (>>= return . snd) . pACpr_internal
+pListACpr = (>>= return . snd) . pListACpr_internal
 pCArg = (>>= return . snd) . pCArg_internal
 pListCArg = (>>= return . snd) . pListCArg_internal
 pExpr12 = (>>= return . snd) . pExpr12_internal

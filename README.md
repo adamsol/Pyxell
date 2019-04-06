@@ -32,7 +32,7 @@ print fib(10)
 ```
 
 ```
-a = ['A', 'B', 'C'] * 5
+a = [c for c in 'A'..'Z']
 for x, i in a, 0... do
     print "a[{i}] = {x}" 
 ```
@@ -61,6 +61,7 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * String interpolation (+)
 * Mutable arrays (+)
 * Extensive for-loops with ranges, steps, and zipping (+)
+* Array comprehension (+)
 * First-class functions (+)
 * Default and named arguments (+)
 * Lambda expressions (+)
@@ -71,7 +72,6 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Separate nullable types
 * Arbitrary-precision arithmetic
 * Variety of containers: mutable/immutable, hash/tree-based
-* List and dictionary comprehensions
 * Closures
 * Coroutines
 

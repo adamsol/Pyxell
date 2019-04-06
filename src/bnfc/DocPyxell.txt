@@ -133,11 +133,17 @@ All other symbols are terminals.
   |  |  **|**  | //Char// 
   |  |  **|**  | //String// 
   |  |  **|**  | ``[`` //[Expr2]// ``]`` 
+  |  |  **|**  | ``[`` //Expr2// //[ACpr]// ``]`` 
   |  |  **|**  | //Ident// 
   |  |  **|**  | //Expr13// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr13// ``.`` //Ident// 
   |  |  **|**  | //Expr13// ``(`` //[CArg]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
+  | //ACpr// | -> | ``for`` //Expr// ``in`` //Expr// 
+  |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``step`` //Expr// 
+  |  |  **|**  | ``if`` //Expr// 
+  | //[ACpr]// | -> | //ACpr// 
+  |  |  **|**  | //ACpr// //[ACpr]// 
   | //CArg// | -> | //Expr2// 
   |  |  **|**  | //Ident// ``=`` //Expr2// 
   | //[CArg]// | -> | **eps**

@@ -121,6 +121,17 @@ instance Functor Else where
     fmap f x = case x of
         EElse a block -> EElse (f a) (fmap f block)
         EEmpty a -> EEmpty (f a)
+data ACpr a
+    = CprFor a (Expr a) (Expr a)
+    | CprForStep a (Expr a) (Expr a) (Expr a)
+    | CprIf a (Expr a)
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor ACpr where
+    fmap f x = case x of
+        CprFor a expr1 expr2 -> CprFor (f a) (fmap f expr1) (fmap f expr2)
+        CprForStep a expr1 expr2 expr3 -> CprForStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
+        CprIf a expr -> CprIf (f a) (fmap f expr)
 data CArg a = APos a (Expr a) | ANamed a Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
 
@@ -158,6 +169,7 @@ data Expr a
     | EChar a Char
     | EString a String
     | EArray a [Expr a]
+    | EArrayCpr a (Expr a) [ACpr a]
     | EVar a Ident
     | EIndex a (Expr a) (Expr a)
     | EAttr a (Expr a) Ident
@@ -198,6 +210,7 @@ instance Functor Expr where
         EChar a char -> EChar (f a) char
         EString a string -> EString (f a) string
         EArray a exprs -> EArray (f a) (map (fmap f) exprs)
+        EArrayCpr a expr acprs -> EArrayCpr (f a) (fmap f expr) (map (fmap f) acprs)
         EVar a ident -> EVar (f a) ident
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
@@ -237,12 +250,12 @@ data Type a
     | TBool a
     | TChar a
     | TString a
-    | TClass a (Class a)
     | TArray a (Type a)
     | TTuple a [Type a]
     | TFunc a [Type a] (Type a)
     | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
     | TFuncExt a Ident [FArg a] (Type a)
+    | TClass a (Class a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -257,12 +270,12 @@ instance Functor Type where
         TBool a -> TBool (f a)
         TChar a -> TChar (f a)
         TString a -> TString (f a)
-        TClass a class_ -> TClass (f a) (fmap f class_)
         TArray a type_ -> TArray (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
         TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
         TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
+        TClass a class_ -> TClass (f a) (fmap f class_)
 data Class a = CAny a | CNum a
   deriving (Eq, Ord, Show, Read)
 

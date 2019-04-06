@@ -1,0 +1,4 @@
+
+a = [chr(d+ord(c)) for d in -2...5 for c in 'i'..'k']
+print a.length
+print a[0], a[5], a[-1]

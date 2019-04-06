@@ -72,6 +72,11 @@ EFalse.            Expr13 ::= "false" ;
 EChar.             Expr13 ::= Char ;
 EString.           Expr13 ::= String ;
 EArray.            Expr13 ::= "[" [Expr2] "]" ;
+EArrayCpr.         Expr13 ::= "[" Expr2 [ACpr] "]" ;
+CprFor.            ACpr   ::= "for" Expr "in" Expr ;
+CprForStep.        ACpr   ::= "for" Expr "in" Expr "step" Expr ;
+CprIf.             ACpr   ::= "if" Expr ;
+separator nonempty ACpr       "" ;
 
 EVar.              Expr13 ::= Ident ;
 EIndex.            Expr13 ::= Expr13 "[" Expr "]" ;

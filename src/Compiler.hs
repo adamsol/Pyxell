@@ -28,6 +28,7 @@ initCompiler = do
     lift $ modify (M.insert "$label-main" (Label "entry"))
     writeTop $ [ "" ]
     declare (tFunc [tInt] (tPtr tChar)) "@malloc"
+    declare (tFunc [tPtr tChar, tInt] (tPtr tChar)) "@realloc"
     declare (tFunc [tPtr tChar, tPtr tChar, tInt] (tPtr tChar)) "@memcpy"
     declare (tFunc [tChar] (tInt)) "@putchar"
     write $ [ "" ]
@@ -143,10 +144,10 @@ compileStmt statement cont = case statement of
         label l2
         cont
     SFor _ expr1 expr2 block -> do
-        compileFor expr1 expr2 "1" block cont
+        compileFor expr1 expr2 "1" (compileBlock block) (const cont)
     SForStep _ expr1 expr2 expr3 block -> do
         (_, v) <- compileExpr expr3
-        compileFor expr1 expr2 v block cont
+        compileFor expr1 expr2 v (compileBlock block) (const cont)
     SBreak _ -> do
         (_, l) <- asks (M.! (Ident "#break"))
         goto l
@@ -165,39 +166,92 @@ compileStmt statement cont = case statement of
                     else call tInt "@putchar" [(tChar, "32")] >> skip
             otherwise -> do
                 compileMethod typ (Ident "write") [val] >> skip
-        compileAssgs rs typ val cont = case rs of
-            [] -> cont
-            (t, e, i):rs -> do
-                v <- case val of
-                    "" -> return $ ""
-                    otherwise -> gep typ val ["0"] [i] >>= load t
-                compileAssg t e v (compileAssgs rs typ val cont)
-        compileAssg typ expr val cont = do
-            e <- case expr of
-                ETuple _ [e] -> return $ e
-                otherwise -> return $ expr
-            r <- compileLval expr
-            case (r, e) of
-                (Just (t, p), _) -> do
-                    store typ val p
-                    cont
-                (Nothing, EVar _ id) -> do
-                    variable typ id val cont
         compileAssgOp op expr1 expr2 cont = do
             compileStmt (SAssg _pos [expr1, op _pos expr1 expr2]) cont
         compileBranches brs exit = case brs of
             [] -> skip
             b:bs -> case b of
                 BElIf _ expr block -> do
-                    (t, v) <- compileExpr expr
-                    l1 <- nextLabel
-                    l2 <- nextLabel
-                    branch v l1 l2
-                    label l1
-                    compileBlock block
-                    goto exit
-                    label l2
+                    compileIf expr (compileBlock block) exit
                     compileBranches bs exit
+
+-- | Compiles a list of variable assignments and continues with changed environment.
+compileAssgs :: [(Type, Expr Pos, Int)] -> Type -> Value -> Run a -> Run a
+compileAssgs rs typ val cont = case rs of
+    [] -> cont
+    (t, e, i):rs -> do
+        v <- case val of
+            "" -> return $ ""
+            otherwise -> gep typ val ["0"] [i] >>= load t
+        compileAssg t e v (compileAssgs rs typ val cont)
+
+-- | Compiles a single variable assignment and continues with changed environment.
+compileAssg :: Type -> Expr Pos -> Value -> Run a -> Run a
+compileAssg typ expr val cont = do
+    e <- case expr of
+        ETuple _ [e] -> return $ e
+        otherwise -> return $ expr
+    r <- compileLval expr
+    case (r, e) of
+        (Just (t, p), _) -> do
+            store typ val p
+            cont
+        (Nothing, EVar _ id) -> do
+            variable typ id val cont
+
+-- | Compiles a single `if` statement.
+compileIf :: Expr Pos -> Run a -> Value -> Run a
+compileIf expr body exit = do
+    (t, v) <- compileExpr expr
+    l1 <- nextLabel
+    l2 <- nextLabel
+    branch v l1 l2
+    label l1
+    x <- body
+    goto exit
+    label l2
+    return $ x
+
+-- | Compiles a single `for` statement and continues with changed environment.
+compileFor :: Expr Pos -> Expr Pos -> Value -> Run a -> (a -> Run b) -> Run b
+compileFor expr1 expr2 step body cont = do
+    es <- case expr1 of
+        ETuple _ es -> return $ es
+        otherwise -> return $ [expr1]
+    rs <- initFor expr2 step
+    let (ts1, ts2, starts, steps, cmps, gets) = unzip6 rs
+    ps <- mapM alloca ts1
+    forM (zip3 ts1 starts ps) $ \(t, v, p) -> store t v p
+    [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+    ts3 <- case (es, ts2) of
+        (_:_:_, [TTuple _ ts']) -> return $ ts'  -- for a, b in [(1, 2)] do
+        ([_], _:_:_) -> return $ [tTuple ts2]  -- for t in 1..2, 3..4 do
+        otherwise -> return $ ts2
+    compileAssgs (zip3 ts3 es [0..]) (tTuple ts3) "" $ do
+        goto l1 >> label l1
+        vs1 <- forM (zip ts1 ps) $ \(t, p) -> load t p
+        forM (zip cmps vs1) $ \(cmp, v) -> do
+            l4 <- nextLabel
+            v' <- cmp v
+            branch v' l4 l2
+            label l4
+        vs2 <- forM (zip gets vs1) $ \(get, v) -> get v
+        case (es, ts2) of
+            (_:_:_, [TTuple _ ts']) -> do   -- for a, b in [(1, 2)] do
+                compileAssgs (zip3 ts' es [0..]) (head ts2) (head vs2) skip
+            ([e], _:_:_) -> do  -- for t in 1..2, 3..4 do
+                p <- alloca (tDeref (tTuple ts2))
+                forM (zip3 ts2 vs2 [0..]) $ \(t, v, i) -> gep (tTuple ts2) p ["0"] [i] >>= store t v
+                compileAssg (tTuple ts2) e p skip
+            otherwise -> forM_ (zip3 ts2 es vs2) $ \(t, e, v) -> compileAssg t e v skip
+        x <- localLabel "#break" l2 $ localLabel "#continue" l3 $ body
+        goto l3 >> label l3
+        vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> binop "add" t v s
+        forM (zip3 ts1 vs3 ps) $ \(t, v, p) -> store t v p
+        goto l1
+        label l2
+        cont x
+    where
         initForRangeIncl from to step = do
             [(t, v1), (_, v2)] <- mapM compileExpr [from, to]
             v3 <- case t of
@@ -252,43 +306,6 @@ compileStmt statement cont = case statement of
                     r <- initFor e step
                     return $ head r
                 otherwise -> forM [step] $ initForIterable expr
-        compileFor expr1 expr2 step block cont = do
-            es <- case expr1 of
-                ETuple _ es -> return $ es
-                otherwise -> return $ [expr1]
-            rs <- initFor expr2 step
-            let (ts1, ts2, starts, steps, cmps, gets) = unzip6 rs
-            ps <- mapM alloca ts1
-            forM (zip3 ts1 starts ps) $ \(t, v, p) -> store t v p
-            [l1, l2, l3] <- sequence (replicate 3 nextLabel)
-            ts3 <- case (es, ts2) of
-                (_:_:_, [TTuple _ ts']) -> return $ ts'  -- for a, b in [(1, 2)] do
-                ([_], _:_:_) -> return $ [tTuple ts2]  -- for t in 1..2, 3..4 do
-                otherwise -> return $ ts2
-            compileAssgs (zip3 ts3 es [0..]) (tTuple ts3) "" $ do
-                goto l1 >> label l1
-                vs1 <- forM (zip ts1 ps) $ \(t, p) -> load t p
-                forM (zip cmps vs1) $ \(cmp, v) -> do
-                    l4 <- nextLabel
-                    v' <- cmp v
-                    branch v' l4 l2
-                    label l4
-                vs2 <- forM (zip gets vs1) $ \(get, v) -> get v
-                case (es, ts2) of
-                    (_:_:_, [TTuple _ ts']) -> do   -- for a, b in [(1, 2)] do
-                        compileAssgs (zip3 ts' es [0..]) (head ts2) (head vs2) skip
-                    ([e], _:_:_) -> do  -- for t in 1..2, 3..4 do
-                        p <- alloca (tDeref (tTuple ts2))
-                        forM (zip3 ts2 vs2 [0..]) $ \(t, v, i) -> gep (tTuple ts2) p ["0"] [i] >>= store t v
-                        compileAssg (tTuple ts2) e p skip
-                    otherwise -> forM_ (zip3 ts2 es vs2) $ \(t, e, v) -> compileAssg t e v skip
-                localLabel "#break" l2 $ localLabel "#continue" l3 $ compileBlock block
-                goto l3 >> label l3
-                vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> binop "add" t v s
-                forM (zip3 ts1 vs3 ps) $ \(t, v, p) -> store t v p
-                goto l1
-                label l2
-                cont
 
 -- | Outputs LLVM code for a function definition and initialization of its default arguments.
 compileFunc :: Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> [Type] -> Run Value
@@ -411,6 +428,40 @@ compileExpr expression = case expression of
             r:_ -> return $ fst r
         p <- initArray t (map snd rs) []
         return $ (tArray t, p)
+    EArrayCpr pos expr cprs -> do
+        let c = "4"  -- initial capacity
+        p1 <- alloca tInt
+        store tInt c p1
+        (t, _) <- temporary $ compileArrayCprs cprs $ compileExpr expr
+        p2 <- initMemory (tArray t) "0"
+        p3 <- gep (tArray t) p2 ["0"] [1]
+        store tInt "0" p3
+        p4 <- gep (tArray t) p2 ["0"] [0]
+        p5 <- initMemory (tPtr t) c
+        store (tPtr t) p5 p4
+        compileArrayCprs cprs $ do
+            (_, v1) <- compileExpr expr
+            v2 <- load tInt p3
+            v3 <- binop "add" tInt v2 "1"
+            store tInt v3 p3
+            v4 <- load tInt p1
+            v5 <- binop "icmp sgt" tInt v3 v4
+            l1 <- nextLabel
+            l2 <- nextLabel
+            branch v5 l1 l2
+            label l1
+            v6 <- binop "shl" tInt v4 "1"
+            v7 <- sizeof (tPtr t) v6
+            p6 <- load (tPtr t) p4
+            p7 <- bitcast (tPtr t) (tPtr tChar) p6
+            p8 <- call (tPtr tChar) "@realloc" [(tPtr tChar, p7), (tInt, v7)]
+            p9 <- bitcast (tPtr tChar) (tPtr t) p8
+            store (tPtr t) p9 p4
+            store tInt v6 p1
+            goto l2 >> label l2
+            p10 <- load (tPtr t) p4
+            gep (tPtr t) p10 [v2] [] >>= store t v1
+        return $ (tArray t, p2)
     EVar _ _ -> compileRval expression
     EIndex _ _ _ -> compileRval expression
     EAttr _ _ _ -> compileRval expression
@@ -668,6 +719,20 @@ compileExpr expression = case expression of
             goto l1
             label l3
             return $ p2
+        compileArrayCprs cprs cont = case cprs of
+            [] -> cont
+            cpr:cprs -> compileArrayCpr cpr $ compileArrayCprs cprs cont
+        compileArrayCpr cpr cont = case cpr of
+            CprFor _ e1 e2 -> do
+                compileFor e1 e2 "1" cont return
+            CprForStep _ e1 e2 e3 -> do
+                (_, v) <- compileExpr e3
+                compileFor e1 e2 v cont return
+            CprIf _ e -> do
+                (_, l) <- asks (M.! (Ident "#continue"))
+                x <- compileIf e cont l
+                goto l
+                return $ x
         compileCmp op typ val1 val2 = do
             (t, v1, v2) <- case typ of
                 TString _ -> do

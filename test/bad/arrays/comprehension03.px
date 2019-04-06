@@ -1,0 +1,3 @@
+
+a = [x.toString() for x in 1...5]
+a[0] == '2'

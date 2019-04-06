@@ -58,6 +58,16 @@ writeTop lines = do
 indent :: [String] -> [String]
 indent lines = map ('\t':) lines
 
+-- | Run computation without changing any state or generating output.
+temporary :: Run a -> Run a
+temporary cont = do
+    st1 <- lift $ get
+    st2 <- lift $ lift $ get
+    x <- cont
+    lift $ put st1
+    lift $ lift $ put st2
+    return $ x
+
 
 -- | Inserts a label into the map and continues with changed environment.
 localLabel :: String -> Value -> Run a -> Run a

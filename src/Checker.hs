@@ -253,7 +253,7 @@ checkStmt statement cont = case statement of
                     else throw pos $ CannotUnpack t (length es)
                 (ETuple _ es, _) -> throw pos $ CannotUnpack t (length es)
                 otherwise -> do
-                    checkAssg pos e1 t cont
+                    checkAssgs pos [e1] [t] cont
         e1:e2:es -> do
             checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
     SAssgMul pos expr1 expr2 -> do
@@ -294,12 +294,7 @@ checkStmt statement cont = case statement of
     SForStep pos expr1 expr2 expr3 block -> do
         (t1, _) <- checkExpr expr3
         checkCast pos t1 tInt
-        t2 <- checkFor pos expr2
-        localLevel "#loop" 0 $ case (expr1, t2) of
-            (ETuple _ es, TTuple _ ts) -> do
-                if length es == length ts then checkAssgs pos es ts (checkBlock block >> cont)
-                else throw pos $ CannotUnpack t2 (length es)
-            otherwise -> checkAssg pos expr1 t2 (checkBlock block >> cont)
+        checkFor pos expr1 expr2 (checkBlock block >> cont)
     SBreak pos -> do
         r <- asks (M.lookup (Ident "#loop"))
         case r of
@@ -322,9 +317,24 @@ checkStmt statement cont = case statement of
                 CNum _ -> return $ True
                 otherwise -> return $ False
             otherwise -> return $ True
-        checkAssgs pos exprs types cont = case (exprs, types) of
-            ([], []) -> cont
-            (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
+        checkAssgOp pos op expr1 expr2 cont = do
+            checkStmt (SAssg pos [expr1, op pos expr1 expr2]) cont
+        checkBranches brs = case brs of
+            [] -> skip
+            b:bs -> case b of
+                BElIf pos expr block -> do
+                    checkCond pos expr block
+                    checkBranches bs
+        checkCond pos expr block = do
+            checkIf pos expr
+            checkBlock block
+
+-- | Checks a list of variable assignments and continues with changed environment.
+checkAssgs :: Pos -> [Expr Pos] -> [Type] -> Run a -> Run a
+checkAssgs pos exprs types cont = case (exprs, types) of
+    ([], []) -> cont
+    (e:es, t:ts) -> checkAssg pos e t (checkAssgs pos es ts cont)
+    where
         checkAssg pos expr typ cont = case expr of
             EVar _ id -> do
                 r <- getIdent id
@@ -347,20 +357,34 @@ checkStmt statement cont = case statement of
                     cont
                 else throw pos $ NotLvalue
             otherwise -> throw pos $ NotLvalue
-        checkAssgOp pos op expr1 expr2 cont = do
-            checkStmt (SAssg pos [expr1, op pos expr1 expr2]) cont
-        checkBranches brs = case brs of
-            [] -> skip
-            b:bs -> case b of
-                BElIf pos expr block -> do
-                    checkCond pos expr block
-                    checkBranches bs
-        checkCond pos expr block = do
-            (t, _) <- checkExpr expr
-            case t of
-                TBool _ -> return $ ()
-                otherwise -> throw pos $ IllegalAssignment t tBool
-            checkBlock block
+
+-- | Checks a single `if` statement.
+checkIf :: Pos -> Expr Pos -> Run Type
+checkIf pos expr = do
+    (t, _) <- checkExpr expr
+    case t of
+        TBool _ -> return $ ()
+        otherwise -> throw pos $ IllegalAssignment t tBool
+    return $ t
+
+-- | Checks a single `for` statement and continues with changed environment.
+checkFor :: Pos -> Expr Pos -> Expr Pos -> Run a -> Run a
+checkFor pos expr1 expr2 cont = do
+    t <- checkForExpr pos expr2
+    localLevel "#loop" 0 $ case (expr1, t) of
+        (ETuple _ es, TTuple _ ts) -> do
+            if length es == length ts then checkAssgs pos es ts cont
+            else throw pos $ CannotUnpack t (length es)
+        otherwise -> checkAssgs pos [expr1] [t] cont
+    where
+        checkForExpr pos expr = case expr of
+            ERangeIncl _ e1 e2 -> checkForRange pos e1 e2
+            ERangeExcl _ e1 e2 -> checkForRange pos e1 e2
+            ERangeInf _ e1 -> checkForRange pos e1 e1
+            ETuple _ es -> do
+                ts <- forM es $ checkForExpr pos
+                return $ tTuple ts
+            otherwise -> checkForIterable pos expr
         checkForRange pos from to = do
             (t1, _) <- checkExpr from
             (t2, _) <- checkExpr to
@@ -376,14 +400,6 @@ checkStmt statement cont = case statement of
                 TString _ -> return $ tChar
                 TArray _ t' -> return $ t'
                 otherwise -> throw pos $ NotIterable t
-        checkFor pos expr = case expr of
-                ERangeIncl _ e1 e2 -> checkForRange pos e1 e2
-                ERangeExcl _ e1 e2 -> checkForRange pos e1 e2
-                ERangeInf _ e1 -> checkForRange pos e1 e1
-                ETuple _ es -> do
-                    ts <- forM es $ \e -> checkFor pos e
-                    return $ tTuple ts
-                otherwise -> checkForIterable pos expr
 
 -- | Checks function's arguments and body.
 checkFunc :: Pos -> Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
@@ -450,6 +466,10 @@ checkExpr expression = case expression of
             t:ts -> case  foldM unifyTypes t ts of
                 Just t' -> return $ (tArray t', False)
                 Nothing -> throw pos $ UnknownType
+    EArrayCpr pos expr cprs -> do
+        checkArrayCprs cprs $ do
+            (t, _) <- checkExpr expr
+            return $ (tArray t, False)
     EVar pos id -> do
         t <- checkVar pos id
         return $ (t, True)
@@ -715,3 +735,20 @@ checkExpr expression = case expression of
                     (TClass _ (CNum _), TFloat _) -> return $ (tBool, False)
                     (TClass _ (CNum _), TClass _ (CNum _)) -> return $ (tBool, False)
                     otherwise -> throw pos $ NotComparable typ1 typ2
+        checkArrayCprs cprs cont = case cprs of
+            [] -> cont
+            cpr:cprs -> checkArrayCpr cpr $ checkArrayCprs cprs cont
+        checkArrayCpr cpr cont = case cpr of
+            CprFor pos e1 e2 -> do
+                checkArrayCpr (CprForStep pos e1 e2 (EInt _pos 1)) cont
+            CprForStep pos e1 e2 e3 -> do
+                (t1, _) <- checkExpr e3
+                checkCast pos t1 tInt
+                checkFor pos e1 e2 cont
+            CprIf pos e -> do
+                r <- asks (M.lookup (Ident "#loop"))
+                case r of
+                    Just _ -> do
+                        checkIf pos e
+                        cont
+                    otherwise -> throw pos $ UnexpectedStatement "if"

@@ -70,6 +70,11 @@ transElse :: Show a => Else a -> Result
 transElse x = case x of
   EElse _ block -> failure x
   EEmpty _ -> failure x
+transACpr :: Show a => ACpr a -> Result
+transACpr x = case x of
+  CprFor _ expr1 expr2 -> failure x
+  CprForStep _ expr1 expr2 expr3 -> failure x
+  CprIf _ expr -> failure x
 transCArg :: Show a => CArg a -> Result
 transCArg x = case x of
   APos _ expr -> failure x
@@ -96,6 +101,7 @@ transExpr x = case x of
   EChar _ char -> failure x
   EString _ string -> failure x
   EArray _ exprs -> failure x
+  EArrayCpr _ expr acprs -> failure x
   EVar _ ident -> failure x
   EIndex _ expr1 expr2 -> failure x
   EAttr _ expr ident -> failure x
@@ -136,12 +142,12 @@ transType x = case x of
   TBool _ -> failure x
   TChar _ -> failure x
   TString _ -> failure x
-  TClass _ class_ -> failure x
   TArray _ type_ -> failure x
   TTuple _ types -> failure x
   TFunc _ types type_ -> failure x
   TFuncDef _ ident fvars fargs type_ block -> failure x
   TFuncExt _ ident fargs type_ -> failure x
+  TClass _ class_ -> failure x
 transClass :: Show a => Class a -> Result
 transClass x = case x of
   CAny _ -> failure x
