@@ -1,4 +1,4 @@
 
-a = [x * y for x in 1..10 step 2 if x > 3 for y in x...0 step -3 if y < 10]
+a = [(x, y) for x in 1..10 step 2 if x > 3 for y in x...0 step -3 if y < 10]
 for x in a do
     print x

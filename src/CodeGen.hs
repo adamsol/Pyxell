@@ -476,7 +476,7 @@ retVoid = do
     ret tVoid ""
 
 
--- | Outputs LLVM code to calculate memory size of an array of objects of a given type.
+-- | Outputs LLVM code to calculate memory size of an array of objects.
 sizeof :: Type -> Value -> Run Value
 sizeof typ len = do
     gep typ "null" [len] [] >>= ptrtoint typ
@@ -491,7 +491,7 @@ initMemory typ len = do
 initTuple :: [Result] -> Run Value
 initTuple rs = do
     let t = tTuple (map fst rs)
-    p <- alloca (tDeref t)
+    p <- initMemory t "1"
     forM (zipWith (\r i -> (fst r, snd r, i)) rs [0..]) $ \(t', v', i) -> do
         gep t p ["0"] [i] >>= store t' v'
     return $ p

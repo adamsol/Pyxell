@@ -1,0 +1,9 @@
+
+n = 3
+a = [("0", 0)] * n
+
+for i in 1..n do
+    a[i-1] = (i.toString(), i*2)
+
+for x in a do
+    print x
