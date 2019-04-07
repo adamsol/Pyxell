@@ -1,0 +1,4 @@
+
+a = [[1], [2], [3, 4, 5]]
+print a.length, a[2].length
+print a[1][0], a[2][2]
