@@ -75,6 +75,10 @@ transACpr x = case x of
   CprFor _ expr1 expr2 -> failure x
   CprForStep _ expr1 expr2 expr3 -> failure x
   CprIf _ expr -> failure x
+transSlice :: Show a => Slice a -> Result
+transSlice x = case x of
+  SliceExpr _ expr -> failure x
+  SliceNone _ -> failure x
 transCArg :: Show a => CArg a -> Result
 transCArg x = case x of
   APos _ expr -> failure x
@@ -104,6 +108,7 @@ transExpr x = case x of
   EArrayCpr _ expr acprs -> failure x
   EVar _ ident -> failure x
   EIndex _ expr1 expr2 -> failure x
+  ESlice _ expr slices -> failure x
   EAttr _ expr ident -> failure x
   ECall _ expr cargs -> failure x
   EPow _ expr1 expr2 -> failure x

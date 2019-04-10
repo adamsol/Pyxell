@@ -136,6 +136,7 @@ All other symbols are terminals.
   |  |  **|**  | ``[`` //Expr2// //[ACpr]// ``]`` 
   |  |  **|**  | //Ident// 
   |  |  **|**  | //Expr13// ``[`` //Expr// ``]`` 
+  |  |  **|**  | //Expr13// ``[`` //[Slice]// ``]`` 
   |  |  **|**  | //Expr13// ``.`` //Ident// 
   |  |  **|**  | //Expr13// ``(`` //[CArg]// ``)`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
@@ -144,6 +145,10 @@ All other symbols are terminals.
   |  |  **|**  | ``if`` //Expr// 
   | //[ACpr]// | -> | //ACpr// 
   |  |  **|**  | //ACpr// //[ACpr]// 
+  | //Slice// | -> | //Expr// 
+  |  |  **|**  | **eps**
+  | //[Slice]// | -> | //Slice// 
+  |  |  **|**  | //Slice// ``:`` //[Slice]// 
   | //CArg// | -> | //Expr2// 
   |  |  **|**  | //Ident// ``=`` //Expr2// 
   | //[CArg]// | -> | **eps**

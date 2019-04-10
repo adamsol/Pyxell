@@ -29,6 +29,8 @@ import ErrM
 %name pExpr13_internal Expr13
 %name pACpr_internal ACpr
 %name pListACpr_internal ListACpr
+%name pSlice_internal Slice
+%name pListSlice_internal ListSlice
 %name pCArg_internal CArg
 %name pListCArg_internal ListCArg
 %name pExpr12_internal Expr12
@@ -430,6 +432,9 @@ Expr13 :: {
 | Expr13 '[' Expr ']' {
   (fst $1, AbsPyxell.EIndex (fst $1)(snd $1)(snd $3)) 
 }
+| Expr13 '[' ListSlice ']' {
+  (fst $1, AbsPyxell.ESlice (fst $1)(snd $1)(snd $3)) 
+}
 | Expr13 '.' Ident {
   (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
 }
@@ -461,6 +466,26 @@ ListACpr :: {
 }
 | ACpr ListACpr {
   (fst $1, (:) (snd $1)(snd $2)) 
+}
+
+Slice :: {
+  (Maybe (Int, Int), Slice (Maybe (Int, Int)))
+}
+: Expr {
+  (fst $1, AbsPyxell.SliceExpr (fst $1)(snd $1)) 
+}
+| {
+  (Nothing, AbsPyxell.SliceNone Nothing)
+}
+
+ListSlice :: {
+  (Maybe (Int, Int), [Slice (Maybe (Int, Int))]) 
+}
+: Slice {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Slice ':' ListSlice {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 CArg :: {
@@ -864,6 +889,8 @@ pElse = (>>= return . snd) . pElse_internal
 pExpr13 = (>>= return . snd) . pExpr13_internal
 pACpr = (>>= return . snd) . pACpr_internal
 pListACpr = (>>= return . snd) . pListACpr_internal
+pSlice = (>>= return . snd) . pSlice_internal
+pListSlice = (>>= return . snd) . pListSlice_internal
 pCArg = (>>= return . snd) . pCArg_internal
 pListCArg = (>>= return . snd) . pListCArg_internal
 pExpr12 = (>>= return . snd) . pExpr12_internal

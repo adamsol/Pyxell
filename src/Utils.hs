@@ -87,8 +87,16 @@ unifyTypes t1 t2 = do
         otherwise -> Nothing
 
 -- | Tries to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
+-- | Also removes position data from the type.
 reduceType :: Type -> Type
 reduceType t = case t of
+    TVar _ id -> tVar id
+    TVoid _ -> tVoid
+    TInt _ -> tInt
+    TFloat _ -> tFloat
+    TBool _ -> tBool
+    TChar _ -> tChar
+    TString _ -> tString
     TArray _ t' -> tArray (reduceType t')
     TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
     TFunc _ as r -> tFunc (map reduceType as) (reduceType r)

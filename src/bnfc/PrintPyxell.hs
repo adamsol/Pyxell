@@ -196,6 +196,16 @@ instance Print (ACpr a) where
 instance Print [ACpr a] where
   prt = prtList
 
+instance Print (Slice a) where
+  prt i e = case e of
+    SliceExpr _ expr -> prPrec i 0 (concatD [prt 0 expr])
+    SliceNone _ -> prPrec i 0 (concatD [])
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ":"), prt 0 xs]
+
+instance Print [Slice a] where
+  prt = prtList
+
 instance Print (CArg a) where
   prt i e = case e of
     APos _ expr -> prPrec i 0 (concatD [prt 2 expr])
@@ -237,6 +247,7 @@ instance Print (Expr a) where
     EArrayCpr _ expr acprs -> prPrec i 13 (concatD [doc (showString "["), prt 2 expr, prt 0 acprs, doc (showString "]")])
     EVar _ id -> prPrec i 13 (concatD [prt 0 id])
     EIndex _ expr1 expr2 -> prPrec i 13 (concatD [prt 13 expr1, doc (showString "["), prt 0 expr2, doc (showString "]")])
+    ESlice _ expr slices -> prPrec i 13 (concatD [prt 13 expr, doc (showString "["), prt 0 slices, doc (showString "]")])
     EAttr _ expr id -> prPrec i 13 (concatD [prt 13 expr, doc (showString "."), prt 0 id])
     ECall _ expr cargs -> prPrec i 13 (concatD [prt 13 expr, doc (showString "("), prt 0 cargs, doc (showString ")")])
     EPow _ expr1 expr2 -> prPrec i 12 (concatD [prt 13 expr1, doc (showString "**"), prt 12 expr2])

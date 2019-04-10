@@ -1,0 +1,9 @@
+
+a = [x for x in 0..100]
+print a[::4].length
+
+z = -10
+for x in a[10:z:27] do
+    print x
+for x in a[z+1:z+2:364] do
+    print x

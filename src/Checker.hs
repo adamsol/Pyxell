@@ -39,6 +39,7 @@ data StaticError = NotComparable Type Type
                  | VoidDeclaration
                  | NotLvalue
                  | InvalidExpression String
+                 | InvalidSlice
                  | UnknownType
                  | NotTuple Type
                  | CannotUnpack Type Int
@@ -72,6 +73,7 @@ instance Show StaticError where
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
+        InvalidSlice -> "Invalid slice syntax."
         UnknownType -> "Cannot settle type of the expression."
         NotTuple typ -> "Type `" ++ show typ ++ "` is not a tuple."
         CannotUnpack typ n -> "Cannot unpack value of type `" ++ show typ ++ "` into " ++ show n ++ " values."
@@ -474,14 +476,27 @@ checkExpr expression = case expression of
         t <- checkVar pos id
         return $ (t, True)
     EIndex pos expr1 expr2 -> do
-        (t1, m1) <- checkExpr expr1
-        (t2, m2) <- checkExpr expr2
-        case t2 of
-            TInt _ -> case t1 of
-                TString _ -> return $ (tChar, False)
-                TArray _ t1' -> return $ (t1', True)
-                otherwise -> throw pos $ NotIndexable t1
-            otherwise -> throw pos $ IllegalAssignment t2 tInt
+        (t2, _) <- checkExpr expr2
+        checkCast pos t2 tInt
+        (t1, _) <- checkExpr expr1
+        case t1 of
+            TString _ -> return $ (tChar, False)
+            TArray _ t1' -> return $ (t1', True)
+            otherwise -> throw pos $ NotIndexable t1
+    ESlice pos expr slices -> do
+        case slices of
+            _:_:_:_:_ -> throw pos $ InvalidSlice
+            otherwise -> skip
+        forM slices $ \slice -> case slice of
+            SliceExpr pos e -> do
+                (t, _) <- checkExpr e
+                checkCast pos t tInt
+            SliceNone _ -> return $ tVoid
+        (t1, _) <- checkExpr expr
+        case t1 of
+            TString _ -> return $ (t1, False)
+            TArray _ _ -> return $ (t1, False)
+            otherwise -> throw pos $ NotIndexable t1
     EAttr pos expr id -> do
         (t1, m) <- checkExpr expr
         let Ident attr = id

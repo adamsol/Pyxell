@@ -1,0 +1,4 @@
+
+s = "abcdefg"
+print s[:1], s[1:4], s[4:]
+print s[-2:], s[-3:-3], s[:-5]

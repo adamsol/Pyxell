@@ -132,6 +132,13 @@ instance Functor ACpr where
         CprFor a expr1 expr2 -> CprFor (f a) (fmap f expr1) (fmap f expr2)
         CprForStep a expr1 expr2 expr3 -> CprForStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         CprIf a expr -> CprIf (f a) (fmap f expr)
+data Slice a = SliceExpr a (Expr a) | SliceNone a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Slice where
+    fmap f x = case x of
+        SliceExpr a expr -> SliceExpr (f a) (fmap f expr)
+        SliceNone a -> SliceNone (f a)
 data CArg a = APos a (Expr a) | ANamed a Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
 
@@ -172,6 +179,7 @@ data Expr a
     | EArrayCpr a (Expr a) [ACpr a]
     | EVar a Ident
     | EIndex a (Expr a) (Expr a)
+    | ESlice a (Expr a) [Slice a]
     | EAttr a (Expr a) Ident
     | ECall a (Expr a) [CArg a]
     | EPow a (Expr a) (Expr a)
@@ -213,6 +221,7 @@ instance Functor Expr where
         EArrayCpr a expr acprs -> EArrayCpr (f a) (fmap f expr) (map (fmap f) acprs)
         EVar a ident -> EVar (f a) ident
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
+        ESlice a expr slices -> ESlice (f a) (fmap f expr) (map (fmap f) slices)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         ECall a expr cargs -> ECall (f a) (fmap f expr) (map (fmap f) cargs)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)

@@ -1,0 +1,492 @@
+
+@g1 = global double 6.0
+@g2 = global double 6.0
+@c3 = constant [3 x i8] [i8 105, i8 110, i8 102]
+@f.String_toFloat = external global double ({i8*, i64}*)*
+@c12 = constant [3 x i8] [i8 105, i8 110, i8 102]
+@g21 = global double 6.0
+@g59 = global i64 42
+@g106 = global {i64*, i64}* null
+@f.writeInt = external global void (i64)*
+declare i8* @malloc(i64)
+declare i8* @realloc(i8*, i64)
+declare i8* @memcpy(i8*, i8*, i64)
+declare i64 @putchar(i8)
+
+@f.Array_slice--Int = global {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)* @func.Array_slice--Int
+define {i64*, i64}* @func.Array_slice--Int({i64*, i64}*, i64, i1, i64, i1, i64) {
+entry:
+	%t111 = alloca {i64*, i64}*
+	%t112 = alloca i64
+	%t113 = alloca i1
+	%t114 = alloca i64
+	%t115 = alloca i1
+	%t116 = alloca i64
+	%t121 = alloca i64
+	%t196 = alloca i64
+	%t258 = alloca i64
+	%t259 = alloca i64
+	%t275 = alloca {i64*, i64}*
+	%t282 = alloca i64
+	%t285 = alloca i64
+	%t289 = alloca i64
+	store {i64*, i64}* %0, {i64*, i64}** %t111
+	store i64 %1, i64* %t112
+	store i1 %2, i1* %t113
+	store i64 %3, i64* %t114
+	store i1 %4, i1* %t115
+	store i64 %5, i64* %t116
+	br label %L117
+L117:
+	%t118 = load {i64*, i64}*, {i64*, i64}** %t111
+	%t119 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t118, i64 0, i32 1
+	%t120 = load i64, i64* %t119
+	store i64 %t120, i64* %t121
+	%t123 = load i64, i64* %t121
+	%t124 = icmp eq i64 %t123, 0
+	br i1 %t124, label %L125, label %L126
+L125:
+	%t127 = load {i64*, i64}*, {i64*, i64}** %t111
+	ret {i64*, i64}* %t127
+	br label %L122
+L126:
+	br label %L122
+L122:
+	%t129 = load i1, i1* %t113
+	%t130 = xor i1 true, %t129
+	br i1 %t130, label %L131, label %L132
+L131:
+	%t133 = load i64, i64* %t116
+	%t134 = icmp sgt i64 %t133, 0
+	%t135 = load i64, i64* %t121
+	%t136 = select i1 %t134, i64 0, i64 %t135
+	store i64 %t136, i64* %t112
+	br label %L128
+L132:
+	%t137 = load i64, i64* %t112
+	%t138 = icmp slt i64 %t137, 0
+	br i1 %t138, label %L139, label %L140
+L139:
+	%t141 = load i64, i64* %t112
+	%t142 = load i64, i64* %t121
+	%t143 = add i64 %t141, %t142
+	store i64 %t143, i64* %t112
+	br label %L128
+L140:
+	br label %L128
+L128:
+	%t144 = load i64, i64* %t112
+	%t145 = load i64, i64* %t121
+	%t165 = load i64 (i64, i64, i64)*, i64 (i64, i64, i64)** @f.clamp--Int
+	%t166 = call i64 %t165(i64 %t144, i64 0, i64 %t145)
+	store i64 %t166, i64* %t112
+	%t168 = load i1, i1* %t115
+	%t169 = xor i1 true, %t168
+	br i1 %t169, label %L170, label %L171
+L170:
+	%t172 = load i64, i64* %t116
+	%t173 = icmp sgt i64 %t172, 0
+	%t174 = load i64, i64* %t121
+	%t175 = select i1 %t173, i64 %t174, i64 0
+	store i64 %t175, i64* %t114
+	br label %L167
+L171:
+	%t176 = load i64, i64* %t114
+	%t177 = icmp slt i64 %t176, 0
+	br i1 %t177, label %L178, label %L179
+L178:
+	%t180 = load i64, i64* %t114
+	%t181 = load i64, i64* %t121
+	%t182 = add i64 %t180, %t181
+	store i64 %t182, i64* %t114
+	br label %L167
+L179:
+	br label %L167
+L167:
+	%t183 = load i64, i64* %t114
+	%t184 = load i64, i64* %t121
+	%t185 = load i64 (i64, i64, i64)*, i64 (i64, i64, i64)** @f.clamp--Int
+	%t186 = call i64 %t185(i64 %t183, i64 0, i64 %t184)
+	store i64 %t186, i64* %t114
+	%t187 = load i64, i64* %t116
+	%t188 = icmp sgt i64 %t187, 0
+	%t189 = load i64, i64* %t114
+	%t190 = load i64, i64* %t112
+	%t191 = sub i64 %t189, %t190
+	%t192 = load i64, i64* %t112
+	%t193 = load i64, i64* %t114
+	%t194 = sub i64 %t192, %t193
+	%t195 = select i1 %t188, i64 %t191, i64 %t194
+	store i64 %t195, i64* %t196
+	%t197 = load i64, i64* %t196
+	%t198 = sub i64 %t197, 1
+	%t199 = load i64, i64* %t116
+	%t208 = load i64 (i64)*, i64 (i64)** @f.abs--Int
+	%t209 = call i64 %t208(i64 %t199)
+	%t210 = sdiv i64 %t198, %t209
+	%t211 = sub i64 %t210, 1
+	%t212 = xor i64 %t198, %t209
+	%t213 = icmp slt i64 %t212, 0
+	%t214 = select i1 %t213, i64 %t211, i64 %t210
+	%t215 = mul i64 %t210, %t209
+	%t216 = icmp ne i64 %t215, %t198
+	%t217 = select i1 %t216, i64 %t214, i64 %t210
+	%t218 = add i64 %t217, 1
+	store i64 %t218, i64* %t196
+	%t219 = load {i64*, i64}*, {i64*, i64}** %t111
+	%t220 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t219, i64 0, i32 1
+	%t221 = load i64, i64* %t220
+	%t222 = add i64 %t221, 0
+	%t223 = icmp sge i64 0, 0
+	%t224 = select i1 %t223, i64 0, i64 %t222
+	%t225 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t219, i64 0, i32 0
+	%t226 = load i64*, i64** %t225
+	%t227 = getelementptr inbounds i64, i64* %t226, i64 %t224
+	%t228 = load i64, i64* %t227
+	%t229 = getelementptr inbounds {i64*, i64}, {i64*, i64}* null, i64 1
+	%t230 = ptrtoint {i64*, i64}* %t229 to i64
+	%t231 = call i8* @malloc(i64 %t230)
+	%t232 = bitcast i8* %t231 to {i64*, i64}*
+	%t233 = getelementptr inbounds i64, i64* null, i64 1
+	%t234 = ptrtoint i64* %t233 to i64
+	%t235 = call i8* @malloc(i64 %t234)
+	%t236 = bitcast i8* %t235 to i64*
+	%t237 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t232, i64 0, i32 0
+	store i64* %t236, i64** %t237
+	%t238 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t232, i64 0, i32 1
+	store i64 1, i64* %t238
+	%t239 = getelementptr inbounds i64, i64* %t236, i64 0
+	store i64 %t228, i64* %t239
+	%t240 = load i64, i64* %t196
+	%t241 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t232, i64 0, i32 0
+	%t242 = load i64*, i64** %t241
+	%t243 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t232, i64 0, i32 1
+	%t244 = load i64, i64* %t243
+	%t245 = mul i64 %t244, %t240
+	%t246 = getelementptr inbounds {i64*, i64}, {i64*, i64}* null, i64 1
+	%t247 = ptrtoint {i64*, i64}* %t246 to i64
+	%t248 = call i8* @malloc(i64 %t247)
+	%t249 = bitcast i8* %t248 to {i64*, i64}*
+	%t250 = getelementptr inbounds i64, i64* null, i64 %t245
+	%t251 = ptrtoint i64* %t250 to i64
+	%t252 = call i8* @malloc(i64 %t251)
+	%t253 = bitcast i8* %t252 to i64*
+	%t254 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t249, i64 0, i32 0
+	store i64* %t253, i64** %t254
+	%t255 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t249, i64 0, i32 1
+	store i64 %t245, i64* %t255
+	%t256 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t249, i64 0, i32 0
+	%t257 = load i64*, i64** %t256
+	store i64 0, i64* %t258
+	br label %L260
+L260:
+	%t266 = load i64, i64* %t258
+	%t267 = icmp slt i64 %t266, %t244
+	br i1 %t267, label %L261, label %L262
+L261:
+	%t268 = getelementptr inbounds i64, i64* %t242, i64 %t266
+	%t269 = load i64, i64* %t268
+	store i64 %t266, i64* %t259
+	br label %L263
+L263:
+	%t270 = load i64, i64* %t259
+	%t271 = icmp slt i64 %t270, %t245
+	br i1 %t271, label %L264, label %L265
+L264:
+	%t272 = getelementptr inbounds i64, i64* %t257, i64 %t270
+	store i64 %t269, i64* %t272
+	%t273 = add i64 %t270, %t244
+	store i64 %t273, i64* %t259
+	br label %L263
+L265:
+	%t274 = add i64 %t266, 1
+	store i64 %t274, i64* %t258
+	br label %L260
+L262:
+	store {i64*, i64}* %t249, {i64*, i64}** %t275
+	%t276 = load i64, i64* %t116
+	%t277 = icmp sgt i64 %t276, 0
+	%t278 = load i64, i64* %t112
+	%t279 = load i64, i64* %t112
+	%t280 = sub i64 %t279, 1
+	%t281 = select i1 %t277, i64 %t278, i64 %t280
+	store i64 %t281, i64* %t282
+	%t283 = load i64, i64* %t196
+	%t284 = icmp sgt i64 1, 0
+	store i64 0, i64* %t285
+	br label %L286
+L286:
+	%t290 = load i64, i64* %t285
+	%t292 = icmp slt i64 %t290, %t283
+	%t293 = icmp sgt i64 %t290, %t283
+	%t294 = select i1 %t284, i1 %t292, i1 %t293
+	br i1 %t294, label %L291, label %L287
+L291:
+	store i64 %t290, i64* %t289
+	%t295 = load {i64*, i64}*, {i64*, i64}** %t111
+	%t296 = load i64, i64* %t282
+	%t297 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t295, i64 0, i32 1
+	%t298 = load i64, i64* %t297
+	%t299 = add i64 %t298, %t296
+	%t300 = icmp sge i64 %t296, 0
+	%t301 = select i1 %t300, i64 %t296, i64 %t299
+	%t302 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t295, i64 0, i32 0
+	%t303 = load i64*, i64** %t302
+	%t304 = getelementptr inbounds i64, i64* %t303, i64 %t301
+	%t305 = load i64, i64* %t304
+	%t306 = load {i64*, i64}*, {i64*, i64}** %t275
+	%t307 = load i64, i64* %t289
+	%t308 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t306, i64 0, i32 1
+	%t309 = load i64, i64* %t308
+	%t310 = add i64 %t309, %t307
+	%t311 = icmp sge i64 %t307, 0
+	%t312 = select i1 %t311, i64 %t307, i64 %t310
+	%t313 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t306, i64 0, i32 0
+	%t314 = load i64*, i64** %t313
+	%t315 = getelementptr inbounds i64, i64* %t314, i64 %t312
+	store i64 %t305, i64* %t315
+	%t316 = load i64, i64* %t282
+	%t317 = load i64, i64* %t116
+	%t318 = add i64 %t316, %t317
+	store i64 %t318, i64* %t282
+	br label %L288
+L288:
+	%t319 = add i64 %t290, 1
+	store i64 %t319, i64* %t285
+	br label %L286
+L287:
+	%t320 = load {i64*, i64}*, {i64*, i64}** %t275
+	ret {i64*, i64}* %t320
+	ret {i64*, i64}* null
+}
+
+@f.Int_pow = global i64 (i64, i64)* @func.Int_pow
+define i64 @func.Int_pow(i64, i64) {
+entry:
+	%t22 = alloca i64
+	%t23 = alloca i64
+	%t30 = alloca i64
+	store i64 %0, i64* %t22
+	store i64 %1, i64* %t23
+	br label %L24
+L24:
+	%t26 = load i64, i64* %t23
+	%t27 = icmp slt i64 %t26, 0
+	br i1 %t27, label %L28, label %L29
+L28:
+	ret i64 0
+	br label %L25
+L29:
+	br label %L25
+L25:
+	store i64 1, i64* %t30
+	br label %L31
+L31:
+	%t34 = load i64, i64* %t23
+	%t35 = icmp sgt i64 %t34, 0
+	br i1 %t35, label %L32, label %L33
+L32:
+	%t37 = load i64, i64* %t23
+	%t38 = srem i64 %t37, 2
+	%t39 = add i64 %t38, 2
+	%t40 = xor i64 %t37, 2
+	%t41 = icmp slt i64 %t40, 0
+	%t42 = select i1 %t41, i64 %t39, i64 %t38
+	%t43 = icmp eq i64 %t38, 0
+	%t44 = select i1 %t43, i64 %t38, i64 %t42
+	%t45 = icmp sgt i64 %t44, 0
+	br i1 %t45, label %L46, label %L47
+L46:
+	%t48 = load i64, i64* %t30
+	%t49 = load i64, i64* %t22
+	%t50 = mul i64 %t48, %t49
+	store i64 %t50, i64* %t30
+	br label %L36
+L47:
+	br label %L36
+L36:
+	%t51 = load i64, i64* %t22
+	%t52 = load i64, i64* %t22
+	%t53 = mul i64 %t51, %t52
+	store i64 %t53, i64* %t22
+	%t54 = load i64, i64* %t23
+	%t55 = ashr i64 %t54, 1
+	store i64 %t55, i64* %t23
+	br label %L31
+L33:
+	%t56 = load i64, i64* %t30
+	ret i64 %t56
+	ret i64 42
+}
+
+@f.abs--Int = global i64 (i64)* @func.abs--Int
+define i64 @func.abs--Int(i64) {
+entry:
+	%t200 = alloca i64
+	store i64 %0, i64* %t200
+	br label %L201
+L201:
+	%t202 = load i64, i64* %t200
+	%t203 = icmp sge i64 %t202, 0
+	%t204 = load i64, i64* %t200
+	%t205 = load i64, i64* %t200
+	%t206 = sub i64 0, %t205
+	%t207 = select i1 %t203, i64 %t204, i64 %t206
+	ret i64 %t207
+	ret i64 42
+}
+
+@f.clamp--Int = global i64 (i64, i64, i64)* @func.clamp--Int
+define i64 @func.clamp--Int(i64, i64, i64) {
+entry:
+	%t146 = alloca i64
+	%t147 = alloca i64
+	%t148 = alloca i64
+	%t156 = alloca i64
+	%t163 = alloca i64
+	store i64 %0, i64* %t146
+	store i64 %1, i64* %t147
+	store i64 %2, i64* %t148
+	br label %L149
+L149:
+	%t150 = load i64, i64* %t146
+	%t151 = load i64, i64* %t147
+	%t152 = icmp slt i64 %t150, %t151
+	%t153 = load i64, i64* %t147
+	%t154 = load i64, i64* %t146
+	%t155 = select i1 %t152, i64 %t153, i64 %t154
+	store i64 %t155, i64* %t156
+	%t157 = load i64, i64* %t156
+	%t158 = load i64, i64* %t148
+	%t159 = icmp sgt i64 %t157, %t158
+	%t160 = load i64, i64* %t148
+	%t161 = load i64, i64* %t156
+	%t162 = select i1 %t159, i64 %t160, i64 %t161
+	store i64 %t162, i64* %t163
+	%t164 = load i64, i64* %t163
+	ret i64 %t164
+	ret i64 42
+}
+
+define i64 @main() {
+entry:
+	%t89 = alloca i64
+	%t90 = alloca i64
+	store double 3.141592653589793, double* @g1
+	store double 2.718281828459045, double* @g2
+	%t4 = getelementptr inbounds {i8*, i64}, {i8*, i64}* null, i64 1
+	%t5 = ptrtoint {i8*, i64}* %t4 to i64
+	%t6 = call i8* @malloc(i64 %t5)
+	%t7 = bitcast i8* %t6 to {i8*, i64}*
+	%t8 = getelementptr inbounds [3 x i8], [3 x i8]* @c3, i64 0, i32 0
+	%t9 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t7, i64 0, i32 0
+	store i8* %t8, i8** %t9
+	%t10 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t7, i64 0, i32 1
+	store i64 3, i64* %t10
+	%t11 = load double ({i8*, i64}*)*, double ({i8*, i64}*)** @f.String_toFloat
+	%t13 = getelementptr inbounds {i8*, i64}, {i8*, i64}* null, i64 1
+	%t14 = ptrtoint {i8*, i64}* %t13 to i64
+	%t15 = call i8* @malloc(i64 %t14)
+	%t16 = bitcast i8* %t15 to {i8*, i64}*
+	%t17 = getelementptr inbounds [3 x i8], [3 x i8]* @c12, i64 0, i32 0
+	%t18 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t16, i64 0, i32 0
+	store i8* %t17, i8** %t18
+	%t19 = getelementptr inbounds {i8*, i64}, {i8*, i64}* %t16, i64 0, i32 1
+	store i64 3, i64* %t19
+	%t20 = call double %t11({i8*, i64}* %t16)
+	store double %t20, double* @g21
+	%t57 = load i64 (i64, i64)*, i64 (i64, i64)** @f.Int_pow
+	%t58 = call i64 %t57(i64 10, i64 6)
+	store i64 %t58, i64* @g59
+	%t60 = getelementptr inbounds {i64*, i64}, {i64*, i64}* null, i64 1
+	%t61 = ptrtoint {i64*, i64}* %t60 to i64
+	%t62 = call i8* @malloc(i64 %t61)
+	%t63 = bitcast i8* %t62 to {i64*, i64}*
+	%t64 = getelementptr inbounds i64, i64* null, i64 1
+	%t65 = ptrtoint i64* %t64 to i64
+	%t66 = call i8* @malloc(i64 %t65)
+	%t67 = bitcast i8* %t66 to i64*
+	%t68 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t63, i64 0, i32 0
+	store i64* %t67, i64** %t68
+	%t69 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t63, i64 0, i32 1
+	store i64 1, i64* %t69
+	%t70 = getelementptr inbounds i64, i64* %t67, i64 0
+	store i64 0, i64* %t70
+	%t71 = load i64, i64* @g59
+	%t72 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t63, i64 0, i32 0
+	%t73 = load i64*, i64** %t72
+	%t74 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t63, i64 0, i32 1
+	%t75 = load i64, i64* %t74
+	%t76 = mul i64 %t75, %t71
+	%t77 = getelementptr inbounds {i64*, i64}, {i64*, i64}* null, i64 1
+	%t78 = ptrtoint {i64*, i64}* %t77 to i64
+	%t79 = call i8* @malloc(i64 %t78)
+	%t80 = bitcast i8* %t79 to {i64*, i64}*
+	%t81 = getelementptr inbounds i64, i64* null, i64 %t76
+	%t82 = ptrtoint i64* %t81 to i64
+	%t83 = call i8* @malloc(i64 %t82)
+	%t84 = bitcast i8* %t83 to i64*
+	%t85 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t80, i64 0, i32 0
+	store i64* %t84, i64** %t85
+	%t86 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t80, i64 0, i32 1
+	store i64 %t76, i64* %t86
+	%t87 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t80, i64 0, i32 0
+	%t88 = load i64*, i64** %t87
+	store i64 0, i64* %t89
+	br label %L91
+L91:
+	%t97 = load i64, i64* %t89
+	%t98 = icmp slt i64 %t97, %t75
+	br i1 %t98, label %L92, label %L93
+L92:
+	%t99 = getelementptr inbounds i64, i64* %t73, i64 %t97
+	%t100 = load i64, i64* %t99
+	store i64 %t97, i64* %t90
+	br label %L94
+L94:
+	%t101 = load i64, i64* %t90
+	%t102 = icmp slt i64 %t101, %t76
+	br i1 %t102, label %L95, label %L96
+L95:
+	%t103 = getelementptr inbounds i64, i64* %t88, i64 %t101
+	store i64 %t100, i64* %t103
+	%t104 = add i64 %t101, %t75
+	store i64 %t104, i64* %t90
+	br label %L94
+L96:
+	%t105 = add i64 %t97, 1
+	store i64 %t105, i64* %t89
+	br label %L91
+L93:
+	store {i64*, i64}* %t80, {i64*, i64}** @g106
+	%t107 = load {i64*, i64}*, {i64*, i64}** @g106
+	%t108 = load i64, i64* @g59
+	%t109 = sub i64 0, %t108
+	%t110 = sub i64 %t109, 1
+	%t321 = load {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)*, {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)** @f.Array_slice--Int
+	%t322 = call {i64*, i64}* %t321({i64*, i64}* %t107, i64 %t110, i1 true, i64 0, i1 false, i64 1)
+	%t323 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t322, i64 0, i32 1
+	%t324 = load i64, i64* %t323
+	%t325 = load void (i64)*, void (i64)** @f.writeInt
+	call void %t325(i64 %t324)
+	%t327 = call i64 @putchar(i8 10)
+	%t328 = load {i64*, i64}*, {i64*, i64}** @g106
+	%t329 = load i64, i64* @g59
+	%t330 = mul i64 3, %t329
+	%t331 = load {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)*, {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)** @f.Array_slice--Int
+	%t332 = call {i64*, i64}* %t331({i64*, i64}* %t328, i64 0, i1 false, i64 %t330, i1 true, i64 1)
+	%t333 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t332, i64 0, i32 1
+	%t334 = load i64, i64* %t333
+	%t335 = load void (i64)*, void (i64)** @f.writeInt
+	call void %t335(i64 %t334)
+	%t337 = call i64 @putchar(i8 10)
+	%t338 = load {i64*, i64}*, {i64*, i64}** @g106
+	%t339 = load {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)*, {i64*, i64}* ({i64*, i64}*, i64, i1, i64, i1, i64)** @f.Array_slice--Int
+	%t340 = call {i64*, i64}* %t339({i64*, i64}* %t338, i64 0, i1 false, i64 0, i1 false, i64 1)
+	%t341 = getelementptr inbounds {i64*, i64}, {i64*, i64}* %t340, i64 0, i32 1
+	%t342 = load i64, i64* %t341
+	%t343 = load void (i64)*, void (i64)** @f.writeInt
+	call void %t343(i64 %t342)
+	%t345 = call i64 @putchar(i8 10)
+	ret i64 0
+}

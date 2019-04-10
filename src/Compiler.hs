@@ -464,6 +464,39 @@ compileExpr expression = case expression of
         return $ (tArray t, p2)
     EVar _ _ -> compileRval expression
     EIndex _ _ _ -> compileRval expression
+    ESlice pos expr slices -> do
+        let s1:s2:s3:_ = slices ++ replicate 2 (SliceNone _pos)
+        (v1, v1') <- case s1 of
+            SliceExpr _ e -> do
+                (_, v) <- compileExpr e
+                return $ (v, "true")
+            SliceNone _ -> return $ ("0", "false")
+        (v2, v2') <- case s2 of
+            SliceExpr _ e -> do
+                (_, v) <- compileExpr e
+                return $ (v, "true")
+            SliceNone _ -> return $ ("0", "false")
+        (_, v3) <- case s3 of
+            SliceExpr _ e -> compileExpr e
+            SliceNone _ -> return $ (tInt, "1")
+        (t, p1) <- compileExpr expr
+        t' <- case t of
+            TArray _ t' -> return $ t'
+            TString _ -> return $ tChar
+        v4 <- gep t p1 ["0"] [1] >>= load tInt
+        (_, f) <- compileExpr (EVar _pos (Ident "Array_prepareSlice"))
+        let t2 = tTuple [tInt, tInt]
+        v5 <- call t2 f [(tInt, v4), (tInt, v1), (tBool, v1'), (tInt, v2), (tBool, v2'), (tInt, v3)]
+        v6 <- gep t2 v5 ["0"] [0] >>= load tInt
+        v7 <- gep t2 v5 ["0"] [1] >>= load tInt
+        p2 <- initArray t' [] [v7, v7]
+        let var x = EVar _pos (Ident ('$':x))
+        compileAssg t (var "source") p1 $ compileAssg t (var "result") p2 $ compileAssg tInt (var "c") v3 $ compileAssg tInt (var "j") v6 $ compileAssg tInt (var "d") v7 $ do
+            b <- return $ SBlock _pos [
+                SAssg _pos [EIndex _pos (var "result") (var "i"), EIndex _pos (var "source") (var "j")],
+                SAssgAdd _pos (var "j") (var "c")]
+            compileFor (var "i") (ERangeExcl _pos (EInt _pos 0) (var "d")) "1" (compileBlock b) (const skip)
+        return $ (t, p2)
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
         (typ, func) <- case expr of
@@ -534,7 +567,7 @@ compileExpr expression = case expression of
                 case typ of
                     TFuncDef _ id (_:_) _ _ b -> do
                         -- Compile generic function.
-                        compileFunc id vars args2 rt (Just b) (map fst args4)
+                        compileFunc id vars args2 rt (Just b) (map (reduceType.fst) args4)
                     otherwise -> return $ ""
                 r <- retrieveType rt
                 func <- case expr of
