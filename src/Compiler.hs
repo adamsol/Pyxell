@@ -678,13 +678,15 @@ compileExpr expression = case expression of
             (t2, v2) <- compileExpr expr2
             case (t1, t2, op) of
                 (TString _, TString _, "add") -> do
-                    compileStringConcat v1 v2
+                    compileArrayConcat tString v1 v2
                 (TString _, TChar _, "add") -> do
                     (_, v3) <- compileMethod tChar (Ident "toString") [v2]
-                    compileStringConcat v1 v3
+                    compileArrayConcat tString v1 v3
                 (TChar _, TString _, "add") -> do
                     (_, v3) <- compileMethod tChar (Ident "toString") [v1]
-                    compileStringConcat v3 v2
+                    compileArrayConcat tString v3 v2
+                (TArray _ t1', TArray _ t2', "add") -> do
+                    compileArrayConcat t1 v1 v2
                 (TString _, TInt _, "mul") -> do
                     p <- compileArrayMul tChar v1 v2
                     return $ (tString, p)
@@ -706,18 +708,27 @@ compileExpr expression = case expression of
                         TFloat _ -> binop ("f" ++ op) t v1' v2'
                         otherwise -> binop op t v1' v2'
                     return $ (t, v3)
-        compileStringConcat val1 val2 = do
-            p1 <- gep tString val1 ["0"] [0] >>= load (tPtr tChar)
-            p2 <- gep tString val2 ["0"] [0] >>= load (tPtr tChar)
-            v1 <- gep tString val1 ["0"] [1] >>= load tInt
-            v2 <- gep tString val2 ["0"] [1] >>= load tInt
+        compileArrayConcat typ val1 val2 = do
+            t' <- case typ of
+                TString _ -> return $ tChar            
+                TArray _ t' -> return $ t'
+            p1 <- gep typ val1 ["0"] [0] >>= load (tPtr t')
+            p2 <- gep typ val2 ["0"] [0] >>= load (tPtr t')
+            v1 <- gep typ val1 ["0"] [1] >>= load tInt
+            v2 <- gep typ val2 ["0"] [1] >>= load tInt
             v3 <- binop "add" tInt v1 v2
-            p3 <- initArray tChar [] [v3, v3]
-            p4 <- gep tString p3 ["0"] [0] >>= load (tPtr tChar)
-            call (tPtr tChar) "@memcpy" [(tPtr tChar, p4), (tPtr tChar, p1), (tInt, v1)]
-            p5 <- gep (tPtr tChar) p4 [v1] []
-            call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p2), (tInt, v2)]
-            return $ (tString, p3)
+            p3 <- initArray t' [] [v3, v3]
+            p4 <- gep typ p3 ["0"] [0] >>= load (tPtr t')
+            p5 <- bitcast (tPtr t') (tPtr tChar) p4
+            p6 <- bitcast (tPtr t') (tPtr tChar) p1
+            v4 <- sizeof (tPtr t') v1
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p5), (tPtr tChar, p6), (tInt, v4)]
+            p7 <- gep (tPtr t') p4 [v1] []
+            p8 <- bitcast (tPtr t') (tPtr tChar) p7
+            p9 <- bitcast (tPtr t') (tPtr tChar) p2
+            v5 <- sizeof (tPtr t') v2
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p8), (tPtr tChar, p9), (tInt, v5)]
+            return $ (typ, p3)
         compileArrayMul typ val1 val2 = do
             let t = tArray typ
             p1 <- gep t val1 ["0"] [0] >>= load (tPtr typ)

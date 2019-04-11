@@ -698,6 +698,11 @@ checkExpr expression = case expression of
                     (TString _, TString _) -> return $ (tString, False)
                     (TString _, TChar _) -> return $ (tString, False)
                     (TChar _, TString _) -> return $ (tString, False)
+                    (TArray _ t1', TArray _ t2') -> do
+                        t' <- case unifyTypes t1' t2' of
+                            Just t' -> return $ t'
+                            Nothing -> throw pos $ NoBinaryOperator "+" t1 t2
+                        return $ (tArray t', False)
                     (TInt _, TInt _) -> return $ (tInt, False)
                     (TFloat _, TInt _) -> return $ (tFloat, False)
                     (TInt _, TFloat _) -> return $ (tFloat, False)
