@@ -1,0 +1,8 @@
+
+func f(Int n, Int->[Char] g) [Char] def
+    return g(n)
+
+a = [c for c in "abcde"]
+print f(-2, a[_:]).join(",")
+print f(3, a[:_]).join(",")
+print f(-3, a[::_]).join(",")

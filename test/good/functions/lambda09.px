@@ -1,0 +1,7 @@
+
+func f(Int n, Int->[String] g) [String] def
+    return g(n)
+
+print f(3, [x.toString() for x in 1.._]).join(",")
+print f(8, [x.toString() for x in _...10]).join(",")
+print f(-2, [x.toString() for x in 5...0 step _]).join(",")

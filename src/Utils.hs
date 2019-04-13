@@ -196,7 +196,15 @@ convertLambda pos expression = do
                 tell [id]
                 return $ EVar pos id
             EArray pos es -> convertMultiary (EArray pos) es
+            EArrayCpr pos e cprs -> do
+                e <- convertExpr e
+                cs <- mapM convertCpr cprs
+                return $ EArrayCpr pos e cs
             EIndex pos e1 e2 -> convertBinary (EIndex pos) e1 e2
+            ESlice pos e slices -> do
+                e <- convertExpr e
+                ss <- mapM convertSlice slices
+                return $ ESlice pos e ss
             EAttr pos e id -> convertUnary (\e -> EAttr pos e id) e
             ECall pos e args -> do
                 e <- convertExpr e
@@ -216,6 +224,9 @@ convertLambda pos expression = do
             EBAnd pos e1 e2 -> convertBinary (EBAnd pos) e1 e2
             EBOr pos e1 e2 -> convertBinary (EBOr pos) e1 e2
             EBXor pos e1 e2 -> convertBinary (EBXor pos) e1 e2
+            ERangeIncl pos e1 e2 -> convertBinary (ERangeIncl pos) e1 e2
+            ERangeExcl pos e1 e2 -> convertBinary (ERangeExcl pos) e1 e2
+            ERangeInf pos e -> convertUnary (ERangeInf pos) e
             ECmp pos cmp -> do
                 cmp <- convertCmp cmp
                 return $ ECmp pos cmp
@@ -237,13 +248,15 @@ convertLambda pos expression = do
         convertMultiary op es = do
             es <- mapM convertExpr es
             return $ op es
+        convertCpr cpr = case cpr of
+            CprFor pos e1 e2 -> convertBinary (CprFor pos) e1 e2
+            CprForStep pos e1 e2 e3 -> convertTernary (CprForStep pos) e1 e2 e3
+        convertSlice slice = case slice of
+            SliceExpr pos e -> convertUnary (SliceExpr pos) e
+            SliceNone _ -> return $ slice
         convertArg arg = case arg of
-            APos pos e -> do
-                e' <- convertExpr e
-                return $ APos pos e'
-            ANamed pos id e -> do
-                e' <- convertExpr e
-                return $ ANamed pos id e'
+            APos pos e -> convertUnary (APos pos) e
+            ANamed pos id e -> convertUnary (ANamed pos id) e
         convertCmp cmp = case cmp of
             Cmp1 pos e1 op e2 -> do
                 e1' <- convertExpr e1

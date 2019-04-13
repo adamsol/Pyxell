@@ -508,12 +508,14 @@ compileExpr expression = case expression of
             TFunc _ as r -> return $ (Ident "", [], as, [], r)
             TFuncDef _ id vs as r _ -> return $ (id, vs, map typeArg as, as, reduceType r)
             TFuncExt _ id as r -> return $ (id, [], map typeArg as, as, reduceType r)
-        args3 <- case expr of
-            EAttr _ e _ -> return $ APos _pos e : args  -- if this is a method, the object is passed as the first argument
-            otherwise -> return $ args
         -- Build a map of arguments and their positions.
         let m = M.empty
-        m <- foldM' m (zip [0..] args3) $ \m (i, a) -> do
+        m <- case expr of
+            EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
+                (t, v) <- compileExpr e
+                return $ M.insert 0 (t, Left v) m
+            otherwise -> return $ m
+        m <- foldM' m (zip [(M.size m)..] args) $ \m (i, a) -> do
             (e, i) <- case a of
                 APos _ e -> return $ (e, i)
                 ANamed _ id e -> do

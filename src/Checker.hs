@@ -543,12 +543,14 @@ checkExpr expression = case expression of
             TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
             TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
             otherwise -> throw pos $ NotFunction typ
-        args3 <- case expr of
-            EAttr _ e id -> return $ APos _pos e : args  -- if this is a method, the object will be passed as the first argument
-            otherwise -> return $ args
         -- Build a map of arguments and their positions.
         let m = M.empty
-        (m, _) <- foldM' (m, False) (zip [0..] args3) $ \(m, named) (i, a) -> do
+        m <- case expr of
+            EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
+                (t, _) <- checkExpr e
+                return $ M.insert 0 (Left t) m
+            otherwise -> return $ m
+        (m, _) <- foldM' (m, False) (zip [(M.size m)..] args) $ \(m, named) (i, a) -> do
             (pos', e, i, named) <- case (a, named) of
                 (APos pos' e, False) -> return $ (pos', e, i, False)
                 (ANamed pos' id e, _) -> case getArgument args2 id of
