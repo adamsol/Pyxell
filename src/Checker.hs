@@ -745,7 +745,7 @@ checkExpr expression = case expression of
             t2 <- retrieveType typ2
             case unifyTypes typ1 typ2 of
                 Just t' -> case t' of
-                    TArray _ _ -> throw pos $ NotComparable typ1 typ2
+                    TArray _ t'' -> checkCmp pos op t'' t''
                     TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
                     otherwise -> return $ (tBool, False)
                 Nothing -> case (t1, t2) of

@@ -490,12 +490,11 @@ compileExpr expression = case expression of
         v6 <- gep t2 v5 ["0"] [0] >>= load tInt
         v7 <- gep t2 v5 ["0"] [1] >>= load tInt
         p2 <- initArray t' [] [v7, v7]
-        let var x = EVar _pos (Ident ('$':x))
-        compileAssg t (var "source") p1 $ compileAssg t (var "result") p2 $ compileAssg tInt (var "c") v3 $ compileAssg tInt (var "j") v6 $ compileAssg tInt (var "d") v7 $ do
+        compileAssg t (eVar "source") p1 $ compileAssg t (eVar "result") p2 $ compileAssg tInt (eVar "c") v3 $ compileAssg tInt (eVar "j") v6 $ compileAssg tInt (eVar "d") v7 $ do
             b <- return $ SBlock _pos [
-                SAssg _pos [EIndex _pos (var "result") (var "i"), EIndex _pos (var "source") (var "j")],
-                SAssgAdd _pos (var "j") (var "c")]
-            compileFor (var "i") (ERangeExcl _pos (EInt _pos 0) (var "d")) "1" (compileBlock b) (const skip)
+                SAssg _pos [EIndex _pos (eVar "result") (eVar "i"), EIndex _pos (eVar "source") (eVar "j")],
+                SAssgAdd _pos (eVar "j") (eVar "c")]
+            compileFor (eVar "i") (ERangeExcl _pos (EInt _pos 0) (eVar "d")) "1" (compileBlock b) (const skip)
         return $ (t, p2)
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
@@ -782,7 +781,10 @@ compileExpr expression = case expression of
         compileCmp op typ val1 val2 = do
             (t, v1, v2) <- case typ of
                 TString _ -> do
-                    (_, v3) <- compileMethod tString (Ident "compare") [val1, val2]
+                    (_, v3) <- compileArrayCmp (tArray tChar) val1 val2
+                    return $ (tInt, v3, "0")
+                TArray _ _ -> do
+                    (_, v3) <- compileArrayCmp typ val1 val2
                     return $ (tInt, v3, "0")
                 otherwise -> return $ (typ, val1, val2)
             case (op, t) of
@@ -797,6 +799,9 @@ compileExpr expression = case expression of
                 (_, TBool _) -> binop ("icmp u" ++ op) t v1 v2
                 (_, TFloat _) -> binop ("fcmp o" ++ op) t v1 v2
                 otherwise -> binop ("icmp s" ++ op) t v1 v2
+        compileArrayCmp typ val1 val2 = do
+            compileAssg typ (eVar "a1") val1 $ compileAssg typ (eVar "a2") val2 $ do
+                compileExpr (ECall _pos (EVar _pos (Ident "Array_compare")) (map (APos _pos) [eVar "a1", eVar "a2"]))
         compileTupleCmp op typ val1 val2 idx lt lf = do
             t <- case typ of
                 TTuple _ ts -> return $ ts !! idx

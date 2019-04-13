@@ -1,0 +1,4 @@
+
+a = ["A", "AA"]
+print ["A"] <= a, ["A", "AB"] <= a
+print ["A"] >= a, ["AA"] >= a, ["B"] >= a

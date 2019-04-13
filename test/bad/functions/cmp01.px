@@ -1,0 +1,8 @@
+
+func f() Int def
+    return 0
+
+func g() Int def
+    return 1
+
+f < g
