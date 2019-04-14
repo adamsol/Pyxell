@@ -433,7 +433,7 @@ compileExpr expression = case expression of
         p1 <- alloca tInt
         store tInt c p1
         (t, _) <- temporary $ compileArrayCprs cprs $ compileExpr expr
-        p2 <- initMemory (tArray t) "0"
+        p2 <- initMemory (tArray t) "1"
         p3 <- gep (tArray t) p2 ["0"] [1]
         store tInt "0" p3
         p4 <- gep (tArray t) p2 ["0"] [0]
