@@ -164,6 +164,21 @@ compileStmt statement cont = case statement of
                     compilePrint t v
                     if i == length ts - 1 then skip
                     else call tInt "@putchar" [(tChar, "32")] >> skip
+            TArray _ t' -> do
+                call tInt "@putchar" [(tChar, "91")] -- [
+                n <- nextNumber
+                let a = eVar ("a" ++ show n)
+                let i = eVar ("i" ++ show n)
+                compileAssg typ a val $ do
+                    flip (compileFor i (ERangeExcl _pos (eInt 0) (EAttr _pos a (Ident "length"))) "1") (const skip) $ do
+                        l <- nextLabel
+                        flip (compileIf (ECmp _pos (Cmp1 _pos i (CmpGT _pos) (eInt 0)))) l $ do
+                            call tInt "@putchar" [(tChar, "44")]  -- ,
+                            call tInt "@putchar" [(tChar, "32")] >> skip
+                        goto l >> label l
+                        (_, v) <- compileExpr (EIndex _pos a i)
+                        compilePrint t' v
+                call tInt "@putchar" [(tChar, "93")] >> skip  -- ]
             otherwise -> do
                 compileMethod typ (Ident "write") [val] >> skip
         compileAssgOp op expr1 expr2 cont = do
@@ -494,7 +509,7 @@ compileExpr expression = case expression of
             b <- return $ SBlock _pos [
                 SAssg _pos [EIndex _pos (eVar "result") (eVar "i"), EIndex _pos (eVar "source") (eVar "j")],
                 SAssgAdd _pos (eVar "j") (eVar "c")]
-            compileFor (eVar "i") (ERangeExcl _pos (EInt _pos 0) (eVar "d")) "1" (compileBlock b) (const skip)
+            compileFor (eVar "i") (ERangeExcl _pos (eInt 0) (eVar "d")) "1" (compileBlock b) (const skip)
         return $ (t, p2)
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
@@ -596,7 +611,7 @@ compileExpr expression = case expression of
             TInt _ -> binop "add" t "0" v1
             TFloat _ -> binop "fadd" t "0.0" v1
         return $ (t, v2)
-    EBNot _ expr -> compileBinary "xor" (EInt _pos (-1)) expr
+    EBNot _ expr -> compileBinary "xor" (eInt (-1)) expr
     EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
     EDiv _ expr1 expr2 -> do
         (t1, v1) <- compileExpr expr1

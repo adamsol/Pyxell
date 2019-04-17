@@ -155,8 +155,9 @@ tClass = TClass _pos
 cAny = CAny _pos
 cNum = CNum _pos
 
--- | Helper function to initialize variable for internal use.
+-- | Helper functions for initializing expressions.
 eVar x = EVar _pos (Ident ('$':x))
+eInt = EInt _pos
 
 -- | Debug logging function.
 debug x = liftIO $ print x

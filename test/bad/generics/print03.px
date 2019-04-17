@@ -2,4 +2,4 @@
 func f<Any T>(T x) T def
     return x
 
-print f([1]), f(2)
+print f(chr), f(2)

@@ -292,7 +292,7 @@ checkStmt statement cont = case statement of
         localLevel "#loop" 0 $ checkCond pos expr block
         cont
     SFor pos expr1 expr2 block -> do
-        checkStmt (SForStep pos expr1 expr2 (EInt _pos 1) block) cont
+        checkStmt (SForStep pos expr1 expr2 (eInt 1) block) cont
     SForStep pos expr1 expr2 expr3 block -> do
         (t1, _) <- checkExpr expr3
         checkCast pos t1 tInt
@@ -313,7 +313,7 @@ checkStmt statement cont = case statement of
             TTuple _ ts -> do
                 bs <- mapM checkPrint ts
                 return $ all id bs
-            TArray _ _ -> return $ False
+            TArray _ t' -> checkPrint t'
             TFunc _ _ _ -> return $ False
             TClass _ c -> case c of
                 CNum _ -> return $ True
@@ -762,7 +762,7 @@ checkExpr expression = case expression of
             cpr:cprs -> checkArrayCpr cpr $ checkArrayCprs cprs cont
         checkArrayCpr cpr cont = case cpr of
             CprFor pos e1 e2 -> do
-                checkArrayCpr (CprForStep pos e1 e2 (EInt _pos 1)) cont
+                checkArrayCpr (CprForStep pos e1 e2 (eInt 1)) cont
             CprForStep pos e1 e2 e3 -> do
                 (t1, _) <- checkExpr e3
                 checkCast pos t1 tInt

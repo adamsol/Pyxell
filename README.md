@@ -62,6 +62,7 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Mutable arrays (+)
 * Extensive for-loops with ranges, steps, and zipping (+)
 * Array comprehension (+)
+* Slicing (+)
 * First-class functions (+)
 * Default and named arguments (+)
 * Lambda expressions (+)
