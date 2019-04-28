@@ -1,4 +1,4 @@
 
-use math hiding e, exp
+use math hiding E, exp
 
-print cos(pi)
+print cos(PI)

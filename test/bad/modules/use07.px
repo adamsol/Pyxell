@@ -2,4 +2,4 @@
 if true do
     use math
 
-print e
+print E

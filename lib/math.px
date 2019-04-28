@@ -1,7 +1,7 @@
 
-pi = 3.1415926535897932384626
-e = 2.7182818284590452353603
-inf = "inf".toFloat()
+PI = 3.1415926535897932384626
+E = 2.7182818284590452353603
+INF = "inf".toFloat()
 
 func exp(Float x) Float extern
 func log(Float x) Float extern
@@ -18,9 +18,9 @@ func atan(Float x) Float extern
 func atan2(Float y, Float x) Float extern
 
 func rad(Float x) Float def
-    return x * pi / 180
+    return x * PI / 180
 func deg(Float x) Float def
-    return x * 180 / pi
+    return x * 180 / PI
 
 func round(Float x) Float extern
 func floor(Float x) Float extern
