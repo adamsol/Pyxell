@@ -44,12 +44,13 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 The reserved words used in Pyxell are the following:
   | ``Any`` | ``Bool`` | ``Char`` | ``Float``
   | ``Int`` | ``Num`` | ``String`` | ``Void``
-  | ``and`` | ``break`` | ``continue`` | ``def``
-  | ``do`` | ``elif`` | ``else`` | ``extern``
-  | ``false`` | ``for`` | ``func`` | ``if``
-  | ``in`` | ``lambda`` | ``not`` | ``or``
-  | ``print`` | ``return`` | ``skip`` | ``step``
-  | ``true`` | ``until`` | ``while`` | 
+  | ``and`` | ``as`` | ``break`` | ``continue``
+  | ``def`` | ``do`` | ``elif`` | ``else``
+  | ``extern`` | ``false`` | ``for`` | ``func``
+  | ``hiding`` | ``if`` | ``in`` | ``lambda``
+  | ``not`` | ``only`` | ``or`` | ``print``
+  | ``return`` | ``skip`` | ``step`` | ``true``
+  | ``until`` | ``use`` | ``while`` | 
 
 The symbols used in Pyxell are the following:
   | ; | ( | ) | <
@@ -77,7 +78,8 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
-  | //Stmt// | -> | ``func`` //Ident// //FVars// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
+  | //Stmt// | -> | ``use`` //Ident// //Use// 
+  |  |  **|**  | ``func`` //Ident// //FVars// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
   |  |  **|**  | ``skip`` 
@@ -101,6 +103,10 @@ All other symbols are terminals.
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``step`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``continue`` 
   |  |  **|**  | ``break`` 
+  | //Use// | -> | **eps**
+  |  |  **|**  | ``only`` //[Ident]// 
+  |  |  **|**  | ``hiding`` //[Ident]// 
+  |  |  **|**  | ``as`` //Ident// 
   | //FVars// | -> | **eps**
   |  |  **|**  | ``<`` //[FVar]// ``>`` 
   | //FVar// | -> | //Class// //Ident// 
@@ -214,7 +220,6 @@ All other symbols are terminals.
   |  |  **|**  | ``Bool`` 
   |  |  **|**  | ``Char`` 
   |  |  **|**  | ``String`` 
-  |  |  **|**  | //Class// 
   |  |  **|**  | ``(`` //Type// ``)`` 
   | //Type3// | -> | ``[`` //Type// ``]`` 
   |  |  **|**  | //Type4// 

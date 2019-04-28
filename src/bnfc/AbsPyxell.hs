@@ -15,7 +15,8 @@ instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
 data Stmt a
-    = SFunc a Ident (FVars a) [FArg a] (FRet a) (FBody a)
+    = SUse a Ident (Use a)
+    | SFunc a Ident (FVars a) [FArg a] (FRet a) (FBody a)
     | SRetVoid a
     | SRetExpr a (Expr a)
     | SSkip a
@@ -43,6 +44,7 @@ data Stmt a
 
 instance Functor Stmt where
     fmap f x = case x of
+        SUse a ident use -> SUse (f a) ident (fmap f use)
         SFunc a ident fvars fargs fret fbody -> SFunc (f a) ident (fmap f fvars) (map (fmap f) fargs) (fmap f fret) (fmap f fbody)
         SRetVoid a -> SRetVoid (f a)
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
@@ -67,6 +69,16 @@ instance Functor Stmt where
         SForStep a expr1 expr2 expr3 block -> SForStep (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3) (fmap f block)
         SContinue a -> SContinue (f a)
         SBreak a -> SBreak (f a)
+data Use a
+    = UAll a | UOnly a [Ident] | UHiding a [Ident] | UAs a Ident
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Use where
+    fmap f x = case x of
+        UAll a -> UAll (f a)
+        UOnly a idents -> UOnly (f a) idents
+        UHiding a idents -> UHiding (f a) idents
+        UAs a ident -> UAs (f a) ident
 data FVars a = FStd a | FGen a [FVar a]
   deriving (Eq, Ord, Show, Read)
 
@@ -265,6 +277,7 @@ data Type a
     | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
     | TFuncExt a Ident [FArg a] (Type a)
     | TClass a (Class a)
+    | TModule a
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -285,6 +298,7 @@ instance Functor Type where
         TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
         TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
         TClass a class_ -> TClass (f a) (fmap f class_)
+        TModule a -> TModule (f a)
 data Class a = CAny a | CNum a
   deriving (Eq, Ord, Show, Read)
 

@@ -1,0 +1,4 @@
+
+use math as m
+
+print tan(0.0)

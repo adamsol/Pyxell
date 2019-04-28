@@ -1,4 +1,4 @@
 
-print pi / 2
-print e ** -1
-print -inf
+print math.pi / 2
+print math.e ** -1
+print -math.inf

@@ -1,4 +1,4 @@
 
-print exp(0.0), log(e)
-print log10(1000.0)
-print sqrt(2.0)
+print math.exp(0.0), math.log(math.e)
+print math.log10(1000.0)
+print math.sqrt(2.0)

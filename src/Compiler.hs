@@ -35,9 +35,16 @@ initCompiler = do
     ask
 
 -- | Outputs LLVM code for all statements in the program.
-compileProgram :: Program Pos -> Run Env
-compileProgram program = case program of
-    Program _ stmts -> localScope "main" $ compileStmts stmts ask
+compileProgram :: Program Pos -> String -> Run Env
+compileProgram program name = case program of
+    Program _ stmts -> localScope "main" $ do
+        env1 <- ask
+        -- `std` module is automatically added to the namespace, unless this is the module being compiled
+        env2 <- case name of
+            "std" -> compileStmts stmts ask
+            otherwise -> compileStmts (SUse _pos (Ident "std") (UAll _pos) : stmts) ask
+        lift $ modify (M.insert name (Module (M.difference env2 env1)))
+        return $ M.insert (Ident name) (tModule, name) env1
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
@@ -53,6 +60,14 @@ compileStmts statements cont = case statements of
 -- | Outputs LLVM code for a single statement and runs the continuation.
 compileStmt :: Stmt Pos -> Run a -> Run a
 compileStmt statement cont = case statement of
+    SUse _ id use -> do
+        let Ident name = id
+        Module env <- lift $ gets (M.! name)
+        case use of
+            UAll _ -> local (M.union env) cont
+            UOnly _ ids -> local (M.union (M.filterWithKey (\id _ -> elem id ids) env)) cont
+            UHiding _ ids -> local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
+            UAs _ id' -> local (M.insert id' (tModule, name)) cont
     SFunc _ id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -527,7 +542,9 @@ compileExpr expression = case expression of
         m <- case expr of
             EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
                 (t, v) <- compileExpr e
-                return $ M.insert 0 (t, Left v) m
+                case t of
+                    TModule _ -> return $ m
+                    otherwise -> return $ M.insert 0 (t, Left v) m
             otherwise -> return $ m
         m <- foldM' m (zip [(M.size m)..] args) $ \m (i, a) -> do
             (e, i) <- case a of
@@ -881,8 +898,12 @@ compileExpr expression = case expression of
 compileRval :: Expr Pos -> Run Result
 compileRval expr = do
     Just (t, p) <- compileLval expr
-    v <- load t p
-    return $ (t, v)
+    case t of
+        TModule _ -> do
+            return $ (t, p)
+        otherwise -> do
+            v <- load t p
+            return $ (t, v)
 
 -- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.
 compileLval :: Expr Pos -> Run (Maybe Result)
@@ -897,7 +918,14 @@ compileLval expr = case expr of
             TArray _ t1' -> getIndex t1' v1 v2
     EAttr _ e id -> do
         (t, v) <- compileExpr e
-        compileAttr t v id
+        case t of
+            TModule _ -> do
+                (_, m) <- case e of
+                    EVar _ id' -> asks (M.! id')
+                Module env <- lift $ gets (M.! m)
+                local (const env) $ getIdent id
+            otherwise -> do
+                compileAttr t v id
     where
         getIndex typ arr idx = do
             v1 <- gep (tArray typ) arr ["0"] [1] >>= load tInt

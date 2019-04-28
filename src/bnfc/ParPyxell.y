@@ -14,6 +14,7 @@ import ErrM
 %name pProgram_internal Program
 %name pListStmt_internal ListStmt
 %name pStmt_internal Stmt
+%name pUse_internal Use
 %name pFVars_internal FVars
 %name pFVar_internal FVar
 %name pListFVar_internal ListFVar
@@ -109,33 +110,37 @@ import ErrM
   '^=' { PT _ (TS _ 46) }
   '_' { PT _ (TS _ 47) }
   'and' { PT _ (TS _ 48) }
-  'break' { PT _ (TS _ 49) }
-  'continue' { PT _ (TS _ 50) }
-  'def' { PT _ (TS _ 51) }
-  'do' { PT _ (TS _ 52) }
-  'elif' { PT _ (TS _ 53) }
-  'else' { PT _ (TS _ 54) }
-  'extern' { PT _ (TS _ 55) }
-  'false' { PT _ (TS _ 56) }
-  'for' { PT _ (TS _ 57) }
-  'func' { PT _ (TS _ 58) }
-  'if' { PT _ (TS _ 59) }
-  'in' { PT _ (TS _ 60) }
-  'lambda' { PT _ (TS _ 61) }
-  'not' { PT _ (TS _ 62) }
-  'or' { PT _ (TS _ 63) }
-  'print' { PT _ (TS _ 64) }
-  'return' { PT _ (TS _ 65) }
-  'skip' { PT _ (TS _ 66) }
-  'step' { PT _ (TS _ 67) }
-  'true' { PT _ (TS _ 68) }
-  'until' { PT _ (TS _ 69) }
-  'while' { PT _ (TS _ 70) }
-  '{' { PT _ (TS _ 71) }
-  '|' { PT _ (TS _ 72) }
-  '|=' { PT _ (TS _ 73) }
-  '}' { PT _ (TS _ 74) }
-  '~' { PT _ (TS _ 75) }
+  'as' { PT _ (TS _ 49) }
+  'break' { PT _ (TS _ 50) }
+  'continue' { PT _ (TS _ 51) }
+  'def' { PT _ (TS _ 52) }
+  'do' { PT _ (TS _ 53) }
+  'elif' { PT _ (TS _ 54) }
+  'else' { PT _ (TS _ 55) }
+  'extern' { PT _ (TS _ 56) }
+  'false' { PT _ (TS _ 57) }
+  'for' { PT _ (TS _ 58) }
+  'func' { PT _ (TS _ 59) }
+  'hiding' { PT _ (TS _ 60) }
+  'if' { PT _ (TS _ 61) }
+  'in' { PT _ (TS _ 62) }
+  'lambda' { PT _ (TS _ 63) }
+  'not' { PT _ (TS _ 64) }
+  'only' { PT _ (TS _ 65) }
+  'or' { PT _ (TS _ 66) }
+  'print' { PT _ (TS _ 67) }
+  'return' { PT _ (TS _ 68) }
+  'skip' { PT _ (TS _ 69) }
+  'step' { PT _ (TS _ 70) }
+  'true' { PT _ (TS _ 71) }
+  'until' { PT _ (TS _ 72) }
+  'use' { PT _ (TS _ 73) }
+  'while' { PT _ (TS _ 74) }
+  '{' { PT _ (TS _ 75) }
+  '|' { PT _ (TS _ 76) }
+  '|=' { PT _ (TS _ 77) }
+  '}' { PT _ (TS _ 78) }
+  '~' { PT _ (TS _ 79) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -203,7 +208,10 @@ ListStmt :: {
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
-: 'func' Ident FVars '(' ListFArg ')' FRet FBody {
+: 'use' Ident Use {
+  (Just (tokenLineCol $1), AbsPyxell.SUse (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
+}
+| 'func' Ident FVars '(' ListFArg ')' FRet FBody {
   (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $3)(snd $5)(snd $7)(snd $8)) 
 }
 | 'return' {
@@ -274,6 +282,22 @@ Stmt :: {
 }
 | 'break' {
   (Just (tokenLineCol $1), AbsPyxell.SBreak (Just (tokenLineCol $1)))
+}
+
+Use :: {
+  (Maybe (Int, Int), Use (Maybe (Int, Int)))
+}
+: {
+  (Nothing, AbsPyxell.UAll Nothing)
+}
+| 'only' ListIdent {
+  (Just (tokenLineCol $1), AbsPyxell.UOnly (Just (tokenLineCol $1)) (snd $2)) 
+}
+| 'hiding' ListIdent {
+  (Just (tokenLineCol $1), AbsPyxell.UHiding (Just (tokenLineCol $1)) (snd $2)) 
+}
+| 'as' Ident {
+  (Just (tokenLineCol $1), AbsPyxell.UAs (Just (tokenLineCol $1)) (snd $2)) 
 }
 
 FVars :: {
@@ -766,9 +790,6 @@ Type4 :: {
 | 'String' {
   (Just (tokenLineCol $1), AbsPyxell.TString (Just (tokenLineCol $1)))
 }
-| Class {
-  (fst $1, AbsPyxell.TClass (fst $1)(snd $1)) 
-}
 | '(' Type ')' {
   (Just (tokenLineCol $1), snd $2)
 }
@@ -874,6 +895,7 @@ myLexer = tokens
 pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pStmt = (>>= return . snd) . pStmt_internal
+pUse = (>>= return . snd) . pUse_internal
 pFVars = (>>= return . snd) . pFVars_internal
 pFVar = (>>= return . snd) . pFVar_internal
 pListFVar = (>>= return . snd) . pListFVar_internal

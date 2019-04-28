@@ -21,7 +21,7 @@ type Result = (Type, Value)
 
 -- | Compiler environment and state.
 type Env = M.Map Ident Result
-data StateItem = Number Int | Label Value | Function Env (S.Set [Type])
+data StateItem = Number Int | Label Value | Function Env (S.Set [Type]) | Module Env
 type State = M.Map Value StateItem
 
 -- | LLVM code for each scope (function or global).
@@ -141,6 +141,7 @@ strType typ = do
                 ss <- mapM strType as
                 s <- strType r
                 return $ s ++ " (" ++ intercalate ", " ss ++ ")*"
+        TModule _ -> return "<module>"
 
 -- | Returns LLVM string representation for given type variables.
 strFVars :: [FVar Pos] -> Run String

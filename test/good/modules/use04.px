@@ -1,0 +1,4 @@
+
+use math hiding e, exp
+
+print cos(pi)

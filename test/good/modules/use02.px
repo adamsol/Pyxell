@@ -1,0 +1,4 @@
+
+use math as m
+
+print m.cos(0.0)

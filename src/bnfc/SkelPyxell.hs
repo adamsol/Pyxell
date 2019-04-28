@@ -17,6 +17,7 @@ transProgram x = case x of
   Program _ stmts -> failure x
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
+  SUse _ ident use -> failure x
   SFunc _ ident fvars fargs fret fbody -> failure x
   SRetVoid _ -> failure x
   SRetExpr _ expr -> failure x
@@ -41,6 +42,12 @@ transStmt x = case x of
   SForStep _ expr1 expr2 expr3 block -> failure x
   SContinue _ -> failure x
   SBreak _ -> failure x
+transUse :: Show a => Use a -> Result
+transUse x = case x of
+  UAll _ -> failure x
+  UOnly _ idents -> failure x
+  UHiding _ idents -> failure x
+  UAs _ ident -> failure x
 transFVars :: Show a => FVars a -> Result
 transFVars x = case x of
   FStd _ -> failure x
@@ -153,6 +160,7 @@ transType x = case x of
   TFuncDef _ ident fvars fargs type_ block -> failure x
   TFuncExt _ ident fargs type_ -> failure x
   TClass _ class_ -> failure x
+  TModule _ -> failure x
 transClass :: Show a => Class a -> Result
 transClass x = case x of
   CAny _ -> failure x

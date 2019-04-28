@@ -7,6 +7,7 @@ import Control.Monad
 import Control.Monad.Trans.Reader
 import Control.Monad.Trans.Error
 import Data.Char
+import Data.List
 import qualified Data.Map as M
 
 import AbsPyxell hiding (Type)
@@ -17,9 +18,9 @@ import ErrM
 import Utils
 
 
--- | Identifier environment: type and nesting level.
-type Level = Int
-type Env = M.Map Ident (Type, Level)
+-- | Identifier environment: type and nesting level or namespace.
+data EnvItem = Level Int | Module Env
+type Env = M.Map Ident (Type, EnvItem)
 
 -- | Checker monad: Reader for identifier environment, Error to report compilation errors.
 type Run r = ReaderT Env (ErrorT String IO) r
@@ -55,6 +56,7 @@ data StaticError = NotComparable Type Type
                  | NotIterable Type
                  | NotClass Type
                  | InvalidAttr Type Ident
+                 | InvalidModule Ident
 
 -- | Show instance for displaying compilation errors.
 instance Show StaticError where
@@ -89,6 +91,7 @@ instance Show StaticError where
         NotIterable typ -> "Type `" ++ show typ ++ "` is not iterable."
         NotClass typ -> "Type `" ++ show typ ++ "` is not a class."
         InvalidAttr typ (Ident a) -> "Type `" ++ show typ ++ "` has no attribute `" ++ a ++  "`."
+        InvalidModule (Ident m) -> "Could not load module `" ++ m ++  "`."
 
 
 -- | Does nothing.
@@ -104,19 +107,19 @@ throw pos err = case pos of
 
 
 -- | Inserts a label into the map and continues with changed environment.
-localLevel :: String -> Level -> Run a -> Run a
+localLevel :: String -> Int -> Run a -> Run a
 localLevel name lvl cont = do
-    local (M.insert (Ident name) (tVoid, lvl)) cont
+    local (M.insert (Ident name) (tVoid, Level lvl)) cont
 
 -- | Inserts a variable into the map and continues with changed environment.
 localType :: Ident -> Type -> Run a -> Run a
 localType id typ cont = do
-    local (M.insert id (typ, -1)) cont
+    local (M.insert id (typ, Level (-1))) cont
 
 -- | Inserts a variable into the map and continues with changed environment.
-localVar :: Ident -> Type -> Level -> Run a -> Run a
+localVar :: Ident -> Type -> Int -> Run a -> Run a
 localVar id typ lvl cont = do
-    local (M.insert id (typ, lvl)) cont
+    local (M.insert id (typ, Level lvl)) cont
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Type)
@@ -133,9 +136,9 @@ nextLevel cont = do
     localLevel "#level" (l+1) cont
 
 -- | Returns current nesting level.
-getLevel :: Run Level
+getLevel :: Run Int
 getLevel = do
-    Just (_, l) <- asks (M.lookup (Ident "#level"))
+    Just (_, Level l) <- asks (M.lookup (Ident "#level"))
     return $ l
 
 
@@ -145,10 +148,12 @@ checkVar pos id = do
     l1 <- getLevel
     r <- asks (M.lookup id)
     case r of
-        Just (t, l2) -> do
+        Just (t, Level l2) -> do
             if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
             else if l2 < 0 then throw pos $ NotVariable id
             else return $ t
+        Just (TModule _, _) -> do
+            return $ tModule
         Nothing -> throw pos $ UndeclaredIdentifier id
 
 -- | Checks whether type identifier exists in the environment and returns the actual type.
@@ -157,7 +162,7 @@ checkType pos typ = case typ of
     TVar _ id -> do
         r <- asks (M.lookup id)
         case r of
-            Just (t, -1) -> return $ t
+            Just (t, Level (-1)) -> return $ t
             otherwise -> throw pos $ NotType id
     otherwise -> return $ typ
 
@@ -188,9 +193,16 @@ checkCast pos typ1 typ2 = case (typ1, typ2) of
 
 
 -- | Checks the whole program and returns environment.
-checkProgram :: Program Pos -> Run Env
-checkProgram program = case program of
-    Program pos stmts -> checkStmts stmts ask
+checkProgram :: Program Pos -> String -> Run Env
+checkProgram program name = case program of
+    Program pos stmts -> do
+        env1 <- ask
+        -- `std` module is automatically added to the namespace, unless this is the module being compiled
+        env2 <- case name of
+            "std" -> checkStmts stmts ask
+            otherwise -> checkStmts (SUse _pos (Ident "std") (UAll _pos) : stmts) ask
+        return $ M.insert (Ident name) (tModule, Module (M.difference env2 env1)) env1
+
 
 -- | Checks a block with statements.
 checkBlock :: Block Pos -> Run ()
@@ -206,6 +218,25 @@ checkStmts statements cont = case statements of
 -- | Checks a single statement.
 checkStmt :: Stmt Pos -> Run a -> Run a
 checkStmt statement cont = case statement of
+    SUse pos id use -> do
+        r <- asks (M.lookup id)
+        case r of
+            Just (TModule _, Module env) -> case use of
+                UAll _ -> do
+                    local (M.union env) cont
+                UOnly pos ids -> do
+                    case ids \\ (M.keys env) of
+                        [] -> skip
+                        id':_ -> throw pos $ UndeclaredIdentifier id'
+                    local (M.union (M.filterWithKey (\id _ -> elem id ids) env)) cont
+                UHiding _ ids -> do
+                    case ids \\ (M.keys env) of
+                        [] -> skip
+                        id':_ -> throw pos $ UndeclaredIdentifier id'
+                    local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
+                UAs _ id' -> do
+                    local (M.insert id' (tModule, Module env)) cont
+            otherwise -> throw pos $ InvalidModule id
     SFunc pos id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -534,6 +565,13 @@ checkExpr expression = case expression of
                 let i = ord (attr !! 0) - ord 'a'
                 if "a" <= attr && attr <= "z" && i < length ts then return $ Just (ts !! i)
                 else throw pos $ InvalidAttr t1 id
+            TModule _ -> do
+                (_, Module env) <- case expr of
+                    EVar _ id' -> asks (M.! id')
+                r <- local (const env) $ getIdent id
+                case r of
+                    Just t -> return $ Just t
+                    otherwise -> throw pos $ UndeclaredIdentifier id
             otherwise -> throw pos $ InvalidAttr t1 id
         return $ (t2, False)
     ECall pos expr args -> do
@@ -548,7 +586,9 @@ checkExpr expression = case expression of
         m <- case expr of
             EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
                 (t, _) <- checkExpr e
-                return $ M.insert 0 (Left t) m
+                case t of
+                    TModule _ -> return $ m
+                    otherwise -> return $ M.insert 0 (Left t) m
             otherwise -> return $ m
         (m, _) <- foldM' (m, False) (zip [(M.size m)..] args) $ \(m, named) (i, a) -> do
             (pos', e, i, named) <- case (a, named) of

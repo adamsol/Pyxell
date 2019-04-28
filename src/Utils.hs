@@ -152,6 +152,7 @@ tFunc = TFunc _pos
 tFuncDef = TFuncDef _pos
 tFuncExt = TFuncExt _pos
 tClass = TClass _pos
+tModule = TModule _pos
 cAny = CAny _pos
 cNum = CNum _pos
 

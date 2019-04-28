@@ -1,0 +1,4 @@
+
+use math
+
+print sin(0.0)

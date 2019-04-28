@@ -14,6 +14,12 @@ separator          Stmt        ";" ;
 
 -- statements --
 
+SUse.              Stmt   ::= "use" Ident Use ;
+UAll.              Use    ::= "" ;
+UOnly.             Use    ::= "only" [Ident] ;
+UHiding.           Use    ::= "hiding" [Ident] ;
+UAs.               Use    ::= "as" Ident ;
+
 SFunc.             Stmt   ::= "func" Ident FVars "(" [FArg] ")" FRet FBody ;
 FStd.              FVars  ::= "" ;
 FGen.              FVars  ::= "<" [FVar] ">" ;
@@ -154,7 +160,8 @@ TTuple.            Type2  ::= [Type3] ;
 TFunc.             Type1  ::= [Type2] "->" Type1 ;
 internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
 internal TFuncExt. Type1  ::= Ident [FArg] Type ;
-TClass.            Type4  ::= Class ;
+internal TClass.   Type1  ::= Class ;
+internal TModule.  Type1  ::= "" ;
 
 separator nonempty Type3      "*" ;
 separator          Type2      "," ;
