@@ -1,4 +1,4 @@
 
 print math.PI / 2
-print math.E ** -1
+print math.E ^ -1
 print -math.INF

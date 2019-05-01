@@ -25,6 +25,7 @@ transStmt x = case x of
   SPrint _ expr -> failure x
   SPrintEmpty _ -> failure x
   SAssg _ exprs -> failure x
+  SAssgPow _ expr1 expr2 -> failure x
   SAssgMul _ expr1 expr2 -> failure x
   SAssgDiv _ expr1 expr2 -> failure x
   SAssgMod _ expr1 expr2 -> failure x

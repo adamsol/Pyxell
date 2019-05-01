@@ -23,6 +23,7 @@ data Stmt a
     | SPrint a (Expr a)
     | SPrintEmpty a
     | SAssg a [Expr a]
+    | SAssgPow a (Expr a) (Expr a)
     | SAssgMul a (Expr a) (Expr a)
     | SAssgDiv a (Expr a) (Expr a)
     | SAssgMod a (Expr a) (Expr a)
@@ -52,6 +53,7 @@ instance Functor Stmt where
         SPrint a expr -> SPrint (f a) (fmap f expr)
         SPrintEmpty a -> SPrintEmpty (f a)
         SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
+        SAssgPow a expr1 expr2 -> SAssgPow (f a) (fmap f expr1) (fmap f expr2)
         SAssgMul a expr1 expr2 -> SAssgMul (f a) (fmap f expr1) (fmap f expr2)
         SAssgDiv a expr1 expr2 -> SAssgDiv (f a) (fmap f expr1) (fmap f expr2)
         SAssgMod a expr1 expr2 -> SAssgMod (f a) (fmap f expr1) (fmap f expr2)

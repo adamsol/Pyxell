@@ -1,5 +1,5 @@
 
-n = 10**6
+n = 10^6
 a = [0] * n
 print a[-n-1:].length
 print a[:3*n].length

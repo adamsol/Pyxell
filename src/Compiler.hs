@@ -110,6 +110,8 @@ compileStmt statement cont = case statement of
                     compileAssg t e1 v cont
         e1:e2:es -> do
             compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
+    SAssgPow _pos expr1 expr2 -> do
+        compileAssgOp EPow expr1 expr2 cont
     SAssgMul _pos expr1 expr2 -> do
         compileAssgOp EMul expr1 expr2 cont
     SAssgDiv pos expr1 expr2 -> do

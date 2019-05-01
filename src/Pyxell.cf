@@ -43,6 +43,7 @@ SPrintEmpty.       Stmt   ::= "print" ;
 
 SAssg.             Stmt   ::= [Expr];
 separator nonempty Expr       "=" ;
+SAssgPow.          Stmt   ::= Expr "^=" Expr;
 SAssgMul.          Stmt   ::= Expr "*=" Expr;
 SAssgDiv.          Stmt   ::= Expr "/=" Expr;
 SAssgMod.          Stmt   ::= Expr "%=" Expr;
@@ -52,7 +53,7 @@ SAssgBShl.         Stmt   ::= Expr "<<=" Expr;
 SAssgBShr.         Stmt   ::= Expr ">>=" Expr;
 SAssgBAnd.         Stmt   ::= Expr "&=" Expr;
 SAssgBOr.          Stmt   ::= Expr "|=" Expr;
-SAssgBXor.         Stmt   ::= Expr "^=" Expr;
+SAssgBXor.         Stmt   ::= Expr "$=" Expr;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
 BElIf.             Branch ::= Expr "do" Block ;
@@ -96,7 +97,7 @@ APos.              CArg   ::= Expr2 ;
 ANamed.            CArg   ::= Ident "=" Expr2 ;
 separator          CArg       "," ;
 
-EPow.              Expr12 ::= Expr13 "**" Expr12 ;
+EPow.              Expr12 ::= Expr13 "^" Expr12 ;
 EMinus.            Expr12 ::= "-" Expr12;
 EPlus.             Expr12 ::= "+" Expr12;
 EBNot.             Expr12 ::= "~" Expr12;
@@ -109,7 +110,7 @@ EBShl.             Expr9  ::= Expr9 "<<" Expr10 ;
 EBShr.             Expr9  ::= Expr9 ">>" Expr10 ;
 EBAnd.             Expr8  ::= Expr8 "&" Expr9 ;
 EBOr.              Expr7  ::= Expr7 "|" Expr8 ;
-EBXor.             Expr7  ::= Expr7 "^" Expr8 ;
+EBXor.             Expr7  ::= Expr7 "$" Expr8 ;
 
 ERangeIncl.        Expr6  ::= Expr7 ".." Expr7 ;
 ERangeExcl.        Expr6  ::= Expr7 "..." Expr7 ;

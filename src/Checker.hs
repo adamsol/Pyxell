@@ -289,6 +289,8 @@ checkStmt statement cont = case statement of
                     checkAssgs pos [e1] [t] cont
         e1:e2:es -> do
             checkStmt (SAssg pos (e2:es)) (checkStmt (SAssg pos [e1, e2]) cont)
+    SAssgPow pos expr1 expr2 -> do
+        checkAssgOp pos EPow expr1 expr2 cont
     SAssgMul pos expr1 expr2 -> do
         checkAssgOp pos EMul expr1 expr2 cont
     SAssgDiv pos expr1 expr2 -> do
@@ -670,7 +672,7 @@ checkExpr expression = case expression of
                 (t, id):as -> checkLambdaArg t id $ checkLambdaArgs as cont
             checkLambdaArg typ id cont = do
                 checkDecl _pos typ id $ cont
-    EPow pos expr1 expr2 -> checkBinary pos "**" expr1 expr2
+    EPow pos expr1 expr2 -> checkBinary pos "^" expr1 expr2
     EMinus pos expr -> checkUnary pos "-" expr
     EPlus pos expr -> checkUnary pos "+" expr
     EBNot pos expr -> checkUnary pos "~" expr
@@ -683,7 +685,7 @@ checkExpr expression = case expression of
     EBShr pos expr1 expr2 -> checkBinary pos ">>" expr1 expr2
     EBAnd pos expr1 expr2 -> checkBinary pos "&" expr1 expr2
     EBOr pos expr1 expr2 -> checkBinary pos "|" expr1 expr2
-    EBXor pos expr1 expr2 -> checkBinary pos "^" expr1 expr2
+    EBXor pos expr1 expr2 -> checkBinary pos "$" expr1 expr2
     ERangeIncl pos _ _ -> throw pos $ UnknownType
     ERangeExcl pos _ _ -> throw pos $ UnknownType
     ECmp pos cmp -> case cmp of
@@ -755,7 +757,7 @@ checkExpr expression = case expression of
                     if op == "and" || op == "or" then case (t1', t2') of
                         (TBool _, TBool _) -> return $ (tBool, False)
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
-                    else if op == "**" || op == "/" || op == "-" then case (t1', t2') of
+                    else if op == "^" || op == "/" || op == "-" then case (t1', t2') of
                         (TInt _, TInt _) -> return $ (tInt, False)
                         (TFloat _, TInt _) -> return $ (tFloat, False)
                         (TInt _, TFloat _) -> return $ (tFloat, False)
