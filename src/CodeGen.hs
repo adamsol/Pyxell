@@ -511,15 +511,14 @@ initString str = do
     return $ p1
 
 -- | Outputs LLVM code for array initialization.
--- |   'lens' is an array of two optional values:
--- |   - length which will be saved in the .length attribute,
--- |   - size of allocated memory.
--- |   Any omitted value will default to the length of 'vals'.
+-- |   `lens` is an array of two optional values:
+-- |   - length which will be saved in the .length attribute (defaults to the length of `vals`),
+-- |   - size of allocated memory (defaults to the previous value).
 initArray :: Type -> [Value] -> [Value] -> Run Value
 initArray typ vals lens = do
     let t1 = tArray typ
     let t2 = tPtr typ
-    let len1:len2:_ = lens ++ replicate 2 (show (length vals))
+    let len1:len2:_ = lens ++ lens ++ replicate 2 (show (length vals))
     p1 <- initMemory t1 "1"
     p2 <- initMemory t2 len2
     gep t1 p1 ["0"] [0] >>= store t2 p2

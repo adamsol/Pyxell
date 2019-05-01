@@ -1,0 +1,4 @@
+
+s = readLine()
+print s.length
+print s[::500]

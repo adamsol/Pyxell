@@ -438,7 +438,7 @@ compileExpr expression = case expression of
             p <- initString (txts !! 0)
             return $ (tString, p)
         else do
-            p1 <- initArray tString [] (replicate 2 (show (length txts * 2 - 1)))
+            p1 <- initArray tString [] [show (length txts * 2 - 1)]
             p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
             forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
                 p3 <- gep (tPtr tString) p2 [show (2*i)] []
@@ -521,7 +521,7 @@ compileExpr expression = case expression of
         v5 <- call t2 f [(tInt, v4), (tInt, v1), (tBool, v1'), (tInt, v2), (tBool, v2'), (tInt, v3)]
         v6 <- gep t2 v5 ["0"] [0] >>= load tInt
         v7 <- gep t2 v5 ["0"] [1] >>= load tInt
-        p2 <- initArray t' [] [v7, v7]
+        p2 <- initArray t' [] [v7]
         compileAssg t (eVar "source") p1 $ compileAssg t (eVar "result") p2 $ compileAssg tInt (eVar "c") v3 $ compileAssg tInt (eVar "j") v6 $ compileAssg tInt (eVar "d") v7 $ do
             b <- return $ SBlock _pos [
                 SAssg _pos [EIndex _pos (eVar "result") (eVar "i"), EIndex _pos (eVar "source") (eVar "j")],
@@ -752,7 +752,7 @@ compileExpr expression = case expression of
             v1 <- gep typ val1 ["0"] [1] >>= load tInt
             v2 <- gep typ val2 ["0"] [1] >>= load tInt
             v3 <- binop "add" tInt v1 v2
-            p3 <- initArray t' [] [v3, v3]
+            p3 <- initArray t' [] [v3]
             p4 <- gep typ p3 ["0"] [0] >>= load (tPtr t')
             p5 <- bitcast (tPtr t') (tPtr tChar) p4
             p6 <- bitcast (tPtr t') (tPtr tChar) p1
@@ -769,7 +769,7 @@ compileExpr expression = case expression of
             p1 <- gep t val1 ["0"] [0] >>= load (tPtr typ)
             v1 <- gep t val1 ["0"] [1] >>= load tInt
             v2 <- binop "mul" tInt v1 val2
-            p2 <- initArray typ [] [v2, v2]
+            p2 <- initArray typ [] [v2]
             p3 <- gep t p2 ["0"] [0] >>= load (tPtr typ)
             p4 <- alloca tInt
             p5 <- alloca tInt
