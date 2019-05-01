@@ -1,0 +1,29 @@
+
+s = 20
+a = [[readInt() for i in 1..s] for i in 1..s]
+d = 4
+x = 0
+
+for i in 0...s-d do
+    for j in 0...s do
+        v = 1
+        for k in 0...d do
+            v *= a[i+k][j]
+        x = max(x, v)
+        v = 1
+        for k in 0...d do
+            v *= a[j][i+k]
+        x = max(x, v)
+
+for i in 0...s-d do
+    for j in 0...s-d do
+        v = 1
+        for k in 0...d do
+            v *= a[i+k][j+k]
+        x = max(x, v)
+        v = 1
+        for k in 0...d do
+            v *= a[-i-k-1][j+k]
+        x = max(x, v)
+
+print x

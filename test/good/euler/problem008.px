@@ -1,0 +1,14 @@
+
+s = ""
+for i in 1..20 do
+    s += read()
+
+x = 0
+d = 13
+for i in 0...s.length-d do
+    v = 1
+    for j in i...i+d do
+        v *= ord(s[j]) - ord('0')
+    x = max(x, v)
+
+print x

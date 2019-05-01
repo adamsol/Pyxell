@@ -1,0 +1,9 @@
+
+s = 21
+a = [[(i == 0 or j == 0 ? 1 : 0) for j in 0...s] for i in 0...s]
+
+for i in 1...s do
+    for j in 1...s do
+        a[i][j] = a[i-1][j] + a[i][j-1]
+
+print a[-1][-1]
