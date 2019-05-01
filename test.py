@@ -29,11 +29,13 @@ args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
 tests = []
-for path in glob.glob(f'test/**/[!_]*.px', recursive=True):
+for path in glob.glob('test/**/{}*.px'.format('[!_]' if '_' not in args.pattern else ''), recursive=True):
     if args.pattern.replace('/', os.path.sep) in path:
         tests.append(path)
 n = len(tests)
 
+t0 = timer()
+ok = i = 0
 for i, path in enumerate(tests, 1):
     print(f"{B}> TEST {i}/{n}:{E} {path}")
 
@@ -44,6 +46,7 @@ for i, path in enumerate(tests, 1):
         except subprocess.CalledProcessError as e:
             if args.expect_errors:
                 print(f"{G}{e.output.decode()}{E}")
+                ok += 1
             else:
                 print(f"{R}Compiler returned error code {e.returncode}.\n{e.output.decode()}{E}")
             continue
@@ -52,13 +55,13 @@ for i, path in enumerate(tests, 1):
                 print(f"{R}Compiler returned code 0, but error expected!{E}")
                 continue
 
-        start = timer()
+        t1 = timer()
         try:
             with open(f'{path.replace(".px", ".in")}', 'r') as infile:
                 subprocess.call(f'{path.replace(".px", ".exe")}', stdin=infile, stdout=outfile)
         except FileNotFoundError:
             subprocess.call(f'{path.replace(".px", ".exe")}', stdout=outfile)
-        end = timer()
+        t2 = timer()
 
         try:
             subprocess.check_output(f'diff --strip-trailing-cr tmp.out {path.replace(".px", ".out")}', stderr=subprocess.STDOUT)
@@ -68,4 +71,12 @@ for i, path in enumerate(tests, 1):
             else:
                 print(f"{R}WA: {e.output.decode()}{E}")
         else:
-            print(f"{G}OK{E} ({end-start:.3f}s)")
+            print(f"{G}OK{E} ({t2-t1:.3f}s)")
+            ok += 1
+
+print(f"{B}---{E}")
+msg = f"Run {i} tests in {timer()-t0:.3f}s"
+if ok == i:
+    print(msg + f", {G}all passed{E}.")
+else:
+    print(msg + f", {R}{i-ok} failed{E}.")
