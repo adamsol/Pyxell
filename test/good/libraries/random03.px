@@ -1,0 +1,14 @@
+
+use random
+
+a = b = false
+r = 2^60
+for i in 1..100 do
+    if randInt(1) != 0 do
+        print 0
+    n = randInt(r)
+    if n < r/2 do
+        a = true
+    if n > r/2 do
+        b = true
+print a, b

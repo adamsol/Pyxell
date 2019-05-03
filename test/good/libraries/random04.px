@@ -1,0 +1,12 @@
+
+use random
+
+a = b = false
+r = 10.0
+for i in 1..100 do
+    n = randFloat(r) * randFloat()
+    if n < r/4 do
+        a = true
+    if n > r/4 do
+        b = true
+print a, b

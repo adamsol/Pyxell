@@ -45,13 +45,18 @@ main = do
     case args of
         [] -> hPutStrLn stderr $ "File path needed!"
         "-l":_ -> do
-            outputCode [libBase] (abspath </> "lib/base.ll") False
-            outputCode [libMath] (abspath </> "lib/math.ll") False
             readProcess "clang" [abspath </> "lib/io.c", "-S", "-emit-llvm", "-o", abspath </> "lib/io.ll"] ""
+            --forM libs $ \(lib, path) -> outputCode [lib] path False
+            outputCode [libBase, libMath, libTime, libRandom] (abspath </> "lib/base.ll") False
             return $ ()
         path:clangArgs -> do
             let file = fst $ splitExtension path
-            let paths = [("std", abspath </> "lib/std.px"), ("math", abspath </> "lib/math.px"), ("main", path)]
+            paths <- return $ [
+                ("std", abspath </> "lib/std.px"),
+                ("math", abspath </> "lib/math.px"),
+                ("time", abspath </> "lib/time.px"),
+                ("random", abspath </> "lib/random.px"),
+                ("main", path) ]
             -- Type-check all files, passing down the environment.
             (_, units) <- foldM' (M.fromList [(Ident "#level", (tVoid, Level 0))], []) paths $ \(env, units) (name, path) -> do
                 code <- readFile path
@@ -72,5 +77,5 @@ main = do
             -- Compile all units to one LLVM file.
             outputCode (reverse units) (file ++ ".ll") True
             -- Generate executable file.
-            readProcess "clang" ([file ++ ".ll", abspath </> "lib/io.ll", abspath </> "lib/base.ll", abspath </> "lib/math.ll", "-o", file ++ ".exe", "-O2"] ++ clangArgs) ""
+            readProcess "clang" ([file ++ ".ll", abspath </> "lib/io.ll", abspath </> "lib/base.ll", "-o", file ++ ".exe", "-O2"] ++ clangArgs) ""
             return $ ()

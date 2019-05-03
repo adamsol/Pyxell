@@ -13,7 +13,7 @@ import Utils
 
 libBase :: Run Env
 libBase = do
-    write $ [ "",
+    write $ [
         "@format.sw = internal constant [5 x i8] c\"%.*s\\00\"",
         "@format.sr = internal constant [7 x i8] c\"%1000s\\00\"",
         "@format.srl = internal constant [13 x i8] c\"%1000[^\\0A]%*c\\00\"",
@@ -157,7 +157,7 @@ libBase = do
 
 libMath :: Run Env
 libMath = do
-    write $ [ "",
+    write $ [
         "declare double @exp(double)",
         "declare double @log(double)",
         "declare double @log10(double)",
@@ -211,5 +211,33 @@ libMath = do
         call tFloat "@ceil" [(tFloat, "%0")] >>= ret tFloat
     define (tFunc [tFloat] tFloat) (Ident "trunc") $ do
         call tFloat "@trunc" [(tFloat, "%0")] >>= ret tFloat
+
+    ask
+
+
+libTime :: Run Env
+libTime = do
+    write $ [
+        "declare i64 @time(i64*)",
+        "" ]
+
+    define (tFunc [] tInt) (Ident "time") $ do
+        call tInt "@time" [(tPtr tInt, "null")] >>= ret tInt
+
+    ask
+
+
+libRandom :: Run Env
+libRandom = do
+    write $ [
+        "declare void @srand(i64)",
+        "declare i64 @rand()",
+        "" ]
+
+    define (tFunc [tInt] tVoid) (Ident "seed") $ do
+        callVoid "@srand" [(tInt, "%0")] >> retVoid
+
+    define (tFunc [] tInt) (Ident "rand") $ do
+        call tInt "@rand" [] >>= ret tInt
 
     ask
