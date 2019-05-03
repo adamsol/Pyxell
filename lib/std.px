@@ -23,13 +23,16 @@ func min<Num T>(T a, T b) T def
 func max<Num T>(T a, T b) T def
     return b < a ? a : b
 
-func abs<Num T>(T x) T def
-    return x >= 0 ? x : -x
-
 func clamp<Num T>(T x, T a, T b) T def
     y = x < a ? a : x
     z = y > b ? b : y
     return z
+
+func abs<Num T>(T x) T def
+    return x >= 0 ? x : -x
+
+func sign<Num T>(T x) Int def
+    return x > 0 ? 1 : x < 0 ? -1 : 0
 
 
 func Int_pow(Int b, Int e) Int def
@@ -132,3 +135,16 @@ func String_toFloat(String s) Float extern
 func Int_toFloat(Int n) Float extern
 
 func Float_toInt(Float f) Int extern
+
+
+func Bool_toInt(Bool b) Int def
+    return b ? 1 : 0
+
+func Bool_toFloat(Bool b) Float def
+    return b ? 1.0 : 0.0
+
+func Char_toInt(Char c) Int def
+    return ord(c) - 48
+
+func Char_toFloat(Char c) Float def
+    return ord(c) - 48.0

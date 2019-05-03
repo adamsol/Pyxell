@@ -955,9 +955,13 @@ compileAttr typ val (Ident attr) = case typ of
     TBool _ -> case attr of
         "write" -> getIdent (Ident "writeBool")
         "toString" -> getIdent (Ident "Bool_toString")
+        "toInt" -> getIdent (Ident "Bool_toInt")
+        "toFloat" -> getIdent (Ident "Bool_toFloat")
     TChar _ -> case attr of
         "write" -> getIdent (Ident "writeChar")
         "toString" -> getIdent (Ident "Char_toString")
+        "toInt" -> getIdent (Ident "Char_toInt")
+        "toFloat" -> getIdent (Ident "Char_toFloat")
     TString _ -> case attr of
         "write" -> getIdent (Ident "write")
         "length" -> getAttr (tArray tChar) val tInt 1

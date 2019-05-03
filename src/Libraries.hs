@@ -173,9 +173,9 @@ libMath = do
         "declare double @atan(double)",
         "declare double @atan2(double, double)",
         "",
-        "declare double @round(double)",
         "declare double @floor(double)",
         "declare double @ceil(double)",
+        "declare double @trunc(double)",
         "" ]
 
     define (tFunc [tFloat] tFloat) (Ident "exp") $ do
@@ -205,11 +205,11 @@ libMath = do
     define (tFunc [tFloat, tFloat] tFloat) (Ident "atan2") $ do
         call tFloat "@atan2" [(tFloat, "%0"), (tFloat, "%1")] >>= ret tFloat
 
-    define (tFunc [tFloat] tFloat) (Ident "round") $ do
-        call tFloat "@round" [(tFloat, "%0")] >>= ret tFloat
     define (tFunc [tFloat] tFloat) (Ident "floor") $ do
         call tFloat "@floor" [(tFloat, "%0")] >>= ret tFloat
     define (tFunc [tFloat] tFloat) (Ident "ceil") $ do
         call tFloat "@ceil" [(tFloat, "%0")] >>= ret tFloat
+    define (tFunc [tFloat] tFloat) (Ident "trunc") $ do
+        call tFloat "@trunc" [(tFloat, "%0")] >>= ret tFloat
 
     ask

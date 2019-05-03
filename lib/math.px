@@ -19,9 +19,18 @@ func atan2(Float y, Float x) Float extern
 
 func rad(Float x) Float def
     return x * PI / 180
+
 func deg(Float x) Float def
     return x * 180 / PI
 
-func round(Float x) Float extern
 func floor(Float x) Float extern
 func ceil(Float x) Float extern
+func trunc(Float x) Float extern
+
+func round(Float x, Int p: 0) Float def
+    if p != 0 do
+        x *= 10.0^p
+    x = x > 0.0 ? floor(x+0.5) : ceil(x-0.5)
+    if p != 0 do
+        x /= 10.0^p
+    return x

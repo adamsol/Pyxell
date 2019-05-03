@@ -544,9 +544,13 @@ checkExpr expression = case expression of
                 otherwise -> throw pos $ InvalidAttr t1 id
             TBool _ -> case attr of
                 "toString" -> getIdent (Ident "Bool_toString")
+                "toInt" -> getIdent (Ident "Bool_toInt")
+                "toFloat" -> getIdent (Ident "Bool_toFloat")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TChar _ -> case attr of
                 "toString" -> getIdent (Ident "Char_toString")
+                "toInt" -> getIdent (Ident "Char_toInt")
+                "toFloat" -> getIdent (Ident "Char_toFloat")
                 otherwise -> throw pos $ InvalidAttr t1 id
             TString _ -> case attr of
                 "length" -> return $ Just tInt

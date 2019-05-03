@@ -1,0 +1,6 @@
+
+use math
+
+print round(4.2), round(987.5), round(-46.18), round(-1734.5)
+print round(1234.5678, 1), round(-0.8273449, 4), round(0.0007, 2)
+print round(-43.5, -1), round(538.0, -3)
