@@ -19,7 +19,7 @@ import Utils
 
 
 -- | Identifier environment: type and nesting level or namespace.
-data EnvItem = Level Int | Module Env
+data EnvItem = Level Int | Module Env deriving Show
 type Env = M.Map Ident (Type, EnvItem)
 
 -- | Checker monad: Reader for identifier environment, Error to report compilation errors.
@@ -515,7 +515,11 @@ checkExpr expression = case expression of
         case t1 of
             TString _ -> return $ (tChar, False)
             TArray _ t1' -> return $ (t1', True)
-            otherwise -> throw pos $ NotIndexable t1
+            otherwise -> do
+                t1' <- retrieveType t1
+                case t1' of
+                    TString _ -> return $ (tChar, False)
+                    otherwise -> throw pos $ NotIndexable t1
     ESlice pos expr slices -> do
         case slices of
             _:_:_:_:_ -> throw pos $ InvalidSlice
@@ -529,35 +533,43 @@ checkExpr expression = case expression of
         case t1 of
             TString _ -> return $ (t1, False)
             TArray _ _ -> return $ (t1, False)
-            otherwise -> throw pos $ NotIndexable t1
+            otherwise -> do
+                t1' <- retrieveType t1
+                case t1' of
+                    TString _ -> return $ (t1, False)
+                    otherwise -> throw pos $ NotIndexable t1
     EAttr pos expr id -> do
-        (t1, m) <- checkExpr expr
+        (t1, _) <- checkExpr expr
+        t1' <- case t1 of
+            TArray _ _ -> return $ t1
+            TTuple _ _ -> return $ t1
+            otherwise -> retrieveType t1
         let Ident attr = id
-        Just t2 <- case t1 of
+        Just t2 <- case t1' of
             TInt _ -> case attr of
                 "toString" -> getIdent (Ident "Int_toString")
                 "toFloat" -> getIdent (Ident "Int_toFloat")
-                otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1' id
             TFloat _ -> case attr of
                 "toString" -> getIdent (Ident "Float_toString")
                 "toInt" -> getIdent (Ident "Float_toInt")
-                otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1' id
             TBool _ -> case attr of
                 "toString" -> getIdent (Ident "Bool_toString")
                 "toInt" -> getIdent (Ident "Bool_toInt")
                 "toFloat" -> getIdent (Ident "Bool_toFloat")
-                otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1' id
             TChar _ -> case attr of
                 "toString" -> getIdent (Ident "Char_toString")
                 "toInt" -> getIdent (Ident "Char_toInt")
                 "toFloat" -> getIdent (Ident "Char_toFloat")
-                otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1' id
             TString _ -> case attr of
                 "length" -> return $ Just tInt
                 "toString" -> getIdent (Ident "String_toString")
                 "toInt" -> getIdent (Ident "String_toInt")
                 "toFloat" -> getIdent (Ident "String_toFloat")
-                otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1' id
             TArray _ t' -> case (t', attr) of
                 (_, "length") -> return $ Just tInt
                 (TChar _, "join") -> do
@@ -566,11 +578,11 @@ checkExpr expression = case expression of
                 (TString _, "join") -> do
                     t'' <- getIdent (Ident "StringArray_join")
                     return $ t''
-                otherwise -> throw pos $ InvalidAttr t1 id
+                otherwise -> throw pos $ InvalidAttr t1' id
             TTuple _ ts -> do
                 let i = ord (attr !! 0) - ord 'a'
                 if "a" <= attr && attr <= "z" && i < length ts then return $ Just (ts !! i)
-                else throw pos $ InvalidAttr t1 id
+                else throw pos $ InvalidAttr t1' id
             TModule _ -> do
                 (_, Module env) <- case expr of
                     EVar _ id' -> asks (M.! id')
@@ -578,7 +590,7 @@ checkExpr expression = case expression of
                 case r of
                     Just t -> return $ Just t
                     otherwise -> throw pos $ UndeclaredIdentifier id
-            otherwise -> throw pos $ InvalidAttr t1 id
+            otherwise -> throw pos $ InvalidAttr t1' id
         return $ (t2, False)
     ECall pos expr args -> do
         (typ, _) <- checkExpr expr
@@ -659,17 +671,20 @@ checkExpr expression = case expression of
                 (_:as1, _:as2) -> checkLambdas as1 as2 cont
             checkLambda e t cont = do
                 let ELambda pos' ids e' = e
-                t <- retrieveType t
-                let TFunc _ as r = t
-                if length ids < length as then throw pos' $ TooFewArguments t
-                else if length ids > length as then throw pos' $ TooManyArguments t
+                let TFunc _ as1 r1 = t
+                as2 <- mapM retrieveType as1
+                r2 <- retrieveType r1
+                if length ids < length as1 then throw pos' $ TooFewArguments t
+                else if length ids > length as1 then throw pos' $ TooManyArguments t
                 else skip
                 let id = Ident ".lambda"
                 let b = SBlock pos' [SRetExpr pos' e']
-                checkFunc pos' id [] [ANoDefault _pos t' id' | (t', id') <- zip as ids] r (Just b) skip
-                (r', _) <- checkLambdaArgs (zip as ids) $ checkExpr e'
-                case r of
-                    TVar _ id' -> localType id' r' $ cont
+                checkFunc pos' id [] [ANoDefault _pos t' id' | (t', id') <- zip as2 ids] r2 (Just b) skip
+                (r3, _) <- checkLambdaArgs (zip as2 ids) $ checkExpr e'
+                case r1 of
+                    TVar _ id' -> do
+                        r4 <- retrieveType r3
+                        localType id' r4 $ cont
                     otherwise -> cont
             checkLambdaArgs args cont = case args of
                 [] -> cont

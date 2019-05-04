@@ -1,0 +1,10 @@
+
+func apply<Any A, Any B>(A->B f, A x) B def
+    return f(x)
+
+x = apply(_+1, 2)
+x += 4
+print x
+
+s = apply(_[1:], "abc")
+print -apply(_.length, s)

@@ -74,9 +74,13 @@ for i, path in enumerate(tests, 1):
             print(f"{G}OK{E} ({t2-t1:.3f}s)")
             ok += 1
 
-print(f"{B}---{E}")
-msg = f"Run {i} tests in {timer()-t0:.3f}s"
-if ok == i:
-    print(msg + f", {G}all passed{E}.")
+if i > 0:
+    print(f"{B}---{E}")
+    msg = f"Run {i} tests in {timer()-t0:.3f}s"
+    if ok == i:
+        print(msg + f", {G}all passed{E}.")
+    else:
+        print(msg + f", {R}{i-ok} failed{E}.")
 else:
-    print(msg + f", {R}{i-ok} failed{E}.")
+    print("No tests to run.")
+
