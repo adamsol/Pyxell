@@ -965,6 +965,7 @@ compileAttr typ val (Ident attr) = case typ of
     TString _ -> case attr of
         "write" -> getIdent (Ident "write")
         "length" -> getAttr (tArray tChar) val tInt 1
+        "toArray" -> getIdent (Ident "String_toArray")
         "toString" -> getIdent (Ident "String_toString")
         "toInt" -> getIdent (Ident "String_toInt")
         "toFloat" -> getIdent (Ident "String_toFloat")

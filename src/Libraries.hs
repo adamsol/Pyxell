@@ -41,14 +41,16 @@ libBase = do
         v <- trunc tInt tChar "%0"
         ret tChar v
 
-    -- [Char] to String
-    define (tFunc [tArray tChar] tString) (Ident "str") $ do
+    -- [Char] <-> String
+    define (tFunc [tArray tChar] tString) (Ident "CharArray_asString") $ do
+        ret tString "%0"
+    define (tFunc [tString] (tArray tChar)) (Ident "String_toArray") $ do
         p1 <- gep tString "%0" ["0"] [0] >>= load (tPtr tChar)
         v <- gep tString "%0" ["0"] [1] >>= load tInt
         p2 <- initArray tChar [] [v]
         p3 <- gep tString p2 ["0"] [0] >>= load (tPtr tChar)
         call (tPtr tChar) "@memcpy" [(tPtr tChar, p3), (tPtr tChar, p1), (tInt, v)]
-        ret tString p2
+        ret (tArray tChar) p2
 
     -- Standard output
     define (tFunc [tString] tVoid) (Ident "write") $ do

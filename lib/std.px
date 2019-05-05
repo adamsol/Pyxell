@@ -2,8 +2,6 @@
 func ord(Char c) Int extern
 func chr(Int c) Char extern
 
-func str([Char] a) String extern
-
 func write(String s) extern
 func writeLine(String s) extern
 func writeInt(Int s) extern
@@ -49,7 +47,12 @@ func Int_pow(Int b, Int e) Int def
 func Float_pow(Float b, Float e) Float extern
 
 
+func CharArray_asString([Char] a) String extern
+func String_toArray(String s) [Char] extern
+
 func CharArray_join([Char] array, String sep: "") String def
+    if sep.length == 0 do
+        return CharArray_asString(CharArray_asString(array).toArray())  -- copy the array
     m = sep.length
     n = array.length
     r = [' '] * ((m+1) * (n-1) + 1)
@@ -61,7 +64,7 @@ func CharArray_join([Char] array, String sep: "") String def
             for c in sep do
                 r[p] = c
                 p += 1
-    return str(r)
+    return CharArray_asString(r)
 
 func StringArray_join([String] array, String sep: "") String def
     m = sep.length
@@ -79,7 +82,7 @@ func StringArray_join([String] array, String sep: "") String def
             for c in sep do
                 r[p] = c
                 p += 1
-    return str(r)
+    return CharArray_asString(r)
 
 
 func Array_prepareSlice(Int l, Int a, Bool a', Int b, Bool b', Int c) Int*Int def
@@ -114,21 +117,19 @@ func Array_compare<Any T>([T] a1, [T] a2) Int def
 
 
 func Int_toString(Int n) String extern
-
 func Float_toString(Float f) String extern
 
 func Bool_toString(Bool b) String def
     return b ? "true" : "false"
 
 func Char_toString(Char c) String def
-    return str([c])
+    return CharArray_asString([c])
 
 func String_toString(String s) String def
     return s
 
 
 func String_toInt(String s) Int extern
-
 func String_toFloat(String s) Float extern
 
 

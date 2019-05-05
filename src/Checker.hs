@@ -566,6 +566,7 @@ checkExpr expression = case expression of
                 otherwise -> throw pos $ InvalidAttr t1' id
             TString _ -> case attr of
                 "length" -> return $ Just tInt
+                "toArray" -> getIdent (Ident "String_toArray")
                 "toString" -> getIdent (Ident "String_toString")
                 "toInt" -> getIdent (Ident "String_toInt")
                 "toFloat" -> getIdent (Ident "String_toFloat")

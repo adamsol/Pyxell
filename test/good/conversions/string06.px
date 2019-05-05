@@ -1,0 +1,9 @@
+
+s = "qwerty"
+a = s.toArray()
+a[5] = 'z'
+print s, a
+
+s = a.join()
+a[5] = '.'
+print s, a
