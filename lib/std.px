@@ -149,3 +149,27 @@ func Char_toInt(Char c) Int def
 
 func Char_toFloat(Char c) Float def
     return ord(c) - 48.0
+
+
+func all<Any A>(A->Bool f, [A] a) Bool def
+    for x in a do
+        if not f(x) do
+            return false
+    return true
+
+func any<Any A>(A->Bool f, [A] a) Bool def
+    for x in a do
+        if f(x) do
+            return true
+    return false
+
+func filter<Any A>(A->Bool f, [A] a) [A] def
+    return [x for x in a if f(x)]
+
+func map<Any A, Any B>(A->B f, [A] a) [B] def
+    return [f(x) for x in a]
+
+func reduce<Any A, Any B>(A,B->B f, B r, [A] a) B def
+    for x in a do
+        r = f(x, r)
+    return r
