@@ -327,9 +327,7 @@ checkStmt statement cont = case statement of
     SFor pos expr1 expr2 block -> do
         checkStmt (SForStep pos expr1 expr2 (eInt 1) block) cont
     SForStep pos expr1 expr2 expr3 block -> do
-        (t1, _) <- checkExpr expr3
-        checkCast pos t1 tInt
-        checkFor pos expr1 expr2 (checkBlock block >> cont)
+        checkFor pos expr1 expr2 expr3 (checkBlock block >> cont)
     SBreak pos -> do
         r <- asks (M.lookup (Ident "#loop"))
         case r of
@@ -403,14 +401,20 @@ checkIf pos expr = do
     return $ t
 
 -- | Checks a single `for` statement and continues with changed environment.
-checkFor :: Pos -> Expr Pos -> Expr Pos -> Run a -> Run a
-checkFor pos expr1 expr2 cont = do
-    t <- checkForExpr pos expr2
-    localLevel "#loop" 0 $ case (expr1, t) of
-        (ETuple _ es, TTuple _ ts) -> do
-            if length es == length ts then checkAssgs pos es ts cont
-            else throw pos $ CannotUnpack t (length es)
-        otherwise -> checkAssgs pos [expr1] [t] cont
+checkFor :: Pos -> Expr Pos -> Expr Pos -> Expr Pos -> Run a -> Run a
+checkFor pos expr1 expr2 expr3 cont = do
+    t1 <- checkForExpr pos expr2
+    (t2, _) <- checkExpr expr3
+    checkForStep pos t2 t1
+    localLevel "#loop" 0 $ case (expr1, t1) of
+        (ETuple _ es, TTuple _ ts1) -> do
+            if length es == length ts1 then case t2 of
+                TTuple _ ts2 -> do
+                    if length ts2 == length ts1 then checkAssgs pos es ts1 cont
+                    else throw pos $ CannotUnpack t2 (length es)
+                otherwise -> checkAssgs pos es ts1 cont
+            else throw pos $ CannotUnpack t1 (length es)
+        otherwise -> checkAssgs pos [expr1] [t1] cont
     where
         checkForExpr pos expr = case expr of
             ERangeIncl _ e1 e2 -> checkForRange pos e1 e2
@@ -426,6 +430,8 @@ checkFor pos expr1 expr2 cont = do
             case (t1, t2) of
                 (TInt _, TInt _) -> return $ t1
                 (TInt _, _) -> throw pos $ IllegalAssignment t2 tInt
+                (TFloat _, TFloat _) -> return $ t1
+                (TFloat _, _) -> throw pos $ IllegalAssignment t2 tFloat
                 (TChar _, TChar _) -> return $ t1
                 (TChar _, _) -> throw pos $ IllegalAssignment t2 tChar
                 otherwise -> throw pos $ UnknownType
@@ -435,6 +441,18 @@ checkFor pos expr1 expr2 cont = do
                 TString _ -> return $ tChar
                 TArray _ t' -> return $ t'
                 otherwise -> throw pos $ NotIterable t
+        checkForStep pos step typ = case typ of
+            TTuple _ ts2 -> case step of
+                TTuple _ ts1 -> do
+                    if length ts1 == length ts2 then do
+                        ts <- forM (zip ts1 ts2) $ uncurry (checkForStep pos)
+                        return $ tTuple ts
+                    else throw pos $ CannotUnpack step (length ts2)
+                otherwise -> do
+                    ts <- forM ts2 $ checkForStep pos step
+                    return $ tTuple ts
+            TFloat _ -> checkCast pos step (tClass cNum)
+            otherwise -> checkCast pos step tInt
 
 -- | Checks function's arguments and body.
 checkFunc :: Pos -> Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
@@ -826,9 +844,7 @@ checkExpr expression = case expression of
             CprFor pos e1 e2 -> do
                 checkArrayCpr (CprForStep pos e1 e2 (eInt 1)) cont
             CprForStep pos e1 e2 e3 -> do
-                (t1, _) <- checkExpr e3
-                checkCast pos t1 tInt
-                checkFor pos e1 e2 cont
+                checkFor pos e1 e2 e3 cont
             CprIf pos e -> do
                 r <- asks (M.lookup (Ident "#loop"))
                 case r of

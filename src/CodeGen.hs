@@ -167,6 +167,7 @@ defaultValue typ = do
 castValue :: Type -> Value -> Type -> Run Value
 castValue typ1 val typ2 = case (typ1, typ2) of
     (TInt _, TFloat _) -> sitofp val
+    (TInt _, TChar _) -> trunc typ1 typ2 val
     otherwise -> return $ val
 
 -- | Casts given values to a common type.

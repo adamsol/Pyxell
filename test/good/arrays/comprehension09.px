@@ -1,0 +1,4 @@
+
+a = [x/y for x in 1.0..2.0 for y in 2.0...6.0 step 2.0]
+for x in a do
+    print x

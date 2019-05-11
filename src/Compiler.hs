@@ -161,10 +161,9 @@ compileStmt statement cont = case statement of
         label l2
         cont
     SFor _ expr1 expr2 block -> do
-        compileFor expr1 expr2 "1" (compileBlock block) (const cont)
+        compileFor expr1 expr2 (EInt _pos 1) (compileBlock block) (const cont)
     SForStep _ expr1 expr2 expr3 block -> do
-        (_, v) <- compileExpr expr3
-        compileFor expr1 expr2 v (compileBlock block) (const cont)
+        compileFor expr1 expr2 expr3 (compileBlock block) (const cont)
     SBreak _ -> do
         (_, l) <- asks (M.! (Ident "#break"))
         goto l
@@ -187,7 +186,7 @@ compileStmt statement cont = case statement of
                 let a = eVar ("a" ++ show n)
                 let i = eVar ("i" ++ show n)
                 compileAssg typ a val $ do
-                    flip (compileFor i (ERangeExcl _pos (eInt 0) (EAttr _pos a (Ident "length"))) "1") (const skip) $ do
+                    flip (compileFor i (ERangeExcl _pos (eInt 0) (EAttr _pos a (Ident "length"))) (eInt 1)) (const skip) $ do
                         l <- nextLabel
                         flip (compileIf (ECmp _pos (Cmp1 _pos i (CmpGT _pos) (eInt 0)))) l $ do
                             call tInt "@putchar" [(tChar, "44")]  -- ,
@@ -245,12 +244,12 @@ compileIf expr body exit = do
     return $ x
 
 -- | Compiles a single `for` statement and continues with changed environment.
-compileFor :: Expr Pos -> Expr Pos -> Value -> Run a -> (a -> Run b) -> Run b
-compileFor expr1 expr2 step body cont = do
+compileFor :: Expr Pos -> Expr Pos -> Expr Pos -> Run a -> (a -> Run b) -> Run b
+compileFor expr1 expr2 expr3 body cont = do
     es <- case expr1 of
         ETuple _ es -> return $ es
         otherwise -> return $ [expr1]
-    rs <- initFor expr2 step
+    rs <- initFor expr2 expr3
     let (ts1, ts2, starts, steps, cmps, gets) = unzip6 rs
     ps <- mapM alloca ts1
     forM (zip3 ts1 starts ps) $ \(t, v, p) -> store t v p
@@ -278,41 +277,47 @@ compileFor expr1 expr2 step body cont = do
             otherwise -> forM_ (zip3 ts2 es vs2) $ \(t, e, v) -> compileAssg t e v skip
         x <- localLabel "#break" l2 $ localLabel "#continue" l3 $ body
         goto l3 >> label l3
-        vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> binop "add" t v s
+        vs3 <- forM (zip3 ts1 vs1 steps) $ \(t, v, s) -> case t of
+            TFloat _ -> binop "fadd" t v s
+            otherwise -> binop "add" t v s
         forM (zip3 ts1 vs3 ps) $ \(t, v, p) -> store t v p
         goto l1
         label l2
         cont x
     where
         initForRangeIncl from to step = do
-            [(t, v1), (_, v2)] <- mapM compileExpr [from, to]
-            v3 <- case t of
-                TInt _ -> return $ step
-                otherwise -> trunc tInt t step
-            v4 <- binop "icmp sgt" t v3 "0"
+            [(t1, v1), (_, v2), (t2, v3)] <- mapM compileExpr [from, to, step]
+            v4 <- castValue t2 v3 t1
+            c <- case t1 of
+                TFloat _ -> return $ "fcmp o"
+                otherwise -> return $ "icmp s"
+            v5 <- case t1 of
+                TFloat _ -> binop (c ++ "gt") t1 v4 "0.0"
+                otherwise -> binop (c ++ "gt") t1 v4 "0"
             let cmp v = do
-                v5 <- binop "icmp sle" t v v2
-                v6 <- binop "icmp sge" t v v2
-                select v4 tBool v5 v6
-            return $ (t, t, v1, v3, cmp, return)
+                v6 <- binop (c ++ "le") t1 v v2
+                v7 <- binop (c ++ "ge") t1 v v2
+                select v5 tBool v6 v7
+            return $ (t1, t1, v1, v4, cmp, return)
         initForRangeExcl from to step = do
-            [(t, v1), (_, v2)] <- mapM compileExpr [from, to]
-            v3 <- case t of
-                TInt _ -> return $ step
-                otherwise -> trunc tInt t step
-            v4 <- binop "icmp sgt" t v3 "0"
+            [(t1, v1), (_, v2), (t2, v3)] <- mapM compileExpr [from, to, step]
+            v4 <- castValue t2 v3 t1
+            c <- case t1 of
+                TFloat _ -> return $ "fcmp o"
+                otherwise -> return $ "icmp s"
+            v5 <- case t1 of
+                TFloat _ -> binop (c ++ "gt") t1 v4 "0.0"
+                otherwise -> binop (c ++ "gt") t1 v4 "0"
             let cmp v = do
-                v5 <- binop "icmp slt" t v v2
-                v6 <- binop "icmp sgt" t v v2
-                select v4 tBool v5 v6
-            return $ (t, t, v1, v3, cmp, return)
+                v6 <- binop (c ++ "lt") t1 v v2
+                v7 <- binop (c ++ "gt") t1 v v2
+                select v5 tBool v6 v7
+            return $ (t1, t1, v1, v4, cmp, return)
         initForRangeInf from step = do
-            (t, v1) <- compileExpr from
-            v2 <- case t of
-                TInt _ -> return $ step
-                otherwise -> trunc tInt t step
+            [(t1, v1), (t2, v2)] <- mapM compileExpr [from, step]
+            v3 <- castValue t2 v2 t1
             let cmp _ = return $ "true"
-            return $ (t, t, v1, v2, cmp, return)
+            return $ (t1, t1, v1, v3, cmp, return)
         initForIterable iter step = do
             (t, v1) <- compileExpr iter
             t' <- case t of
@@ -321,22 +326,27 @@ compileFor expr1 expr2 step body cont = do
             v2 <- gep t v1 ["0"] [0] >>= load (tPtr t')
             v3 <- gep t v1 ["0"] [1] >>= load tInt
             v4 <- binop "sub" tInt v3 "1"
-            v5 <- binop "icmp sgt" tInt step "0"
-            v6 <- select v5 tInt "0" v4
+            (_, v5) <- compileExpr step
+            v6 <- binop "icmp sgt" tInt v5 "0"
+            v7 <- select v6 tInt "0" v4
             let cmp v = do
-                v7 <- binop "icmp sle" tInt v v4
-                v8 <- binop "icmp sge" tInt v "0"
-                select v5 tBool v7 v8
+                v8 <- binop "icmp sle" tInt v v4
+                v9 <- binop "icmp sge" tInt v "0"
+                select v6 tBool v8 v9
             let get v = gep (tPtr t') v2 [v] [] >>= load t'
-            return $ (tInt, t', v6, step, cmp, get)
+            return $ (tInt, t', v7, v5, cmp, get)
         initFor expr step = do
             case expr of
                 ERangeIncl _ e1 e2 -> forM [step] $ initForRangeIncl e1 e2
                 ERangeExcl _ e1 e2 -> forM [step] $ initForRangeExcl e1 e2
                 ERangeInf _ e1 -> forM [step] $ initForRangeInf e1
-                ETuple _ es -> forM es $ \e -> do
-                    r <- initFor e step
-                    return $ head r
+                ETuple _ es1 -> case step of
+                    ETuple _ es2 -> forM (zip es1 es2) $ \(e1, e2) -> do
+                        r <- initFor e1 e2
+                        return $ head r
+                    otherwise -> forM es1 $ \e -> do
+                        r <- initFor e step
+                        return $ head r
                 otherwise -> forM [step] $ initForIterable expr
 
 -- | Outputs LLVM code for a function definition and initialization of its default arguments.
@@ -526,7 +536,7 @@ compileExpr expression = case expression of
             b <- return $ SBlock _pos [
                 SAssg _pos [EIndex _pos (eVar "result") (eVar "i"), EIndex _pos (eVar "source") (eVar "j")],
                 SAssgAdd _pos (eVar "j") (eVar "c")]
-            compileFor (eVar "i") (ERangeExcl _pos (eInt 0) (eVar "d")) "1" (compileBlock b) (const skip)
+            compileFor (eVar "i") (ERangeExcl _pos (eInt 0) (eVar "d")) (eInt 1) (compileBlock b) (const skip)
         return $ (t, p2)
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
@@ -803,10 +813,9 @@ compileExpr expression = case expression of
             cpr:cprs -> compileArrayCpr cpr $ compileArrayCprs cprs cont
         compileArrayCpr cpr cont = case cpr of
             CprFor _ e1 e2 -> do
-                compileFor e1 e2 "1" cont return
+                compileFor e1 e2 (EInt _pos 1) cont return
             CprForStep _ e1 e2 e3 -> do
-                (_, v) <- compileExpr e3
-                compileFor e1 e2 v cont return
+                compileFor e1 e2 e3 cont return
             CprIf _ e -> do
                 (_, l) <- asks (M.! (Ident "#continue"))
                 x <- compileIf e cont l
