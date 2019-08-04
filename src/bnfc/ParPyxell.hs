@@ -14,7 +14,7 @@ import qualified GHC.Exts as Happy_GHC_Exts
 import Control.Applicative(Applicative(..))
 import Control.Monad (ap)
 
--- parser produced by Happy Version 1.19.8
+-- parser produced by Happy Version 1.19.9
 
 newtype HappyAbsSyn  = HappyAbsSyn HappyAny
 #if __GLASGOW_HASKELL__ >= 607
@@ -2348,11 +2348,11 @@ pType = (>>= return . snd) . pType_internal
 pClass1 = (>>= return . snd) . pClass1_internal
 pClass = (>>= return . snd) . pClass_internal
 {-# LINE 1 "templates\GenericTemplate.hs" #-}
-{-# LINE 1 "templates\\GenericTemplate.hs" #-}
+{-# LINE 1 "templates\\\\GenericTemplate.hs" #-}
 {-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
 {-# LINE 11 "<command-line>" #-}
-{-# LINE 1 "D:\\GitHub\\haskell-platform\\build\\ghc-bindist\\local\\lib/include\\ghcversion.h" #-}
+{-# LINE 1 "D:/GitHub/haskell-platform/build/ghc-bindist/local/lib/include/ghcversion.h" #-}
 
 
 
@@ -2369,7 +2369,37 @@ pClass = (>>= return . snd) . pClass_internal
 
 
 {-# LINE 11 "<command-line>" #-}
-{-# LINE 1 "C:\\Users\\randy\\AppData\\Local\\Temp\\ghc10356_0\\ghc_2.h" #-}
+{-# LINE 1 "F:/Users/randy/AppData/Local/Temp/ghc8380_0/ghc_2.h" #-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2527,7 +2557,7 @@ pClass = (>>= return . snd) . pClass_internal
 
 
 {-# LINE 11 "<command-line>" #-}
-{-# LINE 1 "templates\\GenericTemplate.hs" #-}
+{-# LINE 1 "templates\\\\GenericTemplate.hs" #-}
 -- Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp 
 
 
@@ -2552,7 +2582,7 @@ pClass = (>>= return . snd) . pClass_internal
 #define GTE(n,m) (n Happy_GHC_Exts.>=# m)
 #define EQ(n,m) (n Happy_GHC_Exts.==# m)
 #endif
-{-# LINE 43 "templates\\GenericTemplate.hs" #-}
+{-# LINE 43 "templates\\\\GenericTemplate.hs" #-}
 
 data Happy_IntList = HappyCons Happy_GHC_Exts.Int# Happy_IntList
 
@@ -2562,11 +2592,11 @@ data Happy_IntList = HappyCons Happy_GHC_Exts.Int# Happy_IntList
 
 
 
-{-# LINE 65 "templates\\GenericTemplate.hs" #-}
+{-# LINE 65 "templates\\\\GenericTemplate.hs" #-}
 
-{-# LINE 75 "templates\\GenericTemplate.hs" #-}
+{-# LINE 75 "templates\\\\GenericTemplate.hs" #-}
 
-{-# LINE 84 "templates\\GenericTemplate.hs" #-}
+{-# LINE 84 "templates\\\\GenericTemplate.hs" #-}
 
 infixr 9 `HappyStk`
 data HappyStk a = HappyStk a (HappyStk a)
@@ -2652,7 +2682,7 @@ data HappyAddr = HappyA# Happy_GHC_Exts.Addr#
 -----------------------------------------------------------------------------
 -- HappyState data type (not arrays)
 
-{-# LINE 180 "templates\\GenericTemplate.hs" #-}
+{-# LINE 180 "templates\\\\GenericTemplate.hs" #-}
 
 -----------------------------------------------------------------------------
 -- Shifting a token

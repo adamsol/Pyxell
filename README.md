@@ -95,19 +95,20 @@ Requirements
 
 These are the software versions that I use. Pyxell may work with others versions, but it is not guaranteed.
 
-* GHC 8.2.2 with `regex-compat` package
+* GHC 8.6.5 with `regex-compat` package
 * Clang 6.0.0 with C++ standard library
-* BNFC 2.8.1 with `176-source-position` branch (to recompile grammar)
-* Python 3.6.4 with packages from `requirements.txt` installed (to run tests)
+* BNFC 2.8.2 with `176-source-position` branch (to recompile grammar)
+* Python 3.7.4 with packages from `requirements.txt` installed (to run tests)
 
 For BNFC to store source code position, install it from source:
 
-> git clone https://github.com/BNFC/bnfc.git \
-> cd bnfc/source \
-> git cherry-pick 1c88a2bfec200859e464db77dedfaf62c369394e \
-> cabal install
-
-Note: you might get compilation errors when using GHC 8.4 (https://github.com/BNFC/bnfc/pull/227).
+```
+git clone https://github.com/BNFC/bnfc.git
+cd bnfc/source
+git checkout 27079ebf057cce51e33afa619036cbaf6fb78398
+git cherry-pick 90e28a4cbecd8cfd4a154f2009d9c5dd4a2dbc78
+cabal install
+```
 
 To compile and link a Pyxell program correctly, a C++ standard library is required for Clang.
 This shouldn't be a problem on Linux, but on Windows this may not work out of the box.
@@ -119,8 +120,10 @@ or it may be necessary to run `pyxell` with `-target x86_64-pc-windows-gnu`
 Usage
 -----
 
-> make bin libs \
-> ./pyxell code.px
+```
+make bin libs
+./pyxell code.px
+```
 
 If the program is correct, `code.ll` file and an executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.

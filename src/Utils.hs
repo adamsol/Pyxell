@@ -245,10 +245,10 @@ convertLambda pos expression = do
             e <- convertExpr e
             return $ op e
         convertBinary op e1 e2 = do
-            [e1, e2] <- mapM convertExpr [e1, e2]
+            ~[e1, e2] <- mapM convertExpr [e1, e2]
             return $ op e1 e2
         convertTernary op e1 e2 e3 = do
-            [e1, e2, e3] <- mapM convertExpr [e1, e2, e3]
+            ~[e1, e2, e3] <- mapM convertExpr [e1, e2, e3]
             return $ op e1 e2 e3
         convertMultiary op es = do
             es <- mapM convertExpr es
