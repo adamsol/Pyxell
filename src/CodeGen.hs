@@ -141,7 +141,8 @@ strType typ = do
                 ss <- mapM strType as
                 s <- strType r
                 return $ s ++ " (" ++ intercalate ", " ss ++ ")*"
-        TModule _ -> return "<module>"
+        TClass _ (Ident c) _ -> return $ "%c." ++ c ++ "*"
+        TModule _ -> return $ "<module>"
 
 -- | Returns LLVM string representation for given type variables.
 strFVars :: [FVar Pos] -> Run String
@@ -226,12 +227,18 @@ getLabel = do
     Label l <- lift $ gets (M.! ("$label-" ++ s))
     return $ l
 
--- | Returns unique function name to use in LLVM code.
+-- | Returns a unique function name to use in LLVM code.
 functionName :: Ident -> Run Value
 functionName id = do
     s <- getScope
     let f = (if s !! 0 == '.' then s else "") ++ "." ++ escapeName id
     return $ f
+
+-- | Shortcut for `localScope` with function's identifier.
+functionScope :: Ident -> Run a -> Run a
+functionScope id cont = do
+    f <- functionName id
+    localScope f cont
 
 -- | Returns a special identifier for function's argument in the environment.
 argumentPointer :: Ident -> Ident -> Value

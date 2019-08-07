@@ -41,6 +41,7 @@ instance {-# OVERLAPS #-} Show Type where
         TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
         TFuncDef _ _ _ as r _ -> show (tFunc (map typeArg as) r)
         TFuncExt _ _ as r -> show (tFunc (map typeArg as) r)
+        TClass _ (Ident c) _ -> c
         TAny _ -> "Any"
         TNum _ -> "Num"
 
@@ -140,6 +141,7 @@ tTuple = TTuple _pos
 tFunc = TFunc _pos
 tFuncDef = TFuncDef _pos
 tFuncExt = TFuncExt _pos
+tClass = TClass _pos
 tModule = TModule _pos
 tAny = TAny _pos
 tNum = TNum _pos
@@ -259,3 +261,23 @@ convertLambda pos expression = do
                 e' <- convertExpr e
                 c' <- convertCmp c
                 return $ Cmp2 pos e' op c'
+
+-- | Retrieves identifier of a class member.
+idMember :: CMemb Pos -> Ident
+idMember memb = case memb of
+    MField _ _ id -> id
+
+-- | Retrieves type of a class member.
+typeMember :: CMemb Pos -> Type
+typeMember memb = case memb of
+    MField _ t _ -> t
+
+-- | Finds class member by its name.
+findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type)
+findMember membs id = findMember' membs id 0
+    where
+        findMember' membs id i = case membs of
+            [] -> Nothing
+            memb:ms ->
+                if id == idMember memb then Just (i, typeMember memb)
+                else findMember' ms id (i+1)

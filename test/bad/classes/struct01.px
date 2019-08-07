@@ -1,0 +1,6 @@
+
+class Struct def
+    Int n
+
+r = Struct()
+print r.x

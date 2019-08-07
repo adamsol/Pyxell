@@ -16,6 +16,7 @@ instance Functor Program where
         Program a stmts -> Program (f a) (map (fmap f) stmts)
 data Stmt a
     = SUse a Ident (Use a)
+    | SClass a Ident [CMemb a]
     | SFunc a Ident (FVars a) [FArg a] (FRet a) (FBody a)
     | SRetVoid a
     | SRetExpr a (Expr a)
@@ -46,6 +47,7 @@ data Stmt a
 instance Functor Stmt where
     fmap f x = case x of
         SUse a ident use -> SUse (f a) ident (fmap f use)
+        SClass a ident cmembs -> SClass (f a) ident (map (fmap f) cmembs)
         SFunc a ident fvars fargs fret fbody -> SFunc (f a) ident (fmap f fvars) (map (fmap f) fargs) (fmap f fret) (fmap f fbody)
         SRetVoid a -> SRetVoid (f a)
         SRetExpr a expr -> SRetExpr (f a) (fmap f expr)
@@ -81,6 +83,12 @@ instance Functor Use where
         UOnly a idents -> UOnly (f a) idents
         UHiding a idents -> UHiding (f a) idents
         UAs a ident -> UAs (f a) ident
+data CMemb a = MField a (Type a) Ident
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor CMemb where
+    fmap f x = case x of
+        MField a type_ ident -> MField (f a) (fmap f type_) ident
 data FVars a = FStd a | FGen a [FVar a]
   deriving (Eq, Ord, Show, Read)
 
@@ -278,6 +286,7 @@ data Type a
     | TFunc a [Type a] (Type a)
     | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
     | TFuncExt a Ident [FArg a] (Type a)
+    | TClass a Ident [CMemb a]
     | TModule a
     | TAny a
     | TNum a
@@ -300,6 +309,7 @@ instance Functor Type where
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
         TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
         TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
+        TClass a ident cmembs -> TClass (f a) ident (map (fmap f) cmembs)
         TModule a -> TModule (f a)
         TAny a -> TAny (f a)
         TNum a -> TNum (f a)

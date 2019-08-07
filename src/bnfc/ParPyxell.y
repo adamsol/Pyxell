@@ -15,6 +15,8 @@ import ErrM
 %name pListStmt_internal ListStmt
 %name pStmt_internal Stmt
 %name pUse_internal Use
+%name pCMemb_internal CMemb
+%name pListCMemb_internal ListCMemb
 %name pFVars_internal FVars
 %name pFVar_internal FVar
 %name pListFVar_internal ListFVar
@@ -111,35 +113,36 @@ import ErrM
   'and' { PT _ (TS _ 49) }
   'as' { PT _ (TS _ 50) }
   'break' { PT _ (TS _ 51) }
-  'continue' { PT _ (TS _ 52) }
-  'def' { PT _ (TS _ 53) }
-  'do' { PT _ (TS _ 54) }
-  'elif' { PT _ (TS _ 55) }
-  'else' { PT _ (TS _ 56) }
-  'extern' { PT _ (TS _ 57) }
-  'false' { PT _ (TS _ 58) }
-  'for' { PT _ (TS _ 59) }
-  'func' { PT _ (TS _ 60) }
-  'hiding' { PT _ (TS _ 61) }
-  'if' { PT _ (TS _ 62) }
-  'in' { PT _ (TS _ 63) }
-  'lambda' { PT _ (TS _ 64) }
-  'not' { PT _ (TS _ 65) }
-  'only' { PT _ (TS _ 66) }
-  'or' { PT _ (TS _ 67) }
-  'print' { PT _ (TS _ 68) }
-  'return' { PT _ (TS _ 69) }
-  'skip' { PT _ (TS _ 70) }
-  'step' { PT _ (TS _ 71) }
-  'true' { PT _ (TS _ 72) }
-  'until' { PT _ (TS _ 73) }
-  'use' { PT _ (TS _ 74) }
-  'while' { PT _ (TS _ 75) }
-  '{' { PT _ (TS _ 76) }
-  '|' { PT _ (TS _ 77) }
-  '|=' { PT _ (TS _ 78) }
-  '}' { PT _ (TS _ 79) }
-  '~' { PT _ (TS _ 80) }
+  'class' { PT _ (TS _ 52) }
+  'continue' { PT _ (TS _ 53) }
+  'def' { PT _ (TS _ 54) }
+  'do' { PT _ (TS _ 55) }
+  'elif' { PT _ (TS _ 56) }
+  'else' { PT _ (TS _ 57) }
+  'extern' { PT _ (TS _ 58) }
+  'false' { PT _ (TS _ 59) }
+  'for' { PT _ (TS _ 60) }
+  'func' { PT _ (TS _ 61) }
+  'hiding' { PT _ (TS _ 62) }
+  'if' { PT _ (TS _ 63) }
+  'in' { PT _ (TS _ 64) }
+  'lambda' { PT _ (TS _ 65) }
+  'not' { PT _ (TS _ 66) }
+  'only' { PT _ (TS _ 67) }
+  'or' { PT _ (TS _ 68) }
+  'print' { PT _ (TS _ 69) }
+  'return' { PT _ (TS _ 70) }
+  'skip' { PT _ (TS _ 71) }
+  'step' { PT _ (TS _ 72) }
+  'true' { PT _ (TS _ 73) }
+  'until' { PT _ (TS _ 74) }
+  'use' { PT _ (TS _ 75) }
+  'while' { PT _ (TS _ 76) }
+  '{' { PT _ (TS _ 77) }
+  '|' { PT _ (TS _ 78) }
+  '|=' { PT _ (TS _ 79) }
+  '}' { PT _ (TS _ 80) }
+  '~' { PT _ (TS _ 81) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -209,6 +212,9 @@ Stmt :: {
 }
 : 'use' Ident Use {
   (Just (tokenLineCol $1), AbsPyxell.SUse (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
+}
+| 'class' Ident 'def' '{' ListCMemb '}' {
+  (Just (tokenLineCol $1), AbsPyxell.SClass (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
 }
 | 'func' Ident FVars '(' ListFArg ')' FRet FBody {
   (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $3)(snd $5)(snd $7)(snd $8)) 
@@ -300,6 +306,26 @@ Use :: {
 }
 | 'as' Ident {
   (Just (tokenLineCol $1), AbsPyxell.UAs (Just (tokenLineCol $1)) (snd $2)) 
+}
+
+CMemb :: {
+  (Maybe (Int, Int), CMemb (Maybe (Int, Int)))
+}
+: Type Ident {
+  (fst $1, AbsPyxell.MField (fst $1)(snd $1)(snd $2)) 
+}
+
+ListCMemb :: {
+  (Maybe (Int, Int), [CMemb (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| CMemb {
+  (fst $1, (:[]) (snd $1)) 
+}
+| CMemb ';' ListCMemb {
+  (fst $1, (:) (snd $1)(snd $3)) 
 }
 
 FVars :: {
@@ -884,6 +910,8 @@ pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pStmt = (>>= return . snd) . pStmt_internal
 pUse = (>>= return . snd) . pUse_internal
+pCMemb = (>>= return . snd) . pCMemb_internal
+pListCMemb = (>>= return . snd) . pListCMemb_internal
 pFVars = (>>= return . snd) . pFVars_internal
 pFVar = (>>= return . snd) . pFVar_internal
 pListFVar = (>>= return . snd) . pListFVar_internal

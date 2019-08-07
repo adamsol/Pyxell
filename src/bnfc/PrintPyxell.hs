@@ -100,6 +100,7 @@ instance Print [Stmt a] where
 instance Print (Stmt a) where
   prt i e = case e of
     SUse _ id use -> prPrec i 0 (concatD [doc (showString "use"), prt 0 id, prt 0 use])
+    SClass _ id cmembs -> prPrec i 0 (concatD [doc (showString "class"), prt 0 id, doc (showString "def"), doc (showString "{"), prt 0 cmembs, doc (showString "}")])
     SFunc _ id fvars fargs fret fbody -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, prt 0 fvars, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, prt 0 fbody])
     SRetVoid _ -> prPrec i 0 (concatD [doc (showString "return")])
     SRetExpr _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])
@@ -135,6 +136,16 @@ instance Print (Use a) where
     UOnly _ ids -> prPrec i 0 (concatD [doc (showString "only"), prt 0 ids])
     UHiding _ ids -> prPrec i 0 (concatD [doc (showString "hiding"), prt 0 ids])
     UAs _ id -> prPrec i 0 (concatD [doc (showString "as"), prt 0 id])
+
+instance Print (CMemb a) where
+  prt i e = case e of
+    MField _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
+  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
+
+instance Print [CMemb a] where
+  prt = prtList
 
 instance Print (FVars a) where
   prt i e = case e of
@@ -308,6 +319,7 @@ instance Print (Type a) where
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
     TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
     TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
+    TClass _ id cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 cmembs])
     TModule _ -> prPrec i 1 (concatD [])
     TAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
     TNum _ -> prPrec i 1 (concatD [doc (showString "Num")])

@@ -1,0 +1,9 @@
+
+class Struct def
+    Int n
+    String s
+
+r = Struct()
+r.n = 2
+r.s = "abc"
+print r.n, r.s

@@ -68,6 +68,18 @@ compileStmt statement cont = case statement of
             UOnly _ ids -> local (M.union (M.filterWithKey (\id _ -> elem id ids) env)) cont
             UHiding _ ids -> local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
             UAs _ id' -> local (M.insert id' (tModule, name)) cont
+    SClass _ id membs -> do
+        let Ident c = id
+        let t = tClass id membs
+        let f = Ident (c ++ "_init")
+        ss <- mapM (strType.typeMember) membs
+        functionScope f $ do
+            writeTop $ [ "%c." ++ c ++ " = type { " ++ intercalate ", " ss ++ " }", "" ]
+        define (tFunc [] t) f $ do  -- TODO tFuncDef defer
+            v <- gep t "null" ["1"] [] >>= ptrtoint t
+            p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
+            ret t p
+        localFunc f (tFunc [] t) $ localType id t $ cont
     SFunc _ id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -543,7 +555,11 @@ compileExpr expression = case expression of
         (typ, func) <- case expr of
             EVar _ id -> do
                 Just (t, p) <- getIdent id
-                return $ (t, p)
+                case t of
+                    TClass _ (Ident c) _ -> do
+                        Just (t, p) <- getIdent $ Ident (c ++ "_init")
+                        return $ (t, p)
+                    otherwise -> return $ (t, p)
             otherwise -> compileExpr expr
         (id, vars, args1, args2, rt) <- case typ of
             TFunc _ as r -> return $ (Ident "", [], as, [], r)
@@ -623,6 +639,9 @@ compileExpr expression = case expression of
                             _:_ -> do
                                 s <- strFVars vars
                                 return $ p ++ s
+                        p <- case t of
+                            TClass _ (Ident c) _ -> return $ func
+                            otherwise -> return $ p
                         load typ p
                     otherwise -> return $ func
                 v <- call r func args4
@@ -986,6 +1005,9 @@ compileAttr typ val (Ident attr) = case typ of
     TTuple _ ts -> do
         let i = ord (attr !! 0) - ord 'a'
         getAttr typ val (ts !! i) i
+    TClass _ _ membs -> do
+        let Just (i, t) = findMember membs (Ident attr)
+        getAttr typ val t i
     where
         getAttr typ1 obj typ2 idx = do
             p <- gep typ1 obj ["0"] [idx]

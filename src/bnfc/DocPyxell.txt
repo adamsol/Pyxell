@@ -44,18 +44,18 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 The reserved words used in Pyxell are the following:
   | ``Any`` | ``Bool`` | ``Char`` | ``Float``
   | ``Int`` | ``Num`` | ``String`` | ``Void``
-  | ``and`` | ``as`` | ``break`` | ``continue``
-  | ``def`` | ``do`` | ``elif`` | ``else``
-  | ``extern`` | ``false`` | ``for`` | ``func``
-  | ``hiding`` | ``if`` | ``in`` | ``lambda``
-  | ``not`` | ``only`` | ``or`` | ``print``
-  | ``return`` | ``skip`` | ``step`` | ``true``
-  | ``until`` | ``use`` | ``while`` | 
+  | ``and`` | ``as`` | ``break`` | ``class``
+  | ``continue`` | ``def`` | ``do`` | ``elif``
+  | ``else`` | ``extern`` | ``false`` | ``for``
+  | ``func`` | ``hiding`` | ``if`` | ``in``
+  | ``lambda`` | ``not`` | ``only`` | ``or``
+  | ``print`` | ``return`` | ``skip`` | ``step``
+  | ``true`` | ``until`` | ``use`` | ``while``
 
 The symbols used in Pyxell are the following:
-  | ; | ( | ) | <
-  | > | , | : | {
-  | } | = | ^= | *=
+  | ; | { | } | (
+  | ) | < | > | ,
+  | : | = | ^= | *=
   | /= | %= | += | -=
   | <<= | >>= | &= | |=
   | $= | _ | [ | ]
@@ -80,6 +80,7 @@ All other symbols are terminals.
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
   | //Stmt// | -> | ``use`` //Ident// //Use// 
+  |  |  **|**  | ``class`` //Ident// ``def`` ``{`` //[CMemb]// ``}`` 
   |  |  **|**  | ``func`` //Ident// //FVars// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
@@ -109,6 +110,10 @@ All other symbols are terminals.
   |  |  **|**  | ``only`` //[Ident]// 
   |  |  **|**  | ``hiding`` //[Ident]// 
   |  |  **|**  | ``as`` //Ident// 
+  | //CMemb// | -> | //Type// //Ident// 
+  | //[CMemb]// | -> | **eps**
+  |  |  **|**  | //CMemb// 
+  |  |  **|**  | //CMemb// ``;`` //[CMemb]// 
   | //FVars// | -> | **eps**
   |  |  **|**  | ``<`` //[FVar]// ``>`` 
   | //FVar// | -> | //Type// //Ident// 

@@ -237,6 +237,12 @@ checkStmt statement cont = case statement of
                 UAs _ id' -> do
                     local (M.insert id' (tModule, Module env)) cont
             otherwise -> throw pos $ InvalidModule id
+    SClass pos id membs -> do
+        r <- getIdent id
+        case r of
+            Nothing -> skip
+            Just _ -> throw pos $ RedeclaredIdentifier id
+        checkDecl pos (tClass id membs) id cont
     SFunc pos id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -606,6 +612,9 @@ checkExpr expression = case expression of
                 let i = ord (attr !! 0) - ord 'a'
                 if "a" <= attr && attr <= "z" && i < length ts then return $ Just (ts !! i)
                 else throw pos $ InvalidAttr t1' id
+            TClass _ _ membs -> case findMember membs id of
+                Just (_, t) -> return $ Just t
+                Nothing -> throw pos $ InvalidAttr t1' id
             TModule _ -> do
                 (_, Module env) <- case expr of
                     EVar _ id' -> asks (M.! id')
@@ -614,13 +623,17 @@ checkExpr expression = case expression of
                     Just t -> return $ Just t
                     otherwise -> throw pos $ UndeclaredIdentifier id
             otherwise -> throw pos $ InvalidAttr t1' id
-        return $ (t2, False)
+        m <- case t1' of
+            TClass _ _ _ -> return $ True
+            otherwise -> return $ False
+        return $ (t2, m)
     ECall pos expr args -> do
         (typ, _) <- checkExpr expr
         (vars, args1, args2, ret) <- case typ of
             TFunc _ as r -> return $ ([], as, [], r)
             TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
             TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
+            TClass _ id _ -> return $ ([], [], [], tVar id)
             otherwise -> throw pos $ NotFunction typ
         -- Build a map of arguments and their positions.
         let m = M.empty

@@ -20,6 +20,10 @@ UOnly.             Use    ::= "only" [Ident] ;
 UHiding.           Use    ::= "hiding" [Ident] ;
 UAs.               Use    ::= "as" Ident ;
 
+SClass.	           Stmt   ::= "class" Ident "def" "{" [CMemb] "}" ;
+MField.            CMemb  ::= Type Ident ;
+separator          CMemb      ";" ;
+
 SFunc.             Stmt   ::= "func" Ident FVars "(" [FArg] ")" FRet FBody ;
 FStd.              FVars  ::= "" ;
 FGen.              FVars  ::= "<" [FVar] ">" ;
@@ -35,7 +39,7 @@ FExtern.           FBody  ::= "extern" ;
 SRetVoid.          Stmt   ::= "return" ;
 SRetExpr.          Stmt   ::= "return" Expr ;
 
-SBlock.            Block   ::= "{" [Stmt] "}" ;
+SBlock.            Block  ::= "{" [Stmt] "}" ;
 
 SSkip.             Stmt   ::= "skip" ;
 SPrint.            Stmt   ::= "print" Expr ;
@@ -161,6 +165,7 @@ TTuple.            Type2  ::= [Type3] ;
 TFunc.             Type1  ::= [Type2] "->" Type1 ;
 internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
 internal TFuncExt. Type1  ::= Ident [FArg] Type ;
+internal TClass.   Type1  ::= Ident [CMemb] ;
 internal TModule.  Type1  ::= "" ;
 TAny.              Type1  ::= "Any" ;
 TNum.              Type1  ::= "Num" ;
