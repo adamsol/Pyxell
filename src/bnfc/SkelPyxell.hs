@@ -55,7 +55,7 @@ transFVars x = case x of
   FGen _ fvars -> failure x
 transFVar :: Show a => FVar a -> Result
 transFVar x = case x of
-  FVar _ class_ ident -> failure x
+  FVar _ type_ ident -> failure x
 transFArg :: Show a => FArg a -> Result
 transFArg x = case x of
   ANoDefault _ type_ ident -> failure x
@@ -160,10 +160,7 @@ transType x = case x of
   TFunc _ types type_ -> failure x
   TFuncDef _ ident fvars fargs type_ block -> failure x
   TFuncExt _ ident fargs type_ -> failure x
-  TClass _ class_ -> failure x
   TModule _ -> failure x
-transClass :: Show a => Class a -> Result
-transClass x = case x of
-  CAny _ -> failure x
-  CNum _ -> failure x
+  TAny _ -> failure x
+  TNum _ -> failure x
 

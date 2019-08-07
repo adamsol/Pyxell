@@ -88,12 +88,12 @@ instance Functor FVars where
     fmap f x = case x of
         FStd a -> FStd (f a)
         FGen a fvars -> FGen (f a) (map (fmap f) fvars)
-data FVar a = FVar a (Class a) Ident
+data FVar a = FVar a (Type a) Ident
   deriving (Eq, Ord, Show, Read)
 
 instance Functor FVar where
     fmap f x = case x of
-        FVar a class_ ident -> FVar (f a) (fmap f class_) ident
+        FVar a type_ ident -> FVar (f a) (fmap f type_) ident
 data FArg a
     = ANoDefault a (Type a) Ident | ADefault a (Type a) Ident (Expr a)
   deriving (Eq, Ord, Show, Read)
@@ -278,8 +278,9 @@ data Type a
     | TFunc a [Type a] (Type a)
     | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
     | TFuncExt a Ident [FArg a] (Type a)
-    | TClass a (Class a)
     | TModule a
+    | TAny a
+    | TNum a
   deriving (Eq, Ord, Show, Read)
 
 instance Functor Type where
@@ -299,12 +300,6 @@ instance Functor Type where
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
         TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
         TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
-        TClass a class_ -> TClass (f a) (fmap f class_)
         TModule a -> TModule (f a)
-data Class a = CAny a | CNum a
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor Class where
-    fmap f x = case x of
-        CAny a -> CAny (f a)
-        CNum a -> CNum (f a)
+        TAny a -> TAny (f a)
+        TNum a -> TNum (f a)

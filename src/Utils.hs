@@ -16,16 +16,15 @@ import qualified Data.Map as M
 import Numeric
 import Text.Regex
 
-import AbsPyxell hiding (Type, Class)
-import qualified AbsPyxell as Abs (Type, Class)
+import AbsPyxell hiding (Type)
+import qualified AbsPyxell as Abs (Type)
 
 
 -- | Representation of a position in the program's source code.
 type Pos = Maybe (Int, Int)
 
--- | Aliases for Type and Class without passing Pos.
+-- | Alias for Type without passing Pos.
 type Type = Abs.Type Pos
-type Class = Abs.Class Pos
 
 -- | Instances for displaying and comparing types and classes.
 instance {-# OVERLAPS #-} Show Type where
@@ -42,22 +41,12 @@ instance {-# OVERLAPS #-} Show Type where
         TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
         TFuncDef _ _ _ as r _ -> show (tFunc (map typeArg as) r)
         TFuncExt _ _ as r -> show (tFunc (map typeArg as) r)
-        TClass _ c -> show c
+        TAny _ -> "Any"
+        TNum _ -> "Num"
 
 instance {-# OVERLAPS #-} Eq Type where
     typ1 == typ2 = case (typ1, typ2) of
         (TVar _ id1, TVar _ id2) -> id1 == id2
-        otherwise -> False
-
-instance {-# OVERLAPS #-} Show Class where
-    show cls = case cls of
-        CAny _ -> "Any"
-        CNum _ -> "Num"
-
-instance {-# OVERLAPS #-} Eq Class where
-    cls1 == cls2 = case (cls1, cls2) of
-        (CAny _, CAny _) -> True
-        (CNum _, CNum _) -> True
         otherwise -> False
 
 -- | Some useful versions of standard functions.
@@ -135,7 +124,7 @@ typeArg arg = case arg of
 -- | Shorter name for none position.
 _pos = Nothing
 
--- | Helper functions for initializing Type and Class without a position.
+-- | Helper functions for initializing Type without a position.
 tPtr = TPtr _pos
 tArr = TArr _pos
 tDeref = TDeref _pos
@@ -151,10 +140,9 @@ tTuple = TTuple _pos
 tFunc = TFunc _pos
 tFuncDef = TFuncDef _pos
 tFuncExt = TFuncExt _pos
-tClass = TClass _pos
 tModule = TModule _pos
-cAny = CAny _pos
-cNum = CNum _pos
+tAny = TAny _pos
+tNum = TNum _pos
 
 -- | Helper functions for initializing expressions.
 eVar x = EVar _pos (Ident ('$':x))

@@ -59,8 +59,6 @@ import ErrM
 %name pListType3_internal ListType3
 %name pListType2_internal ListType2
 %name pType_internal Type
-%name pClass1_internal Class1
-%name pClass_internal Class
 %token
   '!=' { PT _ (TS _ 1) }
   '$' { PT _ (TS _ 2) }
@@ -317,7 +315,7 @@ FVars :: {
 FVar :: {
   (Maybe (Int, Int), FVar (Maybe (Int, Int)))
 }
-: Class Ident {
+: Type Ident {
   (fst $1, AbsPyxell.FVar (fst $1)(snd $1)(snd $2)) 
 }
 
@@ -824,6 +822,12 @@ Type1 :: {
 : ListType2 '->' Type1 {
   (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
 }
+| 'Any' {
+  (Just (tokenLineCol $1), AbsPyxell.TAny (Just (tokenLineCol $1)))
+}
+| 'Num' {
+  (Just (tokenLineCol $1), AbsPyxell.TNum (Just (tokenLineCol $1)))
+}
 | Type2 {
   (fst $1, snd $1)
 }
@@ -855,26 +859,6 @@ Type :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
 : Type1 {
-  (fst $1, snd $1)
-}
-
-Class1 :: {
-  (Maybe (Int, Int), Class (Maybe (Int, Int)))
-}
-: 'Any' {
-  (Just (tokenLineCol $1), AbsPyxell.CAny (Just (tokenLineCol $1)))
-}
-| 'Num' {
-  (Just (tokenLineCol $1), AbsPyxell.CNum (Just (tokenLineCol $1)))
-}
-| '(' Class ')' {
-  (Just (tokenLineCol $1), snd $2)
-}
-
-Class :: {
-  (Maybe (Int, Int), Class (Maybe (Int, Int)))
-}
-: Class1 {
   (fst $1, snd $1)
 }
 
@@ -944,7 +928,5 @@ pType1 = (>>= return . snd) . pType1_internal
 pListType3 = (>>= return . snd) . pListType3_internal
 pListType2 = (>>= return . snd) . pListType2_internal
 pType = (>>= return . snd) . pType_internal
-pClass1 = (>>= return . snd) . pClass1_internal
-pClass = (>>= return . snd) . pClass_internal
 }
 

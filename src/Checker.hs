@@ -177,9 +177,9 @@ checkDecl pos typ id cont = case typ of
 -- | Checks if one type can be cast to another, and returns the unified type.
 checkCast :: Pos -> Type -> Type -> Run Type
 checkCast pos typ1 typ2 = case (typ1, typ2) of
-    (TInt _, TClass _ (CNum _)) -> return $ typ1
-    (TFloat _, TClass _ (CNum _)) -> return $ typ1
-    (_, TClass _ (CAny _)) -> return $ typ1
+    (TInt _, TNum _) -> return $ typ1
+    (TFloat _, TNum _) -> return $ typ1
+    (_, TAny _) -> return $ typ1
     otherwise -> case unifyTypes typ1 typ2 of
         Just t' -> case typ2 of
             TFuncDef _ _ _ _ _ _ -> throw pos $ IllegalRedefinition typ2
@@ -346,9 +346,7 @@ checkStmt statement cont = case statement of
                 return $ all id bs
             TArray _ t' -> checkPrint t'
             TFunc _ _ _ -> return $ False
-            TClass _ c -> case c of
-                CNum _ -> return $ True
-                otherwise -> return $ False
+            TAny _ -> return $ False
             otherwise -> return $ True
         checkAssgOp pos op expr1 expr2 cont = do
             checkStmt (SAssg pos [expr1, op pos expr1 expr2]) cont
@@ -451,7 +449,7 @@ checkFor pos expr1 expr2 expr3 cont = do
                 otherwise -> do
                     ts <- forM ts2 $ checkForStep pos step
                     return $ tTuple ts
-            TFloat _ -> checkCast pos step (tClass cNum)
+            TFloat _ -> checkCast pos step tNum
             otherwise -> checkCast pos step tInt
 
 -- | Checks function's arguments and body.
@@ -492,7 +490,13 @@ checkFunc pos id vars args ret block cont = do
 checkTypeVars :: [FVar Pos] -> Run a -> Run a
 checkTypeVars vars cont = case vars of
      [] -> cont
-     (FVar _ c id):vs -> localType id (tClass c) $ checkTypeVars vs cont  -- TODO: type scopes
+     (FVar pos t id):vs -> do
+        t <- case t of
+            TAny _ -> return $ t
+            TNum _ -> return $ t
+            otherwise -> throw pos $ NotClass t
+        localType id t $ checkTypeVars vs cont  -- TODO: type scopes
+
 
 -- | Checks an expression and returns its type and whether it is mutable.
 checkExpr :: Expr Pos -> Run (Type, Bool)
@@ -654,7 +658,8 @@ checkExpr expression = case expression of
         checkTypeVars vars $ checkArgs (M.elems m) args1 $ checkLambdas (M.elems m) args1 $ do
             r <- retrieveType ret
             r <- case r of
-                TClass _ _ -> return $ ret
+                TAny _ -> return $ ret
+                TNum _ -> return $ ret
                 otherwise -> return $ r
             return $ (r, False)
         where
@@ -667,9 +672,9 @@ checkExpr expression = case expression of
                     checkType pos t2
                     t3 <- retrieveType t2
                     t4 <- case (t1, t3) of
-                        (TInt _, TClass _ (CNum _)) -> return $ t1
-                        (TFloat _, TClass _ (CNum _)) -> return $ t1
-                        (_, TClass _ (CAny _)) -> return $ t1
+                        (TInt _, TNum _) -> return $ t1
+                        (TFloat _, TNum _) -> return $ t1
+                        (_, TAny _) -> return $ t1
                         otherwise -> checkCast pos t1 t2
                     if t2' == t4 then cont  -- to prevent looping
                     else localType id t4 cont
@@ -774,7 +779,7 @@ checkExpr expression = case expression of
                     (TFloat _, TInt _) -> return $ (tFloat, False)
                     (TInt _, TFloat _) -> return $ (tFloat, False)
                     (TFloat _, TFloat _) -> return $ (tFloat, False)
-                    (TClass _ (CNum _), TClass _ (CNum _)) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator "*" t1 t2
+                    (TNum _, TNum _) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator "*" t1 t2
                     otherwise -> throw pos $ NoBinaryOperator "*" t1 t2
                 "+" -> case (t1', t2') of
                     (TString _, TString _) -> return $ (tString, False)
@@ -789,7 +794,7 @@ checkExpr expression = case expression of
                     (TFloat _, TInt _) -> return $ (tFloat, False)
                     (TInt _, TFloat _) -> return $ (tFloat, False)
                     (TFloat _, TFloat _) -> return $ (tFloat, False)
-                    (TClass _ (CNum _), TClass _ (CNum _)) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator "+" t1 t2
+                    (TNum _, TNum _) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator "+" t1 t2
                     otherwise -> throw pos $ NoBinaryOperator "+" t1 t2
                 otherwise -> do
                     if op == "and" || op == "or" then case (t1', t2') of
@@ -800,7 +805,7 @@ checkExpr expression = case expression of
                         (TFloat _, TInt _) -> return $ (tFloat, False)
                         (TInt _, TFloat _) -> return $ (tFloat, False)
                         (TFloat _, TFloat _) -> return $ (tFloat, False)
-                        (TClass _ (CNum _), TClass _ (CNum _)) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator op t1 t2
+                        (TNum _, TNum _) -> if t1 == t2 then return $ (t1, False) else throw pos $ NoBinaryOperator op t1 t2
                         otherwise -> throw pos $ NoBinaryOperator op t1 t2
                     else case (t1', t2') of  -- modulo and bitwise operators
                         (TInt _, TInt _) -> return $ (tInt, False)
@@ -818,7 +823,7 @@ checkExpr expression = case expression of
                 otherwise -> case t' of  -- unary minus/plus
                     TInt _ -> return $ (tInt, False)
                     TFloat _ -> return $ (tFloat, False)
-                    TClass _ (CNum _) -> return $ (t, False)
+                    TNum _ -> return $ (t, False)
                     otherwise -> throw pos $ NoUnaryOperator op t
         checkCmp pos op typ1 typ2 = do
             t1 <- retrieveType typ1
@@ -831,11 +836,11 @@ checkExpr expression = case expression of
                 Nothing -> case (t1, t2) of
                     (TInt _, TFloat _) -> return $ (tBool, False)
                     (TFloat _, TInt _) -> return $ (tBool, False)
-                    (TInt _, TClass _ (CNum _)) -> return $ (tBool, False)
-                    (TFloat _, TClass _ (CNum _)) -> return $ (tBool, False)
-                    (TClass _ (CNum _), TInt _) -> return $ (tBool, False)
-                    (TClass _ (CNum _), TFloat _) -> return $ (tBool, False)
-                    (TClass _ (CNum _), TClass _ (CNum _)) -> return $ (tBool, False)
+                    (TInt _, TNum _) -> return $ (tBool, False)
+                    (TFloat _, TNum _) -> return $ (tBool, False)
+                    (TNum _, TInt _) -> return $ (tBool, False)
+                    (TNum _, TFloat _) -> return $ (tBool, False)
+                    (TNum _, TNum _) -> return $ (tBool, False)
                     otherwise -> throw pos $ NotComparable typ1 typ2
         checkArrayCprs cprs cont = case cprs of
             [] -> cont

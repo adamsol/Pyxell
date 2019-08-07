@@ -143,7 +143,7 @@ instance Print (FVars a) where
 
 instance Print (FVar a) where
   prt i e = case e of
-    FVar _ class_ id -> prPrec i 0 (concatD [prt 0 class_, prt 0 id])
+    FVar _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
@@ -308,16 +308,12 @@ instance Print (Type a) where
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
     TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
     TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
-    TClass _ class_ -> prPrec i 1 (concatD [prt 0 class_])
     TModule _ -> prPrec i 1 (concatD [])
+    TAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
+    TNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
   prtList 3 [x] = concatD [prt 3 x]
   prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]
   prtList 2 [] = concatD []
   prtList 2 [x] = concatD [prt 2 x]
   prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
-
-instance Print (Class a) where
-  prt i e = case e of
-    CAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
-    CNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
 
