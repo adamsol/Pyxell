@@ -314,6 +314,9 @@ CMemb :: {
 : Type Ident {
   (fst $1, AbsPyxell.MField (fst $1)(snd $1)(snd $2)) 
 }
+| Type Ident ':' Expr {
+  (fst $1, AbsPyxell.MFieldDefault (fst $1)(snd $1)(snd $2)(snd $4)) 
+}
 
 ListCMemb :: {
   (Maybe (Int, Int), [CMemb (Maybe (Int, Int))]) 

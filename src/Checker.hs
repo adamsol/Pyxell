@@ -242,6 +242,11 @@ checkStmt statement cont = case statement of
         case r of
             Nothing -> skip
             Just _ -> throw pos $ RedeclaredIdentifier id
+        forM membs $ \memb -> case memb of
+            MFieldDefault pos t _ e -> do
+                (t', _) <- checkExpr e
+                checkCast pos t' t >> skip
+            otherwise -> skip
         checkDecl pos (tClass id membs) id cont
     SFunc pos id vars args ret body -> do
         vs <- case vars of

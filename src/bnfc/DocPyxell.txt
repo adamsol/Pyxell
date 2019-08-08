@@ -53,9 +53,9 @@ The reserved words used in Pyxell are the following:
   | ``true`` | ``until`` | ``use`` | ``while``
 
 The symbols used in Pyxell are the following:
-  | ; | { | } | (
-  | ) | < | > | ,
-  | : | = | ^= | *=
+  | ; | { | } | :
+  | ( | ) | < | >
+  | , | = | ^= | *=
   | /= | %= | += | -=
   | <<= | >>= | &= | |=
   | $= | _ | [ | ]
@@ -111,6 +111,7 @@ All other symbols are terminals.
   |  |  **|**  | ``hiding`` //[Ident]// 
   |  |  **|**  | ``as`` //Ident// 
   | //CMemb// | -> | //Type// //Ident// 
+  |  |  **|**  | //Type// //Ident// ``:`` //Expr// 
   | //[CMemb]// | -> | **eps**
   |  |  **|**  | //CMemb// 
   |  |  **|**  | //CMemb// ``;`` //[CMemb]// 

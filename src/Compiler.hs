@@ -446,6 +446,11 @@ compileClass id membs = do
             define (tFunc [] t) f $ do
                 v <- gep t "null" ["1"] [] >>= ptrtoint t
                 p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
+                forM (zip [0..] membs) $ \(i, memb) -> case memb of
+                    MFieldDefault _ _ t' e -> do
+                        (_, v) <- compileExpr e
+                        gep t p ["0"] [i] >>= store (typeMember memb) v
+                    otherwise -> skip
                 ret t p
 
 -- | Gets an identifier from the environment.

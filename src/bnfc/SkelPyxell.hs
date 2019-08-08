@@ -53,6 +53,7 @@ transUse x = case x of
 transCMemb :: Show a => CMemb a -> Result
 transCMemb x = case x of
   MField _ type_ ident -> failure x
+  MFieldDefault _ type_ ident expr -> failure x
 transFVars :: Show a => FVars a -> Result
 transFVars x = case x of
   FStd _ -> failure x

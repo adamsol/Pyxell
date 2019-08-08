@@ -140,6 +140,7 @@ instance Print (Use a) where
 instance Print (CMemb a) where
   prt i e = case e of
     MField _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
+    MFieldDefault _ type_ id expr -> prPrec i 0 (concatD [prt 0 type_, prt 0 id, doc (showString ":"), prt 0 expr])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]

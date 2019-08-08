@@ -266,11 +266,13 @@ convertLambda pos expression = do
 idMember :: CMemb Pos -> Ident
 idMember memb = case memb of
     MField _ _ id -> id
+    MFieldDefault _ _ id _ -> id
 
 -- | Retrieves type of a class member.
 typeMember :: CMemb Pos -> Type
 typeMember memb = case memb of
     MField _ t _ -> t
+    MFieldDefault _ t _ _ -> t
 
 -- | Finds class member by its name.
 findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type)
