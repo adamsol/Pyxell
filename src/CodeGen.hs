@@ -21,7 +21,7 @@ type Result = (Type, Value)
 
 -- | Compiler environment and state.
 type Env = M.Map Ident Result
-data StateItem = Number Int | Label Value | Function Env (S.Set [Type]) | Module Env
+data StateItem = Number Int | Label Value | Definition Env (S.Set [Type]) | Module Env
 type State = M.Map Value StateItem
 
 -- | LLVM code for each scope (function or global).
@@ -91,7 +91,7 @@ localFunc id typ cont = do
     let p = "@f" ++ f
     localVar id typ p $ do
         env <- ask
-        lift $ modify (M.insert p (Function env S.empty))
+        lift $ modify (M.insert p (Definition env S.empty))
         cont
 
 -- | Runs continuation in a given scope (function).

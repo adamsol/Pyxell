@@ -1,5 +1,5 @@
 
 A = 1
 
-func A() def
-    skip
+class A def
+    Int x

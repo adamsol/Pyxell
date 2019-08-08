@@ -71,15 +71,9 @@ compileStmt statement cont = case statement of
     SClass _ id membs -> do
         let Ident c = id
         let t = tClass id membs
-        let f = Ident (c ++ "_init")
-        ss <- mapM (strType.typeMember) membs
-        functionScope f $ do
-            writeTop $ [ "%c." ++ c ++ " = type { " ++ intercalate ", " ss ++ " }", "" ]
-        define (tFunc [] t) f $ do  -- TODO tFuncDef defer
-            v <- gep t "null" ["1"] [] >>= ptrtoint t
-            p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
-            ret t p
-        localFunc f (tFunc [] t) $ localType id t $ cont
+        env <- ask
+        lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
+        localFunc (Ident (c ++ "_init")) (tFunc [] t) $ localType id t $ cont
     SFunc _ id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -362,15 +356,15 @@ compileFor expr1 expr2 expr3 body cont = do
                 otherwise -> forM [step] $ initForIterable expr
 
 -- | Outputs LLVM code for a function definition and initialization of its default arguments.
-compileFunc :: Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> [Type] -> Run Value
+compileFunc :: Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> [Type] -> Run ()
 compileFunc id vars args1 rt block args2 = do
     (t, p) <- asks (M.! id)
-    Function env set <- lift $ gets (M.! p)
+    Definition env set <- lift $ gets (M.! p)
     let as = map typeArg args1
     case S.member args2 set of
-        True -> return $ p
+        True -> skip
         False -> local (const env) $ compileTypeVars args2 as $ do  -- environment is restored to the point of function definition
-            lift $ modify (M.insert p (Function env (S.insert args2 set)))  -- function is marked as compiled with these types
+            lift $ modify (M.insert p (Definition env (S.insert args2 set)))  -- function is marked as compiled with these types
             r <- retrieveType rt
             i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
                 TTuple _ _ -> return $ 1
@@ -393,7 +387,6 @@ compileFunc id vars args1 rt block args2 = do
                 Nothing -> do
                     localScope "!global" $ external p t
                     skip
-            return $ p
     where
         compileDefaultArg arg = case arg of
             ANoDefault _ _ _ -> skip
@@ -435,6 +428,25 @@ compileTypeVars as1 as2 cont = case (as1, as2) of
             (TFunc _ as1 r1, TFunc _ as2 r2) -> compileTypeVars as1 as2 (compile r1 r2 cont)
             otherwise -> cont
 
+-- | Outputs LLVM code for a class definition.
+compileClass :: Ident -> [CMemb Pos] -> Run ()
+compileClass id membs = do
+    let Ident c = id
+    let p = "%c." ++ c
+    Definition env set <- lift $ gets (M.! p)
+    case S.null set of
+        False -> skip
+        True -> local (const env) $ do
+            lift $ modify (M.insert p (Definition env (S.insert [] set)))
+            let t = tClass id membs
+            let f = Ident (c ++ "_init")
+            ss <- mapM (strType.typeMember) membs
+            functionScope f $ do
+                writeTop $ [ p ++ " = type { " ++ intercalate ", " ss ++ " }", "" ]
+            define (tFunc [] t) f $ do
+                v <- gep t "null" ["1"] [] >>= ptrtoint t
+                p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
+                ret t p
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Result)
@@ -443,7 +455,8 @@ getIdent id = do
     case r of
         Just (TFuncDef _ id [] as r b, _) -> compileFunc id [] as r (Just b) []
         Just (TFuncExt _ id as r, _) -> compileFunc id [] as r Nothing []
-        otherwise -> return $ ""
+        Just (TClass _ id membs, _) -> compileClass id membs
+        otherwise -> skip
     return $ r
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.
@@ -629,7 +642,7 @@ compileExpr expression = case expression of
                     TFuncDef _ id (_:_) _ _ b -> do
                         -- Compile generic function.
                         compileFunc id vars args2 rt (Just b) (map (reduceType.fst) args4)
-                    otherwise -> return $ ""
+                    otherwise -> skip
                 r <- retrieveType rt
                 func <- case expr of
                     EVar _ id -> do
