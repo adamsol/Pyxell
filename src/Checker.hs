@@ -850,6 +850,10 @@ checkExpr expression = case expression of
                 Just t' -> case t' of
                     TArray _ t'' -> checkCmp pos op t'' t''
                     TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
+                    TClass _ _ _ -> case op of
+                        CmpEQ _ -> return $ (tBool, False)
+                        CmpNE _ -> return $ (tBool, False)
+                        otherwise -> throw pos $ NotComparable typ1 typ2
                     otherwise -> return $ (tBool, False)
                 Nothing -> case (t1, t2) of
                     (TInt _, TFloat _) -> return $ (tBool, False)
