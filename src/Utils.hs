@@ -74,6 +74,7 @@ unifyTypes t1 t2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
+        (TClass _ id1 _, TClass _ id2 _) -> if id1 == id2 then Just t1 else Nothing
         otherwise -> Nothing
 
 -- | Tries to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
@@ -271,8 +272,8 @@ idMember memb = case memb of
 -- | Retrieves type of a class member.
 typeMember :: CMemb Pos -> Type
 typeMember memb = case memb of
-    MField _ t _ -> t
-    MFieldDefault _ t _ _ -> t
+    MField _ t _ -> reduceType t
+    MFieldDefault _ t _ _ -> reduceType t
 
 -- | Finds class member by its name.
 findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type)

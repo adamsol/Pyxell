@@ -986,46 +986,48 @@ compileLval expr = case expr of
 
 -- | Outputs LLVM code that evaluates a given attribute as an l-value. Returns type and name (location) of the result or Nothing.
 compileAttr :: Type -> Value -> Ident -> Run (Maybe Result)
-compileAttr typ val (Ident attr) = case typ of
-    -- TODO: toString() for other types
-    TInt _ -> case attr of
-        "write" -> getIdent (Ident "writeInt")
-        "toString" -> getIdent (Ident "Int_toString")
-        "toFloat" -> getIdent (Ident "Int_toFloat")
-        "pow" -> getIdent (Ident "Int_pow")
-    TFloat _ -> case attr of
-        "write" -> getIdent (Ident "writeFloat")
-        "toString" -> getIdent (Ident "Float_toString")
-        "toInt" -> getIdent (Ident "Float_toInt")
-        "pow" -> getIdent (Ident "Float_pow")
-    TBool _ -> case attr of
-        "write" -> getIdent (Ident "writeBool")
-        "toString" -> getIdent (Ident "Bool_toString")
-        "toInt" -> getIdent (Ident "Bool_toInt")
-        "toFloat" -> getIdent (Ident "Bool_toFloat")
-    TChar _ -> case attr of
-        "write" -> getIdent (Ident "writeChar")
-        "toString" -> getIdent (Ident "Char_toString")
-        "toInt" -> getIdent (Ident "Char_toInt")
-        "toFloat" -> getIdent (Ident "Char_toFloat")
-    TString _ -> case attr of
-        "write" -> getIdent (Ident "write")
-        "length" -> getAttr (tArray tChar) val tInt 1
-        "toArray" -> getIdent (Ident "String_toArray")
-        "toString" -> getIdent (Ident "String_toString")
-        "toInt" -> getIdent (Ident "String_toInt")
-        "toFloat" -> getIdent (Ident "String_toFloat")
-        "compare" -> getIdent (Ident "String_compare")
-    TArray _ t' -> case (t', attr) of
-        (_, "length") -> getAttr typ val tInt 1
-        (TChar _, "join") -> getIdent (Ident "CharArray_join")
-        (TString _, "join") -> getIdent (Ident "StringArray_join")
-    TTuple _ ts -> do
-        let i = ord (attr !! 0) - ord 'a'
-        getAttr typ val (ts !! i) i
-    TClass _ _ membs -> do
-        let Just (i, t) = findMember membs (Ident attr)
-        getAttr typ val t i
+compileAttr typ val (Ident attr) = do
+    t <- retrieveType typ
+    case t of
+        -- TODO: toString() for other types
+        TInt _ -> case attr of
+            "write" -> getIdent (Ident "writeInt")
+            "toString" -> getIdent (Ident "Int_toString")
+            "toFloat" -> getIdent (Ident "Int_toFloat")
+            "pow" -> getIdent (Ident "Int_pow")
+        TFloat _ -> case attr of
+            "write" -> getIdent (Ident "writeFloat")
+            "toString" -> getIdent (Ident "Float_toString")
+            "toInt" -> getIdent (Ident "Float_toInt")
+            "pow" -> getIdent (Ident "Float_pow")
+        TBool _ -> case attr of
+            "write" -> getIdent (Ident "writeBool")
+            "toString" -> getIdent (Ident "Bool_toString")
+            "toInt" -> getIdent (Ident "Bool_toInt")
+            "toFloat" -> getIdent (Ident "Bool_toFloat")
+        TChar _ -> case attr of
+            "write" -> getIdent (Ident "writeChar")
+            "toString" -> getIdent (Ident "Char_toString")
+            "toInt" -> getIdent (Ident "Char_toInt")
+            "toFloat" -> getIdent (Ident "Char_toFloat")
+        TString _ -> case attr of
+            "write" -> getIdent (Ident "write")
+            "length" -> getAttr (tArray tChar) val tInt 1
+            "toArray" -> getIdent (Ident "String_toArray")
+            "toString" -> getIdent (Ident "String_toString")
+            "toInt" -> getIdent (Ident "String_toInt")
+            "toFloat" -> getIdent (Ident "String_toFloat")
+            "compare" -> getIdent (Ident "String_compare")
+        TArray _ t' -> case (t', attr) of
+            (_, "length") -> getAttr t val tInt 1
+            (TChar _, "join") -> getIdent (Ident "CharArray_join")
+            (TString _, "join") -> getIdent (Ident "StringArray_join")
+        TTuple _ ts -> do
+            let i = ord (attr !! 0) - ord 'a'
+            getAttr t val (ts !! i) i
+        TClass _ _ membs -> do
+            let Just (i, t') = findMember membs (Ident attr)
+            getAttr t val t' i
     where
         getAttr typ1 obj typ2 idx = do
             p <- gep typ1 obj ["0"] [idx]

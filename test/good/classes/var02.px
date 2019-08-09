@@ -1,0 +1,22 @@
+
+class A def
+    Int x
+
+class B def
+    A a
+
+b = B()
+b.a = b.a = A()
+b.a.x = 3
+
+b = b
+b' = b
+b' = b'
+
+print b'.a.x
+
+a = A()
+a.x = 5
+b'.a = a
+
+print b.a.x
