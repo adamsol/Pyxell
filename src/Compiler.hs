@@ -71,9 +71,10 @@ compileStmt statement cont = case statement of
     SClass _ id membs -> do
         let Ident c = id
         let t = tClass id membs
-        env <- ask
-        lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
-        localFunc (Ident (c ++ "_init")) (tFunc [] t) $ localType id t $ cont
+        localType id t $ do
+            env <- ask
+            lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
+            localFunc (Ident (c ++ "_init")) (tFunc [] t) $ cont
     SFunc _ id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs

@@ -1,0 +1,10 @@
+
+class Node def
+    Int value
+    Node left
+    Node right
+
+tree = Node()
+tree.value = 42
+tree.left = tree.right = tree
+print tree.left.right.left.left.right.value
