@@ -1,0 +1,10 @@
+
+class Test def
+    String s
+
+    func toString() String def
+        return self.s
+
+obj = Test()
+obj.s = "test"
+print obj

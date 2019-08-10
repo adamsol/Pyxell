@@ -202,8 +202,11 @@ compileStmt statement cont = case statement of
                         (_, v) <- compileExpr (EIndex _pos a i)
                         compilePrint t' v
                 call tInt "@putchar" [(tChar, "93")] >> skip  -- ]
+            TClass _ _ membs -> do
+                (_, v) <- compileMethod typ val (Ident "toString") [val]
+                compileMethod tString "" (Ident "write") [v] >> skip
             otherwise -> do
-                compileMethod typ (Ident "write") [val] >> skip
+                compileMethod typ "" (Ident "write") [val] >> skip
         compileAssgOp op expr1 expr2 cont = do
             compileStmt (SAssg _pos [expr1, op _pos expr1 expr2]) cont
         compileBranches brs exit = case brs of
@@ -518,10 +521,10 @@ compileExpr expression = case expression of
                     (_, v) <- case pExpr $ resolveLayout False $ myLexer tag of
                         Ok expr -> do
                             (t, v) <- compileExpr expr
-                            compileMethod t (Ident "toString") [v]
+                            compileMethod t "" (Ident "toString") [v]
                     store tString v p5
             p7 <- initString ""
-            compileMethod (tArray tString) (Ident "join") [p1, p7]
+            compileMethod (tArray tString) "" (Ident "join") [p1, p7]
     EArray _ exprs -> do
         rs <- mapM compileExpr exprs
         t <- case rs of
@@ -790,10 +793,10 @@ compileExpr expression = case expression of
                 (TString _, TString _, "add") -> do
                     compileArrayConcat tString v1 v2
                 (TString _, TChar _, "add") -> do
-                    (_, v3) <- compileMethod tChar (Ident "toString") [v2]
+                    (_, v3) <- compileMethod tChar "" (Ident "toString") [v2]
                     compileArrayConcat tString v1 v3
                 (TChar _, TString _, "add") -> do
-                    (_, v3) <- compileMethod tChar (Ident "toString") [v1]
+                    (_, v3) <- compileMethod tChar "" (Ident "toString") [v1]
                     compileArrayConcat tString v3 v2
                 (TArray _ t1', TArray _ t2', "add") -> do
                     compileArrayConcat t1 v1 v2
@@ -811,7 +814,7 @@ compileExpr expression = case expression of
                     return $ (t2, p)
                 (_, _, "pow") -> do
                     (t, v1', v2') <- unifyValues t1 v1 t2 v2
-                    compileMethod t (Ident "pow") [v1', v2']
+                    compileMethod t "" (Ident "pow") [v1', v2']
                 otherwise -> do
                     (t, v1', v2') <- unifyValues t1 v1 t2 v2
                     v3 <- case t of
@@ -1062,9 +1065,9 @@ compileAttr typ val (Ident attr) = do
             return $ Just (typ2, p)
 
 -- | Outputs LLVM code that calls a method with given arguments. Returns type and name of the result.
-compileMethod :: Type -> Ident -> [Value] -> Run Result
-compileMethod typ id args = do
-    Just (t, p1) <- compileAttr typ "" id
+compileMethod :: Type -> Value -> Ident -> [Value] -> Run Result
+compileMethod typ val id args = do
+    Just (t, p1) <- compileAttr typ val id
     TFunc _ as r <- retrieveType t
     p2 <- load t p1
     v <- call r p2 (zip as args)

@@ -1,0 +1,14 @@
+
+class Point def
+    Float x
+    Float y
+
+    func tuple(Bool reverse: false) Float*Float def
+        return reverse ? (self.y, self.x) : (self.x, self.y)
+
+p = Point()
+p.x = 3.0
+p.y = -1.5
+
+print p.tuple()
+print p.tuple(true)

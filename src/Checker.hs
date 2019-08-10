@@ -362,6 +362,9 @@ checkStmt statement cont = case statement of
                 return $ all id bs
             TArray _ t' -> checkPrint t'
             TFunc _ _ _ -> return $ False
+            TClass _ _ membs -> case findMember membs (Ident "toString") of
+                Just (_, TFuncDef _ _ _ _ (TString _) _) -> return $ True
+                otherwise -> return $ False
             TAny _ -> return $ False
             otherwise -> return $ True
         checkAssgOp pos op expr1 expr2 cont = do
