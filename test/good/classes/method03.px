@@ -1,0 +1,17 @@
+
+class Test def
+    Int value
+
+    func add(Test self, Int v: 0) def
+        self.value += v
+
+    func multiply(Test self, Int v: 1) def
+        self.value *= v
+
+t = Test()
+t.value = 3
+t.add()
+t.add(1)
+t.multiply()
+t.multiply(4)
+print t.value

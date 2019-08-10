@@ -150,7 +150,9 @@ checkVar pos id = do
     case r of
         Just (t, Level l2) -> do
             if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
-            else if l2 < 0 then throw pos $ NotVariable id
+            else if l2 < 0 then case t of
+                TClass _ _ _ -> return $ t
+                otherwise -> throw pos $ NotVariable id
             else return $ t
         Just (TModule _, _) -> do
             return $ tModule
@@ -242,19 +244,22 @@ checkStmt statement cont = case statement of
         case r of
             Nothing -> skip
             Just _ -> throw pos $ RedeclaredIdentifier id
-        forM membs $ \memb -> case memb of
-            MFieldDefault pos t _ e -> do
-                (t', _) <- checkExpr e
-                checkCast pos t' t >> skip
-            otherwise -> skip
-        checkDecl pos (tClass id membs) id cont
+        membs <- return $ prepareMembers id membs
+        let t = tClass id membs
+        checkDecl pos t id $ localType id t $ do
+            forM membs $ \memb -> case memb of
+                MFieldDefault pos t _ e -> do
+                    (t', _) <- checkExpr e
+                    checkCast pos t' t >> skip
+                MMethod pos _ (TFuncDef _ id' _ as r b) -> do
+                    checkFunc pos id' [] as r (Just b) skip
+                otherwise -> skip
+            cont
     SFunc pos id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
             FStd _ -> return $ []
-        r <- case ret of
-            FFunc _ t -> return $ t
-            FProc _ -> return $ tVoid
+        let r = typeFRet ret
         b <- case body of
             FDef _ b -> return $ Just b
             FExtern _ -> return $ Nothing

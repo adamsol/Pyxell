@@ -141,6 +141,8 @@ instance Print (CMemb a) where
   prt i e = case e of
     MField _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
     MFieldDefault _ type_ id expr -> prPrec i 0 (concatD [prt 0 type_, prt 0 id, doc (showString ":"), prt 0 expr])
+    MMethodCode _ id fargs fret block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, doc (showString "def"), prt 0 block])
+    MMethod _ id type_ -> prPrec i 0 (concatD [prt 0 id, prt 0 type_])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]

@@ -23,6 +23,8 @@ UAs.               Use    ::= "as" Ident ;
 SClass.	           Stmt   ::= "class" Ident "def" "{" [CMemb] "}" ;
 MField.            CMemb  ::= Type Ident ;
 MFieldDefault.     CMemb  ::= Type Ident ":" Expr ;
+MMethodCode.       CMemb  ::= "func" Ident "(" [FArg] ")" FRet "def" Block ;
+internal MMethod.  CMemb  ::= Ident Type ;
 separator          CMemb      ";" ;
 
 SFunc.             Stmt   ::= "func" Ident FVars "(" [FArg] ")" FRet FBody ;

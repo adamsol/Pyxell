@@ -1,0 +1,16 @@
+
+use math
+
+class Vector def
+    Float x
+    Float y
+    Float z
+
+    func length(Vector self) Float def
+        return sqrt(self.x^2 + self.y^2 + self.z^2)
+
+v = Vector()
+v.x = 2.0
+v.y = 3.0
+v.z = 6.0
+print v.length()

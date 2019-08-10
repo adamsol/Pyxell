@@ -84,13 +84,18 @@ instance Functor Use where
         UHiding a idents -> UHiding (f a) idents
         UAs a ident -> UAs (f a) ident
 data CMemb a
-    = MField a (Type a) Ident | MFieldDefault a (Type a) Ident (Expr a)
+    = MField a (Type a) Ident
+    | MFieldDefault a (Type a) Ident (Expr a)
+    | MMethodCode a Ident [FArg a] (FRet a) (Block a)
+    | MMethod a Ident (Type a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor CMemb where
     fmap f x = case x of
         MField a type_ ident -> MField (f a) (fmap f type_) ident
         MFieldDefault a type_ ident expr -> MFieldDefault (f a) (fmap f type_) ident (fmap f expr)
+        MMethodCode a ident fargs fret block -> MMethodCode (f a) ident (map (fmap f) fargs) (fmap f fret) (fmap f block)
+        MMethod a ident type_ -> MMethod (f a) ident (fmap f type_)
 data FVars a = FStd a | FGen a [FVar a]
   deriving (Eq, Ord, Show, Read)
 

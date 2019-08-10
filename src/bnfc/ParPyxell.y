@@ -317,6 +317,9 @@ CMemb :: {
 | Type Ident ':' Expr {
   (fst $1, AbsPyxell.MFieldDefault (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
+| 'func' Ident '(' ListFArg ')' FRet 'def' Block {
+  (Just (tokenLineCol $1), AbsPyxell.MMethodCode (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
+}
 
 ListCMemb :: {
   (Maybe (Int, Int), [CMemb (Maybe (Int, Int))]) 

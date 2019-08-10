@@ -69,9 +69,10 @@ compileStmt statement cont = case statement of
             UHiding _ ids -> local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
             UAs _ id' -> local (M.insert id' (tModule, name)) cont
     SClass _ id membs -> do
+        membs <- return $ prepareMembers id membs
         let Ident c = id
         let t = tClass id membs
-        localType id t $ do
+        localType id t $ compileMembers membs $ do
             env <- ask
             lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
             localFunc (Ident (c ++ "_init")) (tFunc [] t) $ cont
@@ -79,9 +80,7 @@ compileStmt statement cont = case statement of
         vs <- case vars of
             FGen _ vs -> return $ vs
             FStd _ -> return $ []
-        r <- case ret of
-            FFunc _ r -> return $ r
-            FProc _ -> return $ tVoid
+        let r = typeFRet ret
         t <- case body of
             FDef _ b -> return $ tFuncDef id vs args r b
             FExtern _ -> return $ tFuncExt id args r
@@ -212,6 +211,13 @@ compileStmt statement cont = case statement of
                 BElIf _ expr block -> do
                     compileIf expr (compileBlock block) exit
                     compileBranches bs exit
+        compileMembers membs cont = case membs of
+            [] -> cont
+            memb:ms -> compileMember memb $ compileMembers ms cont
+        compileMember memb cont = case memb of
+            MMethod pos _ (TFuncDef _ id' _ _ _ _) -> do
+                localFunc id' (typeMember memb) $ cont
+            otherwise -> cont
 
 -- | Compiles a list of variable assignments and continues with changed environment.
 compileAssgs :: [(Type, Expr Pos, Int)] -> Type -> Value -> Run a -> Run a
@@ -372,8 +378,7 @@ compileFunc id vars args1 rt block args2 = do
                 otherwise -> return $ 0
             case S.null set of
                 True -> do  -- default arguments are compiled only once, since their type is known
-                    f <- functionName id
-                    localScope f $ forM_ args1 $ compileDefaultArg
+                    functionScope id $ forM_ args1 $ compileDefaultArg
                 False -> skip
             case block of
                 Just b -> define t id $ compileArgs args1 i $ localType (Ident "#return") r $ do
@@ -440,19 +445,27 @@ compileClass id membs = do
         True -> local (const env) $ do
             lift $ modify (M.insert p (Definition env (S.insert [] set)))
             let t = tClass id membs
-            let f = Ident (c ++ "_init")
             ss <- mapM (strType.typeMember) membs
-            functionScope f $ do
+            functionScope id $ do
                 writeTop $ [ p ++ " = type { " ++ intercalate ", " ss ++ " }", "" ]
+            let f = Ident (c ++ "_init")
             define (tFunc [] t) f $ do
                 v <- gep t "null" ["1"] [] >>= ptrtoint t
                 p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
                 forM (zip [0..] membs) $ \(i, memb) -> case memb of
-                    MFieldDefault _ _ t' e -> do
-                        (_, v) <- compileExpr e
-                        gep t p ["0"] [i] >>= store (typeMember memb) v
+                    MFieldDefault _ _ _ e -> do
+                        (t', v') <- compileExpr e
+                        gep t p ["0"] [i] >>= store t' v'
+                    MMethod _ _ (TFuncDef _ id' _ _ _ _) -> do
+                        Just (t', p') <- getIdent id'
+                        v' <- load t' p'
+                        gep t p ["0"] [i] >>= store t' v'
                     otherwise -> skip
                 ret t p
+            forM_ membs $ \memb -> case memb of
+                MMethod _ _ (TFuncDef _ id' _ as r b) -> do
+                    compileFunc id' [] as r (Just b) []
+                otherwise -> skip
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Result)

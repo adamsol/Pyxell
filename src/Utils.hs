@@ -113,16 +113,6 @@ retrieveType t = case t of
     TFuncExt _ _ as r -> retrieveType (tFunc (map typeArg as) r)
     otherwise -> return $ t
 
--- | Returns type from function type variable data.
-typeFVar :: FVar Pos -> Type
-typeFVar (FVar _ _ id) = tVar id
-
--- | Returns type from function argument data.
-typeArg :: FArg Pos -> Type
-typeArg arg = case arg of
-    ANoDefault _ t _ -> reduceType t
-    ADefault _ t _ _ -> reduceType t
-
 -- | Shorter name for none position.
 _pos = Nothing
 
@@ -166,6 +156,22 @@ interpolateString str =
             let (txts, tags) = interpolateString after in
             (before : txts, tail (init match) : tags)
         Nothing -> ([str], [""])
+
+-- | Returns type from function type variable data.
+typeFVar :: FVar Pos -> Type
+typeFVar (FVar _ _ id) = tVar id
+
+-- | Returns type from function return header.
+typeFRet :: FRet Pos -> Type
+typeFRet ret = case ret of
+    FFunc _ t -> reduceType t
+    FProc _ -> tVoid
+
+-- | Returns type from function argument data.
+typeArg :: FArg Pos -> Type
+typeArg arg = case arg of
+    ANoDefault _ t _ -> reduceType t
+    ADefault _ t _ _ -> reduceType t
 
 -- | Gets function argument by its name.
 getArgument :: [FArg Pos] -> Ident -> Maybe (Int, Type)
@@ -263,17 +269,25 @@ convertLambda pos expression = do
                 c' <- convertCmp c
                 return $ Cmp2 pos e' op c'
 
+prepareMembers :: Ident -> [CMemb Pos] -> [CMemb Pos]
+prepareMembers (Ident c) membs = (flip map) membs $ \memb -> case memb of
+    MMethodCode pos (Ident f) as ret b ->
+        MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] as (typeFRet ret) b)
+    otherwise -> memb
+
 -- | Retrieves identifier of a class member.
 idMember :: CMemb Pos -> Ident
 idMember memb = case memb of
     MField _ _ id -> id
     MFieldDefault _ _ id _ -> id
+    MMethod _ id _ -> id
 
 -- | Retrieves type of a class member.
 typeMember :: CMemb Pos -> Type
 typeMember memb = case memb of
     MField _ t _ -> reduceType t
     MFieldDefault _ t _ _ -> reduceType t
+    MMethod _ _ t -> t
 
 -- | Finds class member by its name.
 findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type)

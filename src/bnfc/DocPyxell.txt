@@ -112,6 +112,7 @@ All other symbols are terminals.
   |  |  **|**  | ``as`` //Ident// 
   | //CMemb// | -> | //Type// //Ident// 
   |  |  **|**  | //Type// //Ident// ``:`` //Expr// 
+  |  |  **|**  | ``func`` //Ident// ``(`` //[FArg]// ``)`` //FRet// ``def`` //Block// 
   | //[CMemb]// | -> | **eps**
   |  |  **|**  | //CMemb// 
   |  |  **|**  | //CMemb// ``;`` //[CMemb]// 
