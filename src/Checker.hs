@@ -643,7 +643,9 @@ checkExpr expression = case expression of
             TFunc _ as r -> return $ ([], as, [], r)
             TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
             TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
-            TClass _ id _ -> return $ ([], [], [], tVar id)
+            TClass _ id membs -> do
+                let as = getConstructorArgs membs
+                return $ ([], map typeArg as, as, typ)
             otherwise -> throw pos $ NotFunction typ
         -- Build a map of arguments and their positions.
         let m = M.empty

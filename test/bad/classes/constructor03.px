@@ -1,0 +1,6 @@
+
+class Test def
+    constructor(Int b: 0) def
+        skip
+
+Test(a=3)

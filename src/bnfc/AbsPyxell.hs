@@ -88,6 +88,7 @@ data CMemb a
     | MFieldDefault a (Type a) Ident (Expr a)
     | MMethodCode a Ident [FArg a] (FRet a) (Block a)
     | MMethod a Ident (Type a)
+    | MConstructor a [FArg a] (Block a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor CMemb where
@@ -96,6 +97,7 @@ instance Functor CMemb where
         MFieldDefault a type_ ident expr -> MFieldDefault (f a) (fmap f type_) ident (fmap f expr)
         MMethodCode a ident fargs fret block -> MMethodCode (f a) ident (map (fmap f) fargs) (fmap f fret) (fmap f block)
         MMethod a ident type_ -> MMethod (f a) ident (fmap f type_)
+        MConstructor a fargs block -> MConstructor (f a) (map (fmap f) fargs) (fmap f block)
 data FVars a = FStd a | FGen a [FVar a]
   deriving (Eq, Ord, Show, Read)
 

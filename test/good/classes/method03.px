@@ -13,5 +13,5 @@ t.value = 3
 t.add()
 t.add(1)
 t.multiply()
-t.multiply(4)
+t.multiply(v=4)
 print t.value

@@ -75,7 +75,8 @@ compileStmt statement cont = case statement of
         localType id t $ compileMembers membs $ do
             env <- ask
             lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
-            localFunc (Ident (c ++ "_init")) (tFunc [] t) $ cont
+            let args = getConstructorArgs membs
+            localFunc (Ident (c ++ "__alloc")) (tFuncDef (Ident (c ++ "__constructor")) [] args t (SBlock _pos [])) $ cont
     SFunc _ id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -448,10 +449,13 @@ compileClass id membs = do
             ss <- mapM (strType.typeMember) membs
             functionScope id $ do
                 writeTop $ [ p ++ " = type { " ++ intercalate ", " ss ++ " }", "" ]
-            let f = Ident (c ++ "_init")
-            define (tFunc [] t) f $ do
+            -- Function for object allocation.
+            let args = getConstructorArgs membs
+            let f = Ident (c ++ "__alloc")
+            define (tFunc (map typeArg args) t) f $ do
                 v <- gep t "null" ["1"] [] >>= ptrtoint t
                 p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
+                -- Initialize fields and method pointers.
                 forM (zip [0..] membs) $ \(i, memb) -> case memb of
                     MFieldDefault _ _ _ e -> do
                         (t', v') <- compileExpr e
@@ -461,7 +465,17 @@ compileClass id membs = do
                         v' <- load t' p'
                         gep t p ["0"] [i] >>= store t' v'
                     otherwise -> skip
+                -- Call the constructor, if defined.
+                case findConstructor membs of
+                    Just (i, t') -> do
+                        p' <- gep t p ["0"] [i]
+                        f <- load t' p'
+                        as <- forM (zip [0..] args) $ \(i, arg) ->
+                            return $ (typeArg arg, "%" ++ show i)
+                        callVoid f ((t, p) : as)
+                    Nothing -> skip
                 ret t p
+            -- Compile methods.
             forM_ membs $ \memb -> case memb of
                 MMethod _ _ (TFuncDef _ id' _ as r b) -> do
                     compileFunc id' [] as r (Just b) []
@@ -589,7 +603,7 @@ compileExpr expression = case expression of
                 Just (t, p) <- getIdent id
                 case t of
                     TClass _ (Ident c) _ -> do
-                        Just (t, p) <- getIdent $ Ident (c ++ "_init")
+                        Just (t, p) <- asks (M.lookup (Ident (c ++ "__alloc")))
                         return $ (t, p)
                     otherwise -> return $ (t, p)
             otherwise -> compileExpr expr

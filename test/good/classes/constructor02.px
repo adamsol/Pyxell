@@ -1,0 +1,12 @@
+
+class C def
+    [Int] a
+
+    constructor([Int] a) def
+        self.a = a
+        a[0] = 0
+
+a = [3, 4]
+c = C(a)
+a[1] = -2
+print c.a

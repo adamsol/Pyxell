@@ -45,12 +45,13 @@ The reserved words used in Pyxell are the following:
   | ``Any`` | ``Bool`` | ``Char`` | ``Float``
   | ``Int`` | ``Num`` | ``String`` | ``Void``
   | ``and`` | ``as`` | ``break`` | ``class``
-  | ``continue`` | ``def`` | ``do`` | ``elif``
-  | ``else`` | ``extern`` | ``false`` | ``for``
-  | ``func`` | ``hiding`` | ``if`` | ``in``
-  | ``lambda`` | ``not`` | ``only`` | ``or``
-  | ``print`` | ``return`` | ``skip`` | ``step``
-  | ``true`` | ``until`` | ``use`` | ``while``
+  | ``constructor`` | ``continue`` | ``def`` | ``do``
+  | ``elif`` | ``else`` | ``extern`` | ``false``
+  | ``for`` | ``func`` | ``hiding`` | ``if``
+  | ``in`` | ``lambda`` | ``not`` | ``only``
+  | ``or`` | ``print`` | ``return`` | ``skip``
+  | ``step`` | ``true`` | ``until`` | ``use``
+  | ``while`` |  |  | 
 
 The symbols used in Pyxell are the following:
   | ; | { | } | :
@@ -113,6 +114,7 @@ All other symbols are terminals.
   | //CMemb// | -> | //Type// //Ident// 
   |  |  **|**  | //Type// //Ident// ``:`` //Expr// 
   |  |  **|**  | ``func`` //Ident// ``(`` //[FArg]// ``)`` //FRet// ``def`` //Block// 
+  |  |  **|**  | ``constructor`` ``(`` //[FArg]// ``)`` ``def`` //Block// 
   | //[CMemb]// | -> | **eps**
   |  |  **|**  | //CMemb// 
   |  |  **|**  | //CMemb// ``;`` //[CMemb]// 

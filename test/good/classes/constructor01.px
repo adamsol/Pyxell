@@ -1,0 +1,9 @@
+
+class C def
+    Bool x: false
+
+    constructor() def
+        self.x = true
+        print "constructor"
+
+print C().x

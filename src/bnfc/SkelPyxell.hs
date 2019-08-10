@@ -56,6 +56,7 @@ transCMemb x = case x of
   MFieldDefault _ type_ ident expr -> failure x
   MMethodCode _ ident fargs fret block -> failure x
   MMethod _ ident type_ -> failure x
+  MConstructor _ fargs block -> failure x
 transFVars :: Show a => FVars a -> Result
 transFVars x = case x of
   FStd _ -> failure x

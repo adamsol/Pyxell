@@ -1,0 +1,4 @@
+
+class Test def
+    constructor() def
+        return self

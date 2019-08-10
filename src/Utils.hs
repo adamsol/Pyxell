@@ -270,11 +270,14 @@ convertLambda pos expression = do
                 return $ Cmp2 pos e' op c'
 
 prepareMembers :: Ident -> [CMemb Pos] -> [CMemb Pos]
-prepareMembers (Ident c) membs = (flip map) membs $ \memb -> case memb of
-    MMethodCode pos (Ident f) as ret b ->
-        let self = ANoDefault _pos (tVar (Ident c)) (Ident "self") in
-        MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] (self : as) (typeFRet ret) b)
-    otherwise -> memb
+prepareMembers (Ident c) membs = (flip map) membs $ \memb ->
+    let self = ANoDefault _pos (tVar (Ident c)) (Ident "self") in
+    case memb of
+        MMethodCode pos (Ident f) as ret b ->
+            MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] (self : as) (typeFRet ret) b)
+        MConstructor pos as b ->
+            MMethod pos (Ident ("_constructor")) (tFuncDef (Ident (c ++ "__constructor")) [] (self : as) tVoid b)
+        otherwise -> memb
 
 -- | Retrieves identifier of a class member.
 idMember :: CMemb Pos -> Ident
@@ -299,3 +302,12 @@ findMember membs id = findMember' membs id 0
             memb:ms ->
                 if id == idMember memb then Just (i, typeMember memb)
                 else findMember' ms id (i+1)
+
+-- | Finds constructor of a class.
+findConstructor :: [CMemb Pos] -> Maybe (Int, Type)
+findConstructor membs = findMember membs (Ident "_constructor")
+
+-- | Returns list of arguments for a constructor of a class.
+getConstructorArgs membs = case findMember membs (Ident "_constructor") of
+    Just (_, TFuncDef _ _ _ as _ _) -> tail as
+    Nothing -> []

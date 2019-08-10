@@ -114,35 +114,36 @@ import ErrM
   'as' { PT _ (TS _ 50) }
   'break' { PT _ (TS _ 51) }
   'class' { PT _ (TS _ 52) }
-  'continue' { PT _ (TS _ 53) }
-  'def' { PT _ (TS _ 54) }
-  'do' { PT _ (TS _ 55) }
-  'elif' { PT _ (TS _ 56) }
-  'else' { PT _ (TS _ 57) }
-  'extern' { PT _ (TS _ 58) }
-  'false' { PT _ (TS _ 59) }
-  'for' { PT _ (TS _ 60) }
-  'func' { PT _ (TS _ 61) }
-  'hiding' { PT _ (TS _ 62) }
-  'if' { PT _ (TS _ 63) }
-  'in' { PT _ (TS _ 64) }
-  'lambda' { PT _ (TS _ 65) }
-  'not' { PT _ (TS _ 66) }
-  'only' { PT _ (TS _ 67) }
-  'or' { PT _ (TS _ 68) }
-  'print' { PT _ (TS _ 69) }
-  'return' { PT _ (TS _ 70) }
-  'skip' { PT _ (TS _ 71) }
-  'step' { PT _ (TS _ 72) }
-  'true' { PT _ (TS _ 73) }
-  'until' { PT _ (TS _ 74) }
-  'use' { PT _ (TS _ 75) }
-  'while' { PT _ (TS _ 76) }
-  '{' { PT _ (TS _ 77) }
-  '|' { PT _ (TS _ 78) }
-  '|=' { PT _ (TS _ 79) }
-  '}' { PT _ (TS _ 80) }
-  '~' { PT _ (TS _ 81) }
+  'constructor' { PT _ (TS _ 53) }
+  'continue' { PT _ (TS _ 54) }
+  'def' { PT _ (TS _ 55) }
+  'do' { PT _ (TS _ 56) }
+  'elif' { PT _ (TS _ 57) }
+  'else' { PT _ (TS _ 58) }
+  'extern' { PT _ (TS _ 59) }
+  'false' { PT _ (TS _ 60) }
+  'for' { PT _ (TS _ 61) }
+  'func' { PT _ (TS _ 62) }
+  'hiding' { PT _ (TS _ 63) }
+  'if' { PT _ (TS _ 64) }
+  'in' { PT _ (TS _ 65) }
+  'lambda' { PT _ (TS _ 66) }
+  'not' { PT _ (TS _ 67) }
+  'only' { PT _ (TS _ 68) }
+  'or' { PT _ (TS _ 69) }
+  'print' { PT _ (TS _ 70) }
+  'return' { PT _ (TS _ 71) }
+  'skip' { PT _ (TS _ 72) }
+  'step' { PT _ (TS _ 73) }
+  'true' { PT _ (TS _ 74) }
+  'until' { PT _ (TS _ 75) }
+  'use' { PT _ (TS _ 76) }
+  'while' { PT _ (TS _ 77) }
+  '{' { PT _ (TS _ 78) }
+  '|' { PT _ (TS _ 79) }
+  '|=' { PT _ (TS _ 80) }
+  '}' { PT _ (TS _ 81) }
+  '~' { PT _ (TS _ 82) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -319,6 +320,9 @@ CMemb :: {
 }
 | 'func' Ident '(' ListFArg ')' FRet 'def' Block {
   (Just (tokenLineCol $1), AbsPyxell.MMethodCode (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
+}
+| 'constructor' '(' ListFArg ')' 'def' Block {
+  (Just (tokenLineCol $1), AbsPyxell.MConstructor (Just (tokenLineCol $1)) (snd $3)(snd $6)) 
 }
 
 ListCMemb :: {

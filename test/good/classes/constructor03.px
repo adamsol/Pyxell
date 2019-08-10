@@ -1,0 +1,14 @@
+
+class C def
+    Int x
+    String s
+
+    constructor(Int x, String s: ".") def
+        self.x = x
+        self.s = s
+
+c = C(8)
+print c.x, c.s
+
+c = C(s="abc", x=-3)
+print c.x, c.s
