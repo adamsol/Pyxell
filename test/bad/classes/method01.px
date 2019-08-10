@@ -1,0 +1,6 @@
+
+class Test def
+    Int x
+
+    func f() Int def
+        return x

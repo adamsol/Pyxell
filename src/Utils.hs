@@ -272,7 +272,8 @@ convertLambda pos expression = do
 prepareMembers :: Ident -> [CMemb Pos] -> [CMemb Pos]
 prepareMembers (Ident c) membs = (flip map) membs $ \memb -> case memb of
     MMethodCode pos (Ident f) as ret b ->
-        MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] as (typeFRet ret) b)
+        let self = ANoDefault _pos (tVar (Ident c)) (Ident "self") in
+        MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] (self : as) (typeFRet ret) b)
     otherwise -> memb
 
 -- | Retrieves identifier of a class member.

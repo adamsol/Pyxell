@@ -2,10 +2,10 @@
 class Test def
     Int value
 
-    func add(Test self, Int v: 0) def
+    func add(Int v: 0) def
         self.value += v
 
-    func multiply(Test self, Int v: 1) def
+    func multiply(Int v: 1) def
         self.value *= v
 
 t = Test()
