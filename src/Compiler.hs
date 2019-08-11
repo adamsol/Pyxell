@@ -601,28 +601,33 @@ compileExpr expression = case expression of
         return $ (t, p2)
     EAttr _ _ _ -> compileRval expression
     ECall _ expr args -> do
-        (typ, func) <- case expr of
+        -- Build a map of arguments and their positions.
+        let m = M.empty
+        (typ, func, m) <- case expr of
             EVar _ id -> do
                 Just (t, p) <- getIdent id
                 case t of
-                    TClass _ (Ident c) _ -> do
+                    TClass _ (Ident c) _ -> do  -- class instantiation
                         Just (t, p) <- asks (M.lookup (Ident (c ++ "__alloc")))
-                        return $ (t, p)
-                    otherwise -> return $ (t, p)
-            otherwise -> compileExpr expr
+                        return $ (t, p, m)
+                    otherwise -> return $ (t, p, m)
+            EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
+                (t, p) <- compileExpr e
+                case t of
+                    TModule _ -> do
+                        (t, p) <- compileExpr expr
+                        return $ (t, p, m)
+                    otherwise -> do
+                        Just (t', p') <- compileAttr t p id
+                        v' <- load t' p'
+                        return $ (t', v', M.insert 0 (t, Left p) m)
+            otherwise -> do
+                (t, p) <- compileExpr expr
+                return $ (t, p, m)
         (id, vars, args1, args2, rt) <- case typ of
             TFunc _ as r -> return $ (Ident "", [], as, [], r)
             TFuncDef _ id vs as r _ -> return $ (id, vs, map typeArg as, as, reduceType r)
             TFuncExt _ id as r -> return $ (id, [], map typeArg as, as, reduceType r)
-        -- Build a map of arguments and their positions.
-        let m = M.empty
-        m <- case expr of
-            EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
-                (t, v) <- compileExpr e
-                case t of
-                    TModule _ -> return $ m
-                    otherwise -> return $ M.insert 0 (t, Left v) m
-            otherwise -> return $ m
         m <- foldM' m (zip [(M.size m)..] args) $ \m (i, a) -> do
             (e, i) <- case a of
                 APos _ e -> return $ (e, i)

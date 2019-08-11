@@ -68,17 +68,18 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Lambda expressions (+)
 * Generic functions (+/-)
 * Module system (+/-)
-* Classes with safe references
-* Multiple inheritance
+* Classes (+/-)
+* Generic types
+* Multiple inheritance 
 * Separate nullable types
+* Containers library
 * Arbitrary-precision arithmetic
-* Variety of containers: mutable/immutable, hash/tree-based
 * Closures
 * Coroutines
 
-These features would be also nice to have, but are more complicated and have less priority for me:
+These features would be also nice to have, but are more complicated and have lower priority for me:
 
-* Exceptions
+* Exception handling
 * Automatic memory management
 * Concurrency
 

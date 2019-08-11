@@ -1,0 +1,12 @@
+
+class Counter def
+    Int n: 0
+
+    func next() Counter def
+        print self.n
+        self.n += 1
+        return self
+
+c = Counter().next().next()
+print c.n
+c.next().next().next().next()
