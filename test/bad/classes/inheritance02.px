@@ -1,0 +1,3 @@
+
+class A(XYZ) def
+    Int x

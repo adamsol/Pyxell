@@ -68,15 +68,22 @@ compileStmt statement cont = case statement of
             UOnly _ ids -> local (M.union (M.filterWithKey (\id _ -> elem id ids) env)) cont
             UHiding _ ids -> local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
             UAs _ id' -> local (M.insert id' (tModule, name)) cont
-    SClass _ id membs -> do
-        membs <- return $ prepareMembers id membs
+    SClass _ id ext membs -> do
+        (bases, membs) <- case ext of
+            CNoExt _ -> return $ ([], prepareMembers id membs)
+            CExt _ t' -> do
+                TClass _ _ _ membs' <- retrieveType t'
+                return $ ([t'], extendMembers membs' (prepareMembers id membs))
         let Ident c = id
-        let t = tClass id membs
+        let t = tClass id bases membs
         localType id t $ compileMembers membs $ do
             env <- ask
             lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
+            id' <- case findConstructor membs of  -- handle inheritance to get the correct constructor name
+                Just (_, (TFuncDef _ id' _ _ _ _), _) -> return $ id'
+                Nothing -> return $ Ident (c ++ "__constructor")
             let args = getConstructorArgs membs
-            localFunc (Ident (c ++ "__alloc")) (tFuncDef (Ident (c ++ "__constructor")) [] args t (SBlock _pos [])) $ cont
+            localFunc (Ident (c ++ "__alloc")) (tFuncDef id' [] args t (SBlock _pos [])) $ cont
     SFunc _ id vars args ret body -> do
         vs <- case vars of
             FGen _ vs -> return $ vs
@@ -202,7 +209,7 @@ compileStmt statement cont = case statement of
                         (_, v) <- compileExpr (EIndex _pos a i)
                         compilePrint t' v
                 call tInt "@putchar" [(tChar, "93")] >> skip  -- ]
-            TClass _ _ membs -> do
+            TClass _ _ _ membs -> do
                 (_, v) <- compileMethod typ val (Ident "toString") [val]
                 compileMethod tString "" (Ident "write") [v] >> skip
             otherwise -> do
@@ -242,7 +249,10 @@ compileAssg typ expr val cont = do
     r <- compileLval expr
     case (r, e) of
         (Just (t, p), _) -> do
-            store typ val p
+            v <- case t of
+                TClass _ _ _ _ -> bitcast typ t val
+                otherwise -> return $ val
+            store t v p
             cont
         (Nothing, EVar _ id) -> do
             variable typ id val cont
@@ -439,8 +449,8 @@ compileTypeVars as1 as2 cont = case (as1, as2) of
             otherwise -> cont
 
 -- | Outputs LLVM code for a class definition.
-compileClass :: Ident -> [CMemb Pos] -> Run ()
-compileClass id membs = do
+compileClass :: Ident -> [Type] -> [CMemb Pos] -> Run ()
+compileClass id bases membs = do
     let Ident c = id
     let p = "%c." ++ c
     Definition env set <- lift $ gets (M.! p)
@@ -448,7 +458,7 @@ compileClass id membs = do
         False -> skip
         True -> local (const env) $ do
             lift $ modify (M.insert p (Definition env (S.insert [] set)))
-            let t = tClass id membs
+            let t = tClass id bases membs
             ss <- mapM (strType.typeMember) membs
             functionScope id $ do
                 writeTop $ [ p ++ " = type { " ++ intercalate ", " ss ++ " }", "" ]
@@ -470,12 +480,14 @@ compileClass id membs = do
                     otherwise -> skip
                 -- Call the constructor, if defined.
                 case findConstructor membs of
-                    Just (i, t') -> do
+                    Just (i, t', _) -> do
                         p' <- gep t p ["0"] [i]
                         f <- load t' p'
                         as <- forM (zip [0..] args) $ \(i, arg) ->
                             return $ (typeArg arg, "%" ++ show i)
-                        callVoid f ((t, p) : as)
+                        let TFunc _ (t'':_) _ = reduceType t'  -- original class of constructor definition
+                        p'' <- bitcast t t'' p
+                        callVoid f ((t'', p'') : as)
                     Nothing -> skip
                 ret t p
             -- Compile methods.
@@ -483,6 +495,10 @@ compileClass id membs = do
                 MMethod _ _ (TFuncDef _ id' _ as r b) -> do
                     compileFunc id' [] as r (Just b) []
                 otherwise -> skip
+            -- Compile base classes.
+            forM_ bases $ \b -> do
+                TClass _ id' bases' membs' <- retrieveType b
+                compileClass id' bases' membs'
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Result)
@@ -491,7 +507,7 @@ getIdent id = do
     case r of
         Just (TFuncDef _ id [] as r b, _) -> compileFunc id [] as r (Just b) []
         Just (TFuncExt _ id as r, _) -> compileFunc id [] as r Nothing []
-        Just (TClass _ id membs, _) -> compileClass id membs
+        Just (TClass _ id bases membs, _) -> compileClass id bases membs
         otherwise -> skip
     return $ r
 
@@ -607,7 +623,7 @@ compileExpr expression = case expression of
             EVar _ id -> do
                 Just (t, p) <- getIdent id
                 case t of
-                    TClass _ (Ident c) _ -> do  -- class instantiation
+                    TClass _ (Ident c) _ _ -> do  -- class instantiation
                         Just (t, p) <- asks (M.lookup (Ident (c ++ "__alloc")))
                         return $ (t, p, m)
                     otherwise -> return $ (t, p, m)
@@ -620,7 +636,9 @@ compileExpr expression = case expression of
                     otherwise -> do
                         Just (t', p') <- compileAttr t p id
                         v' <- load t' p'
-                        return $ (t', v', M.insert 0 (t, Left p) m)
+                        let TFunc _ (t'':_) _ = reduceType t'  -- original class of method definition
+                        p'' <- bitcast t t'' p
+                        return $ (t', v', M.insert 0 (t'', Left p'') m)
             otherwise -> do
                 (t, p) <- compileExpr expr
                 return $ (t, p, m)
@@ -638,7 +656,12 @@ compileExpr expression = case expression of
                 ELambda _ ids e' -> return $ (args1 !! i, Right (ids, e'))
                 otherwise -> do
                     (t, v) <- compileExpr e
-                    return $ (t, Left v)
+                    case t of
+                        TClass _ _ _ _ -> do
+                            v' <- bitcast t (args1 !! i) v
+                            return $ (args1 !! i, Left v')
+                        otherwise -> do
+                            return $ (t, Left v)
             return $ M.insert i r m
         -- Extend the map using default arguments.
         m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
@@ -694,7 +717,7 @@ compileExpr expression = case expression of
                                 s <- strFVars vars
                                 return $ p ++ s
                         p <- case t of
-                            TClass _ (Ident c) _ -> return $ func
+                            TClass _ (Ident c) _ _ -> return $ func
                             otherwise -> return $ p
                         load typ p
                     otherwise -> return $ func
@@ -1061,8 +1084,8 @@ compileAttr typ val (Ident attr) = do
         TTuple _ ts -> do
             let i = ord (attr !! 0) - ord 'a'
             getAttr t val (ts !! i) i
-        TClass _ _ membs -> do
-            let Just (i, t') = findMember membs (Ident attr)
+        TClass _ _ _ membs -> do
+            let Just (i, t', _) = findMember membs (Ident attr)
             getAttr t val t' i
     where
         getAttr typ1 obj typ2 idx = do

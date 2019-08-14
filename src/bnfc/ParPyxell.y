@@ -15,6 +15,7 @@ import ErrM
 %name pListStmt_internal ListStmt
 %name pStmt_internal Stmt
 %name pUse_internal Use
+%name pCExt_internal CExt
 %name pCMemb_internal CMemb
 %name pListCMemb_internal ListCMemb
 %name pFVars_internal FVars
@@ -60,6 +61,7 @@ import ErrM
 %name pType1_internal Type1
 %name pListType3_internal ListType3
 %name pListType2_internal ListType2
+%name pListType_internal ListType
 %name pType_internal Type
 %token
   '!=' { PT _ (TS _ 1) }
@@ -214,8 +216,8 @@ Stmt :: {
 : 'use' Ident Use {
   (Just (tokenLineCol $1), AbsPyxell.SUse (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
 }
-| 'class' Ident 'def' '{' ListCMemb '}' {
-  (Just (tokenLineCol $1), AbsPyxell.SClass (Just (tokenLineCol $1)) (snd $2)(snd $5)) 
+| 'class' Ident CExt 'def' '{' ListCMemb '}' {
+  (Just (tokenLineCol $1), AbsPyxell.SClass (Just (tokenLineCol $1)) (snd $2)(snd $3)(snd $6)) 
 }
 | 'func' Ident FVars '(' ListFArg ')' FRet FBody {
   (Just (tokenLineCol $1), AbsPyxell.SFunc (Just (tokenLineCol $1)) (snd $2)(snd $3)(snd $5)(snd $7)(snd $8)) 
@@ -307,6 +309,16 @@ Use :: {
 }
 | 'as' Ident {
   (Just (tokenLineCol $1), AbsPyxell.UAs (Just (tokenLineCol $1)) (snd $2)) 
+}
+
+CExt :: {
+  (Maybe (Int, Int), CExt (Maybe (Int, Int)))
+}
+: {
+  (Nothing, AbsPyxell.CNoExt Nothing)
+}
+| '(' Type4 ')' {
+  (Just (tokenLineCol $1), AbsPyxell.CExt (Just (tokenLineCol $1)) (snd $2)) 
 }
 
 CMemb :: {
@@ -891,6 +903,19 @@ ListType2 :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+ListType :: {
+  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| Type {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Type ',' ListType {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
 Type :: {
   (Maybe (Int, Int), Type (Maybe (Int, Int)))
 }
@@ -920,6 +945,7 @@ pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
 pStmt = (>>= return . snd) . pStmt_internal
 pUse = (>>= return . snd) . pUse_internal
+pCExt = (>>= return . snd) . pCExt_internal
 pCMemb = (>>= return . snd) . pCMemb_internal
 pListCMemb = (>>= return . snd) . pListCMemb_internal
 pFVars = (>>= return . snd) . pFVars_internal
@@ -965,6 +991,7 @@ pType2 = (>>= return . snd) . pType2_internal
 pType1 = (>>= return . snd) . pType1_internal
 pListType3 = (>>= return . snd) . pListType3_internal
 pListType2 = (>>= return . snd) . pListType2_internal
+pListType = (>>= return . snd) . pListType_internal
 pType = (>>= return . snd) . pType_internal
 }
 

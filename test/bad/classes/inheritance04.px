@@ -1,0 +1,15 @@
+
+class Base def
+    Int x
+
+class Sub1(Base) def
+    Int y
+
+class Sub2(Base) def
+    Int y
+
+
+func f(Sub1 obj) def
+    skip
+
+f(Sub2())

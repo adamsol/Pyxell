@@ -1,0 +1,11 @@
+
+class A def
+    Int x
+
+class B(A) def
+    String y
+
+b = B()
+b.x = 3
+b.y = b.x.toString() * 2
+print b.x, b.y

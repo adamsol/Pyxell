@@ -20,7 +20,9 @@ UOnly.             Use    ::= "only" [Ident] ;
 UHiding.           Use    ::= "hiding" [Ident] ;
 UAs.               Use    ::= "as" Ident ;
 
-SClass.	           Stmt   ::= "class" Ident "def" "{" [CMemb] "}" ;
+SClass.	           Stmt   ::= "class" Ident CExt "def" "{" [CMemb] "}" ;
+CNoExt.            CExt   ::= "" ;
+CExt.              CExt   ::= "(" Type4 ")" ;
 MField.            CMemb  ::= Type Ident ;
 MFieldDefault.     CMemb  ::= Type Ident ":" Expr ;
 MMethodCode.       CMemb  ::= "func" Ident "(" [FArg] ")" FRet "def" Block ;
@@ -169,13 +171,14 @@ TTuple.            Type2  ::= [Type3] ;
 TFunc.             Type1  ::= [Type2] "->" Type1 ;
 internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
 internal TFuncExt. Type1  ::= Ident [FArg] Type ;
-internal TClass.   Type1  ::= Ident [CMemb] ;
+internal TClass.   Type1  ::= Ident [Type] [CMemb] ;
 internal TModule.  Type1  ::= "" ;
 TAny.              Type1  ::= "Any" ;
 TNum.              Type1  ::= "Num" ;
 
 separator nonempty Type3      "*" ;
 separator          Type2      "," ;
+separator          Type       "," ;
 
 coercions          Type       4 ;
 

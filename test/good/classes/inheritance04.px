@@ -1,0 +1,11 @@
+
+class Z def
+    func f(Char x: 'Z') def
+        print x
+
+class Y(Z) def
+    Int x
+
+Y().f('Y')
+Y().f(x='Y')
+Y().f()

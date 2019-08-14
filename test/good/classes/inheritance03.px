@@ -1,0 +1,22 @@
+
+class A def
+    func f() String def
+        return "A.f"
+
+    func g() String def
+        return "A.g"
+
+class B(A) def
+    func f() String def
+        return "B.f"
+
+    func h() String def
+        return "B.h"
+
+a = A()
+print a.f(), a.g()
+
+b = B()
+print b.f(), b.g(), b.h()
+a = b
+print a.f(), a.g()

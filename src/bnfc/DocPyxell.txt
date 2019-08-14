@@ -54,8 +54,8 @@ The reserved words used in Pyxell are the following:
   | ``while`` |  |  | 
 
 The symbols used in Pyxell are the following:
-  | ; | { | } | :
-  | ( | ) | < | >
+  | ; | { | } | (
+  | ) | : | < | >
   | , | = | ^= | *=
   | /= | %= | += | -=
   | <<= | >>= | &= | |=
@@ -81,7 +81,7 @@ All other symbols are terminals.
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
   | //Stmt// | -> | ``use`` //Ident// //Use// 
-  |  |  **|**  | ``class`` //Ident// ``def`` ``{`` //[CMemb]// ``}`` 
+  |  |  **|**  | ``class`` //Ident// //CExt// ``def`` ``{`` //[CMemb]// ``}`` 
   |  |  **|**  | ``func`` //Ident// //FVars// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
   |  |  **|**  | ``return`` 
   |  |  **|**  | ``return`` //Expr// 
@@ -111,6 +111,8 @@ All other symbols are terminals.
   |  |  **|**  | ``only`` //[Ident]// 
   |  |  **|**  | ``hiding`` //[Ident]// 
   |  |  **|**  | ``as`` //Ident// 
+  | //CExt// | -> | **eps**
+  |  |  **|**  | ``(`` //Type4// ``)`` 
   | //CMemb// | -> | //Type// //Ident// 
   |  |  **|**  | //Type// //Ident// ``:`` //Expr// 
   |  |  **|**  | ``func`` //Ident// ``(`` //[FArg]// ``)`` //FRet// ``def`` //Block// 
@@ -245,6 +247,9 @@ All other symbols are terminals.
   | //[Type2]// | -> | **eps**
   |  |  **|**  | //Type2// 
   |  |  **|**  | //Type2// ``,`` //[Type2]// 
+  | //[Type]// | -> | **eps**
+  |  |  **|**  | //Type// 
+  |  |  **|**  | //Type// ``,`` //[Type]// 
   | //Type// | -> | //Type1// 
 
 

@@ -151,7 +151,7 @@ checkVar pos id = do
         Just (t, Level l2) -> do
             if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
             else if l2 < 0 then case t of
-                TClass _ _ _ -> return $ t
+                TClass _ _ _ _ -> return $ t
                 otherwise -> throw pos $ NotVariable id
             else return $ t
         Just (TModule _, _) -> do
@@ -185,12 +185,15 @@ checkCast pos typ1 typ2 = case (typ1, typ2) of
     otherwise -> case unifyTypes typ1 typ2 of
         Just t' -> case typ2 of
             TFuncDef _ _ _ _ _ _ -> throw pos $ IllegalRedefinition typ2
+            TClass _ _ _ _ -> if typ2 == t' then return $ t' else throw pos $ IllegalAssignment typ1 typ2
             otherwise -> return $ t'
         Nothing -> do
             t1 <- retrieveType typ1
             t2 <- retrieveType typ2
             case unifyTypes t1 t2 of
-                Just t' -> return $ t'
+                Just t' -> case t' of
+                    TClass _ _ _ _ -> if t2 == t' then return $ t' else throw pos $ IllegalAssignment typ1 typ2
+                    otherwise -> return $ t'
                 Nothing -> throw pos $ IllegalAssignment typ1 typ2
 
 
@@ -239,13 +242,21 @@ checkStmt statement cont = case statement of
                 UAs _ id' -> do
                     local (M.insert id' (tModule, Module env)) cont
             otherwise -> throw pos $ InvalidModule id
-    SClass pos id membs -> do
+    SClass pos id ext membs -> do
         r <- getIdent id
         case r of
             Nothing -> skip
             Just _ -> throw pos $ RedeclaredIdentifier id
-        membs <- return $ prepareMembers id membs
-        let t = tClass id membs
+        (bases, membs) <- case ext of
+            CNoExt _ -> return $ ([], prepareMembers id membs)
+            CExt _ t' -> do
+                t' <- retrieveType t'
+                TClass _ _ _ membs' <- case t' of
+                    TClass _ _ _ _ -> return $ t'
+                    TVar _ id' -> throw pos $ NotType id'
+                    otherwise -> throw pos $ NotClass t'
+                return $ ([t'], extendMembers membs' (prepareMembers id membs))
+        let t = tClass id bases membs
         checkDecl pos t id $ localType id t $ do
             forM membs $ \memb -> case memb of
                 MFieldDefault pos t _ e -> do
@@ -362,8 +373,8 @@ checkStmt statement cont = case statement of
                 return $ all id bs
             TArray _ t' -> checkPrint t'
             TFunc _ _ _ -> return $ False
-            TClass _ _ membs -> case findMember membs (Ident "toString") of
-                Just (_, TFuncDef _ _ _ _ (TString _) _) -> return $ True
+            TClass _ _ _ membs -> case findMember membs (Ident "toString") of
+                Just (_, TFuncDef _ _ _ _ (TString _) _, _) -> return $ True
                 otherwise -> return $ False
             TAny _ -> return $ False
             otherwise -> return $ True
@@ -625,8 +636,8 @@ checkExpr expression = case expression of
                 let i = ord (attr !! 0) - ord 'a'
                 if "a" <= attr && attr <= "z" && i < length ts then return $ Just (ts !! i)
                 else throw pos $ InvalidAttr t1' id
-            TClass _ _ membs -> case findMember membs id of
-                Just (_, t) -> return $ Just t
+            TClass _ _ _ membs -> case findMember membs id of
+                Just (_, t, _) -> return $ Just t
                 Nothing -> throw pos $ InvalidAttr t1' id
             TModule _ -> do
                 (_, Module env) <- case expr of
@@ -637,7 +648,7 @@ checkExpr expression = case expression of
                     otherwise -> throw pos $ UndeclaredIdentifier id
             otherwise -> throw pos $ InvalidAttr t1' id
         m <- case t1' of
-            TClass _ _ _ -> return $ True
+            TClass _ _ _ _ -> return $ True
             otherwise -> return $ False
         return $ (t2, m)
     ECall pos expr args -> do
@@ -646,7 +657,7 @@ checkExpr expression = case expression of
             TFunc _ as r -> return $ ([], as, [], r)
             TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
             TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
-            TClass _ id membs -> do
+            TClass _ id _ membs -> do
                 let as = getConstructorArgs membs
                 return $ ([], map typeArg as, as, typ)
             otherwise -> throw pos $ NotFunction typ
@@ -860,7 +871,7 @@ checkExpr expression = case expression of
                 Just t' -> case t' of
                     TArray _ t'' -> checkCmp pos op t'' t''
                     TFunc _ _ _ -> throw pos $ NotComparable typ1 typ2
-                    TClass _ _ _ -> case op of
+                    TClass _ _ _ _ -> case op of
                         CmpEQ _ -> return $ (tBool, False)
                         CmpNE _ -> return $ (tBool, False)
                         otherwise -> throw pos $ NotComparable typ1 typ2

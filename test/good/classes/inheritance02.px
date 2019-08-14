@@ -1,0 +1,13 @@
+
+class A def
+    Int x: 2
+
+class B(A) def
+    String y: "y"
+
+a = A()
+b = B()
+print b.x, b.y
+b.x = 5
+a = b
+print a.x

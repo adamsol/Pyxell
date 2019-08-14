@@ -1,0 +1,11 @@
+
+class A def
+    constructor(String s: "A") def
+        print s
+
+class B(A) def
+    Int x
+
+B("B")
+B(s="B")
+B()

@@ -11,8 +11,10 @@ import Control.Monad.Trans.State
 import Control.Monad.Trans.Writer
 import Control.Monad.Reader
 import Data.Char
+import Data.Maybe
 import Data.List
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Numeric
 import Text.Regex
 
@@ -41,23 +43,27 @@ instance {-# OVERLAPS #-} Show Type where
         TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
         TFuncDef _ _ _ as r _ -> show (tFunc (map typeArg as) r)
         TFuncExt _ _ as r -> show (tFunc (map typeArg as) r)
-        TClass _ (Ident c) _ -> c
+        TClass _ (Ident c) _ _ -> c
         TAny _ -> "Any"
         TNum _ -> "Num"
 
 instance {-# OVERLAPS #-} Eq Type where
     typ1 == typ2 = case (typ1, typ2) of
         (TVar _ id1, TVar _ id2) -> id1 == id2
+        (TClass _ id1 _ _, TClass _ id2 _ _) -> id1 == id2
         otherwise -> False
 
 -- | Some useful versions of standard functions.
 find' a f = find f a
 foldM' b a f = foldM f b a
+third (_, _, x) = x
 
 -- | Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
 unifyTypes t1 t2 = do
-    case (reduceType t1, reduceType t2) of
+    let t1' = reduceType t1
+    let t2' = reduceType t2
+    case (t1', t2') of
         (TVar _ id1, TVar _ id2) -> if id1 == id2 then Just t1 else Nothing
         (TVoid _, TVoid _) -> Just tVoid
         (TInt _, TInt _) -> Just tInt
@@ -74,8 +80,17 @@ unifyTypes t1 t2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
-        (TClass _ id1 _, TClass _ id2 _) -> if id1 == id2 then Just t1 else Nothing
+        (TClass _ _ _ _, TClass _ _ _ _) -> findCommonSuperclass t1' t2' t1' t2'
         otherwise -> Nothing
+    where
+        findCommonSuperclass t1 t2 t1'@(TClass _ id1 bs1 _) t2'@(TClass _ id2 bs2 _) =
+            if id1 == id2 then Just t1'
+            else case (bs1, bs2) of
+                ([b1], [b2]) -> findCommonSuperclass t1 t2 b1 b2
+                ([b1], []) -> findCommonSuperclass t1 t2 b1 t1
+                ([], [b2]) -> findCommonSuperclass t1 t2 t2 b2
+                ([], []) -> Nothing
+
 
 -- | Tries to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
 -- | Also removes position data from the type.
@@ -269,6 +284,7 @@ convertLambda pos expression = do
                 c' <- convertCmp c
                 return $ Cmp2 pos e' op c'
 
+-- | Processes a list of members of a class to add necessary information and provide consistency.
 prepareMembers :: Ident -> [CMemb Pos] -> [CMemb Pos]
 prepareMembers (Ident c) membs = (flip map) membs $ \memb ->
     let self = ANoDefault _pos (tVar (Ident c)) (Ident "self") in
@@ -278,6 +294,17 @@ prepareMembers (Ident c) membs = (flip map) membs $ \memb ->
         MConstructor pos as b ->
             MMethod pos (Ident ("_constructor")) (tFuncDef (Ident (c ++ "__constructor")) [] (self : as) tVoid b)
         otherwise -> memb
+
+-- | Merges two lists of members, assuming that the second class is a subclass of the first one.
+extendMembers :: [CMemb Pos] -> [CMemb Pos] -> [CMemb Pos]
+extendMembers membs1 membs2 = do
+    let ids1 = S.fromList (map idMember membs1)
+    let ids2 = S.fromList (map idMember membs2)
+    let membs1' = (flip map) membs1 $ \memb -> do
+        let id = idMember memb
+        if S.member id ids2 then third $ fromJust $ findMember membs2 id else memb
+    let membs2' = (flip filter) membs2 $ \memb -> not $ S.member (idMember memb) ids1
+    membs1' ++ membs2'
 
 -- | Retrieves identifier of a class member.
 idMember :: CMemb Pos -> Ident
@@ -294,20 +321,20 @@ typeMember memb = case memb of
     MMethod _ _ t -> t
 
 -- | Finds class member by its name.
-findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type)
+findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type, CMemb Pos)
 findMember membs id = findMember' membs id 0
     where
         findMember' membs id i = case membs of
             [] -> Nothing
             memb:ms ->
-                if id == idMember memb then Just (i, typeMember memb)
+                if id == idMember memb then Just (i, typeMember memb, memb)
                 else findMember' ms id (i+1)
 
 -- | Finds constructor of a class.
-findConstructor :: [CMemb Pos] -> Maybe (Int, Type)
+findConstructor :: [CMemb Pos] -> Maybe (Int, Type, CMemb Pos)
 findConstructor membs = findMember membs (Ident "_constructor")
 
 -- | Returns list of arguments for a constructor of a class.
 getConstructorArgs membs = case findMember membs (Ident "_constructor") of
-    Just (_, TFuncDef _ _ _ as _ _) -> tail as
+    Just (_, TFuncDef _ _ _ as _ _, _) -> tail as
     Nothing -> []

@@ -100,7 +100,7 @@ instance Print [Stmt a] where
 instance Print (Stmt a) where
   prt i e = case e of
     SUse _ id use -> prPrec i 0 (concatD [doc (showString "use"), prt 0 id, prt 0 use])
-    SClass _ id cmembs -> prPrec i 0 (concatD [doc (showString "class"), prt 0 id, doc (showString "def"), doc (showString "{"), prt 0 cmembs, doc (showString "}")])
+    SClass _ id cext cmembs -> prPrec i 0 (concatD [doc (showString "class"), prt 0 id, prt 0 cext, doc (showString "def"), doc (showString "{"), prt 0 cmembs, doc (showString "}")])
     SFunc _ id fvars fargs fret fbody -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, prt 0 fvars, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, prt 0 fbody])
     SRetVoid _ -> prPrec i 0 (concatD [doc (showString "return")])
     SRetExpr _ expr -> prPrec i 0 (concatD [doc (showString "return"), prt 0 expr])
@@ -136,6 +136,11 @@ instance Print (Use a) where
     UOnly _ ids -> prPrec i 0 (concatD [doc (showString "only"), prt 0 ids])
     UHiding _ ids -> prPrec i 0 (concatD [doc (showString "hiding"), prt 0 ids])
     UAs _ id -> prPrec i 0 (concatD [doc (showString "as"), prt 0 id])
+
+instance Print (CExt a) where
+  prt i e = case e of
+    CNoExt _ -> prPrec i 0 (concatD [])
+    CExt _ type_ -> prPrec i 0 (concatD [doc (showString "("), prt 4 type_, doc (showString ")")])
 
 instance Print (CMemb a) where
   prt i e = case e of
@@ -306,6 +311,9 @@ instance Print (Expr a) where
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString "="), prt 0 xs]
 
+instance Print [Type a] where
+  prt = prtList
+
 instance Print (Type a) where
   prt i e = case e of
     TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
@@ -323,7 +331,7 @@ instance Print (Type a) where
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
     TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
     TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
-    TClass _ id cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 cmembs])
+    TClass _ id types cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 types, prt 0 cmembs])
     TModule _ -> prPrec i 1 (concatD [])
     TAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
     TNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
@@ -332,4 +340,7 @@ instance Print (Type a) where
   prtList 2 [] = concatD []
   prtList 2 [x] = concatD [prt 2 x]
   prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
+  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 
