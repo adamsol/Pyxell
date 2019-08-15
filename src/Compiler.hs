@@ -72,6 +72,7 @@ compileStmt statement cont = case statement of
         (bases, membs) <- case ext of
             CNoExt _ -> return $ ([], prepareMembers id membs)
             CExt _ t' -> do
+                t' <- retrieveType t'
                 TClass _ _ _ membs' <- retrieveType t'
                 return $ ([t'], extendMembers membs' (prepareMembers id membs))
         let Ident c = id
@@ -249,9 +250,7 @@ compileAssg typ expr val cont = do
     r <- compileLval expr
     case (r, e) of
         (Just (t, p), _) -> do
-            v <- case t of
-                TClass _ _ _ _ -> bitcast typ t val
-                otherwise -> return $ val
+            v <- bitcast typ t val
             store t v p
             cont
         (Nothing, EVar _ id) -> do
@@ -543,9 +542,11 @@ compileExpr expression = case expression of
             compileMethod (tArray tString) "" (Ident "join") [p1, p7]
     EArray _ exprs -> do
         rs <- mapM compileExpr exprs
-        t <- case rs of
-            r:_ -> return $ fst r
-        p <- initArray t (map snd rs) []
+        t <- case map fst rs of
+            t:ts -> case foldM unifyTypes t ts of
+                Just t' -> return $ t'
+        vs <- forM rs $ \(t', v) -> bitcast t' t v
+        p <- initArray t vs []
         return $ (tArray t, p)
     EArrayCpr pos expr cprs -> do
         let c = "4"  -- initial capacity
@@ -656,11 +657,11 @@ compileExpr expression = case expression of
                 ELambda _ ids e' -> return $ (args1 !! i, Right (ids, e'))
                 otherwise -> do
                     (t, v) <- compileExpr e
-                    case t of
-                        TClass _ _ _ _ -> do
+                    case vars of
+                        [] -> do
                             v' <- bitcast t (args1 !! i) v
                             return $ (args1 !! i, Left v')
-                        otherwise -> do
+                        _:_ -> do  -- TODO: type unification for generic functions
                             return $ (t, Left v)
             return $ M.insert i r m
         -- Extend the map using default arguments.
@@ -803,7 +804,8 @@ compileExpr expression = case expression of
         (t2, v2) <- compileExpr expr2
         (t3, v3) <- compileExpr expr3
         let Just t4 = unifyTypes t2 t3
-        v4 <- select v1 t4 v2 v3
+        [v2', v3'] <- forM [(t2, v2), (t3, v3)] $ \(t, v) -> bitcast t t4 v
+        v4 <- select v1 t4 v2' v3'
         return $ (t4, v4)
     ETuple _ exprs -> do
         rs <- mapM compileExpr exprs

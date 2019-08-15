@@ -363,11 +363,14 @@ gep typ val inds1 inds2 = do
 -- | Outputs LLVM 'bitcast' command.
 bitcast :: Type -> Type -> Value -> Run Value
 bitcast typ1 typ2 ptr = do
-    p <- nextTemp
     s1 <- strType typ1
     s2 <- strType typ2
-    write $ indent [ p ++ " = bitcast " ++ s1 ++ " " ++ ptr ++ " to " ++ s2 ]
-    return $ p
+    if s1 == s2 then do
+        return $ ptr
+    else do
+        p <- nextTemp
+        write $ indent [ p ++ " = bitcast " ++ s1 ++ " " ++ ptr ++ " to " ++ s2 ]
+        return $ p
 
 -- | Outputs LLVM 'ptrtoint' command.
 ptrtoint :: Type -> Value -> Run Value

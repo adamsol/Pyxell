@@ -1,0 +1,30 @@
+
+class Base def
+    Int x: 0
+
+    func f() def
+        print "Base"
+
+class Sub1(Base) def
+    Int x: 1
+
+    func f() def
+        print "Sub1"
+
+class Sub2(Base) def
+    Int x: 2
+
+a = [Sub1(), Sub2()]
+a = [Sub2()]
+print a[0].x
+a[1] = Base()
+print a[1].x
+
+func f(Base*Base t) Base*Base def
+    return t
+
+f((Base(), Sub2()))
+f((Sub1(), Base())).a.f()
+f((Base(), Base()))
+f((Sub1(), Sub1()))
+f((Sub1(), Sub2())).b.f()

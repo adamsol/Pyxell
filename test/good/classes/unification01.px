@@ -1,0 +1,12 @@
+
+class Base def
+    Int x: 0
+
+class Sub1(Base) def
+    Int x: 1
+
+class Sub2(Base) def
+    Int x: 2
+
+obj = Sub1().x == Sub2().x ? Sub1() : Sub2()
+print obj.x

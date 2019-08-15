@@ -1,0 +1,19 @@
+
+class A def
+    Int x: 0
+
+    func f() def
+        print "{self.x} A"
+
+class B(A) def
+    Int x: 1
+
+    func f() def
+        print "{self.x} B"
+
+
+func get<Num T>(T*A a) A def
+    print a.a
+    return a.b
+
+get((4, B())).f()

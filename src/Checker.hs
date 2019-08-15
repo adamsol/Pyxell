@@ -550,7 +550,7 @@ checkExpr expression = case expression of
         let (ts, _) = unzip rs
         case ts of
             [] -> throw pos $ UnknownType
-            t:ts -> case  foldM unifyTypes t ts of
+            t:ts -> case foldM unifyTypes t ts of
                 Just t' -> return $ (tArray t', False)
                 Nothing -> throw pos $ UnknownType
     EArrayCpr pos expr cprs -> do
