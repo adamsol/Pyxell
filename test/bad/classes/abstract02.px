@@ -1,0 +1,14 @@
+
+class A def
+    func f() abstract
+
+    func g() abstract
+
+class B(A) def
+    func f() def
+        skip
+
+    func h() def
+        skip
+
+B()

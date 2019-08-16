@@ -93,18 +93,25 @@ instance Functor CExt where
 data CMemb a
     = MField a (Type a) Ident
     | MFieldDefault a (Type a) Ident (Expr a)
-    | MMethodCode a Ident [FArg a] (FRet a) (Block a)
-    | MMethod a Ident (Type a)
+    | MMethodCode a Ident [FArg a] (FRet a) (MBody a)
     | MConstructor a [FArg a] (Block a)
+    | MMethod a Ident (Type a)
   deriving (Eq, Ord, Show, Read)
 
 instance Functor CMemb where
     fmap f x = case x of
         MField a type_ ident -> MField (f a) (fmap f type_) ident
         MFieldDefault a type_ ident expr -> MFieldDefault (f a) (fmap f type_) ident (fmap f expr)
-        MMethodCode a ident fargs fret block -> MMethodCode (f a) ident (map (fmap f) fargs) (fmap f fret) (fmap f block)
-        MMethod a ident type_ -> MMethod (f a) ident (fmap f type_)
+        MMethodCode a ident fargs fret mbody -> MMethodCode (f a) ident (map (fmap f) fargs) (fmap f fret) (fmap f mbody)
         MConstructor a fargs block -> MConstructor (f a) (map (fmap f) fargs) (fmap f block)
+        MMethod a ident type_ -> MMethod (f a) ident (fmap f type_)
+data MBody a = MDef a (Block a) | MAbstract a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor MBody where
+    fmap f x = case x of
+        MDef a block -> MDef (f a) (fmap f block)
+        MAbstract a -> MAbstract (f a)
 data FVars a = FStd a | FGen a [FVar a]
   deriving (Eq, Ord, Show, Read)
 
@@ -301,6 +308,7 @@ data Type a
     | TTuple a [Type a]
     | TFunc a [Type a] (Type a)
     | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
+    | TFuncAbstract a Ident [FVar a] [FArg a] (Type a)
     | TFuncExt a Ident [FArg a] (Type a)
     | TClass a Ident [Type a] [CMemb a]
     | TModule a
@@ -324,6 +332,7 @@ instance Functor Type where
         TTuple a types -> TTuple (f a) (map (fmap f) types)
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
         TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
+        TFuncAbstract a ident fvars fargs type_ -> TFuncAbstract (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_)
         TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
         TClass a ident types cmembs -> TClass (f a) ident (map (fmap f) types) (map (fmap f) cmembs)
         TModule a -> TModule (f a)

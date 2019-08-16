@@ -146,6 +146,7 @@ tArray = TArray _pos
 tTuple = TTuple _pos
 tFunc = TFunc _pos
 tFuncDef = TFuncDef _pos
+tFuncAbstract = TFuncAbstract _pos
 tFuncExt = TFuncExt _pos
 tClass = TClass _pos
 tModule = TModule _pos
@@ -289,8 +290,9 @@ prepareMembers :: Ident -> [CMemb Pos] -> [CMemb Pos]
 prepareMembers (Ident c) membs = (flip map) membs $ \memb ->
     let self = ANoDefault _pos (tVar (Ident c)) (Ident "self") in
     case memb of
-        MMethodCode pos (Ident f) as ret b ->
-            MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] (self : as) (typeFRet ret) b)
+        MMethodCode pos (Ident f) as ret body -> case body of
+            MDef _ b -> MMethod pos (Ident f) (tFuncDef (Ident (c ++ "_" ++ f)) [] (self : as) (typeFRet ret) b)
+            MAbstract _ -> MMethod pos (Ident f) (tFuncAbstract (Ident (c ++ "_" ++ f)) [] (self : as) (typeFRet ret))
         MConstructor pos as b ->
             MMethod pos (Ident ("_constructor")) (tFuncDef (Ident (c ++ "__constructor")) [] (self : as) tVoid b)
         otherwise -> memb
@@ -335,6 +337,14 @@ findConstructor :: [CMemb Pos] -> Maybe (Int, Type, CMemb Pos)
 findConstructor membs = findMember membs (Ident "_constructor")
 
 -- | Returns list of arguments for a constructor of a class.
+getConstructorArgs :: [CMemb Pos] -> [FArg Pos]
 getConstructorArgs membs = case findMember membs (Ident "_constructor") of
     Just (_, TFuncDef _ _ _ as _ _, _) -> tail as
     Nothing -> []
+
+-- | Returns whether the class has any abstract methods.
+isAbstract :: [CMemb Pos] -> Bool
+isAbstract membs = case membs of
+    (MMethod _ _ (TFuncAbstract _ _ _ _ _)):_ -> True
+    [] -> False
+    _:ms -> isAbstract ms

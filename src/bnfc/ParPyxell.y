@@ -17,6 +17,7 @@ import ErrM
 %name pUse_internal Use
 %name pCExt_internal CExt
 %name pCMemb_internal CMemb
+%name pMBody_internal MBody
 %name pListCMemb_internal ListCMemb
 %name pFVars_internal FVars
 %name pFVar_internal FVar
@@ -112,40 +113,41 @@ import ErrM
   '^' { PT _ (TS _ 46) }
   '^=' { PT _ (TS _ 47) }
   '_' { PT _ (TS _ 48) }
-  'and' { PT _ (TS _ 49) }
-  'as' { PT _ (TS _ 50) }
-  'break' { PT _ (TS _ 51) }
-  'class' { PT _ (TS _ 52) }
-  'constructor' { PT _ (TS _ 53) }
-  'continue' { PT _ (TS _ 54) }
-  'def' { PT _ (TS _ 55) }
-  'do' { PT _ (TS _ 56) }
-  'elif' { PT _ (TS _ 57) }
-  'else' { PT _ (TS _ 58) }
-  'extern' { PT _ (TS _ 59) }
-  'false' { PT _ (TS _ 60) }
-  'for' { PT _ (TS _ 61) }
-  'func' { PT _ (TS _ 62) }
-  'hiding' { PT _ (TS _ 63) }
-  'if' { PT _ (TS _ 64) }
-  'in' { PT _ (TS _ 65) }
-  'lambda' { PT _ (TS _ 66) }
-  'not' { PT _ (TS _ 67) }
-  'only' { PT _ (TS _ 68) }
-  'or' { PT _ (TS _ 69) }
-  'print' { PT _ (TS _ 70) }
-  'return' { PT _ (TS _ 71) }
-  'skip' { PT _ (TS _ 72) }
-  'step' { PT _ (TS _ 73) }
-  'true' { PT _ (TS _ 74) }
-  'until' { PT _ (TS _ 75) }
-  'use' { PT _ (TS _ 76) }
-  'while' { PT _ (TS _ 77) }
-  '{' { PT _ (TS _ 78) }
-  '|' { PT _ (TS _ 79) }
-  '|=' { PT _ (TS _ 80) }
-  '}' { PT _ (TS _ 81) }
-  '~' { PT _ (TS _ 82) }
+  'abstract' { PT _ (TS _ 49) }
+  'and' { PT _ (TS _ 50) }
+  'as' { PT _ (TS _ 51) }
+  'break' { PT _ (TS _ 52) }
+  'class' { PT _ (TS _ 53) }
+  'constructor' { PT _ (TS _ 54) }
+  'continue' { PT _ (TS _ 55) }
+  'def' { PT _ (TS _ 56) }
+  'do' { PT _ (TS _ 57) }
+  'elif' { PT _ (TS _ 58) }
+  'else' { PT _ (TS _ 59) }
+  'extern' { PT _ (TS _ 60) }
+  'false' { PT _ (TS _ 61) }
+  'for' { PT _ (TS _ 62) }
+  'func' { PT _ (TS _ 63) }
+  'hiding' { PT _ (TS _ 64) }
+  'if' { PT _ (TS _ 65) }
+  'in' { PT _ (TS _ 66) }
+  'lambda' { PT _ (TS _ 67) }
+  'not' { PT _ (TS _ 68) }
+  'only' { PT _ (TS _ 69) }
+  'or' { PT _ (TS _ 70) }
+  'print' { PT _ (TS _ 71) }
+  'return' { PT _ (TS _ 72) }
+  'skip' { PT _ (TS _ 73) }
+  'step' { PT _ (TS _ 74) }
+  'true' { PT _ (TS _ 75) }
+  'until' { PT _ (TS _ 76) }
+  'use' { PT _ (TS _ 77) }
+  'while' { PT _ (TS _ 78) }
+  '{' { PT _ (TS _ 79) }
+  '|' { PT _ (TS _ 80) }
+  '|=' { PT _ (TS _ 81) }
+  '}' { PT _ (TS _ 82) }
+  '~' { PT _ (TS _ 83) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -330,11 +332,21 @@ CMemb :: {
 | Type Ident ':' Expr {
   (fst $1, AbsPyxell.MFieldDefault (fst $1)(snd $1)(snd $2)(snd $4)) 
 }
-| 'func' Ident '(' ListFArg ')' FRet 'def' Block {
-  (Just (tokenLineCol $1), AbsPyxell.MMethodCode (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $8)) 
+| 'func' Ident '(' ListFArg ')' FRet MBody {
+  (Just (tokenLineCol $1), AbsPyxell.MMethodCode (Just (tokenLineCol $1)) (snd $2)(snd $4)(snd $6)(snd $7)) 
 }
 | 'constructor' '(' ListFArg ')' 'def' Block {
   (Just (tokenLineCol $1), AbsPyxell.MConstructor (Just (tokenLineCol $1)) (snd $3)(snd $6)) 
+}
+
+MBody :: {
+  (Maybe (Int, Int), MBody (Maybe (Int, Int)))
+}
+: 'def' Block {
+  (Just (tokenLineCol $1), AbsPyxell.MDef (Just (tokenLineCol $1)) (snd $2)) 
+}
+| 'abstract' {
+  (Just (tokenLineCol $1), AbsPyxell.MAbstract (Just (tokenLineCol $1)))
 }
 
 ListCMemb :: {
@@ -947,6 +959,7 @@ pStmt = (>>= return . snd) . pStmt_internal
 pUse = (>>= return . snd) . pUse_internal
 pCExt = (>>= return . snd) . pCExt_internal
 pCMemb = (>>= return . snd) . pCMemb_internal
+pMBody = (>>= return . snd) . pMBody_internal
 pListCMemb = (>>= return . snd) . pListCMemb_internal
 pFVars = (>>= return . snd) . pFVars_internal
 pFVar = (>>= return . snd) . pFVar_internal

@@ -55,6 +55,7 @@ data StaticError = NotComparable Type Type
                  | NotIndexable Type
                  | NotIterable Type
                  | NotClass Type
+                 | AbstractClass Type
                  | InvalidAttr Type Ident
                  | InvalidModule Ident
 
@@ -90,6 +91,7 @@ instance Show StaticError where
         NotIndexable typ -> "Type `" ++ show typ ++ "` is not indexable."
         NotIterable typ -> "Type `" ++ show typ ++ "` is not iterable."
         NotClass typ -> "Type `" ++ show typ ++ "` is not a class."
+        AbstractClass typ -> "Cannot instantiate an abstract class `" ++ show typ ++ "`."
         InvalidAttr typ (Ident a) -> "Type `" ++ show typ ++ "` has no attribute `" ++ a ++  "`."
         InvalidModule (Ident m) -> "Could not load module `" ++ m ++  "`."
 
@@ -657,9 +659,11 @@ checkExpr expression = case expression of
             TFunc _ as r -> return $ ([], as, [], r)
             TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
             TFuncExt _ _ as r -> return $ ([], map typeArg as, as, reduceType r)
-            TClass _ id _ membs -> do
-                let as = getConstructorArgs membs
-                return $ ([], map typeArg as, as, typ)
+            TClass _ id _ membs -> case isAbstract membs of
+                False -> do
+                    let as = getConstructorArgs membs
+                    return $ ([], map typeArg as, as, typ)
+                True -> throw pos $ AbstractClass typ
             otherwise -> throw pos $ NotFunction typ
         -- Build a map of arguments and their positions.
         let m = M.empty

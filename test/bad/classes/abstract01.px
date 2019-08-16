@@ -1,0 +1,5 @@
+
+class Test def
+    func f() abstract
+
+Test()

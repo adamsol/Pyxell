@@ -146,12 +146,17 @@ instance Print (CMemb a) where
   prt i e = case e of
     MField _ type_ id -> prPrec i 0 (concatD [prt 0 type_, prt 0 id])
     MFieldDefault _ type_ id expr -> prPrec i 0 (concatD [prt 0 type_, prt 0 id, doc (showString ":"), prt 0 expr])
-    MMethodCode _ id fargs fret block -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, doc (showString "def"), prt 0 block])
-    MMethod _ id type_ -> prPrec i 0 (concatD [prt 0 id, prt 0 type_])
+    MMethodCode _ id fargs fret mbody -> prPrec i 0 (concatD [doc (showString "func"), prt 0 id, doc (showString "("), prt 0 fargs, doc (showString ")"), prt 0 fret, prt 0 mbody])
     MConstructor _ fargs block -> prPrec i 0 (concatD [doc (showString "constructor"), doc (showString "("), prt 0 fargs, doc (showString ")"), doc (showString "def"), prt 0 block])
+    MMethod _ id type_ -> prPrec i 0 (concatD [prt 0 id, prt 0 type_])
   prtList _ [] = concatD []
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString ";"), prt 0 xs]
+
+instance Print (MBody a) where
+  prt i e = case e of
+    MDef _ block -> prPrec i 0 (concatD [doc (showString "def"), prt 0 block])
+    MAbstract _ -> prPrec i 0 (concatD [doc (showString "abstract")])
 
 instance Print [CMemb a] where
   prt = prtList
@@ -330,6 +335,7 @@ instance Print (Type a) where
     TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
     TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
     TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
+    TFuncAbstract _ id fvars fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_])
     TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
     TClass _ id types cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 types, prt 0 cmembs])
     TModule _ -> prPrec i 1 (concatD [])
