@@ -79,7 +79,7 @@ compileStmt statement cont = case statement of
         let t = tClass id bases membs
         localType id t $ compileMembers bases membs $ do
             env <- ask
-            lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
+            lift $ modify (M.insert ("%c." ++ escapeName id) (Definition env S.empty))
             id' <- case findConstructor membs of  -- handle inheritance to get the correct constructor name
                 Just (_, (TFuncDef _ id' _ _ _ _), _) -> return $ id'
                 Nothing -> return $ Ident (c ++ "__constructor")
@@ -456,7 +456,7 @@ compileTypeVars as1 as2 cont = case (as1, as2) of
 compileClass :: Ident -> [Type] -> [CMemb Pos] -> Run ()
 compileClass id bases membs = do
     let Ident c = id
-    let p = "%c." ++ c
+    let p = "%c." ++ escapeName id
     Definition env set <- lift $ gets (M.! p)
     case S.null set of
         False -> skip

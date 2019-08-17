@@ -1,0 +1,7 @@
+
+class A''B' def
+    Int x'
+
+a''b' = A''B'()
+a''b'.x' = 3
+print a''b'.x'

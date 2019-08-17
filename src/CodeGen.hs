@@ -141,7 +141,7 @@ strType typ = do
                 ss <- mapM strType as
                 s <- strType r
                 return $ s ++ " (" ++ intercalate ", " ss ++ ")*"
-        TClass _ (Ident c) _ _ -> return $ "%c." ++ c ++ "*"
+        TClass _ id _ _ -> return $ "%c." ++ escapeName id ++ "*"
         TModule _ -> return $ "<module>"
 
 -- | Returns LLVM string representation for given type variables.
