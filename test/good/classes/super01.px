@@ -1,0 +1,10 @@
+
+class A def
+    func toString() String def
+        return "A"
+
+class B(A) def
+    func toString() String def
+        return super() + 'B'
+
+print B()

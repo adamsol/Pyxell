@@ -227,6 +227,7 @@ data Expr a
     | ESlice a (Expr a) [Slice a]
     | EAttr a (Expr a) Ident
     | ECall a (Expr a) [CArg a]
+    | ESuper a [CArg a]
     | EPow a (Expr a) (Expr a)
     | EMinus a (Expr a)
     | EPlus a (Expr a)
@@ -269,6 +270,7 @@ instance Functor Expr where
         ESlice a expr slices -> ESlice (f a) (fmap f expr) (map (fmap f) slices)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         ECall a expr cargs -> ECall (f a) (fmap f expr) (map (fmap f) cargs)
+        ESuper a cargs -> ESuper (f a) (map (fmap f) cargs)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMinus a expr -> EMinus (f a) (fmap f expr)
         EPlus a expr -> EPlus (f a) (fmap f expr)

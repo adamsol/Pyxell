@@ -1,0 +1,30 @@
+
+class A def
+    Int x: 0
+
+    func add(Int v, Char c: 'A') Int def
+        print c
+        self.x += v
+        return self.x
+
+class B(A) def
+    func add(Int v: 0, Char c: 'B') Int def
+        return super(v, c=c)
+
+class B2(B) def
+    func add(Int v: 0, Char c: 'B') Int def
+        super(v=v)
+        return self.x
+
+b = B()
+b = B2()
+b.add()
+b.add(11)
+b.add(v=42)
+print b.x
+
+a = A()
+print a.add(10)
+
+a = b
+print a.add(9)

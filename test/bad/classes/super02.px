@@ -1,0 +1,8 @@
+
+class A def
+    func f() def
+        return
+
+class B(A) def
+    func g() def
+        super()

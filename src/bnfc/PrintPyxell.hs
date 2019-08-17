@@ -284,6 +284,7 @@ instance Print (Expr a) where
     ESlice _ expr slices -> prPrec i 13 (concatD [prt 13 expr, doc (showString "["), prt 0 slices, doc (showString "]")])
     EAttr _ expr id -> prPrec i 13 (concatD [prt 13 expr, doc (showString "."), prt 0 id])
     ECall _ expr cargs -> prPrec i 13 (concatD [prt 13 expr, doc (showString "("), prt 0 cargs, doc (showString ")")])
+    ESuper _ cargs -> prPrec i 13 (concatD [doc (showString "super"), doc (showString "("), prt 0 cargs, doc (showString ")")])
     EPow _ expr1 expr2 -> prPrec i 12 (concatD [prt 13 expr1, doc (showString "^"), prt 12 expr2])
     EMinus _ expr -> prPrec i 12 (concatD [doc (showString "-"), prt 12 expr])
     EPlus _ expr -> prPrec i 12 (concatD [doc (showString "+"), prt 12 expr])

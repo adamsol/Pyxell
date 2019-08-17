@@ -1,0 +1,21 @@
+
+class A def
+    Char x
+
+    constructor() def
+        self.x = 'A'
+
+    func f() def
+        print self.x
+
+class B(A) def
+    Int y
+
+class C(B) def
+    constructor() def
+        super()
+
+    func f() def
+        super()
+
+C().f()

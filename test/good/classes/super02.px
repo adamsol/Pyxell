@@ -1,0 +1,16 @@
+
+class A def
+    constructor(Float x) def
+        print x
+
+class B(A) def
+    constructor(String x) def
+        super(x.toFloat()+0.5)
+        print x
+
+class C(B) def
+    constructor(Int x) def
+        print x
+        super(x.toString()+'.')
+
+C(7)

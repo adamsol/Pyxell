@@ -68,7 +68,7 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Lambda expressions (+)
 * Generic functions (+/-)
 * Module system (+/-)
-* Classes (+)
+* Classes with safe references (+/-)
 * Generic types
 * Multiple inheritance 
 * Separate nullable types

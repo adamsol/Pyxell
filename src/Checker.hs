@@ -56,6 +56,7 @@ data StaticError = NotComparable Type Type
                  | NotIterable Type
                  | NotClass Type
                  | AbstractClass Type
+                 | InvalidSuperCall
                  | InvalidAttr Type Ident
                  | InvalidModule Ident
 
@@ -92,6 +93,7 @@ instance Show StaticError where
         NotIterable typ -> "Type `" ++ show typ ++ "` is not iterable."
         NotClass typ -> "Type `" ++ show typ ++ "` is not a class."
         AbstractClass typ -> "Cannot instantiate an abstract class `" ++ show typ ++ "`."
+        InvalidSuperCall -> "Cannot call `super` here."
         InvalidAttr typ (Ident a) -> "Type `" ++ show typ ++ "` has no attribute `" ++ a ++  "`."
         InvalidModule (Ident m) -> "Could not load module `" ++ m ++  "`."
 
@@ -264,8 +266,13 @@ checkStmt statement cont = case statement of
                 MFieldDefault pos t _ e -> do
                     (t', _) <- checkExpr e
                     checkCast pos t' t >> skip
-                MMethod pos _ (TFuncDef _ id' _ as r b) -> do
-                    checkFunc pos id' [] as r (Just b) skip
+                MMethod pos (Ident f) (TFuncDef _ id' _ as r b) -> do
+                    c <- case bases of
+                        [TClass _ _ _ ms] -> case findMember ms (Ident f) of
+                            Just (_, super@(TFuncDef _ _ _ _ _ _), _) -> return $ localVar (Ident "#super") super 0
+                            otherwise -> return $ \x -> x
+                        [] -> return $ \x -> x
+                    c $ checkFunc pos id' [] as r (Just b) skip
                 otherwise -> skip
             cont
     SFunc pos id vars args ret body -> do
@@ -758,6 +765,12 @@ checkExpr expression = case expression of
                 (t, id):as -> checkLambdaArg t id $ checkLambdaArgs as cont
             checkLambdaArg typ id cont = do
                 checkDecl _pos typ id $ cont
+    ESuper pos args -> do
+        r <- asks $ M.lookup (Ident "#super")
+        case r of
+            Just _ -> do
+                checkExpr (ECall _pos (EVar _pos (Ident "#super")) ((APos _pos (EVar _pos (Ident "self"))) : args))
+            Nothing -> throw pos $ InvalidSuperCall
     EPow pos expr1 expr2 -> checkBinary pos "^" expr1 expr2
     EMinus pos expr -> checkUnary pos "-" expr
     EPlus pos expr -> checkUnary pos "+" expr

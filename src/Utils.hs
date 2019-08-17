@@ -44,6 +44,7 @@ instance {-# OVERLAPS #-} Show Type where
         TFuncDef _ _ _ as r _ -> show (tFunc (map typeArg as) r)
         TFuncExt _ _ as r -> show (tFunc (map typeArg as) r)
         TClass _ (Ident c) _ _ -> c
+        TModule _ -> "<module>"
         TAny _ -> "Any"
         TNum _ -> "Num"
 

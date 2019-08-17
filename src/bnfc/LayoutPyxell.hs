@@ -279,15 +279,16 @@ sToken p s = PT p (TS s i)
       "return" -> 72
       "skip" -> 73
       "step" -> 74
-      "true" -> 75
-      "until" -> 76
-      "use" -> 77
-      "while" -> 78
-      "{" -> 79
-      "|" -> 80
-      "|=" -> 81
-      "}" -> 82
-      "~" -> 83
+      "super" -> 75
+      "true" -> 76
+      "until" -> 77
+      "use" -> 78
+      "while" -> 79
+      "{" -> 80
+      "|" -> 81
+      "|=" -> 82
+      "}" -> 83
+      "~" -> 84
       _ -> error $ "not a reserved word: " ++ show s
 
 -- | Get the position of a token.

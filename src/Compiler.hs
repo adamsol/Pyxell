@@ -77,7 +77,7 @@ compileStmt statement cont = case statement of
                 return $ ([t'], extendMembers membs' (prepareMembers id membs))
         let Ident c = id
         let t = tClass id bases membs
-        localType id t $ compileMembers membs $ do
+        localType id t $ compileMembers bases membs $ do
             env <- ask
             lift $ modify (M.insert ("%c." ++ c) (Definition env S.empty))
             id' <- case findConstructor membs of  -- handle inheritance to get the correct constructor name
@@ -223,12 +223,17 @@ compileStmt statement cont = case statement of
                 BElIf _ expr block -> do
                     compileIf expr (compileBlock block) exit
                     compileBranches bs exit
-        compileMembers membs cont = case membs of
+        compileMembers bases membs cont = case membs of
             [] -> cont
-            memb:ms -> compileMember memb $ compileMembers ms cont
-        compileMember memb cont = case memb of
-            MMethod pos _ (TFuncDef _ id' _ _ _ _) -> do
-                localFunc id' (typeMember memb) $ cont
+            memb:ms -> compileMember bases memb $ compileMembers bases ms cont
+        compileMember bases memb cont = case memb of
+            MMethod pos (Ident f) (TFuncDef _ id' _ _ _ _) -> do
+                super <- case bases of
+                    [TClass _ _ _ ms] -> case findMember ms (Ident f) of
+                        Just (_, super@(TFuncDef _ (Ident f') _ _ _ _), _) -> return $ f'
+                        otherwise -> return $ ""
+                    [] -> return $ ""
+                localVar (Ident "#super") tVoid super $ localFunc id' (typeMember memb) $ cont
             otherwise -> cont
 
 -- | Compiles a list of variable assignments and continues with changed environment.
@@ -724,6 +729,9 @@ compileExpr expression = case expression of
                     otherwise -> return $ func
                 v <- call r func args4
                 return $ (r, v)
+    ESuper _ args -> do
+        (_, f) <- asks (M.! (Ident "#super"))
+        compileExpr (ECall _pos (EVar _pos (Ident f)) ((APos _pos (EVar _pos (Ident "self"))) : args))
     EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
     EMinus _ expr -> do
         (t, v1) <- compileExpr expr

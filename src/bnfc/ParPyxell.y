@@ -139,15 +139,16 @@ import ErrM
   'return' { PT _ (TS _ 72) }
   'skip' { PT _ (TS _ 73) }
   'step' { PT _ (TS _ 74) }
-  'true' { PT _ (TS _ 75) }
-  'until' { PT _ (TS _ 76) }
-  'use' { PT _ (TS _ 77) }
-  'while' { PT _ (TS _ 78) }
-  '{' { PT _ (TS _ 79) }
-  '|' { PT _ (TS _ 80) }
-  '|=' { PT _ (TS _ 81) }
-  '}' { PT _ (TS _ 82) }
-  '~' { PT _ (TS _ 83) }
+  'super' { PT _ (TS _ 75) }
+  'true' { PT _ (TS _ 76) }
+  'until' { PT _ (TS _ 77) }
+  'use' { PT _ (TS _ 78) }
+  'while' { PT _ (TS _ 79) }
+  '{' { PT _ (TS _ 80) }
+  '|' { PT _ (TS _ 81) }
+  '|=' { PT _ (TS _ 82) }
+  '}' { PT _ (TS _ 83) }
+  '~' { PT _ (TS _ 84) }
 
   L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
@@ -526,6 +527,9 @@ Expr13 :: {
 }
 | Expr13 '(' ListCArg ')' {
   (fst $1, AbsPyxell.ECall (fst $1)(snd $1)(snd $3)) 
+}
+| 'super' '(' ListCArg ')' {
+  (Just (tokenLineCol $1), AbsPyxell.ESuper (Just (tokenLineCol $1)) (snd $3)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)

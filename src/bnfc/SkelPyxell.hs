@@ -135,6 +135,7 @@ transExpr x = case x of
   ESlice _ expr slices -> failure x
   EAttr _ expr ident -> failure x
   ECall _ expr cargs -> failure x
+  ESuper _ cargs -> failure x
   EPow _ expr1 expr2 -> failure x
   EMinus _ expr -> failure x
   EPlus _ expr -> failure x
