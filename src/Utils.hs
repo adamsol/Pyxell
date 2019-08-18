@@ -49,8 +49,17 @@ instance {-# OVERLAPS #-} Show Type where
         TNum _ -> "Num"
 
 instance {-# OVERLAPS #-} Eq Type where
-    typ1 == typ2 = case (typ1, typ2) of
+    typ1 == typ2 = case (reduceType typ1, reduceType typ2) of
         (TVar _ id1, TVar _ id2) -> id1 == id2
+        (TVoid _, TVoid _) -> True
+        (TInt _, TInt _) -> True
+        (TFloat _, TFloat _) -> True
+        (TBool _, TBool _) -> True
+        (TChar _, TChar _) -> True
+        (TString _, TString _) -> True
+        (TArray _ t1', TArray _ t2') -> t1' == t2'
+        (TTuple _ ts1, TTuple _ ts2) -> ts1 == ts2
+        (TFunc _ as1 r1, TFunc _ as2 r2) -> as1 == as2 && r1 == r2
         (TClass _ id1 _ _, TClass _ id2 _ _) -> id1 == id2
         otherwise -> False
 
@@ -61,10 +70,10 @@ third (_, _, x) = x
 
 -- | Returns a common supertype of given types.
 unifyTypes :: Type -> Type -> Maybe Type
-unifyTypes t1 t2 = do
-    let t1' = reduceType t1
-    let t2' = reduceType t2
-    case (t1', t2') of
+unifyTypes typ1 typ2 = do
+    let t1 = reduceType typ1
+    let t2 = reduceType typ2
+    case (t1, t2) of
         (TVar _ id1, TVar _ id2) -> if id1 == id2 then Just t1 else Nothing
         (TVoid _, TVoid _) -> Just tVoid
         (TInt _, TInt _) -> Just tInt
@@ -72,7 +81,7 @@ unifyTypes t1 t2 = do
         (TBool _, TBool _) -> Just tBool
         (TChar _, TChar _) -> Just tChar
         (TString _, TString _) -> Just tString
-        (TArray _ t1', TArray _ t2') -> fmap tArray (unifyTypes t1' t2')
+        (TArray _ t1', TArray _ t2') -> if t1' == t2' then Just (tArray t1') else Nothing  -- arrays are not covariant
         (TTuple _ ts1, TTuple _ ts2) ->
             if length ts1 == length ts2 then fmap tTuple (sequence (map (uncurry unifyTypes) (zip ts1 ts2)))
             else Nothing
@@ -81,7 +90,7 @@ unifyTypes t1 t2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
-        (TClass _ _ _ _, TClass _ _ _ _) -> findCommonSuperclass t1' t2' t1' t2'
+        (TClass _ _ _ _, TClass _ _ _ _) -> findCommonSuperclass t1 t2 t1 t2
         otherwise -> Nothing
     where
         findCommonSuperclass t1 t2 t1'@(TClass _ id1 bs1 _) t2'@(TClass _ id2 bs2 _) =

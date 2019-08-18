@@ -1,0 +1,9 @@
+
+class A def
+    Int x
+
+class B(A) def
+    Int y
+
+a = [A()]
+a = [B()]

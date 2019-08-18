@@ -15,8 +15,7 @@ class Sub2(Base) def
     Int x: 2
 
 a = [Sub1(), Sub2()]
-a = [Sub2()]
-print a[0].x
+print a[1].x
 a[1] = Base()
 print a[1].x
 

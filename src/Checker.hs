@@ -715,7 +715,9 @@ checkExpr expression = case expression of
         where
             checkArgs as1 as2 cont = case (as1, as2) of
                 (_, []) -> cont
-                ((Left t1):as1, t2:as2) -> checkArg t1 t2 $ checkArgs as1 as2 cont
+                ((Left t1):as1, t2:as2) -> checkArg t1 t2 $ do
+                    checkCast pos t1 t2
+                    checkArgs as1 as2 cont
                 (_:as1, _:as2) -> checkArgs as1 as2 cont
             checkArg t1 t2 cont = case (reduceType t1, reduceType t2) of
                 (_, t2'@(TVar _ id)) -> do
@@ -737,7 +739,6 @@ checkExpr expression = case expression of
                     if length as1 == length as2 then checkArgs (map Left as1) as2 (checkArg r1 r2 cont)
                     else throw pos $ IllegalAssignment t1 t2
                 otherwise -> do
-                    checkCast pos t1 t2
                     cont
             checkLambdas as1 as2 cont = case (as1, as2) of
                 (_, []) -> cont
