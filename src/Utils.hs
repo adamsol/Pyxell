@@ -117,6 +117,7 @@ reduceType t = case t of
     TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
     TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
     TFuncDef _ _ _ as r _ -> tFunc (map typeArg as) (reduceType r)
+    TFuncAbstract _ _ _ as r -> tFunc (map typeArg as) (reduceType r)
     TFuncExt _ _ as r -> tFunc (map typeArg as) (reduceType r)
     otherwise -> t
 
@@ -135,6 +136,7 @@ retrieveType t = case t of
         r <- retrieveType r
         return $ tFunc as r
     TFuncDef _ _ _ as r _ -> retrieveType (tFunc (map typeArg as) r)
+    TFuncAbstract _ _ _ as r -> retrieveType (tFunc (map typeArg as) r)
     TFuncExt _ _ as r -> retrieveType (tFunc (map typeArg as) r)
     otherwise -> return $ t
 
@@ -331,6 +333,13 @@ typeMember memb = case memb of
     MField _ t _ -> reduceType t
     MFieldDefault _ t _ _ -> reduceType t
     MMethod _ _ t -> t
+
+-- | Retrieves position data of a class member.
+posMember :: CMemb Pos -> Pos
+posMember memb = case memb of
+    MField pos _ _ -> pos
+    MFieldDefault pos _ _ _ -> pos
+    MMethod pos _ _ -> pos
 
 -- | Finds class member by its name.
 findMember :: [CMemb Pos] -> Ident -> Maybe (Int, Type, CMemb Pos)

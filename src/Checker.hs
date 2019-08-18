@@ -9,6 +9,7 @@ import Control.Monad.Trans.Error
 import Data.Char
 import Data.List
 import qualified Data.Map as M
+import qualified Data.Set as S
 
 import AbsPyxell hiding (Type)
 import ParPyxell
@@ -35,6 +36,7 @@ data StaticError = NotComparable Type Type
                  | NotPrintable Type
                  | UndeclaredIdentifier Ident
                  | RedeclaredIdentifier Ident
+                 | RepeatedMember Ident
                  | NotType Ident
                  | NotVariable Ident
                  | VoidDeclaration
@@ -72,6 +74,7 @@ instance Show StaticError where
         NotPrintable typ -> "Variable of type `" ++ show typ ++ "` cannot be printed."
         UndeclaredIdentifier (Ident x) -> "Undeclared identifier `" ++ x ++ "`."
         RedeclaredIdentifier (Ident x) -> "Identifier `" ++ x ++ "` is already declared."
+        RepeatedMember (Ident x) -> "Repeated member `" ++ x ++ "` in class definition."
         NotType (Ident x) -> "Identifier `" ++ x ++ "` does not represent a type."
         NotVariable (Ident x) -> "Identifier `" ++ x ++ "` does not represent a variable."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
@@ -164,13 +167,17 @@ checkVar pos id = do
 
 -- | Checks whether type identifier exists in the environment and returns the actual type.
 checkType :: Pos -> Type -> Run Type
-checkType pos typ = case typ of
+checkType pos typ = case reduceType typ of
     TVar _ id -> do
         r <- asks (M.lookup id)
         case r of
             Just (t, Level (-1)) -> return $ t
             otherwise -> throw pos $ NotType id
     otherwise -> return $ typ
+
+-- | Same as `checkType`, but skips the returned type.
+checkType_ :: Pos -> Type -> Run ()
+checkType_ pos typ = checkType pos typ >> skip
 
 -- | Declares a variable and continues with changed environment.
 checkDecl :: Pos -> Type -> Ident -> Run a -> Run a
@@ -180,7 +187,7 @@ checkDecl pos typ id cont = case typ of
         l <- getLevel
         localVar id typ l cont
 
--- | Checks if one type can be cast to another, and returns the unified type.
+-- | Checks if one type can be cast to another and returns the unified type.
 checkCast :: Pos -> Type -> Type -> Run Type
 checkCast pos typ1 typ2 = case (typ1, typ2) of
     (TInt _, TNum _) -> return $ typ1
@@ -199,6 +206,10 @@ checkCast pos typ1 typ2 = case (typ1, typ2) of
                     TClass _ _ _ _ -> if t2 == t' then return $ t' else throw pos $ IllegalAssignment typ1 typ2
                     otherwise -> return $ t'
                 Nothing -> throw pos $ IllegalAssignment typ1 typ2
+
+-- | Same as `checkCast`, but skips the returned type.
+checkCast_ :: Pos -> Type -> Type -> Run ()
+checkCast_ pos typ1 typ2 = checkCast pos typ1 typ2 >> skip
 
 
 -- | Checks the whole program and returns environment.
@@ -251,21 +262,33 @@ checkStmt statement cont = case statement of
         case r of
             Nothing -> skip
             Just _ -> throw pos $ RedeclaredIdentifier id
+        membs <- return $ prepareMembers id membs
+        foldM' S.empty membs $ \s m -> let id' = idMember m in case S.member id' s of
+            False -> return $ S.insert id' s
+            True -> throw (posMember m) $ RepeatedMember id'
         (bases, membs) <- case ext of
-            CNoExt _ -> return $ ([], prepareMembers id membs)
+            CNoExt _ -> return $ ([], membs)
             CExt _ t' -> do
                 t' <- retrieveType t'
                 TClass _ _ _ membs' <- case t' of
                     TClass _ _ _ _ -> return $ t'
                     TVar _ id' -> throw pos $ NotType id'
                     otherwise -> throw pos $ NotClass t'
-                return $ ([t'], extendMembers membs' (prepareMembers id membs))
+                forM membs $ \m -> case findMember membs' (idMember m) of
+                    Just (_, t, _) -> case reduceType t of
+                        TFunc _ _ _ -> skip  -- TODO check method compatibility as well
+                        otherwise -> checkCast_ (posMember m) (typeMember m) t
+                    Nothing -> skip
+                return $ ([t'], extendMembers membs' membs)
         let t = tClass id bases membs
         checkDecl pos t id $ localType id t $ do
             forM membs $ \memb -> case memb of
+                MField pos t _ -> do
+                    checkType_ pos t
                 MFieldDefault pos t _ e -> do
+                    checkType pos t
                     (t', _) <- checkExpr e
-                    checkCast pos t' t >> skip
+                    checkCast_ pos t' t
                 MMethod pos (Ident f) (TFuncDef _ id' _ as r b) -> do
                     c <- case bases of
                         [TClass _ _ _ ms] -> case findMember ms (Ident f) of
@@ -505,6 +528,7 @@ checkFunc pos id vars args ret block cont = do
         case block of
             Just b -> nextLevel $ checkDecl pos t id $ do  -- so recursion works inside the function
                 checkTypeVars vars $ checkArgs args False $ do
+                    checkType pos ret
                     localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ checkBlock b
             Nothing -> skip
         cont

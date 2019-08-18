@@ -1,0 +1,22 @@
+
+class A def
+    String x: "A"
+
+class A'(A) def
+    String x': "A'"
+
+
+class B def
+    A a
+
+class B'(B) def
+    A' a
+
+
+b' = B'()
+b'.a = A'()
+print b'.a.x'
+
+b = B()
+b.a = b'.a
+print b.a.x
