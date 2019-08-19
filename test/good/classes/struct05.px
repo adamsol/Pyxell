@@ -1,0 +1,11 @@
+
+class A def
+    Char x: 'A'
+
+A a
+a = A()
+print a.x
+
+A a = A()
+a.x = '#'
+print a.x

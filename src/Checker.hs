@@ -370,6 +370,16 @@ checkStmt statement cont = case statement of
         checkAssgOp pos EBOr expr1 expr2 cont
     SAssgBXor pos expr1 expr2 -> do
         checkAssgOp pos EBXor expr1 expr2 cont
+    SDeclAssg pos typ id expr -> do
+        checkType pos typ
+        typ <- retrieveType typ
+        (t, _) <- checkExpr expr
+        checkCast pos t typ
+        checkDecl pos typ id cont
+    SDecl pos typ id -> do
+        checkType pos typ
+        typ <- retrieveType typ
+        checkDecl pos typ id cont
     SIf pos brs el -> do
         checkBranches brs
         case el of

@@ -5,5 +5,4 @@ class A def
 class B def
     Int x
 
-a = A()
-a = B()
+A a = B()

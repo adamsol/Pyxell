@@ -97,6 +97,40 @@ instance Print (Program a) where
 instance Print [Stmt a] where
   prt = prtList
 
+instance Print [Type a] where
+  prt = prtList
+
+instance Print (Type a) where
+  prt i e = case e of
+    TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
+    TArr _ n type_ -> prPrec i 4 (concatD [prt 0 n, prt 4 type_])
+    TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
+    TVar _ id -> prPrec i 4 (concatD [prt 0 id])
+    TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
+    TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
+    TFloat _ -> prPrec i 4 (concatD [doc (showString "Float")])
+    TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
+    TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])
+    TString _ -> prPrec i 4 (concatD [doc (showString "String")])
+    TArray _ type_ -> prPrec i 3 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
+    TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
+    TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
+    TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
+    TFuncAbstract _ id fvars fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_])
+    TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
+    TClass _ id types cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 types, prt 0 cmembs])
+    TModule _ -> prPrec i 1 (concatD [])
+    TAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
+    TNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
+  prtList 3 [x] = concatD [prt 3 x]
+  prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]
+  prtList 2 [] = concatD []
+  prtList 2 [x] = concatD [prt 2 x]
+  prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
+  prtList _ [] = concatD []
+  prtList _ [x] = concatD [prt 0 x]
+  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
+
 instance Print (Stmt a) where
   prt i e = case e of
     SUse _ id use -> prPrec i 0 (concatD [doc (showString "use"), prt 0 id, prt 0 use])
@@ -107,6 +141,8 @@ instance Print (Stmt a) where
     SSkip _ -> prPrec i 0 (concatD [doc (showString "skip")])
     SPrint _ expr -> prPrec i 0 (concatD [doc (showString "print"), prt 0 expr])
     SPrintEmpty _ -> prPrec i 0 (concatD [doc (showString "print")])
+    SDeclAssg _ type_ id expr -> prPrec i 0 (concatD [prt 2 type_, prt 0 id, doc (showString "="), prt 0 expr])
+    SDecl _ type_ id -> prPrec i 0 (concatD [prt 2 type_, prt 0 id])
     SAssg _ exprs -> prPrec i 0 (concatD [prt 0 exprs])
     SAssgPow _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "^="), prt 0 expr2])
     SAssgMul _ expr1 expr2 -> prPrec i 0 (concatD [prt 0 expr1, doc (showString "*="), prt 0 expr2])
@@ -316,38 +352,4 @@ instance Print (Expr a) where
   prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
   prtList _ [x] = concatD [prt 0 x]
   prtList _ (x:xs) = concatD [prt 0 x, doc (showString "="), prt 0 xs]
-
-instance Print [Type a] where
-  prt = prtList
-
-instance Print (Type a) where
-  prt i e = case e of
-    TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
-    TArr _ n type_ -> prPrec i 4 (concatD [prt 0 n, prt 4 type_])
-    TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
-    TVar _ id -> prPrec i 4 (concatD [prt 0 id])
-    TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
-    TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
-    TFloat _ -> prPrec i 4 (concatD [doc (showString "Float")])
-    TBool _ -> prPrec i 4 (concatD [doc (showString "Bool")])
-    TChar _ -> prPrec i 4 (concatD [doc (showString "Char")])
-    TString _ -> prPrec i 4 (concatD [doc (showString "String")])
-    TArray _ type_ -> prPrec i 3 (concatD [doc (showString "["), prt 0 type_, doc (showString "]")])
-    TTuple _ types -> prPrec i 2 (concatD [prt 3 types])
-    TFunc _ types type_ -> prPrec i 1 (concatD [prt 2 types, doc (showString "->"), prt 1 type_])
-    TFuncDef _ id fvars fargs type_ block -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_, prt 0 block])
-    TFuncAbstract _ id fvars fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_])
-    TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
-    TClass _ id types cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 types, prt 0 cmembs])
-    TModule _ -> prPrec i 1 (concatD [])
-    TAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
-    TNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
-  prtList 3 [x] = concatD [prt 3 x]
-  prtList 3 (x:xs) = concatD [prt 3 x, doc (showString "*"), prt 3 xs]
-  prtList 2 [] = concatD []
-  prtList 2 [x] = concatD [prt 2 x]
-  prtList 2 (x:xs) = concatD [prt 2 x, doc (showString ","), prt 2 xs]
-  prtList _ [] = concatD []
-  prtList _ [x] = concatD [prt 0 x]
-  prtList _ (x:xs) = concatD [prt 0 x, doc (showString ","), prt 0 xs]
 

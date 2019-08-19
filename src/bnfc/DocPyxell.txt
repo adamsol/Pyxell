@@ -17,8 +17,8 @@ reserved words excluded.
 
 
 ===Literals===
-
 Integer literals //Integer// are nonempty sequences of digits.
+
 
 
 Double-precision float literals //Double// have the structure
@@ -54,18 +54,18 @@ The reserved words used in Pyxell are the following:
   | ``until`` | ``use`` | ``while`` | 
 
 The symbols used in Pyxell are the following:
-  | ; | { | } | (
-  | ) | : | < | >
-  | , | = | ^= | *=
+  | ; | [ | ] | ->
+  | * | , | ( | )
+  | { | } | : | <
+  | > | = | ^= | *=
   | /= | %= | += | -=
   | <<= | >>= | &= | |=
-  | $= | _ | [ | ]
-  | . | ^ | - | +
-  | ~ | * | / | %
-  | << | >> | & | |
-  | $ | .. | ... | ==
-  | != | <= | >= | ?
-  | -> |  |  | 
+  | $= | _ | . | ^
+  | - | + | ~ | /
+  | % | << | >> | &
+  | | | $ | .. | ...
+  | == | != | <= | >=
+  | ? |  |  | 
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -80,6 +80,31 @@ All other symbols are terminals.
   | //[Stmt]// | -> | **eps**
   |  |  **|**  | //Stmt// 
   |  |  **|**  | //Stmt// ``;`` //[Stmt]// 
+  | //Type4// | -> | //Ident// 
+  |  |  **|**  | ``Void`` 
+  |  |  **|**  | ``Int`` 
+  |  |  **|**  | ``Float`` 
+  |  |  **|**  | ``Bool`` 
+  |  |  **|**  | ``Char`` 
+  |  |  **|**  | ``String`` 
+  |  |  **|**  | ``(`` //Type// ``)`` 
+  | //Type3// | -> | ``[`` //Type// ``]`` 
+  |  |  **|**  | //Type4// 
+  | //Type2// | -> | //[Type3]// 
+  |  |  **|**  | //Type3// 
+  | //Type1// | -> | //[Type2]// ``->`` //Type1// 
+  |  |  **|**  | ``Any`` 
+  |  |  **|**  | ``Num`` 
+  |  |  **|**  | //Type2// 
+  | //[Type3]// | -> | //Type3// 
+  |  |  **|**  | //Type3// ``*`` //[Type3]// 
+  | //[Type2]// | -> | **eps**
+  |  |  **|**  | //Type2// 
+  |  |  **|**  | //Type2// ``,`` //[Type2]// 
+  | //[Type]// | -> | **eps**
+  |  |  **|**  | //Type// 
+  |  |  **|**  | //Type// ``,`` //[Type]// 
+  | //Type// | -> | //Type1// 
   | //Stmt// | -> | ``use`` //Ident// //Use// 
   |  |  **|**  | ``class`` //Ident// //CExt// ``def`` ``{`` //[CMemb]// ``}`` 
   |  |  **|**  | ``func`` //Ident// //FVars// ``(`` //[FArg]// ``)`` //FRet// //FBody// 
@@ -88,6 +113,8 @@ All other symbols are terminals.
   |  |  **|**  | ``skip`` 
   |  |  **|**  | ``print`` //Expr// 
   |  |  **|**  | ``print`` 
+  |  |  **|**  | //Type2// //Ident// ``=`` //Expr// 
+  |  |  **|**  | //Type2// //Ident// 
   |  |  **|**  | //[Expr]// 
   |  |  **|**  | //Expr// ``^=`` //Expr// 
   |  |  **|**  | //Expr// ``*=`` //Expr// 
@@ -229,30 +256,5 @@ All other symbols are terminals.
   |  |  **|**  | //Ident// 
   |  |  **|**  | //Ident// ``,`` //[Ident]// 
   | //Expr// | -> | //Expr1// 
-  | //Type4// | -> | //Ident// 
-  |  |  **|**  | ``Void`` 
-  |  |  **|**  | ``Int`` 
-  |  |  **|**  | ``Float`` 
-  |  |  **|**  | ``Bool`` 
-  |  |  **|**  | ``Char`` 
-  |  |  **|**  | ``String`` 
-  |  |  **|**  | ``(`` //Type// ``)`` 
-  | //Type3// | -> | ``[`` //Type// ``]`` 
-  |  |  **|**  | //Type4// 
-  | //Type2// | -> | //[Type3]// 
-  |  |  **|**  | //Type3// 
-  | //Type1// | -> | //[Type2]// ``->`` //Type1// 
-  |  |  **|**  | ``Any`` 
-  |  |  **|**  | ``Num`` 
-  |  |  **|**  | //Type2// 
-  | //[Type3]// | -> | //Type3// 
-  |  |  **|**  | //Type3// ``*`` //[Type3]// 
-  | //[Type2]// | -> | **eps**
-  |  |  **|**  | //Type2// 
-  |  |  **|**  | //Type2// ``,`` //[Type2]// 
-  | //[Type]// | -> | **eps**
-  |  |  **|**  | //Type// 
-  |  |  **|**  | //Type// ``,`` //[Type]// 
-  | //Type// | -> | //Type1// 
 
 

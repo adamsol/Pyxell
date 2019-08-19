@@ -5,9 +5,8 @@ class A def
 class B(A) def
     String y: "y"
 
-a = A()
-b = B()
+B b = B()
 print b.x, b.y
 b.x = 5
-a = b
+A a = b
 print a.x

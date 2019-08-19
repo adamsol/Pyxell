@@ -15,6 +15,28 @@ transIdent x = case x of
 transProgram :: Show a => Program a -> Result
 transProgram x = case x of
   Program _ stmts -> failure x
+transType :: Show a => Type a -> Result
+transType x = case x of
+  TPtr _ type_ -> failure x
+  TArr _ integer type_ -> failure x
+  TDeref _ type_ -> failure x
+  TVar _ ident -> failure x
+  TVoid _ -> failure x
+  TInt _ -> failure x
+  TFloat _ -> failure x
+  TBool _ -> failure x
+  TChar _ -> failure x
+  TString _ -> failure x
+  TArray _ type_ -> failure x
+  TTuple _ types -> failure x
+  TFunc _ types type_ -> failure x
+  TFuncDef _ ident fvars fargs type_ block -> failure x
+  TFuncAbstract _ ident fvars fargs type_ -> failure x
+  TFuncExt _ ident fargs type_ -> failure x
+  TClass _ ident types cmembs -> failure x
+  TModule _ -> failure x
+  TAny _ -> failure x
+  TNum _ -> failure x
 transStmt :: Show a => Stmt a -> Result
 transStmt x = case x of
   SUse _ ident use -> failure x
@@ -25,6 +47,8 @@ transStmt x = case x of
   SSkip _ -> failure x
   SPrint _ expr -> failure x
   SPrintEmpty _ -> failure x
+  SDeclAssg _ type_ ident expr -> failure x
+  SDecl _ type_ ident -> failure x
   SAssg _ exprs -> failure x
   SAssgPow _ expr1 expr2 -> failure x
   SAssgMul _ expr1 expr2 -> failure x
@@ -160,26 +184,4 @@ transExpr x = case x of
   ETuple _ exprs -> failure x
   ECond _ expr1 expr2 expr3 -> failure x
   ELambda _ idents expr -> failure x
-transType :: Show a => Type a -> Result
-transType x = case x of
-  TPtr _ type_ -> failure x
-  TArr _ integer type_ -> failure x
-  TDeref _ type_ -> failure x
-  TVar _ ident -> failure x
-  TVoid _ -> failure x
-  TInt _ -> failure x
-  TFloat _ -> failure x
-  TBool _ -> failure x
-  TChar _ -> failure x
-  TString _ -> failure x
-  TArray _ type_ -> failure x
-  TTuple _ types -> failure x
-  TFunc _ types type_ -> failure x
-  TFuncDef _ ident fvars fargs type_ block -> failure x
-  TFuncAbstract _ ident fvars fargs type_ -> failure x
-  TFuncExt _ ident fargs type_ -> failure x
-  TClass _ ident types cmembs -> failure x
-  TModule _ -> failure x
-  TAny _ -> failure x
-  TNum _ -> failure x
 

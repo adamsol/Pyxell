@@ -147,6 +147,15 @@ compileStmt statement cont = case statement of
         compileAssgOp EBOr expr1 expr2 cont
     SAssgBXor pos expr1 expr2 -> do
         compileAssgOp EBXor expr1 expr2 cont
+    SDeclAssg _ typ id expr -> do
+        let t = reduceType typ
+        (t', v') <- compileExpr expr
+        v <- bitcast t' t v'
+        variable t id v cont
+    SDecl _ typ id -> do
+        let t = reduceType typ
+        v <- defaultValue t
+        variable t id v cont
     SIf _ brs el -> do
         l <- nextLabel
         compileBranches brs l

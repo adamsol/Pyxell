@@ -12,6 +12,36 @@ Program.           Program ::= [Stmt] ;
 separator          Stmt        ";" ;
 
 
+-- types --
+
+internal TPtr.     Type4  ::= Type4 ;
+internal TArr.     Type4  ::= Integer Type4 ;
+internal TDeref.   Type4  ::= Type4 ;
+TVar.              Type4  ::= Ident ;
+TVoid.             Type4  ::= "Void" ;
+TInt.              Type4  ::= "Int" ;
+TFloat.            Type4  ::= "Float" ;
+TBool.             Type4  ::= "Bool" ;
+TChar.             Type4  ::= "Char" ;
+TString.           Type4  ::= "String" ;
+TArray.            Type3  ::= "[" Type "]" ;
+TTuple.            Type2  ::= [Type3] ;
+TFunc.             Type1  ::= [Type2] "->" Type1 ;
+internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
+internal TFuncAbstract. Type1  ::= Ident [FVar] [FArg] Type ;
+internal TFuncExt. Type1  ::= Ident [FArg] Type ;
+internal TClass.   Type1  ::= Ident [Type] [CMemb] ;
+internal TModule.  Type1  ::= "" ;
+TAny.              Type1  ::= "Any" ;
+TNum.              Type1  ::= "Num" ;
+
+separator nonempty Type3      "*" ;
+separator          Type2      "," ;
+separator          Type       "," ;
+
+coercions          Type       4 ;
+
+
 -- statements --
 
 SUse.              Stmt   ::= "use" Ident Use ;
@@ -52,6 +82,9 @@ SBlock.            Block  ::= "{" [Stmt] "}" ;
 SSkip.             Stmt   ::= "skip" ;
 SPrint.            Stmt   ::= "print" Expr ;
 SPrintEmpty.       Stmt   ::= "print" ;
+
+SDeclAssg.         Stmt   ::= Type2 Ident "=" Expr ;
+SDecl.             Stmt   ::= Type2 Ident ;
 
 SAssg.             Stmt   ::= [Expr];
 separator nonempty Expr       "=" ;
@@ -155,36 +188,6 @@ ELambda.           Expr2  ::= "lambda" [Ident] "->" Expr2 ;
 separator          Ident      "," ;
 
 coercions          Expr       13 ;
-
-
--- types --
-
-internal TPtr.     Type4  ::= Type4 ;
-internal TArr.     Type4  ::= Integer Type4 ;
-internal TDeref.   Type4  ::= Type4 ;
-TVar.              Type4  ::= Ident ;
-TVoid.             Type4  ::= "Void" ;
-TInt.              Type4  ::= "Int" ;
-TFloat.            Type4  ::= "Float" ;
-TBool.             Type4  ::= "Bool" ;
-TChar.             Type4  ::= "Char" ;
-TString.           Type4  ::= "String" ;
-TArray.            Type3  ::= "[" Type "]" ;
-TTuple.            Type2  ::= [Type3] ;
-TFunc.             Type1  ::= [Type2] "->" Type1 ;
-internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
-internal TFuncAbstract. Type1  ::= Ident [FVar] [FArg] Type ;
-internal TFuncExt. Type1  ::= Ident [FArg] Type ;
-internal TClass.   Type1  ::= Ident [Type] [CMemb] ;
-internal TModule.  Type1  ::= "" ;
-TAny.              Type1  ::= "Any" ;
-TNum.              Type1  ::= "Num" ;
-
-separator nonempty Type3      "*" ;
-separator          Type2      "," ;
-separator          Type       "," ;
-
-coercions          Type       4 ;
 
 
 -- comments --

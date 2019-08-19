@@ -13,6 +13,14 @@ import ErrM
 %tokentype {Token}
 %name pProgram_internal Program
 %name pListStmt_internal ListStmt
+%name pType4_internal Type4
+%name pType3_internal Type3
+%name pType2_internal Type2
+%name pType1_internal Type1
+%name pListType3_internal ListType3
+%name pListType2_internal ListType2
+%name pListType_internal ListType
+%name pType_internal Type
 %name pStmt_internal Stmt
 %name pUse_internal Use
 %name pCExt_internal CExt
@@ -56,14 +64,6 @@ import ErrM
 %name pExpr2_internal Expr2
 %name pListIdent_internal ListIdent
 %name pExpr_internal Expr
-%name pType4_internal Type4
-%name pType3_internal Type3
-%name pType2_internal Type2
-%name pType1_internal Type1
-%name pListType3_internal ListType3
-%name pListType2_internal ListType2
-%name pListType_internal ListType
-%name pType_internal Type
 %token
   '!=' { PT _ (TS _ 1) }
   '$' { PT _ (TS _ 2) }
@@ -150,26 +150,26 @@ import ErrM
   '}' { PT _ (TS _ 83) }
   '~' { PT _ (TS _ 84) }
 
-  L_ident {PT _ (TV _)}
   L_integ {PT _ (TI _)}
+  L_ident {PT _ (TV _)}
   L_doubl {PT _ (TD _)}
   L_charac {PT _ (TC _)}
   L_quoted {PT _ (TL _)}
 
 %%
 
-Ident :: {
-  (Maybe (Int, Int), Ident)
-}
-: L_ident {
-  (Just (tokenLineCol $1), Ident (prToken $1)) 
-}
-
 Integer :: {
   (Maybe (Int, Int), Integer)
 }
 : L_integ {
   (Just (tokenLineCol $1), read (prToken $1)) 
+}
+
+Ident :: {
+  (Maybe (Int, Int), Ident)
+}
+: L_ident {
+  (Just (tokenLineCol $1), Ident (prToken $1)) 
 }
 
 Double :: {
@@ -213,6 +213,113 @@ ListStmt :: {
   (fst $1, (:) (snd $1)(snd $3)) 
 }
 
+Type4 :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: Ident {
+  (fst $1, AbsPyxell.TVar (fst $1)(snd $1)) 
+}
+| 'Void' {
+  (Just (tokenLineCol $1), AbsPyxell.TVoid (Just (tokenLineCol $1)))
+}
+| 'Int' {
+  (Just (tokenLineCol $1), AbsPyxell.TInt (Just (tokenLineCol $1)))
+}
+| 'Float' {
+  (Just (tokenLineCol $1), AbsPyxell.TFloat (Just (tokenLineCol $1)))
+}
+| 'Bool' {
+  (Just (tokenLineCol $1), AbsPyxell.TBool (Just (tokenLineCol $1)))
+}
+| 'Char' {
+  (Just (tokenLineCol $1), AbsPyxell.TChar (Just (tokenLineCol $1)))
+}
+| 'String' {
+  (Just (tokenLineCol $1), AbsPyxell.TString (Just (tokenLineCol $1)))
+}
+| '(' Type ')' {
+  (Just (tokenLineCol $1), snd $2)
+}
+
+Type3 :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: '[' Type ']' {
+  (Just (tokenLineCol $1), AbsPyxell.TArray (Just (tokenLineCol $1)) (snd $2)) 
+}
+| Type4 {
+  (fst $1, snd $1)
+}
+
+Type2 :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: ListType3 {
+  (fst $1, AbsPyxell.TTuple (fst $1)(snd $1)) 
+}
+| Type3 {
+  (fst $1, snd $1)
+}
+
+Type1 :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: ListType2 '->' Type1 {
+  (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
+}
+| 'Any' {
+  (Just (tokenLineCol $1), AbsPyxell.TAny (Just (tokenLineCol $1)))
+}
+| 'Num' {
+  (Just (tokenLineCol $1), AbsPyxell.TNum (Just (tokenLineCol $1)))
+}
+| Type2 {
+  (fst $1, snd $1)
+}
+
+ListType3 :: {
+  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
+}
+: Type3 {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Type3 '*' ListType3 {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
+ListType2 :: {
+  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| Type2 {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Type2 ',' ListType2 {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
+ListType :: {
+  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
+}
+: {
+  (Nothing, [])
+}
+| Type {
+  (fst $1, (:[]) (snd $1)) 
+}
+| Type ',' ListType {
+  (fst $1, (:) (snd $1)(snd $3)) 
+}
+
+Type :: {
+  (Maybe (Int, Int), Type (Maybe (Int, Int)))
+}
+: Type1 {
+  (fst $1, snd $1)
+}
+
 Stmt :: {
   (Maybe (Int, Int), Stmt (Maybe (Int, Int)))
 }
@@ -239,6 +346,12 @@ Stmt :: {
 }
 | 'print' {
   (Just (tokenLineCol $1), AbsPyxell.SPrintEmpty (Just (tokenLineCol $1)))
+}
+| Type2 Ident '=' Expr {
+  (fst $1, AbsPyxell.SDeclAssg (fst $1)(snd $1)(snd $2)(snd $4)) 
+}
+| Type2 Ident {
+  (fst $1, AbsPyxell.SDecl (fst $1)(snd $1)(snd $2)) 
 }
 | ListExpr {
   (fst $1, AbsPyxell.SAssg (fst $1)(snd $1)) 
@@ -832,113 +945,6 @@ Expr :: {
   (fst $1, snd $1)
 }
 
-Type4 :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: Ident {
-  (fst $1, AbsPyxell.TVar (fst $1)(snd $1)) 
-}
-| 'Void' {
-  (Just (tokenLineCol $1), AbsPyxell.TVoid (Just (tokenLineCol $1)))
-}
-| 'Int' {
-  (Just (tokenLineCol $1), AbsPyxell.TInt (Just (tokenLineCol $1)))
-}
-| 'Float' {
-  (Just (tokenLineCol $1), AbsPyxell.TFloat (Just (tokenLineCol $1)))
-}
-| 'Bool' {
-  (Just (tokenLineCol $1), AbsPyxell.TBool (Just (tokenLineCol $1)))
-}
-| 'Char' {
-  (Just (tokenLineCol $1), AbsPyxell.TChar (Just (tokenLineCol $1)))
-}
-| 'String' {
-  (Just (tokenLineCol $1), AbsPyxell.TString (Just (tokenLineCol $1)))
-}
-| '(' Type ')' {
-  (Just (tokenLineCol $1), snd $2)
-}
-
-Type3 :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: '[' Type ']' {
-  (Just (tokenLineCol $1), AbsPyxell.TArray (Just (tokenLineCol $1)) (snd $2)) 
-}
-| Type4 {
-  (fst $1, snd $1)
-}
-
-Type2 :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: ListType3 {
-  (fst $1, AbsPyxell.TTuple (fst $1)(snd $1)) 
-}
-| Type3 {
-  (fst $1, snd $1)
-}
-
-Type1 :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: ListType2 '->' Type1 {
-  (fst $1, AbsPyxell.TFunc (fst $1)(snd $1)(snd $3)) 
-}
-| 'Any' {
-  (Just (tokenLineCol $1), AbsPyxell.TAny (Just (tokenLineCol $1)))
-}
-| 'Num' {
-  (Just (tokenLineCol $1), AbsPyxell.TNum (Just (tokenLineCol $1)))
-}
-| Type2 {
-  (fst $1, snd $1)
-}
-
-ListType3 :: {
-  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
-}
-: Type3 {
-  (fst $1, (:[]) (snd $1)) 
-}
-| Type3 '*' ListType3 {
-  (fst $1, (:) (snd $1)(snd $3)) 
-}
-
-ListType2 :: {
-  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
-}
-: {
-  (Nothing, [])
-}
-| Type2 {
-  (fst $1, (:[]) (snd $1)) 
-}
-| Type2 ',' ListType2 {
-  (fst $1, (:) (snd $1)(snd $3)) 
-}
-
-ListType :: {
-  (Maybe (Int, Int), [Type (Maybe (Int, Int))]) 
-}
-: {
-  (Nothing, [])
-}
-| Type {
-  (fst $1, (:[]) (snd $1)) 
-}
-| Type ',' ListType {
-  (fst $1, (:) (snd $1)(snd $3)) 
-}
-
-Type :: {
-  (Maybe (Int, Int), Type (Maybe (Int, Int)))
-}
-: Type1 {
-  (fst $1, snd $1)
-}
-
 {
 
 returnM :: a -> Err a
@@ -959,6 +965,14 @@ myLexer = tokens
 
 pProgram = (>>= return . snd) . pProgram_internal
 pListStmt = (>>= return . snd) . pListStmt_internal
+pType4 = (>>= return . snd) . pType4_internal
+pType3 = (>>= return . snd) . pType3_internal
+pType2 = (>>= return . snd) . pType2_internal
+pType1 = (>>= return . snd) . pType1_internal
+pListType3 = (>>= return . snd) . pListType3_internal
+pListType2 = (>>= return . snd) . pListType2_internal
+pListType = (>>= return . snd) . pListType_internal
+pType = (>>= return . snd) . pType_internal
 pStmt = (>>= return . snd) . pStmt_internal
 pUse = (>>= return . snd) . pUse_internal
 pCExt = (>>= return . snd) . pCExt_internal
@@ -1002,13 +1016,5 @@ pListExpr2 = (>>= return . snd) . pListExpr2_internal
 pExpr2 = (>>= return . snd) . pExpr2_internal
 pListIdent = (>>= return . snd) . pListIdent_internal
 pExpr = (>>= return . snd) . pExpr_internal
-pType4 = (>>= return . snd) . pType4_internal
-pType3 = (>>= return . snd) . pType3_internal
-pType2 = (>>= return . snd) . pType2_internal
-pType1 = (>>= return . snd) . pType1_internal
-pListType3 = (>>= return . snd) . pListType3_internal
-pListType2 = (>>= return . snd) . pListType2_internal
-pListType = (>>= return . snd) . pListType_internal
-pType = (>>= return . snd) . pType_internal
 }
 

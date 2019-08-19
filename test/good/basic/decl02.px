@@ -1,0 +1,8 @@
+
+Bool x
+x = false
+print x
+
+Char x
+x = '*'
+print x

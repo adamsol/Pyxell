@@ -14,6 +14,51 @@ data Program a = Program a [Stmt a]
 instance Functor Program where
     fmap f x = case x of
         Program a stmts -> Program (f a) (map (fmap f) stmts)
+data Type a
+    = TPtr a (Type a)
+    | TArr a Integer (Type a)
+    | TDeref a (Type a)
+    | TVar a Ident
+    | TVoid a
+    | TInt a
+    | TFloat a
+    | TBool a
+    | TChar a
+    | TString a
+    | TArray a (Type a)
+    | TTuple a [Type a]
+    | TFunc a [Type a] (Type a)
+    | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
+    | TFuncAbstract a Ident [FVar a] [FArg a] (Type a)
+    | TFuncExt a Ident [FArg a] (Type a)
+    | TClass a Ident [Type a] [CMemb a]
+    | TModule a
+    | TAny a
+    | TNum a
+  deriving (Eq, Ord, Show, Read)
+
+instance Functor Type where
+    fmap f x = case x of
+        TPtr a type_ -> TPtr (f a) (fmap f type_)
+        TArr a integer type_ -> TArr (f a) integer (fmap f type_)
+        TDeref a type_ -> TDeref (f a) (fmap f type_)
+        TVar a ident -> TVar (f a) ident
+        TVoid a -> TVoid (f a)
+        TInt a -> TInt (f a)
+        TFloat a -> TFloat (f a)
+        TBool a -> TBool (f a)
+        TChar a -> TChar (f a)
+        TString a -> TString (f a)
+        TArray a type_ -> TArray (f a) (fmap f type_)
+        TTuple a types -> TTuple (f a) (map (fmap f) types)
+        TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
+        TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
+        TFuncAbstract a ident fvars fargs type_ -> TFuncAbstract (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_)
+        TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
+        TClass a ident types cmembs -> TClass (f a) ident (map (fmap f) types) (map (fmap f) cmembs)
+        TModule a -> TModule (f a)
+        TAny a -> TAny (f a)
+        TNum a -> TNum (f a)
 data Stmt a
     = SUse a Ident (Use a)
     | SClass a Ident (CExt a) [CMemb a]
@@ -23,6 +68,8 @@ data Stmt a
     | SSkip a
     | SPrint a (Expr a)
     | SPrintEmpty a
+    | SDeclAssg a (Type a) Ident (Expr a)
+    | SDecl a (Type a) Ident
     | SAssg a [Expr a]
     | SAssgPow a (Expr a) (Expr a)
     | SAssgMul a (Expr a) (Expr a)
@@ -54,6 +101,8 @@ instance Functor Stmt where
         SSkip a -> SSkip (f a)
         SPrint a expr -> SPrint (f a) (fmap f expr)
         SPrintEmpty a -> SPrintEmpty (f a)
+        SDeclAssg a type_ ident expr -> SDeclAssg (f a) (fmap f type_) ident (fmap f expr)
+        SDecl a type_ ident -> SDecl (f a) (fmap f type_) ident
         SAssg a exprs -> SAssg (f a) (map (fmap f) exprs)
         SAssgPow a expr1 expr2 -> SAssgPow (f a) (fmap f expr1) (fmap f expr2)
         SAssgMul a expr1 expr2 -> SAssgMul (f a) (fmap f expr1) (fmap f expr2)
@@ -295,48 +344,3 @@ instance Functor Expr where
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
         ECond a expr1 expr2 expr3 -> ECond (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ELambda a idents expr -> ELambda (f a) idents (fmap f expr)
-data Type a
-    = TPtr a (Type a)
-    | TArr a Integer (Type a)
-    | TDeref a (Type a)
-    | TVar a Ident
-    | TVoid a
-    | TInt a
-    | TFloat a
-    | TBool a
-    | TChar a
-    | TString a
-    | TArray a (Type a)
-    | TTuple a [Type a]
-    | TFunc a [Type a] (Type a)
-    | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
-    | TFuncAbstract a Ident [FVar a] [FArg a] (Type a)
-    | TFuncExt a Ident [FArg a] (Type a)
-    | TClass a Ident [Type a] [CMemb a]
-    | TModule a
-    | TAny a
-    | TNum a
-  deriving (Eq, Ord, Show, Read)
-
-instance Functor Type where
-    fmap f x = case x of
-        TPtr a type_ -> TPtr (f a) (fmap f type_)
-        TArr a integer type_ -> TArr (f a) integer (fmap f type_)
-        TDeref a type_ -> TDeref (f a) (fmap f type_)
-        TVar a ident -> TVar (f a) ident
-        TVoid a -> TVoid (f a)
-        TInt a -> TInt (f a)
-        TFloat a -> TFloat (f a)
-        TBool a -> TBool (f a)
-        TChar a -> TChar (f a)
-        TString a -> TString (f a)
-        TArray a type_ -> TArray (f a) (fmap f type_)
-        TTuple a types -> TTuple (f a) (map (fmap f) types)
-        TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
-        TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
-        TFuncAbstract a ident fvars fargs type_ -> TFuncAbstract (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_)
-        TFuncExt a ident fargs type_ -> TFuncExt (f a) ident (map (fmap f) fargs) (fmap f type_)
-        TClass a ident types cmembs -> TClass (f a) ident (map (fmap f) types) (map (fmap f) cmembs)
-        TModule a -> TModule (f a)
-        TAny a -> TAny (f a)
-        TNum a -> TNum (f a)
