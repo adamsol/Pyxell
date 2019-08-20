@@ -101,7 +101,9 @@ compileStmt statement cont = do
             cont
         SRetExpr _ expr -> do
             (t, v) <- compileExpr expr
-            ret t v
+            (t', _) <- asks (M.! (Ident "#return"))
+            v' <- bitcast t t' v
+            ret t' v'
             cont
         SSkip _ -> do
             cont
@@ -432,7 +434,8 @@ compileFunc id vars args1 rt block args2 = do
                 v <- defaultValue t
                 writeTop $ [ p ++ " = global " ++ s ++ " " ++ v ]
                 localScope "main" $ do
-                    (_, v) <- compileExpr e
+                    (t', v') <- compileExpr e
+                    v <- bitcast t' t v'
                     store t v p
 
 -- | Outputs LLVM code for initialization of function arguments.

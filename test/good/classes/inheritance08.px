@@ -1,0 +1,12 @@
+
+class A def
+    String x: "A"
+
+class B(A) def
+    String x: "B"
+
+
+func f() A def
+    return B()
+
+print f().x
