@@ -1,0 +1,6 @@
+
+[Bool] a = []
+print a.length
+
+a = [true]
+print a

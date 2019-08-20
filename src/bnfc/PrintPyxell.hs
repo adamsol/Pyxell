@@ -105,6 +105,7 @@ instance Print (Type a) where
     TPtr _ type_ -> prPrec i 4 (concatD [prt 4 type_])
     TArr _ n type_ -> prPrec i 4 (concatD [prt 0 n, prt 4 type_])
     TDeref _ type_ -> prPrec i 4 (concatD [prt 4 type_])
+    TUnknown _ -> prPrec i 4 (concatD [doc (showString "Unknown")])
     TVar _ id -> prPrec i 4 (concatD [prt 0 id])
     TVoid _ -> prPrec i 4 (concatD [doc (showString "Void")])
     TInt _ -> prPrec i 4 (concatD [doc (showString "Int")])
@@ -119,7 +120,7 @@ instance Print (Type a) where
     TFuncAbstract _ id fvars fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fvars, prt 0 fargs, prt 0 type_])
     TFuncExt _ id fargs type_ -> prPrec i 1 (concatD [prt 0 id, prt 0 fargs, prt 0 type_])
     TClass _ id types cmembs -> prPrec i 1 (concatD [prt 0 id, prt 0 types, prt 0 cmembs])
-    TModule _ -> prPrec i 1 (concatD [])
+    TModule _ -> prPrec i 1 (concatD [doc (showString "Module")])
     TAny _ -> prPrec i 1 (concatD [doc (showString "Any")])
     TNum _ -> prPrec i 1 (concatD [doc (showString "Num")])
   prtList 3 [x] = concatD [prt 3 x]

@@ -20,6 +20,7 @@ transType x = case x of
   TPtr _ type_ -> failure x
   TArr _ integer type_ -> failure x
   TDeref _ type_ -> failure x
+  TUnknown _ -> failure x
   TVar _ ident -> failure x
   TVoid _ -> failure x
   TInt _ -> failure x

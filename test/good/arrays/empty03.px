@@ -1,0 +1,3 @@
+
+[[[String]]] a = [[[]]]
+print a[0].length

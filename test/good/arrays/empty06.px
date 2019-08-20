@@ -1,0 +1,5 @@
+
+func f([Int] a, [[Bool]] b, [[[Char]]] c: [[[]]]) Int*Int*Int def
+    return a.length, b.length, c[0][0].length
+
+print f([], b=[[]])

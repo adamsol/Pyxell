@@ -17,6 +17,7 @@ separator          Stmt        ";" ;
 internal TPtr.     Type4  ::= Type4 ;
 internal TArr.     Type4  ::= Integer Type4 ;
 internal TDeref.   Type4  ::= Type4 ;
+internal TUnknown. Type4  ::= "Unknown" ;
 TVar.              Type4  ::= Ident ;
 TVoid.             Type4  ::= "Void" ;
 TInt.              Type4  ::= "Int" ;
@@ -31,7 +32,7 @@ internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
 internal TFuncAbstract. Type1  ::= Ident [FVar] [FArg] Type ;
 internal TFuncExt. Type1  ::= Ident [FArg] Type ;
 internal TClass.   Type1  ::= Ident [Type] [CMemb] ;
-internal TModule.  Type1  ::= "" ;
+internal TModule.  Type1  ::= "Module" ;
 TAny.              Type1  ::= "Any" ;
 TNum.              Type1  ::= "Num" ;
 

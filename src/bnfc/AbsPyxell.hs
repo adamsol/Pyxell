@@ -18,6 +18,7 @@ data Type a
     = TPtr a (Type a)
     | TArr a Integer (Type a)
     | TDeref a (Type a)
+    | TUnknown a
     | TVar a Ident
     | TVoid a
     | TInt a
@@ -42,6 +43,7 @@ instance Functor Type where
         TPtr a type_ -> TPtr (f a) (fmap f type_)
         TArr a integer type_ -> TArr (f a) integer (fmap f type_)
         TDeref a type_ -> TDeref (f a) (fmap f type_)
+        TUnknown a -> TUnknown (f a)
         TVar a ident -> TVar (f a) ident
         TVoid a -> TVoid (f a)
         TInt a -> TInt (f a)

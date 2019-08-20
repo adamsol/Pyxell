@@ -1,0 +1,5 @@
+
+func f([Int] a, [[Int]] b) [Float]*[[Int]] def
+    return [], [[]]
+
+print f([], [[]]).a.length

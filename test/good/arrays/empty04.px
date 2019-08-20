@@ -1,0 +1,3 @@
+
+Char*[[Bool]] x = ('x', [[]])
+print x.a, x.b[0]

@@ -1,0 +1,6 @@
+
+class A def
+    [Bool] a: []
+
+x = A()
+print x.a + [false]

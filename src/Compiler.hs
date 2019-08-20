@@ -226,6 +226,8 @@ compileStmt statement cont = do
             TClass _ _ _ membs -> do
                 (_, v) <- compileMethod typ val (Ident "toString") [val]
                 compileMethod tString "" (Ident "write") [v] >> skip
+            TUnknown _ -> do
+                skip
             otherwise -> do
                 compileMethod typ "" (Ident "write") [val] >> skip
         compileAssgOp op expr1 expr2 cont = do
@@ -491,9 +493,10 @@ compileClass id bases membs = do
                 p <- call (tPtr tChar) "@malloc" [(tInt, v)] >>= bitcast (tPtr tChar) t
                 -- Initialize fields and method pointers.
                 forM (zip [0..] membs) $ \(i, memb) -> case memb of
-                    MFieldDefault _ _ _ e -> do
+                    MFieldDefault _ t'' _ e -> do
                         (t', v') <- compileExpr e
-                        gep t p ["0"] [i] >>= store t' v'
+                        v'' <- bitcast t' t'' v'
+                        gep t p ["0"] [i] >>= store t'' v''
                     MMethod _ _ (TFuncDef _ id' _ _ _ _) -> do
                         Just (t', p') <- getIdent id'
                         v' <- load t' p'
@@ -568,6 +571,7 @@ compileExpr expression = do
             t <- case map fst rs of
                 t:ts -> case foldM unifyTypes t ts of
                     Just t' -> return $ t'
+                [] -> return $ tUnknown
             vs <- forM rs $ \(t', v) -> bitcast t' t v
             p <- initArray t vs []
             return $ (tArray t, p)

@@ -113,6 +113,7 @@ strType :: Type -> Run String
 strType typ = do
     t <- retrieveType typ
     case t of
+        TUnknown _ -> return $ "i8*"
         TVar _ (Ident x) -> return $ x
         TPtr _ t -> do
             s <- strType t

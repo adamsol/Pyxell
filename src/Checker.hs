@@ -452,8 +452,9 @@ checkAssgs pos exprs types cont = do
                     Just t -> do
                         checkCast pos typ t
                         cont
-                    Nothing -> do
-                        checkDecl pos (reduceType typ) id cont
+                    Nothing -> case isUnknown typ of
+                        False -> checkDecl pos (reduceType typ) id cont
+                        True -> throw pos $ UnknownType
             EIndex {} -> do
                 (t, m) <- checkExpr expr
                 if m then do
@@ -601,7 +602,7 @@ checkExpr expression = do
             rs <- mapM checkExpr exprs
             let (ts, _) = unzip rs
             case ts of
-                [] -> throw pos $ UnknownType
+                [] -> return $ (tArray tUnknown, False)
                 t:ts -> case foldM unifyTypes t ts of
                     Just t' -> return $ (tArray t', False)
                     Nothing -> throw pos $ UnknownType

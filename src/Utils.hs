@@ -28,6 +28,7 @@ type Type = Abs.Type Pos
 -- | Instances for displaying and comparing types and classes.
 instance {-# OVERLAPS #-} Show Type where
     show typ = case typ of
+        TUnknown _ -> "Unknown"
         TVar _ (Ident x) -> x
         TVoid _ -> "Void"
         TInt _ -> "Int"
@@ -47,6 +48,7 @@ instance {-# OVERLAPS #-} Show Type where
 
 instance {-# OVERLAPS #-} Eq Type where
     typ1 == typ2 = case (reduceType typ1, reduceType typ2) of
+        (TUnknown _, TUnknown _) -> True
         (TVar _ id1, TVar _ id2) -> id1 == id2
         (TVoid _, TVoid _) -> True
         (TInt _, TInt _) -> True
@@ -71,6 +73,8 @@ unifyTypes typ1 typ2 = do
     let t1 = reduceType typ1
     let t2 = reduceType typ2
     case (t1, t2) of
+        (TUnknown _, _) -> Just t2
+        (_, TUnknown _) -> Just t1
         (TVar _ id1, TVar _ id2) -> if id1 == id2 then Just t1 else Nothing
         (TVoid _, TVoid _) -> Just tVoid
         (TInt _, TInt _) -> Just tInt
@@ -78,7 +82,11 @@ unifyTypes typ1 typ2 = do
         (TBool _, TBool _) -> Just tBool
         (TChar _, TChar _) -> Just tChar
         (TString _, TString _) -> Just tString
-        (TArray _ t1', TArray _ t2') -> if t1' == t2' then Just (tArray t1') else Nothing  -- arrays are not covariant
+        (TArray _ t1', TArray _ t2') ->
+            if t1' == t2' then Just t1
+            else if unifyTypes t1' (tArray tUnknown) == Just (tArray tUnknown) then Just (tArray tUnknown)
+            else if unifyTypes (tArray tUnknown) t2' == Just (tArray tUnknown) then Just (tArray tUnknown)
+            else Nothing  -- arrays are not covariant
         (TTuple _ ts1, TTuple _ ts2) ->
             if length ts1 == length ts2 then fmap tTuple (sequence (map (uncurry unifyTypes) (zip ts1 ts2)))
             else Nothing
@@ -98,11 +106,20 @@ unifyTypes typ1 typ2 = do
                 ([], [b2]) -> findCommonSuperclass t1 t2 t2 b2
                 ([], []) -> Nothing
 
+-- | Returns whether a given type contains an unknown.
+isUnknown :: Type -> Bool
+isUnknown t = case reduceType t of
+    TUnknown _ -> True
+    TArray _ t' -> isUnknown t'
+    TTuple _ ts -> any isUnknown ts
+    TFunc _ as r -> any isUnknown as || isUnknown r
+    otherwise -> False
 
 -- | Tries to reduce compound type to a simpler version (e.g. one-element tuple to the base type).
 -- | Also removes position data from the type.
 reduceType :: Type -> Type
 reduceType t = case t of
+    TUnknown _ -> tUnknown
     TVar _ id -> tVar id
     TVoid _ -> tVoid
     TInt _ -> tInt
@@ -144,6 +161,7 @@ _pos = Nothing
 tPtr = TPtr _pos
 tArr = TArr _pos
 tDeref = TDeref _pos
+tUnknown = TUnknown _pos
 tVar = TVar _pos
 tVoid = TVoid _pos
 tInt = TInt _pos

@@ -43,15 +43,16 @@ The set of reserved words is the set of terminals appearing in the grammar. Thos
 
 The reserved words used in Pyxell are the following:
   | ``Any`` | ``Bool`` | ``Char`` | ``Float``
-  | ``Int`` | ``Num`` | ``String`` | ``Void``
-  | ``abstract`` | ``and`` | ``as`` | ``break``
-  | ``class`` | ``constructor`` | ``continue`` | ``def``
-  | ``do`` | ``elif`` | ``else`` | ``extern``
-  | ``false`` | ``for`` | ``func`` | ``hiding``
-  | ``if`` | ``in`` | ``lambda`` | ``not``
-  | ``only`` | ``or`` | ``print`` | ``return``
-  | ``skip`` | ``step`` | ``super`` | ``true``
-  | ``until`` | ``use`` | ``while`` | 
+  | ``Int`` | ``Module`` | ``Num`` | ``String``
+  | ``Unknown`` | ``Void`` | ``abstract`` | ``and``
+  | ``as`` | ``break`` | ``class`` | ``constructor``
+  | ``continue`` | ``def`` | ``do`` | ``elif``
+  | ``else`` | ``extern`` | ``false`` | ``for``
+  | ``func`` | ``hiding`` | ``if`` | ``in``
+  | ``lambda`` | ``not`` | ``only`` | ``or``
+  | ``print`` | ``return`` | ``skip`` | ``step``
+  | ``super`` | ``true`` | ``until`` | ``use``
+  | ``while`` |  |  | 
 
 The symbols used in Pyxell are the following:
   | ; | [ | ] | ->
