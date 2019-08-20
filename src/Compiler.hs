@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 module Compiler where
 
@@ -36,166 +34,170 @@ initCompiler = do
 
 -- | Outputs LLVM code for all statements in the program.
 compileProgram :: Program Pos -> String -> Run Env
-compileProgram program name = case program of
-    Program _ stmts -> localScope "main" $ do
-        env1 <- ask
-        -- `std` module is automatically added to the namespace, unless this is the module being compiled
-        env2 <- case name of
-            "std" -> compileStmts stmts ask
-            otherwise -> compileStmts (SUse _pos (Ident "std") (UAll _pos) : stmts) ask
-        lift $ modify (M.insert name (Module (M.difference env2 env1)))
-        return $ M.insert (Ident name) (tModule, name) env1
+compileProgram program name = do
+    case program of
+        Program _ stmts -> localScope "main" $ do
+            env1 <- ask
+            -- `std` module is automatically added to the namespace, unless this is the module being compiled
+            env2 <- case name of
+                "std" -> compileStmts stmts ask
+                otherwise -> compileStmts (SUse _pos (Ident "std") (UAll _pos) : stmts) ask
+            lift $ modify (M.insert name (Module (M.difference env2 env1)))
+            return $ M.insert (Ident name) (tModule, name) env1
 
 -- | Outputs LLVM code for a block of statements.
 compileBlock :: Block Pos -> Run ()
-compileBlock block = case block of
-    SBlock _ stmts -> compileStmts stmts skip
+compileBlock block = do
+    case block of
+        SBlock _ stmts -> compileStmts stmts skip
 
 -- | Outputs LLVM code for a bunch of statements and runs the continuation.
 compileStmts :: [Stmt Pos] -> Run a -> Run a
-compileStmts statements cont = case statements of
-    [] -> cont
-    s:ss -> compileStmt s (compileStmts ss cont)
+compileStmts statements cont = do
+    case statements of
+        [] -> cont
+        s:ss -> compileStmt s (compileStmts ss cont)
 
 -- | Outputs LLVM code for a single statement and runs the continuation.
 compileStmt :: Stmt Pos -> Run a -> Run a
-compileStmt statement cont = case statement of
-    SUse _ id use -> do
-        let Ident name = id
-        Module env <- lift $ gets (M.! name)
-        case use of
-            UAll _ -> local (M.union env) cont
-            UOnly _ ids -> local (M.union (M.filterWithKey (\id _ -> elem id ids) env)) cont
-            UHiding _ ids -> local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
-            UAs _ id' -> local (M.insert id' (tModule, name)) cont
-    SClass _ id ext membs -> do
-        (bases, membs) <- case ext of
-            CNoExt _ -> return $ ([], prepareMembers id membs)
-            CExt _ t' -> do
-                t' <- retrieveType t'
-                TClass _ _ _ membs' <- retrieveType t'
-                return $ ([t'], extendMembers membs' (prepareMembers id membs))
-        let Ident c = id
-        let t = tClass id bases membs
-        localType id t $ compileMembers bases membs $ do
-            env <- ask
-            lift $ modify (M.insert ("%c." ++ escapeName id) (Definition env S.empty))
-            id' <- case findConstructor membs of  -- handle inheritance to get the correct constructor name
-                Just (_, (TFuncDef _ id' _ _ _ _), _) -> return $ id'
-                Nothing -> return $ Ident (c ++ "__constructor")
-            let args = getConstructorArgs membs
-            localFunc (Ident (c ++ "__alloc")) (tFuncDef id' [] args t (SBlock _pos [])) $ cont
-    SFunc _ id vars args ret body -> do
-        vs <- case vars of
-            FGen _ vs -> return $ vs
-            FStd _ -> return $ []
-        let r = typeFRet ret
-        t <- case body of
-            FDef _ b -> return $ tFuncDef id vs args r b
-            FExtern _ -> return $ tFuncExt id args r
-        localFunc id t cont
-    SRetVoid _ -> do
-        retVoid
-        cont
-    SRetExpr _ expr -> do
-        (t, v) <- compileExpr expr
-        ret t v
-        cont
-    SSkip _ -> do
-        cont
-    SPrint _ expr -> do
-        (t, v) <- compileExpr expr
-        t' <- retrieveType t
-        compilePrint t' v
-        call tInt "@putchar" [(tChar, "10")]
-        cont
-    SPrintEmpty _ -> do
-        call tInt "@putchar" [(tChar, "10")]
-        cont
-    SAssg _ exprs -> case exprs of
-        e:[] -> do
-            compileExpr e
+compileStmt statement cont = do
+    case statement of
+        SUse _ id use -> do
+            let Ident name = id
+            Module env <- lift $ gets (M.! name)
+            case use of
+                UAll _ -> local (M.union env) cont
+                UOnly _ ids -> local (M.union (M.filterWithKey (\id _ -> elem id ids) env)) cont
+                UHiding _ ids -> local (M.union (M.filterWithKey (\id _ -> not (elem id ids)) env)) cont
+                UAs _ id' -> local (M.insert id' (tModule, name)) cont
+        SClass _ id ext membs -> do
+            (bases, membs) <- case ext of
+                CNoExt _ -> return $ ([], prepareMembers id membs)
+                CExt _ t' -> do
+                    t' <- retrieveType t'
+                    TClass _ _ _ membs' <- retrieveType t'
+                    return $ ([t'], extendMembers membs' (prepareMembers id membs))
+            let Ident c = id
+            let t = tClass id bases membs
+            localType id t $ compileMembers bases membs $ do
+                env <- ask
+                lift $ modify (M.insert ("%c." ++ escapeName id) (Definition env S.empty))
+                id' <- case findConstructor membs of  -- handle inheritance to get the correct constructor name
+                    Just (_, (TFuncDef _ id' _ _ _ _), _) -> return $ id'
+                    Nothing -> return $ Ident (c ++ "__constructor")
+                let args = getConstructorArgs membs
+                localFunc (Ident (c ++ "__alloc")) (tFuncDef id' [] args t (SBlock _pos [])) $ cont
+        SFunc _ id vars args ret body -> do
+            vs <- case vars of
+                FGen _ vs -> return $ vs
+                FStd _ -> return $ []
+            let r = typeFRet ret
+            t <- case body of
+                FDef _ b -> return $ tFuncDef id vs args r b
+                FExtern _ -> return $ tFuncExt id args r
+            localFunc id t cont
+        SRetVoid _ -> do
+            retVoid
             cont
-        e1:e2:[] -> do
-            (t, v) <- compileExpr e2
-            case (e1, t) of
-                (ETuple _ es, TTuple _ ts) -> do
-                    compileAssgs (zip3 ts es [0..]) t v cont
-                otherwise -> do
-                    compileAssg t e1 v cont
-        e1:e2:es -> do
-            compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
-    SAssgPow _pos expr1 expr2 -> do
-        compileAssgOp EPow expr1 expr2 cont
-    SAssgMul _pos expr1 expr2 -> do
-        compileAssgOp EMul expr1 expr2 cont
-    SAssgDiv pos expr1 expr2 -> do
-        compileAssgOp EDiv expr1 expr2 cont
-    SAssgMod pos expr1 expr2 -> do
-        compileAssgOp EMod expr1 expr2 cont
-    SAssgAdd pos expr1 expr2 -> do
-        compileAssgOp EAdd expr1 expr2 cont
-    SAssgSub pos expr1 expr2 -> do
-        compileAssgOp ESub expr1 expr2 cont
-    SAssgBShl pos expr1 expr2 -> do
-        compileAssgOp EBShl expr1 expr2 cont
-    SAssgBShr pos expr1 expr2 -> do
-        compileAssgOp EBShr expr1 expr2 cont
-    SAssgBAnd pos expr1 expr2 -> do
-        compileAssgOp EBAnd expr1 expr2 cont
-    SAssgBOr pos expr1 expr2 -> do
-        compileAssgOp EBOr expr1 expr2 cont
-    SAssgBXor pos expr1 expr2 -> do
-        compileAssgOp EBXor expr1 expr2 cont
-    SDeclAssg _ typ id expr -> do
-        let t = reduceType typ
-        (t', v') <- compileExpr expr
-        v <- bitcast t' t v'
-        variable t id v cont
-    SDecl _ typ id -> do
-        let t = reduceType typ
-        v <- defaultValue t
-        variable t id v cont
-    SIf _ brs el -> do
-        l <- nextLabel
-        compileBranches brs l
-        case el of
-            EElse _ block -> do
-                compileBlock block
-            EEmpty _ -> do
-                skip
-        goto l >> label l
-        cont
-    SWhile _ expr block -> do
-        [l1, l2, l3] <- sequence (replicate 3 nextLabel)
-        goto l1 >> label l1
-        (_, v) <- compileExpr expr
-        branch v l2 l3
-        label l2
-        localLabel "#break" l3 $ localLabel "#continue" l1 $ compileBlock block
-        goto l1
-        label l3
-        cont
-    SUntil _ expr block -> do
-        [l1, l2] <- sequence (replicate 2 nextLabel)
-        goto l1 >> label l1
-        localLabel "#break" l2 $ localLabel "#continue" l1 $ compileBlock block
-        (_, v) <- compileExpr expr
-        branch v l2 l1
-        label l2
-        cont
-    SFor _ expr1 expr2 block -> do
-        compileFor expr1 expr2 (EInt _pos 1) (compileBlock block) (const cont)
-    SForStep _ expr1 expr2 expr3 block -> do
-        compileFor expr1 expr2 expr3 (compileBlock block) (const cont)
-    SBreak _ -> do
-        (_, l) <- asks (M.! (Ident "#break"))
-        goto l
-        cont
-    SContinue _ -> do
-        (_, l) <- asks (M.! (Ident "#continue"))
-        goto l
-        cont
+        SRetExpr _ expr -> do
+            (t, v) <- compileExpr expr
+            ret t v
+            cont
+        SSkip _ -> do
+            cont
+        SPrint _ expr -> do
+            (t, v) <- compileExpr expr
+            t' <- retrieveType t
+            compilePrint t' v
+            call tInt "@putchar" [(tChar, "10")]
+            cont
+        SPrintEmpty _ -> do
+            call tInt "@putchar" [(tChar, "10")]
+            cont
+        SAssg _ exprs -> case exprs of
+            e:[] -> do
+                compileExpr e
+                cont
+            e1:e2:[] -> do
+                (t, v) <- compileExpr e2
+                case (e1, t) of
+                    (ETuple _ es, TTuple _ ts) -> do
+                        compileAssgs (zip3 ts es [0..]) t v cont
+                    otherwise -> do
+                        compileAssg t e1 v cont
+            e1:e2:es -> do
+                compileStmt (SAssg _pos (e2:es)) (compileStmt (SAssg _pos [e1, e2]) cont)
+        SAssgPow _pos expr1 expr2 -> do
+            compileAssgOp EPow expr1 expr2 cont
+        SAssgMul _pos expr1 expr2 -> do
+            compileAssgOp EMul expr1 expr2 cont
+        SAssgDiv pos expr1 expr2 -> do
+            compileAssgOp EDiv expr1 expr2 cont
+        SAssgMod pos expr1 expr2 -> do
+            compileAssgOp EMod expr1 expr2 cont
+        SAssgAdd pos expr1 expr2 -> do
+            compileAssgOp EAdd expr1 expr2 cont
+        SAssgSub pos expr1 expr2 -> do
+            compileAssgOp ESub expr1 expr2 cont
+        SAssgBShl pos expr1 expr2 -> do
+            compileAssgOp EBShl expr1 expr2 cont
+        SAssgBShr pos expr1 expr2 -> do
+            compileAssgOp EBShr expr1 expr2 cont
+        SAssgBAnd pos expr1 expr2 -> do
+            compileAssgOp EBAnd expr1 expr2 cont
+        SAssgBOr pos expr1 expr2 -> do
+            compileAssgOp EBOr expr1 expr2 cont
+        SAssgBXor pos expr1 expr2 -> do
+            compileAssgOp EBXor expr1 expr2 cont
+        SDeclAssg _ typ id expr -> do
+            let t = reduceType typ
+            (t', v') <- compileExpr expr
+            v <- bitcast t' t v'
+            variable t id v cont
+        SDecl _ typ id -> do
+            let t = reduceType typ
+            v <- defaultValue t
+            variable t id v cont
+        SIf _ brs el -> do
+            l <- nextLabel
+            compileBranches brs l
+            case el of
+                EElse _ block -> do
+                    compileBlock block
+                EEmpty _ -> do
+                    skip
+            goto l >> label l
+            cont
+        SWhile _ expr block -> do
+            [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+            goto l1 >> label l1
+            (_, v) <- compileExpr expr
+            branch v l2 l3
+            label l2
+            localLabel "#break" l3 $ localLabel "#continue" l1 $ compileBlock block
+            goto l1
+            label l3
+            cont
+        SUntil _ expr block -> do
+            [l1, l2] <- sequence (replicate 2 nextLabel)
+            goto l1 >> label l1
+            localLabel "#break" l2 $ localLabel "#continue" l1 $ compileBlock block
+            (_, v) <- compileExpr expr
+            branch v l2 l1
+            label l2
+            cont
+        SFor _ expr1 expr2 block -> do
+            compileFor expr1 expr2 (EInt _pos 1) (compileBlock block) (const cont)
+        SForStep _ expr1 expr2 expr3 block -> do
+            compileFor expr1 expr2 expr3 (compileBlock block) (const cont)
+        SBreak _ -> do
+            (_, l) <- asks (M.! (Ident "#break"))
+            goto l
+            cont
+        SContinue _ -> do
+            (_, l) <- asks (M.! (Ident "#continue"))
+            goto l
+            cont
     where
         compilePrint typ val = case typ of
             TTuple _ ts -> do
@@ -247,13 +249,14 @@ compileStmt statement cont = case statement of
 
 -- | Compiles a list of variable assignments and continues with changed environment.
 compileAssgs :: [(Type, Expr Pos, Int)] -> Type -> Value -> Run a -> Run a
-compileAssgs rs typ val cont = case rs of
-    [] -> cont
-    (t, e, i):rs -> do
-        v <- case val of
-            "" -> return $ ""
-            otherwise -> gep typ val ["0"] [i] >>= load t
-        compileAssg t e v (compileAssgs rs typ val cont)
+compileAssgs rs typ val cont = do
+    case rs of
+        [] -> cont
+        (t, e, i):rs -> do
+            v <- case val of
+                "" -> return $ ""
+                otherwise -> gep typ val ["0"] [i] >>= load t
+            compileAssg t e v (compileAssgs rs typ val cont)
 
 -- | Compiles a single variable assignment and continues with changed environment.
 compileAssg :: Type -> Expr Pos -> Value -> Run a -> Run a
@@ -401,7 +404,7 @@ compileFunc id vars args1 rt block args2 = do
             lift $ modify (M.insert p (Definition env (S.insert args2 set)))  -- function is marked as compiled with these types
             r <- retrieveType rt
             i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
-                TTuple _ _ -> return $ 1
+                TTuple {} -> return $ 1
                 otherwise -> return $ 0
             case S.null set of
                 True -> do  -- default arguments are compiled only once, since their type is known
@@ -413,7 +416,7 @@ compileFunc id vars args1 rt block args2 = do
                     goto l >> label l
                     compileBlock b
                     case r of
-                        TTuple _ _ -> retVoid
+                        TTuple {} -> retVoid
                         otherwise -> do
                             v <- defaultValue r
                             ret r v
@@ -422,7 +425,7 @@ compileFunc id vars args1 rt block args2 = do
                     skip
     where
         compileDefaultArg arg = case arg of
-            ANoDefault _ _ _ -> skip
+            ANoDefault {} -> skip
             ADefault _ t id' e -> do
                 let p = argumentPointer id id'
                 s <- strType t
@@ -434,9 +437,10 @@ compileFunc id vars args1 rt block args2 = do
 
 -- | Outputs LLVM code for initialization of function arguments.
 compileArgs :: [FArg Pos] -> Int -> Run a -> Run a
-compileArgs args idx cont = case args of
-    [] -> cont
-    a:as -> compileArg a idx (compileArgs as (idx+1) cont)
+compileArgs args idx cont = do
+    case args of
+        [] -> cont
+        a:as -> compileArg a idx (compileArgs as (idx+1) cont)
     where
         compileArg arg idx cont = case arg of
             ANoDefault _ typ id -> do
@@ -448,9 +452,10 @@ compileArgs args idx cont = case args of
 
 -- | Adds type variables to the environment.
 compileTypeVars :: [Type] -> [Type] -> Run a -> Run a
-compileTypeVars as1 as2 cont = case (as1, as2) of
-    ([], _) -> cont
-    (t1:as1, t2:as2) -> compile t1 t2 $ compileTypeVars as1 as2 cont
+compileTypeVars as1 as2 cont = do
+    case (as1, as2) of
+        ([], _) -> cont
+        (t1:as1, t2:as2) -> compile t1 t2 $ compileTypeVars as1 as2 cont
     where
         compile t1 t2 cont = case (reduceType t1, reduceType t2) of
             (t1', t2'@(TVar _ id)) -> do
@@ -504,7 +509,7 @@ compileClass id bases membs = do
                     Nothing -> skip
                 ret t p
             -- Compile methods.
-            forM_ membs $ \memb -> case memb of
+            forM_ membs $ \case
                 MMethod _ _ (TFuncDef _ id' _ as r b) -> do
                     compileFunc id' [] as r (Just b) []
                 otherwise -> skip
@@ -526,312 +531,313 @@ getIdent id = do
 
 -- | Outputs LLVM code that evaluates a given expression. Returns type and name of the result.
 compileExpr :: Expr Pos -> Run Result
-compileExpr expression = case expression of
-    EInt _ num -> return $ (tInt, show num)
-    EFloat _ num -> return $ (tFloat, show num)
-    ETrue _ -> return $ (tBool, "true")
-    EFalse _ -> return $ (tBool, "false")
-    EChar _ char -> return $ (tChar, show (ord char))
-    EString _ str -> do
-        let (txts, tags) = interpolateString (read str)
-        if length txts == 1 then do
-            p <- initString (txts !! 0)
-            return $ (tString, p)
-        else do
-            p1 <- initArray tString [] [show (length txts * 2 - 1)]
-            p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
-            forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
-                p3 <- gep (tPtr tString) p2 [show (2*i)] []
-                p4 <- initString txt
-                store tString p4 p3
-                if tag == "" then skip
-                else do
-                    p5 <- gep (tPtr tString) p2 [show (2*i+1)] []
-                    (_, v) <- case pExpr $ resolveLayout False $ myLexer tag of
-                        Ok expr -> do
-                            (t, v) <- compileExpr expr
-                            compileMethod t "" (Ident "toString") [v]
-                    store tString v p5
-            p7 <- initString ""
-            compileMethod (tArray tString) "" (Ident "join") [p1, p7]
-    EArray _ exprs -> do
-        rs <- mapM compileExpr exprs
-        t <- case map fst rs of
-            t:ts -> case foldM unifyTypes t ts of
-                Just t' -> return $ t'
-        vs <- forM rs $ \(t', v) -> bitcast t' t v
-        p <- initArray t vs []
-        return $ (tArray t, p)
-    EArrayCpr pos expr cprs -> do
-        let c = "4"  -- initial capacity
-        p1 <- alloca tInt
-        store tInt c p1
-        (t, _) <- temporary $ compileArrayCprs cprs $ compileExpr expr
-        p2 <- initMemory (tArray t) "1"
-        p3 <- gep (tArray t) p2 ["0"] [1]
-        store tInt "0" p3
-        p4 <- gep (tArray t) p2 ["0"] [0]
-        p5 <- initMemory (tPtr t) c
-        store (tPtr t) p5 p4
-        compileArrayCprs cprs $ do
-            (_, v1) <- compileExpr expr
-            v2 <- load tInt p3
-            v3 <- binop "add" tInt v2 "1"
-            store tInt v3 p3
-            v4 <- load tInt p1
-            v5 <- binop "icmp sgt" tInt v3 v4
-            l1 <- nextLabel
-            l2 <- nextLabel
-            branch v5 l1 l2
-            label l1
-            v6 <- binop "shl" tInt v4 "1"
-            v7 <- sizeof (tPtr t) v6
-            p6 <- load (tPtr t) p4
-            p7 <- bitcast (tPtr t) (tPtr tChar) p6
-            p8 <- call (tPtr tChar) "@realloc" [(tPtr tChar, p7), (tInt, v7)]
-            p9 <- bitcast (tPtr tChar) (tPtr t) p8
-            store (tPtr t) p9 p4
-            store tInt v6 p1
-            goto l2 >> label l2
-            p10 <- load (tPtr t) p4
-            gep (tPtr t) p10 [v2] [] >>= store t v1
-        return $ (tArray t, p2)
-    EVar _ _ -> compileRval expression
-    EIndex _ _ _ -> compileRval expression
-    ESlice pos expr slices -> do
-        let s1:s2:s3:_ = slices ++ replicate 2 (SliceNone _pos)
-        (v1, v1') <- case s1 of
-            SliceExpr _ e -> do
-                (_, v) <- compileExpr e
-                return $ (v, "true")
-            SliceNone _ -> return $ ("0", "false")
-        (v2, v2') <- case s2 of
-            SliceExpr _ e -> do
-                (_, v) <- compileExpr e
-                return $ (v, "true")
-            SliceNone _ -> return $ ("0", "false")
-        (_, v3) <- case s3 of
-            SliceExpr _ e -> compileExpr e
-            SliceNone _ -> return $ (tInt, "1")
-        (t, p1) <- compileExpr expr
-        t' <- case t of
-            TArray _ t' -> return $ t'
-            TString _ -> return $ tChar
-        v4 <- gep t p1 ["0"] [1] >>= load tInt
-        (_, f) <- compileExpr (EVar _pos (Ident "Array_prepareSlice"))
-        let t2 = tTuple [tInt, tInt]
-        v5 <- call t2 f [(tInt, v4), (tInt, v1), (tBool, v1'), (tInt, v2), (tBool, v2'), (tInt, v3)]
-        v6 <- gep t2 v5 ["0"] [0] >>= load tInt
-        v7 <- gep t2 v5 ["0"] [1] >>= load tInt
-        p2 <- initArray t' [] [v7]
-        compileAssg t (eVar "source") p1 $ compileAssg t (eVar "result") p2 $ compileAssg tInt (eVar "c") v3 $ compileAssg tInt (eVar "j") v6 $ compileAssg tInt (eVar "d") v7 $ do
-            b <- return $ SBlock _pos [
-                SAssg _pos [EIndex _pos (eVar "result") (eVar "i"), EIndex _pos (eVar "source") (eVar "j")],
-                SAssgAdd _pos (eVar "j") (eVar "c")]
-            compileFor (eVar "i") (ERangeExcl _pos (eInt 0) (eVar "d")) (eInt 1) (compileBlock b) (const skip)
-        return $ (t, p2)
-    EAttr _ _ _ -> compileRval expression
-    ECall _ expr args -> do
-        -- Build a map of arguments and their positions.
-        let m = M.empty
-        (typ, func, m) <- case expr of
-            EVar _ id -> do
-                Just (t, p) <- getIdent id
-                case t of
-                    TClass _ (Ident c) _ _ -> do  -- class instantiation
-                        Just (t, p) <- asks (M.lookup (Ident (c ++ "__alloc")))
-                        return $ (t, p, m)
-                    otherwise -> return $ (t, p, m)
-            EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
-                (t, p) <- compileExpr e
-                case t of
-                    TModule _ -> do
-                        (t, p) <- compileExpr expr
-                        return $ (t, p, m)
-                    otherwise -> do
-                        Just (t', p') <- compileAttr t p id
-                        v' <- load t' p'
-                        let TFunc _ (t'':_) _ = reduceType t'  -- original class of method definition
-                        p'' <- bitcast t t'' p
-                        return $ (t', v', M.insert 0 (t'', Left p'') m)
-            otherwise -> do
-                (t, p) <- compileExpr expr
-                return $ (t, p, m)
-        (id, vars, args1, args2, rt) <- case typ of
-            TFunc _ as r -> return $ (Ident "", [], as, [], r)
-            TFuncDef _ id vs as r _ -> return $ (id, vs, map typeArg as, as, reduceType r)
-            TFuncExt _ id as r -> return $ (id, [], map typeArg as, as, reduceType r)
-        m <- foldM' m (zip [(M.size m)..] args) $ \m (i, a) -> do
-            (e, i) <- case a of
-                APos _ e -> return $ (e, i)
-                ANamed _ id e -> do
-                    let Just (i', _) = getArgument args2 id
-                    return $ (e, i')
-            r <- case convertLambda _pos e of
-                ELambda _ ids e' -> return $ (args1 !! i, Right (ids, e'))
+compileExpr expression = do
+    case expression of
+        EInt _ num -> return $ (tInt, show num)
+        EFloat _ num -> return $ (tFloat, show num)
+        ETrue _ -> return $ (tBool, "true")
+        EFalse _ -> return $ (tBool, "false")
+        EChar _ char -> return $ (tChar, show (ord char))
+        EString _ str -> do
+            let (txts, tags) = interpolateString (read str)
+            if length txts == 1 then do
+                p <- initString (txts !! 0)
+                return $ (tString, p)
+            else do
+                p1 <- initArray tString [] [show (length txts * 2 - 1)]
+                p2 <- gep (tArray tString) p1 ["0"] [0] >>= load (tPtr tString)
+                forM (zip3 txts tags [0..]) $ \(txt, tag, i) -> do
+                    p3 <- gep (tPtr tString) p2 [show (2*i)] []
+                    p4 <- initString txt
+                    store tString p4 p3
+                    if tag == "" then skip
+                    else do
+                        p5 <- gep (tPtr tString) p2 [show (2*i+1)] []
+                        (_, v) <- case pExpr $ resolveLayout False $ myLexer tag of
+                            Ok expr -> do
+                                (t, v) <- compileExpr expr
+                                compileMethod t "" (Ident "toString") [v]
+                        store tString v p5
+                p7 <- initString ""
+                compileMethod (tArray tString) "" (Ident "join") [p1, p7]
+        EArray _ exprs -> do
+            rs <- mapM compileExpr exprs
+            t <- case map fst rs of
+                t:ts -> case foldM unifyTypes t ts of
+                    Just t' -> return $ t'
+            vs <- forM rs $ \(t', v) -> bitcast t' t v
+            p <- initArray t vs []
+            return $ (tArray t, p)
+        EArrayCpr pos expr cprs -> do
+            let c = "4"  -- initial capacity
+            p1 <- alloca tInt
+            store tInt c p1
+            (t, _) <- temporary $ compileArrayCprs cprs $ compileExpr expr
+            p2 <- initMemory (tArray t) "1"
+            p3 <- gep (tArray t) p2 ["0"] [1]
+            store tInt "0" p3
+            p4 <- gep (tArray t) p2 ["0"] [0]
+            p5 <- initMemory (tPtr t) c
+            store (tPtr t) p5 p4
+            compileArrayCprs cprs $ do
+                (_, v1) <- compileExpr expr
+                v2 <- load tInt p3
+                v3 <- binop "add" tInt v2 "1"
+                store tInt v3 p3
+                v4 <- load tInt p1
+                v5 <- binop "icmp sgt" tInt v3 v4
+                l1 <- nextLabel
+                l2 <- nextLabel
+                branch v5 l1 l2
+                label l1
+                v6 <- binop "shl" tInt v4 "1"
+                v7 <- sizeof (tPtr t) v6
+                p6 <- load (tPtr t) p4
+                p7 <- bitcast (tPtr t) (tPtr tChar) p6
+                p8 <- call (tPtr tChar) "@realloc" [(tPtr tChar, p7), (tInt, v7)]
+                p9 <- bitcast (tPtr tChar) (tPtr t) p8
+                store (tPtr t) p9 p4
+                store tInt v6 p1
+                goto l2 >> label l2
+                p10 <- load (tPtr t) p4
+                gep (tPtr t) p10 [v2] [] >>= store t v1
+            return $ (tArray t, p2)
+        EVar {} -> compileRval expression
+        EIndex {} -> compileRval expression
+        ESlice pos expr slices -> do
+            let s1:s2:s3:_ = slices ++ replicate 2 (SliceNone _pos)
+            (v1, v1') <- case s1 of
+                SliceExpr _ e -> do
+                    (_, v) <- compileExpr e
+                    return $ (v, "true")
+                SliceNone _ -> return $ ("0", "false")
+            (v2, v2') <- case s2 of
+                SliceExpr _ e -> do
+                    (_, v) <- compileExpr e
+                    return $ (v, "true")
+                SliceNone _ -> return $ ("0", "false")
+            (_, v3) <- case s3 of
+                SliceExpr _ e -> compileExpr e
+                SliceNone _ -> return $ (tInt, "1")
+            (t, p1) <- compileExpr expr
+            t' <- case t of
+                TArray _ t' -> return $ t'
+                TString _ -> return $ tChar
+            v4 <- gep t p1 ["0"] [1] >>= load tInt
+            (_, f) <- compileExpr (EVar _pos (Ident "Array_prepareSlice"))
+            let t2 = tTuple [tInt, tInt]
+            v5 <- call t2 f [(tInt, v4), (tInt, v1), (tBool, v1'), (tInt, v2), (tBool, v2'), (tInt, v3)]
+            v6 <- gep t2 v5 ["0"] [0] >>= load tInt
+            v7 <- gep t2 v5 ["0"] [1] >>= load tInt
+            p2 <- initArray t' [] [v7]
+            compileAssg t (eVar "source") p1 $ compileAssg t (eVar "result") p2 $ compileAssg tInt (eVar "c") v3 $ compileAssg tInt (eVar "j") v6 $ compileAssg tInt (eVar "d") v7 $ do
+                b <- return $ SBlock _pos [
+                    SAssg _pos [EIndex _pos (eVar "result") (eVar "i"), EIndex _pos (eVar "source") (eVar "j")],
+                    SAssgAdd _pos (eVar "j") (eVar "c")]
+                compileFor (eVar "i") (ERangeExcl _pos (eInt 0) (eVar "d")) (eInt 1) (compileBlock b) (const skip)
+            return $ (t, p2)
+        EAttr {} -> compileRval expression
+        ECall _ expr args -> do
+            -- Build a map of arguments and their positions.
+            let m = M.empty
+            (typ, func, m) <- case expr of
+                EVar _ id -> do
+                    Just (t, p) <- getIdent id
+                    case t of
+                        TClass _ (Ident c) _ _ -> do  -- class instantiation
+                            Just (t, p) <- asks (M.lookup (Ident (c ++ "__alloc")))
+                            return $ (t, p, m)
+                        otherwise -> return $ (t, p, m)
+                EAttr pos e id -> do  -- if this is a method, the object will be passed as the first argument
+                    (t, p) <- compileExpr e
+                    case t of
+                        TModule _ -> do
+                            (t, p) <- compileExpr expr
+                            return $ (t, p, m)
+                        otherwise -> do
+                            Just (t', p') <- compileAttr t p id
+                            v' <- load t' p'
+                            let TFunc _ (t'':_) _ = reduceType t'  -- original class of method definition
+                            p'' <- bitcast t t'' p
+                            return $ (t', v', M.insert 0 (t'', Left p'') m)
                 otherwise -> do
-                    (t, v) <- compileExpr e
-                    case vars of
-                        [] -> do
-                            v' <- bitcast t (args1 !! i) v
-                            return $ (args1 !! i, Left v')
-                        _:_ -> do  -- TODO: type unification for generic functions
-                            return $ (t, Left v)
-            return $ M.insert i r m
-        -- Extend the map using default arguments.
-        m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
-            (ADefault _ t id' _, Nothing) -> do
-                t <- retrieveType t
-                let p = argumentPointer id id'
-                v <- load t p
-                return $ M.insert i (t, Left v) m
-            otherwise -> return $ m
-        -- Call the function.
-        compileTypeVars (map fst (M.elems m)) args1 $ do
-            args4 <- forM (M.elems m) $ \r -> case r of
-                (t, Left v) -> return $ (t, v)
-                (t, Right (ids, e)) -> do
-                    -- Compile lambda function.
-                    let TFunc _ as r = t
-                    n <- nextNumber
-                    let id = Ident (".lambda" ++ show n)
-                    f <- functionName id
-                    s <- getScope
-                    -- TODO: use compileFunc to get the returned type in a more concise way
-                    i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
-                        TTuple _ _ -> return $ 1
-                        otherwise -> return $ 0
-                    (r', p) <- localFunc id t $ localScope f $ compileArgs [ANoDefault _pos t' id' | (t', id') <- zip as ids] i $ do
-                        l <- nextLabel
-                        goto l >> label l
-                        (r', v) <- compileExpr e
-                        case r' of
-                            TVoid _ -> retVoid
-                            otherwise -> ret r' v
-                        localScope s $ case r of
-                            TVar _ id' -> localType id' r' $ define t id $ skip
-                            otherwise -> define t id $ skip
-                        (_, p) <- asks (M.! id)
-                        return $ (r', p)
-                    let t' = tFunc as r'
-                    v <- load t' p
-                    return $ (t', v)
-            compileTypeVars (map fst args4) args1 $ do
-                case typ of
-                    TFuncDef _ id (_:_) _ _ b -> do
-                        -- Compile generic function.
-                        compileFunc id vars args2 rt (Just b) (map (reduceType.fst) args4)
-                    otherwise -> skip
-                r <- retrieveType rt
-                func <- case expr of
-                    EVar _ id -> do
-                        Just (t, p) <- getIdent id
-                        p <- case vars of
-                            [] -> return $ p
-                            _:_ -> do
-                                s <- strFVars vars
-                                return $ p ++ s
-                        p <- case t of
-                            TClass _ (Ident c) _ _ -> return $ func
-                            otherwise -> return $ p
-                        load typ p
-                    otherwise -> return $ func
-                v <- call r func args4
-                return $ (r, v)
-    ESuper _ args -> do
-        (_, f) <- asks (M.! (Ident "#super"))
-        compileExpr (ECall _pos (EVar _pos (Ident f)) ((APos _pos (EVar _pos (Ident "self"))) : args))
-    EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
-    EMinus _ expr -> do
-        (t, v1) <- compileExpr expr
-        v2 <- case t of
-            TInt _ -> binop "sub" t "0" v1
-            TFloat _ -> binop "fsub" t "0.0" v1
-        return $ (t, v2)
-    EPlus _ expr -> do
-        (t, v1) <- compileExpr expr
-        v2 <- case t of
-            TInt _ -> binop "add" t "0" v1
-            TFloat _ -> binop "fadd" t "0.0" v1
-        return $ (t, v2)
-    EBNot _ expr -> compileBinary "xor" (eInt (-1)) expr
-    EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
-    EDiv _ expr1 expr2 -> do
-        (t1, v1) <- compileExpr expr1
-        (t2, v2) <- compileExpr expr2
-        case (t1, t2) of
-            (TInt _, TInt _) -> do
-                v3 <- binop "sdiv" t1 v1 v2
-                v4 <- binop "sub" t1 v3 "1"
-                v5 <- binop "xor" t1 v1 v2
-                v6 <- binop "icmp slt" t1 v5 "0"
-                v7 <- select v6 t1 v4 v3
-                v8 <- binop "mul" t1 v3 v2
-                v9 <- binop "icmp ne" t1 v8 v1
-                v10 <- select v9 t1 v7 v3
-                return $ (t1, v10)
-            otherwise -> compileBinary "div" expr1 expr2
-    EMod _ expr1 expr2 -> do
-        (t, v1) <- compileExpr expr1
-        (t, v2) <- compileExpr expr2
-        v3 <- binop "srem" t v1 v2
-        v4 <- binop "add" t v3 v2
-        v5 <- binop "xor" t v1 v2
-        v6 <- binop "icmp slt" t v5 "0"
-        v7 <- select v6 t v4 v3
-        v8 <- binop "icmp eq" t v3 "0"
-        v9 <- select v8 t v3 v7
-        return $ (t, v9)
-    EAdd _ expr1 expr2 -> compileBinary "add" expr1 expr2
-    ESub _ expr1 expr2 -> compileBinary "sub" expr1 expr2
-    EBShl _ expr1 expr2 -> compileBinary "shl" expr1 expr2
-    EBShr _ expr1 expr2 -> compileBinary "ashr" expr1 expr2
-    EBAnd _ expr1 expr2 -> compileBinary "and" expr1 expr2
-    EBOr _ expr1 expr2 -> compileBinary "or" expr1 expr2
-    EBXor _ expr1 expr2 -> compileBinary "xor" expr1 expr2
-    ECmp _ cmp -> case cmp of
-        Cmp1 _ e1 op e2 -> do
-            (t1, v1) <- compileExpr e1
-            (t2, v2) <- compileExpr e2
-            (t, v1', v2') <- unifyValues t1 v1 t2 v2
-            v <- case op of
-                CmpEQ _ -> compileCmp "eq" t v1' v2'
-                CmpNE _ -> compileCmp "ne" t v1' v2'
-                CmpLT _ -> compileCmp "lt" t v1' v2'
-                CmpLE _ -> compileCmp "le" t v1' v2'
-                CmpGT _ -> compileCmp "gt" t v1' v2'
-                CmpGE _ -> compileCmp "ge" t v1' v2'
+                    (t, p) <- compileExpr expr
+                    return $ (t, p, m)
+            (id, vars, args1, args2, rt) <- case typ of
+                TFunc _ as r -> return $ (Ident "", [], as, [], r)
+                TFuncDef _ id vs as r _ -> return $ (id, vs, map typeArg as, as, reduceType r)
+                TFuncExt _ id as r -> return $ (id, [], map typeArg as, as, reduceType r)
+            m <- foldM' m (zip [(M.size m)..] args) $ \m (i, a) -> do
+                (e, i) <- case a of
+                    APos _ e -> return $ (e, i)
+                    ANamed _ id e -> do
+                        let Just (i', _) = getArgument args2 id
+                        return $ (e, i')
+                r <- case convertLambda _pos e of
+                    ELambda _ ids e' -> return $ (args1 !! i, Right (ids, e'))
+                    otherwise -> do
+                        (t, v) <- compileExpr e
+                        case vars of
+                            [] -> do
+                                v' <- bitcast t (args1 !! i) v
+                                return $ (args1 !! i, Left v')
+                            _:_ -> do  -- TODO: type unification for generic functions
+                                return $ (t, Left v)
+                return $ M.insert i r m
+            -- Extend the map using default arguments.
+            m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
+                (ADefault _ t id' _, Nothing) -> do
+                    t <- retrieveType t
+                    let p = argumentPointer id id'
+                    v <- load t p
+                    return $ M.insert i (t, Left v) m
+                otherwise -> return $ m
+            -- Call the function.
+            compileTypeVars (map fst (M.elems m)) args1 $ do
+                args4 <- forM (M.elems m) $ \case
+                    (t, Left v) -> return $ (t, v)
+                    (t, Right (ids, e)) -> do
+                        -- Compile lambda function.
+                        let TFunc _ as r = t
+                        n <- nextNumber
+                        let id = Ident (".lambda" ++ show n)
+                        f <- functionName id
+                        s <- getScope
+                        -- TODO: use compileFunc to get the returned type in a more concise way
+                        i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
+                            TTuple {} -> return $ 1
+                            otherwise -> return $ 0
+                        (r', p) <- localFunc id t $ localScope f $ compileArgs [ANoDefault _pos t' id' | (t', id') <- zip as ids] i $ do
+                            l <- nextLabel
+                            goto l >> label l
+                            (r', v) <- compileExpr e
+                            case r' of
+                                TVoid _ -> retVoid
+                                otherwise -> ret r' v
+                            localScope s $ case r of
+                                TVar _ id' -> localType id' r' $ define t id $ skip
+                                otherwise -> define t id $ skip
+                            (_, p) <- asks (M.! id)
+                            return $ (r', p)
+                        let t' = tFunc as r'
+                        v <- load t' p
+                        return $ (t', v)
+                compileTypeVars (map fst args4) args1 $ do
+                    case typ of
+                        TFuncDef _ id (_:_) _ _ b -> do
+                            -- Compile generic function.
+                            compileFunc id vars args2 rt (Just b) (map (reduceType.fst) args4)
+                        otherwise -> skip
+                    r <- retrieveType rt
+                    func <- case expr of
+                        EVar _ id -> do
+                            Just (t, p) <- getIdent id
+                            p <- case vars of
+                                [] -> return $ p
+                                _:_ -> do
+                                    s <- strFVars vars
+                                    return $ p ++ s
+                            p <- case t of
+                                TClass _ (Ident c) _ _ -> return $ func
+                                otherwise -> return $ p
+                            load typ p
+                        otherwise -> return $ func
+                    v <- call r func args4
+                    return $ (r, v)
+        ESuper _ args -> do
+            (_, f) <- asks (M.! (Ident "#super"))
+            compileExpr (ECall _pos (EVar _pos (Ident f)) ((APos _pos (EVar _pos (Ident "self"))) : args))
+        EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
+        EMinus _ expr -> do
+            (t, v1) <- compileExpr expr
+            v2 <- case t of
+                TInt _ -> binop "sub" t "0" v1
+                TFloat _ -> binop "fsub" t "0.0" v1
+            return $ (t, v2)
+        EPlus _ expr -> do
+            (t, v1) <- compileExpr expr
+            v2 <- case t of
+                TInt _ -> binop "add" t "0" v1
+                TFloat _ -> binop "fadd" t "0.0" v1
+            return $ (t, v2)
+        EBNot _ expr -> compileBinary "xor" (eInt (-1)) expr
+        EMul _ expr1 expr2 -> compileBinary "mul" expr1 expr2
+        EDiv _ expr1 expr2 -> do
+            (t1, v1) <- compileExpr expr1
+            (t2, v2) <- compileExpr expr2
+            case (t1, t2) of
+                (TInt _, TInt _) -> do
+                    v3 <- binop "sdiv" t1 v1 v2
+                    v4 <- binop "sub" t1 v3 "1"
+                    v5 <- binop "xor" t1 v1 v2
+                    v6 <- binop "icmp slt" t1 v5 "0"
+                    v7 <- select v6 t1 v4 v3
+                    v8 <- binop "mul" t1 v3 v2
+                    v9 <- binop "icmp ne" t1 v8 v1
+                    v10 <- select v9 t1 v7 v3
+                    return $ (t1, v10)
+                otherwise -> compileBinary "div" expr1 expr2
+        EMod _ expr1 expr2 -> do
+            (t, v1) <- compileExpr expr1
+            (t, v2) <- compileExpr expr2
+            v3 <- binop "srem" t v1 v2
+            v4 <- binop "add" t v3 v2
+            v5 <- binop "xor" t v1 v2
+            v6 <- binop "icmp slt" t v5 "0"
+            v7 <- select v6 t v4 v3
+            v8 <- binop "icmp eq" t v3 "0"
+            v9 <- select v8 t v3 v7
+            return $ (t, v9)
+        EAdd _ expr1 expr2 -> compileBinary "add" expr1 expr2
+        ESub _ expr1 expr2 -> compileBinary "sub" expr1 expr2
+        EBShl _ expr1 expr2 -> compileBinary "shl" expr1 expr2
+        EBShr _ expr1 expr2 -> compileBinary "ashr" expr1 expr2
+        EBAnd _ expr1 expr2 -> compileBinary "and" expr1 expr2
+        EBOr _ expr1 expr2 -> compileBinary "or" expr1 expr2
+        EBXor _ expr1 expr2 -> compileBinary "xor" expr1 expr2
+        ECmp _ cmp -> case cmp of
+            Cmp1 _ e1 op e2 -> do
+                (t1, v1) <- compileExpr e1
+                (t2, v2) <- compileExpr e2
+                (t, v1', v2') <- unifyValues t1 v1 t2 v2
+                v <- case op of
+                    CmpEQ _ -> compileCmp "eq" t v1' v2'
+                    CmpNE _ -> compileCmp "ne" t v1' v2'
+                    CmpLT _ -> compileCmp "lt" t v1' v2'
+                    CmpLE _ -> compileCmp "le" t v1' v2'
+                    CmpGT _ -> compileCmp "gt" t v1' v2'
+                    CmpGE _ -> compileCmp "ge" t v1' v2'
+                return $ (tBool, v)
+            Cmp2 _ e1 op cmp -> do
+                e2 <- case cmp of
+                    Cmp1 pos e2 _ _ -> return $ e2
+                    Cmp2 pos e2 _ _ -> return $ e2
+                compileExpr (EAnd _pos (ECmp _pos (Cmp1 _pos e1 op e2)) (ECmp _pos cmp))
+        ENot _ expr -> compileBinary "xor" (ETrue _pos) expr
+        EAnd _ expr1 expr2 -> do
+            l <- nextLabel
+            v <- compileAnd expr1 expr2 [] l
             return $ (tBool, v)
-        Cmp2 _ e1 op cmp -> do
-            e2 <- case cmp of
-                Cmp1 pos e2 _ _ -> return $ e2
-                Cmp2 pos e2 _ _ -> return $ e2
-            compileExpr (EAnd _pos (ECmp _pos (Cmp1 _pos e1 op e2)) (ECmp _pos cmp))
-    ENot _ expr -> compileBinary "xor" (ETrue _pos) expr
-    EAnd _ expr1 expr2 -> do
-        l <- nextLabel
-        v <- compileAnd expr1 expr2 [] l
-        return $ (tBool, v)
-    EOr _ expr1 expr2 -> do
-        l <- nextLabel
-        v <- compileOr expr1 expr2 [] l
-        return $ (tBool, v)
-    ECond _ expr1 expr2 expr3 -> do
-        (t1, v1) <- compileExpr expr1
-        (t2, v2) <- compileExpr expr2
-        (t3, v3) <- compileExpr expr3
-        let Just t4 = unifyTypes t2 t3
-        [v2', v3'] <- forM [(t2, v2), (t3, v3)] $ \(t, v) -> bitcast t t4 v
-        v4 <- select v1 t4 v2' v3'
-        return $ (t4, v4)
-    ETuple _ exprs -> do
-        rs <- mapM compileExpr exprs
-        case rs of
-            r:[] -> return $ r
-            otherwise -> do
-                let t = tTuple (map fst rs)
-                p <- initTuple rs
-                return $ (t, p)
+        EOr _ expr1 expr2 -> do
+            l <- nextLabel
+            v <- compileOr expr1 expr2 [] l
+            return $ (tBool, v)
+        ECond _ expr1 expr2 expr3 -> do
+            (t1, v1) <- compileExpr expr1
+            (t2, v2) <- compileExpr expr2
+            (t3, v3) <- compileExpr expr3
+            let Just t4 = unifyTypes t2 t3
+            [v2', v3'] <- forM [(t2, v2), (t3, v3)] $ \(t, v) -> bitcast t t4 v
+            v4 <- select v1 t4 v2' v3'
+            return $ (t4, v4)
+        ETuple _ exprs -> do
+            rs <- mapM compileExpr exprs
+            case rs of
+                r:[] -> return $ r
+                otherwise -> do
+                    let t = tTuple (map fst rs)
+                    p <- initTuple rs
+                    return $ (t, p)
     where
         compileBinary op expr1 expr2 = do
             (t1, v1) <- compileExpr expr1
@@ -941,7 +947,7 @@ compileExpr expression = case expression of
                 TString _ -> do
                     (_, v3) <- compileArrayCmp (tArray tChar) val1 val2
                     return $ (tInt, v3, "0")
-                TArray _ _ -> do
+                TArray {} -> do
                     (_, v3) <- compileArrayCmp typ val1 val2
                     return $ (tInt, v3, "0")
                 otherwise -> return $ (typ, val1, val2)
@@ -1033,25 +1039,26 @@ compileRval expr = do
 
 -- | Outputs LLVM code that evaluates a given expression as an l-value. Returns type and name (location) of the result or Nothing.
 compileLval :: Expr Pos -> Run (Maybe Result)
-compileLval expr = case expr of
-    EVar _ id -> do
-        getIdent id
-    EIndex _ e1 e2 -> do
-        (t1, v1) <- compileExpr e1
-        (t2, v2) <- compileExpr e2
-        case t1 of
-            TString _ -> getIndex tChar v1 v2
-            TArray _ t1' -> getIndex t1' v1 v2
-    EAttr _ e id -> do
-        (t, v) <- compileExpr e
-        case t of
-            TModule _ -> do
-                (_, m) <- case e of
-                    EVar _ id' -> asks (M.! id')
-                Module env <- lift $ gets (M.! m)
-                local (const env) $ getIdent id
-            otherwise -> do
-                compileAttr t v id
+compileLval expr = do
+    case expr of
+        EVar _ id -> do
+            getIdent id
+        EIndex _ e1 e2 -> do
+            (t1, v1) <- compileExpr e1
+            (t2, v2) <- compileExpr e2
+            case t1 of
+                TString _ -> getIndex tChar v1 v2
+                TArray _ t1' -> getIndex t1' v1 v2
+        EAttr _ e id -> do
+            (t, v) <- compileExpr e
+            case t of
+                TModule _ -> do
+                    (_, m) <- case e of
+                        EVar _ id' -> asks (M.! id')
+                    Module env <- lift $ gets (M.! m)
+                    local (const env) $ getIdent id
+                otherwise -> do
+                    compileAttr t v id
     where
         getIndex typ arr idx = do
             v1 <- gep (tArray typ) arr ["0"] [1] >>= load tInt

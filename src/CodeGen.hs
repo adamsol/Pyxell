@@ -136,7 +136,7 @@ strType typ = do
             ss <- mapM strType ts
             return $ "{" ++ intercalate ", " ss ++ "}*"
         TFunc _ as r -> case r of
-            TTuple _ _ -> strType (tFunc (r:as) tVoid)
+            TTuple {} -> strType (tFunc (r:as) tVoid)
             otherwise -> do
                 ss <- mapM strType as
                 s <- strType r
@@ -166,10 +166,11 @@ defaultValue typ = do
 
 -- | Casts value to a given type.
 castValue :: Type -> Value -> Type -> Run Value
-castValue typ1 val typ2 = case (typ1, typ2) of
-    (TInt _, TFloat _) -> sitofp val
-    (TInt _, TChar _) -> trunc typ1 typ2 val
-    otherwise -> return $ val
+castValue typ1 val typ2 = do
+    case (typ1, typ2) of
+        (TInt _, TFloat _) -> sitofp val
+        (TInt _, TChar _) -> trunc typ1 typ2 val
+        otherwise -> return $ val
 
 -- | Casts given values to a common type.
 unifyValues :: Type -> Value -> Type -> Value -> Run (Type, Value, Value)
@@ -268,7 +269,7 @@ define typ id body = do
                     return $ (as, r, f ++ s)
     localScope f $ do
         (as, r) <- case rt of
-            TTuple _ _ -> return $ (rt : args, tVoid)
+            TTuple {} -> return $ (rt : args, tVoid)
             otherwise -> return $ (args, rt)
         s <- strType typ
         writeTop $ [
@@ -445,10 +446,10 @@ call rt name args = do
     v <- nextTemp
     c <- case rt of
         TVoid _ -> return $ "call "
-        TTuple _ _ -> return $ "call "
+        TTuple {} -> return $ "call "
         otherwise -> return $ v ++ " = call "
     case rt of
-        TTuple _ _ -> do
+        TTuple {} -> do
             p <- alloca (tDeref rt)
             ss <- forM ((rt, p):args) $ \(t, v) -> do
                 s <- strType t
@@ -471,16 +472,17 @@ callVoid name args = do
 
 -- | Outputs LLVM 'ret' instruction.
 ret :: Type -> Value -> Run ()
-ret typ val = case typ of
-    TTuple _ _ -> do
-        p1 <- bitcast typ (tPtr tChar) "%0"
-        p2 <- bitcast typ (tPtr tChar) val
-        v <- sizeof typ "1"
-        call (tPtr tChar) "@memcpy" [(tPtr tChar, p1), (tPtr tChar, p2), (tInt, v)]
-        retVoid
-    otherwise -> do
-        s <- strType typ
-        write $ indent [ "ret " ++ s ++ " " ++ val ]
+ret typ val = do
+    case typ of
+        TTuple {} -> do
+            p1 <- bitcast typ (tPtr tChar) "%0"
+            p2 <- bitcast typ (tPtr tChar) val
+            v <- sizeof typ "1"
+            call (tPtr tChar) "@memcpy" [(tPtr tChar, p1), (tPtr tChar, p2), (tInt, v)]
+            retVoid
+        otherwise -> do
+            s <- strType typ
+            write $ indent [ "ret " ++ s ++ " " ++ val ]
 
 -- | Outputs LLVM 'ret void' instruction.
 retVoid :: Run ()

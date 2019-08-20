@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
-{-# LANGUAGE FlexibleInstances #-}
 
 module Libraries where
 

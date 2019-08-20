@@ -1,6 +1,3 @@
-{-# OPTIONS_GHC -fno-warn-warnings-deprecations #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FlexibleContexts #-}
 
 module Utils where
 
@@ -90,7 +87,7 @@ unifyTypes typ1 typ2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
-        (TClass _ _ _ _, TClass _ _ _ _) -> findCommonSuperclass t1 t2 t1 t2
+        (TClass {}, TClass {}) -> findCommonSuperclass t1 t2 t1 t2
         otherwise -> Nothing
     where
         findCommonSuperclass t1 t2 t1'@(TClass _ id1 bs1 _) t2'@(TClass _ id2 bs2 _) =
@@ -299,7 +296,7 @@ convertLambda pos expression = do
 
 -- | Processes a list of members of a class to add necessary information and provide consistency.
 prepareMembers :: Ident -> [CMemb Pos] -> [CMemb Pos]
-prepareMembers (Ident c) membs = (flip map) membs $ \memb ->
+prepareMembers (Ident c) membs = flip map membs $ \memb ->
     let self = ANoDefault _pos (tVar (Ident c)) (Ident "self") in
     case memb of
         MMethodCode pos (Ident f) as ret body -> case body of
@@ -314,10 +311,10 @@ extendMembers :: [CMemb Pos] -> [CMemb Pos] -> [CMemb Pos]
 extendMembers membs1 membs2 = do
     let ids1 = S.fromList (map idMember membs1)
     let ids2 = S.fromList (map idMember membs2)
-    let membs1' = (flip map) membs1 $ \memb -> do
+    let membs1' = flip map membs1 $ \memb -> do
         let id = idMember memb
         if S.member id ids2 then third $ fromJust $ findMember membs2 id else memb
-    let membs2' = (flip filter) membs2 $ \memb -> not $ S.member (idMember memb) ids1
+    let membs2' = flip filter membs2 $ \memb -> not $ S.member (idMember memb) ids1
     membs1' ++ membs2'
 
 -- | Retrieves identifier of a class member.
@@ -364,6 +361,6 @@ getConstructorArgs membs = case findMember membs (Ident "_constructor") of
 -- | Returns whether the class has any abstract methods.
 isAbstract :: [CMemb Pos] -> Bool
 isAbstract membs = case membs of
-    (MMethod _ _ (TFuncAbstract _ _ _ _ _)):_ -> True
+    (MMethod _ _ (TFuncAbstract {})):_ -> True
     [] -> False
     _:ms -> isAbstract ms
