@@ -197,18 +197,15 @@ checkCast pos typ1 typ2 = do
         (TInt _, TNum _) -> return $ typ1
         (TFloat _, TNum _) -> return $ typ1
         (_, TAny _) -> return $ typ1
-        otherwise -> case unifyTypes typ1 typ2 of
+        otherwise -> case castType typ1 typ2 of
             Just t' -> case typ2 of
                 TFuncDef {} -> throw pos $ IllegalRedefinition typ2
-                TClass {} -> if typ2 == t' then return $ t' else throw pos $ IllegalAssignment typ1 typ2
                 otherwise -> return $ t'
             Nothing -> do
                 t1 <- retrieveType typ1
                 t2 <- retrieveType typ2
-                case unifyTypes t1 t2 of
-                    Just t' -> case t' of
-                        TClass {} -> if t2 == t' then return $ t' else throw pos $ IllegalAssignment typ1 typ2
-                        otherwise -> return $ t'
+                case castType t1 t2 of
+                    Just t' -> return $ t'
                     Nothing -> throw pos $ IllegalAssignment typ1 typ2
 
 -- | Same as `checkCast`, but skips the returned type.

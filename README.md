@@ -53,7 +53,7 @@ Features
 This is a list of features planned for the 1.0 release. It will probably grow, maybe indefinitely :)
 
 * Python-like syntax with semantic indentation (+)
-* Strongly static typing with partial type inference (+/-)
+* Strongly static typing with partial type inference (+)
 * Full compilation to machine code (+)
 * 64-bit integers and double-precision floating-point numbers (+)
 * Native tuples (+)
@@ -69,9 +69,9 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Generic functions (+/-)
 * Module system (+/-)
 * Classes with safe references (+/-)
+* Separate nullable types (+)
 * Generic types
 * Multiple inheritance 
-* Separate nullable types
 * Containers library
 * Arbitrary-precision arithmetic
 * Closures

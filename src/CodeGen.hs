@@ -7,6 +7,7 @@ import Control.Monad.Trans.State hiding (State)
 import Control.Monad.Trans.Reader
 import Data.Char
 import Data.List
+import Data.Maybe
 import qualified Data.Map as M
 import qualified Data.Set as S
 
@@ -185,8 +186,9 @@ castValue typ1 typ2 val = do
 unifyValues :: Type -> Value -> Type -> Value -> Run (Type, Value, Value)
 unifyValues typ1 val1 typ2 val2 = do
     t <- case (typ1, typ2) of
-        (TInt _, TFloat _) -> return $ typ2
-        otherwise -> return $ typ1
+        (TInt _, TFloat _) -> return $ tFloat
+        (TFloat _, TInt _) -> return $ tFloat
+        otherwise -> return $ fromJust (unifyTypes typ1 typ2)
     v1 <- castValue typ1 t val1
     v2 <- castValue typ2 t val2
     return $ (t, v1, v2)

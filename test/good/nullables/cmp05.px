@@ -1,0 +1,4 @@
+
+[Int?]? x = [42, null]
+print x == x!, x! != x
+print x![0] == 42, null != x![1]

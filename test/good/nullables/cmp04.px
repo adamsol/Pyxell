@@ -1,0 +1,3 @@
+
+print null < null, null <= null
+print null > null, null >= null

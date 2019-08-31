@@ -1,0 +1,7 @@
+
+[Int] a = []
+print [] == a
+print a != []
+
+print [] <= []
+print [false] > []

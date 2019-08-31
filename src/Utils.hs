@@ -69,14 +69,14 @@ find' a f = find f a
 foldM' b a f = foldM f b a
 third (_, _, x) = x
 
--- | Returns a common supertype of given types.
-unifyTypes :: Type -> Type -> Maybe Type
-unifyTypes typ1 typ2 = do
+-- | Returns a common supertype of given types, assuming that the first one is being assigned to the second one.
+-- | If cast is not allowed, returns Nothing.
+castType :: Type -> Type -> Maybe Type
+castType typ1 typ2 = do
     let t1 = reduceType typ1
     let t2 = reduceType typ2
     case (t1, t2) of
         (TUnknown _, _) -> Just t2
-        (_, TUnknown _) -> Just t1
         (TVar _ id1, TVar _ id2) -> if id1 == id2 then Just t1 else Nothing
         (TVoid _, TVoid _) -> Just tVoid
         (TInt _, TInt _) -> Just tInt
@@ -87,7 +87,6 @@ unifyTypes typ1 typ2 = do
         (TArray _ t1', TArray _ t2') ->
             if t1' == t2' then Just t1
             else if unifyTypes t1' (tArray tUnknown) == Just (tArray tUnknown) then Just (tArray tUnknown)
-            else if unifyTypes (tArray tUnknown) t2' == Just (tArray tUnknown) then Just (tArray tUnknown)
             else Nothing  -- arrays are not covariant
         (TNullable _ t1', TNullable _ t2') -> fmap tNullable (unifyTypes t1' t2')
         (_, TNullable _ t2') -> fmap tNullable (unifyTypes t1 t2')
@@ -99,8 +98,25 @@ unifyTypes typ1 typ2 = do
                 (Just as, Just r) -> Just (tFunc as r)
                 otherwise -> Nothing
             else Nothing
-        (TClass {}, TClass {}) -> findCommonSuperclass t1 t2 t1 t2
+        (TClass {}, TClass {}) -> if isSubclass t1 t2 then Just t2 else Nothing
         otherwise -> Nothing
+    where
+        isSubclass t1@(TClass _ id1 bs1 _) t2@(TClass _ id2 _ _) =
+            if id1 == id2 then True
+            else case bs1 of
+                [b] -> isSubclass b t2
+                [] -> False
+
+-- | Returns a common supertype of given types, or Nothing.
+unifyTypes :: Type -> Type -> Maybe Type
+unifyTypes typ1 typ2 = do
+    let t1 = reduceType typ1
+    let t2 = reduceType typ2
+    case (t1, t2) of
+        (TClass {}, TClass {}) -> findCommonSuperclass t1 t2 t1 t2
+        otherwise -> case castType typ1 typ2 of
+            Just t -> Just t
+            Nothing -> castType typ2 typ1
     where
         findCommonSuperclass t1 t2 t1'@(TClass _ id1 bs1 _) t2'@(TClass _ id2 bs2 _) =
             if id1 == id2 then Just t1'

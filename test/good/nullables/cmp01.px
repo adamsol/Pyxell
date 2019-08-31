@@ -1,0 +1,3 @@
+
+print null == null
+print null != null

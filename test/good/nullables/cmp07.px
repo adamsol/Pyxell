@@ -1,0 +1,6 @@
+
+[Char?] a = ['a', null]
+[Char?] b = [ null, 'b']
+print a < b, a > b
+print a[::-1] <= b, a >= b[::-1]
+print a[1:] < b, a <= b[1:]

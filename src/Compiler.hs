@@ -829,13 +829,14 @@ compileExpr expression = do
                 (t1, v1) <- compileExpr e1
                 (t2, v2) <- compileExpr e2
                 (t, v1', v2') <- unifyValues t1 v1 t2 v2
-                v <- case op of
-                    CmpEQ _ -> compileCmp "eq" t v1' v2'
-                    CmpNE _ -> compileCmp "ne" t v1' v2'
-                    CmpLT _ -> compileCmp "lt" t v1' v2'
-                    CmpLE _ -> compileCmp "le" t v1' v2'
-                    CmpGT _ -> compileCmp "gt" t v1' v2'
-                    CmpGE _ -> compileCmp "ge" t v1' v2'
+                op <- case op of
+                    CmpEQ _ -> return $ "eq"
+                    CmpNE _ -> return $ "ne"
+                    CmpLT _ -> return $ "lt"
+                    CmpLE _ -> return $ "le"
+                    CmpGT _ -> return $ "gt"
+                    CmpGE _ -> return $ "ge"
+                v <- compileCmp op t v1' v2'
                 return $ (tBool, v)
             Cmp2 _ e1 op cmp -> do
                 e2 <- case cmp of
@@ -981,7 +982,9 @@ compileExpr expression = do
                     return $ (tInt, v3, "0")
                 otherwise -> return $ (typ, val1, val2)
             case (op, t) of
-                (_, TTuple _ ts) -> do
+                (_, TNullable {}) -> do
+                    compileNullableCmp op t v1 v2
+                (_, TTuple {}) -> do
                     lt <- nextLabel
                     lf <- nextLabel
                     compileTupleCmp op t v1 v2 0 lt lf
@@ -995,6 +998,29 @@ compileExpr expression = do
         compileArrayCmp typ val1 val2 = do
             compileAssg typ (eVar "a1") val1 $ compileAssg typ (eVar "a2") val2 $ do
                 compileExpr (ECall _pos (EVar _pos (Ident "Array_compare")) (map (APos _pos) [eVar "a1", eVar "a2"]))
+        compileNullableCmp op typ val1 val2 = do
+            let TNullable _ t' = typ
+            v1 <- gep typ val1 ["0"] [1] >>= load tBool
+            v2 <- gep typ val2 ["0"] [1] >>= load tBool
+            v3 <- binop "icmp eq" tBool v1 v2
+            v4 <- compileCmp op tBool v1 v2
+            l1 <- getLabel
+            [l2, l3, l4] <- sequence (replicate 3 nextLabel)
+            branch v3 l2 l4
+            label l2
+            v5 <- binop "icmp eq" tBool v1 "1"
+            branch v5 l3 l4
+            label l3
+            v6 <- gep typ val1 ["0"] [0] >>= load t'
+            v7 <- gep typ val2 ["0"] [0] >>= load t'
+            v8 <- compileCmp op t' v6 v7
+            goto l4
+            label l4
+            case op of
+                "eq" -> phi [("false", l1), ("true", l2), (v8, l3)]
+                "ne" -> phi [("true", l1), ("false", l2), (v8, l3)]
+                otherwise -> do
+                    phi [(v4, l1), (if op == "le" || op == "ge" then "true" else "false", l2), (v8, l3)]
         compileTupleCmp op typ val1 val2 idx lt lf = do
             t <- case typ of
                 TTuple _ ts -> return $ ts !! idx
