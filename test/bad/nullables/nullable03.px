@@ -1,0 +1,6 @@
+
+func f(String s) def
+    return
+
+String? s = ""
+f(s)

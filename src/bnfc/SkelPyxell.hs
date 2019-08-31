@@ -29,6 +29,7 @@ transType x = case x of
   TChar _ -> failure x
   TString _ -> failure x
   TArray _ type_ -> failure x
+  TNullable _ type_ -> failure x
   TTuple _ types -> failure x
   TFunc _ types type_ -> failure x
   TFuncDef _ ident fvars fargs type_ block -> failure x
@@ -155,12 +156,14 @@ transExpr x = case x of
   EString _ string -> failure x
   EArray _ exprs -> failure x
   EArrayCpr _ expr acprs -> failure x
+  ENull _ -> failure x
   EVar _ ident -> failure x
   EIndex _ expr1 expr2 -> failure x
   ESlice _ expr slices -> failure x
   EAttr _ expr ident -> failure x
   ECall _ expr cargs -> failure x
   ESuper _ cargs -> failure x
+  EAssert _ expr -> failure x
   EPow _ expr1 expr2 -> failure x
   EMinus _ expr -> failure x
   EPlus _ expr -> failure x

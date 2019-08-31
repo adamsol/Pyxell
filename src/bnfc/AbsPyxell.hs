@@ -27,6 +27,7 @@ data Type a
     | TChar a
     | TString a
     | TArray a (Type a)
+    | TNullable a (Type a)
     | TTuple a [Type a]
     | TFunc a [Type a] (Type a)
     | TFuncDef a Ident [FVar a] [FArg a] (Type a) (Block a)
@@ -52,6 +53,7 @@ instance Functor Type where
         TChar a -> TChar (f a)
         TString a -> TString (f a)
         TArray a type_ -> TArray (f a) (fmap f type_)
+        TNullable a type_ -> TNullable (f a) (fmap f type_)
         TTuple a types -> TTuple (f a) (map (fmap f) types)
         TFunc a types type_ -> TFunc (f a) (map (fmap f) types) (fmap f type_)
         TFuncDef a ident fvars fargs type_ block -> TFuncDef (f a) ident (map (fmap f) fvars) (map (fmap f) fargs) (fmap f type_) (fmap f block)
@@ -273,12 +275,14 @@ data Expr a
     | EString a String
     | EArray a [Expr a]
     | EArrayCpr a (Expr a) [ACpr a]
+    | ENull a
     | EVar a Ident
     | EIndex a (Expr a) (Expr a)
     | ESlice a (Expr a) [Slice a]
     | EAttr a (Expr a) Ident
     | ECall a (Expr a) [CArg a]
     | ESuper a [CArg a]
+    | EAssert a (Expr a)
     | EPow a (Expr a) (Expr a)
     | EMinus a (Expr a)
     | EPlus a (Expr a)
@@ -316,12 +320,14 @@ instance Functor Expr where
         EString a string -> EString (f a) string
         EArray a exprs -> EArray (f a) (map (fmap f) exprs)
         EArrayCpr a expr acprs -> EArrayCpr (f a) (fmap f expr) (map (fmap f) acprs)
+        ENull a -> ENull (f a)
         EVar a ident -> EVar (f a) ident
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         ESlice a expr slices -> ESlice (f a) (fmap f expr) (map (fmap f) slices)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         ECall a expr cargs -> ECall (f a) (fmap f expr) (map (fmap f) cargs)
         ESuper a cargs -> ESuper (f a) (map (fmap f) cargs)
+        EAssert a expr -> EAssert (f a) (fmap f expr)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMinus a expr -> EMinus (f a) (fmap f expr)
         EPlus a expr -> EPlus (f a) (fmap f expr)

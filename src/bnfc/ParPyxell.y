@@ -65,92 +65,94 @@ import ErrM
 %name pListIdent_internal ListIdent
 %name pExpr_internal Expr
 %token
-  '!=' { PT _ (TS _ 1) }
-  '$' { PT _ (TS _ 2) }
-  '$=' { PT _ (TS _ 3) }
-  '%' { PT _ (TS _ 4) }
-  '%=' { PT _ (TS _ 5) }
-  '&' { PT _ (TS _ 6) }
-  '&=' { PT _ (TS _ 7) }
-  '(' { PT _ (TS _ 8) }
-  ')' { PT _ (TS _ 9) }
-  '*' { PT _ (TS _ 10) }
-  '*=' { PT _ (TS _ 11) }
-  '+' { PT _ (TS _ 12) }
-  '+=' { PT _ (TS _ 13) }
-  ',' { PT _ (TS _ 14) }
-  '-' { PT _ (TS _ 15) }
-  '-=' { PT _ (TS _ 16) }
-  '->' { PT _ (TS _ 17) }
-  '.' { PT _ (TS _ 18) }
-  '..' { PT _ (TS _ 19) }
-  '...' { PT _ (TS _ 20) }
-  '/' { PT _ (TS _ 21) }
-  '/=' { PT _ (TS _ 22) }
-  ':' { PT _ (TS _ 23) }
-  ';' { PT _ (TS _ 24) }
-  '<' { PT _ (TS _ 25) }
-  '<<' { PT _ (TS _ 26) }
-  '<<=' { PT _ (TS _ 27) }
-  '<=' { PT _ (TS _ 28) }
-  '=' { PT _ (TS _ 29) }
-  '==' { PT _ (TS _ 30) }
-  '>' { PT _ (TS _ 31) }
-  '>=' { PT _ (TS _ 32) }
-  '>>' { PT _ (TS _ 33) }
-  '>>=' { PT _ (TS _ 34) }
-  '?' { PT _ (TS _ 35) }
-  'Any' { PT _ (TS _ 36) }
-  'Bool' { PT _ (TS _ 37) }
-  'Char' { PT _ (TS _ 38) }
-  'Float' { PT _ (TS _ 39) }
-  'Int' { PT _ (TS _ 40) }
-  'Module' { PT _ (TS _ 41) }
-  'Num' { PT _ (TS _ 42) }
-  'String' { PT _ (TS _ 43) }
-  'Unknown' { PT _ (TS _ 44) }
-  'Void' { PT _ (TS _ 45) }
-  '[' { PT _ (TS _ 46) }
-  ']' { PT _ (TS _ 47) }
-  '^' { PT _ (TS _ 48) }
-  '^=' { PT _ (TS _ 49) }
-  '_' { PT _ (TS _ 50) }
-  'abstract' { PT _ (TS _ 51) }
-  'and' { PT _ (TS _ 52) }
-  'as' { PT _ (TS _ 53) }
-  'break' { PT _ (TS _ 54) }
-  'class' { PT _ (TS _ 55) }
-  'constructor' { PT _ (TS _ 56) }
-  'continue' { PT _ (TS _ 57) }
-  'def' { PT _ (TS _ 58) }
-  'do' { PT _ (TS _ 59) }
-  'elif' { PT _ (TS _ 60) }
-  'else' { PT _ (TS _ 61) }
-  'extern' { PT _ (TS _ 62) }
-  'false' { PT _ (TS _ 63) }
-  'for' { PT _ (TS _ 64) }
-  'func' { PT _ (TS _ 65) }
-  'hiding' { PT _ (TS _ 66) }
-  'if' { PT _ (TS _ 67) }
-  'in' { PT _ (TS _ 68) }
-  'lambda' { PT _ (TS _ 69) }
-  'not' { PT _ (TS _ 70) }
-  'only' { PT _ (TS _ 71) }
-  'or' { PT _ (TS _ 72) }
-  'print' { PT _ (TS _ 73) }
-  'return' { PT _ (TS _ 74) }
-  'skip' { PT _ (TS _ 75) }
-  'step' { PT _ (TS _ 76) }
-  'super' { PT _ (TS _ 77) }
-  'true' { PT _ (TS _ 78) }
-  'until' { PT _ (TS _ 79) }
-  'use' { PT _ (TS _ 80) }
-  'while' { PT _ (TS _ 81) }
-  '{' { PT _ (TS _ 82) }
-  '|' { PT _ (TS _ 83) }
-  '|=' { PT _ (TS _ 84) }
-  '}' { PT _ (TS _ 85) }
-  '~' { PT _ (TS _ 86) }
+  '!' { PT _ (TS _ 1) }
+  '!=' { PT _ (TS _ 2) }
+  '$' { PT _ (TS _ 3) }
+  '$=' { PT _ (TS _ 4) }
+  '%' { PT _ (TS _ 5) }
+  '%=' { PT _ (TS _ 6) }
+  '&' { PT _ (TS _ 7) }
+  '&=' { PT _ (TS _ 8) }
+  '(' { PT _ (TS _ 9) }
+  ')' { PT _ (TS _ 10) }
+  '*' { PT _ (TS _ 11) }
+  '*=' { PT _ (TS _ 12) }
+  '+' { PT _ (TS _ 13) }
+  '+=' { PT _ (TS _ 14) }
+  ',' { PT _ (TS _ 15) }
+  '-' { PT _ (TS _ 16) }
+  '-=' { PT _ (TS _ 17) }
+  '->' { PT _ (TS _ 18) }
+  '.' { PT _ (TS _ 19) }
+  '..' { PT _ (TS _ 20) }
+  '...' { PT _ (TS _ 21) }
+  '/' { PT _ (TS _ 22) }
+  '/=' { PT _ (TS _ 23) }
+  ':' { PT _ (TS _ 24) }
+  ';' { PT _ (TS _ 25) }
+  '<' { PT _ (TS _ 26) }
+  '<<' { PT _ (TS _ 27) }
+  '<<=' { PT _ (TS _ 28) }
+  '<=' { PT _ (TS _ 29) }
+  '=' { PT _ (TS _ 30) }
+  '==' { PT _ (TS _ 31) }
+  '>' { PT _ (TS _ 32) }
+  '>=' { PT _ (TS _ 33) }
+  '>>' { PT _ (TS _ 34) }
+  '>>=' { PT _ (TS _ 35) }
+  '?' { PT _ (TS _ 36) }
+  'Any' { PT _ (TS _ 37) }
+  'Bool' { PT _ (TS _ 38) }
+  'Char' { PT _ (TS _ 39) }
+  'Float' { PT _ (TS _ 40) }
+  'Int' { PT _ (TS _ 41) }
+  'Module' { PT _ (TS _ 42) }
+  'Num' { PT _ (TS _ 43) }
+  'String' { PT _ (TS _ 44) }
+  'Unknown' { PT _ (TS _ 45) }
+  'Void' { PT _ (TS _ 46) }
+  '[' { PT _ (TS _ 47) }
+  ']' { PT _ (TS _ 48) }
+  '^' { PT _ (TS _ 49) }
+  '^=' { PT _ (TS _ 50) }
+  '_' { PT _ (TS _ 51) }
+  'abstract' { PT _ (TS _ 52) }
+  'and' { PT _ (TS _ 53) }
+  'as' { PT _ (TS _ 54) }
+  'break' { PT _ (TS _ 55) }
+  'class' { PT _ (TS _ 56) }
+  'constructor' { PT _ (TS _ 57) }
+  'continue' { PT _ (TS _ 58) }
+  'def' { PT _ (TS _ 59) }
+  'do' { PT _ (TS _ 60) }
+  'elif' { PT _ (TS _ 61) }
+  'else' { PT _ (TS _ 62) }
+  'extern' { PT _ (TS _ 63) }
+  'false' { PT _ (TS _ 64) }
+  'for' { PT _ (TS _ 65) }
+  'func' { PT _ (TS _ 66) }
+  'hiding' { PT _ (TS _ 67) }
+  'if' { PT _ (TS _ 68) }
+  'in' { PT _ (TS _ 69) }
+  'lambda' { PT _ (TS _ 70) }
+  'not' { PT _ (TS _ 71) }
+  'null' { PT _ (TS _ 72) }
+  'only' { PT _ (TS _ 73) }
+  'or' { PT _ (TS _ 74) }
+  'print' { PT _ (TS _ 75) }
+  'return' { PT _ (TS _ 76) }
+  'skip' { PT _ (TS _ 77) }
+  'step' { PT _ (TS _ 78) }
+  'super' { PT _ (TS _ 79) }
+  'true' { PT _ (TS _ 80) }
+  'until' { PT _ (TS _ 81) }
+  'use' { PT _ (TS _ 82) }
+  'while' { PT _ (TS _ 83) }
+  '{' { PT _ (TS _ 84) }
+  '|' { PT _ (TS _ 85) }
+  '|=' { PT _ (TS _ 86) }
+  '}' { PT _ (TS _ 87) }
+  '~' { PT _ (TS _ 88) }
 
   L_integ {PT _ (TI _)}
   L_ident {PT _ (TV _)}
@@ -248,6 +250,9 @@ Type3 :: {
 }
 : '[' Type ']' {
   (Just (tokenLineCol $1), AbsPyxell.TArray (Just (tokenLineCol $1)) (snd $2)) 
+}
+| Type3 '?' {
+  (fst $1, AbsPyxell.TNullable (fst $1)(snd $1)) 
 }
 | Type4 {
   (fst $1, snd $1)
@@ -628,6 +633,9 @@ Expr13 :: {
 | '[' Expr2 ListACpr ']' {
   (Just (tokenLineCol $1), AbsPyxell.EArrayCpr (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
 }
+| 'null' {
+  (Just (tokenLineCol $1), AbsPyxell.ENull (Just (tokenLineCol $1)))
+}
 | Ident {
   (fst $1, AbsPyxell.EVar (fst $1)(snd $1)) 
 }
@@ -645,6 +653,9 @@ Expr13 :: {
 }
 | 'super' '(' ListCArg ')' {
   (Just (tokenLineCol $1), AbsPyxell.ESuper (Just (tokenLineCol $1)) (snd $3)) 
+}
+| Expr13 '!' {
+  (fst $1, AbsPyxell.EAssert (fst $1)(snd $1)) 
 }
 | '(' Expr ')' {
   (Just (tokenLineCol $1), snd $2)

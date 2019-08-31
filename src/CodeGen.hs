@@ -133,6 +133,9 @@ strType typ = do
         TArray _ t -> do
             s <- strType t
             return $ "{" ++ s ++ "*, i64}*"
+        TNullable _ t -> do
+            s <- strType t
+            return $ "{" ++ s ++ ", i1}*"
         TTuple _ ts -> do
             ss <- mapM strType ts
             return $ "{" ++ intercalate ", " ss ++ "}*"
@@ -166,12 +169,17 @@ defaultValue typ = do
         otherwise -> return $ "null"
 
 -- | Casts value to a given type.
-castValue :: Type -> Value -> Type -> Run Value
-castValue typ1 val typ2 = do
+castValue :: Type -> Type -> Value -> Run Value
+castValue typ1 typ2 val = do
     case (typ1, typ2) of
         (TInt _, TFloat _) -> sitofp val
         (TInt _, TChar _) -> trunc typ1 typ2 val
-        otherwise -> return $ val
+        (TNullable {}, TNullable {}) -> bitcast typ1 typ2 val
+        (_, TNullable _ t2') -> do
+            v <- castValue t2' typ1 val
+            p <- initNullable t2' (Just v)
+            return $ p
+        otherwise -> bitcast typ1 typ2 val
 
 -- | Casts given values to a common type.
 unifyValues :: Type -> Value -> Type -> Value -> Run (Type, Value, Value)
@@ -179,8 +187,8 @@ unifyValues typ1 val1 typ2 val2 = do
     t <- case (typ1, typ2) of
         (TInt _, TFloat _) -> return $ typ2
         otherwise -> return $ typ1
-    v1 <- castValue typ1 val1 t
-    v2 <- castValue typ2 val2 t
+    v1 <- castValue typ1 t val1
+    v2 <- castValue typ2 t val2
     return $ (t, v1, v2)
 
 
@@ -539,3 +547,16 @@ initArray typ vals lens = do
     gep t1 p1 ["0"] [1] >>= store tInt len1
     forM (zip [0..] vals) (\(i, v) -> gep t2 p2 [show i] [] >>= store typ v)
     return $ p1
+
+-- | Outputs LLVM code for initialization of a nullable.
+initNullable :: Type -> Maybe Value -> Run Value
+initNullable typ val = do
+    let t = tNullable typ
+    case val of
+        Just v -> do
+            p <- initMemory t "1"
+            gep t p ["0"] [0] >>= store typ v
+            gep t p ["0"] [1] >>= store tBool "1"
+            return $ p
+        Nothing -> do
+            localScope "!global" $ constant (tDeref t) "zeroinitializer"

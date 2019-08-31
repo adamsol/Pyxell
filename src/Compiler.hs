@@ -102,7 +102,7 @@ compileStmt statement cont = do
         SRetExpr _ expr -> do
             (t, v) <- compileExpr expr
             (t', _) <- asks (M.! (Ident "#return"))
-            v' <- bitcast t t' v
+            v' <- castValue t t' v
             ret t' v'
             cont
         SSkip _ -> do
@@ -154,7 +154,7 @@ compileStmt statement cont = do
         SDeclAssg _ typ id expr -> do
             let t = reduceType typ
             (t', v') <- compileExpr expr
-            v <- bitcast t' t v'
+            v <- castValue t' t v'
             variable t id v cont
         SDecl _ typ id -> do
             let t = reduceType typ
@@ -223,6 +223,19 @@ compileStmt statement cont = do
                         (_, v) <- compileExpr (EIndex _pos a i)
                         compilePrint t' v
                 call tInt "@putchar" [(tChar, "93")] >> skip  -- ]
+            TNullable _ t' -> do
+                v1 <- gep typ val ["0"] [0] >>= load t'
+                v2 <- gep typ val ["0"] [1] >>= load tBool
+                v3 <- binop "icmp eq" tBool v2 "1"
+                [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+                branch v3 l1 l2
+                label l1
+                compilePrint t' v1
+                goto l3
+                label l2
+                forM_ "null" $ \c -> call tInt "@putchar" [(tChar, show (ord c))]
+                goto l3
+                label l3
             TClass _ _ _ membs -> do
                 (_, v) <- compileMethod typ val (Ident "toString") [val]
                 compileMethod tString "" (Ident "write") [v] >> skip
@@ -271,7 +284,7 @@ compileAssg typ expr val cont = do
     r <- compileLval expr
     case (r, e) of
         (Just (t, p), _) -> do
-            v <- bitcast typ t val
+            v <- castValue typ t val
             store t v p
             cont
         (Nothing, EVar _ id) -> do
@@ -334,7 +347,7 @@ compileFor expr1 expr2 expr3 body cont = do
     where
         initForRangeIncl from to step = do
             [(t1, v1), (_, v2), (t2, v3)] <- mapM compileExpr [from, to, step]
-            v4 <- castValue t2 v3 t1
+            v4 <- castValue t2 t1 v3
             c <- case t1 of
                 TFloat _ -> return $ "fcmp o"
                 otherwise -> return $ "icmp s"
@@ -348,7 +361,7 @@ compileFor expr1 expr2 expr3 body cont = do
             return $ (t1, t1, v1, v4, cmp, return)
         initForRangeExcl from to step = do
             [(t1, v1), (_, v2), (t2, v3)] <- mapM compileExpr [from, to, step]
-            v4 <- castValue t2 v3 t1
+            v4 <- castValue t2 t1 v3
             c <- case t1 of
                 TFloat _ -> return $ "fcmp o"
                 otherwise -> return $ "icmp s"
@@ -362,7 +375,7 @@ compileFor expr1 expr2 expr3 body cont = do
             return $ (t1, t1, v1, v4, cmp, return)
         initForRangeInf from step = do
             [(t1, v1), (t2, v2)] <- mapM compileExpr [from, step]
-            v3 <- castValue t2 v2 t1
+            v3 <- castValue t2 t1 v2
             let cmp _ = return $ "true"
             return $ (t1, t1, v1, v3, cmp, return)
         initForIterable iter step = do
@@ -437,7 +450,7 @@ compileFunc id vars args1 rt block args2 = do
                 writeTop $ [ p ++ " = global " ++ s ++ " " ++ v ]
                 localScope "main" $ do
                     (t', v') <- compileExpr e
-                    v <- bitcast t' t v'
+                    v <- castValue t' t v'
                     store t v p
 
 -- | Outputs LLVM code for initialization of function arguments.
@@ -495,7 +508,7 @@ compileClass id bases membs = do
                 forM (zip [0..] membs) $ \(i, memb) -> case memb of
                     MFieldDefault _ t'' _ e -> do
                         (t', v') <- compileExpr e
-                        v'' <- bitcast t' t'' v'
+                        v'' <- castValue t' t'' v'
                         gep t p ["0"] [i] >>= store t'' v''
                     MMethod _ _ (TFuncDef _ id' _ _ _ _) -> do
                         Just (t', p') <- getIdent id'
@@ -510,7 +523,7 @@ compileClass id bases membs = do
                         as <- forM (zip [0..] args) $ \(i, arg) ->
                             return $ (typeArg arg, "%" ++ show i)
                         let TFunc _ (t'':_) _ = reduceType t'  -- original class of constructor definition
-                        p'' <- bitcast t t'' p
+                        p'' <- castValue t t'' p
                         callVoid f ((t'', p'') : as)
                     Nothing -> skip
                 ret t p
@@ -572,7 +585,7 @@ compileExpr expression = do
                 t:ts -> case foldM unifyTypes t ts of
                     Just t' -> return $ t'
                 [] -> return $ tUnknown
-            vs <- forM rs $ \(t', v) -> bitcast t' t v
+            vs <- forM rs $ \(t', v) -> castValue t' t v
             p <- initArray t vs []
             return $ (tArray t, p)
         EArrayCpr pos expr cprs -> do
@@ -587,7 +600,7 @@ compileExpr expression = do
             p5 <- initMemory (tPtr t) c
             store (tPtr t) p5 p4
             compileArrayCprs cprs $ do
-                (_, v1) <- compileExpr expr
+                (t1, v1) <- compileExpr expr
                 v2 <- load tInt p3
                 v3 <- binop "add" tInt v2 "1"
                 store tInt v3 p3
@@ -607,8 +620,12 @@ compileExpr expression = do
                 store tInt v6 p1
                 goto l2 >> label l2
                 p10 <- load (tPtr t) p4
-                gep (tPtr t) p10 [v2] [] >>= store t v1
+                v8 <- castValue t1 t v1
+                gep (tPtr t) p10 [v2] [] >>= store t v8
             return $ (tArray t, p2)
+        ENull _ -> do
+            p <- initNullable tUnknown Nothing
+            return $ (tNullable tUnknown, p)
         EVar {} -> compileRval expression
         EIndex {} -> compileRval expression
         ESlice pos expr slices -> do
@@ -686,7 +703,7 @@ compileExpr expression = do
                         (t, v) <- compileExpr e
                         case vars of
                             [] -> do
-                                v' <- bitcast t (args1 !! i) v
+                                v' <- castValue t (args1 !! i) v
                                 return $ (args1 !! i, Left v')
                             _:_ -> do  -- TODO: type unification for generic functions
                                 return $ (t, Left v)
@@ -754,6 +771,11 @@ compileExpr expression = do
         ESuper _ args -> do
             (_, f) <- asks (M.! (Ident "#super"))
             compileExpr (ECall _pos (EVar _pos (Ident f)) ((APos _pos (EVar _pos (Ident "self"))) : args))
+        EAssert _ e -> do
+            (t, v) <- compileExpr e
+            let TNullable _ t' = t
+            v' <- gep t v ["0"] [0] >>= load t'
+            return $ (t', v')
         EPow _ expr1 expr2 -> compileBinary "pow" expr1 expr2
         EMinus _ expr -> do
             (t, v1) <- compileExpr expr
@@ -834,7 +856,7 @@ compileExpr expression = do
             (t2, v2) <- compileExpr expr2
             (t3, v3) <- compileExpr expr3
             let Just t4 = unifyTypes t2 t3
-            [v2', v3'] <- forM [(t2, v2), (t3, v3)] $ \(t, v) -> bitcast t t4 v
+            [v2', v3'] <- forM [(t2, v2), (t3, v3)] $ \(t, v) -> castValue t t4 v
             v4 <- select v1 t4 v2' v3'
             return $ (t4, v4)
         ETuple _ exprs -> do

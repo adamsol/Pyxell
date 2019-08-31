@@ -49,24 +49,24 @@ The reserved words used in Pyxell are the following:
   | ``continue`` | ``def`` | ``do`` | ``elif``
   | ``else`` | ``extern`` | ``false`` | ``for``
   | ``func`` | ``hiding`` | ``if`` | ``in``
-  | ``lambda`` | ``not`` | ``only`` | ``or``
-  | ``print`` | ``return`` | ``skip`` | ``step``
-  | ``super`` | ``true`` | ``until`` | ``use``
-  | ``while`` |  |  | 
+  | ``lambda`` | ``not`` | ``null`` | ``only``
+  | ``or`` | ``print`` | ``return`` | ``skip``
+  | ``step`` | ``super`` | ``true`` | ``until``
+  | ``use`` | ``while`` |  | 
 
 The symbols used in Pyxell are the following:
-  | ; | [ | ] | ->
-  | * | , | ( | )
-  | { | } | : | <
-  | > | = | ^= | *=
-  | /= | %= | += | -=
-  | <<= | >>= | &= | |=
-  | $= | _ | . | ^
-  | - | + | ~ | /
-  | % | << | >> | &
-  | | | $ | .. | ...
-  | == | != | <= | >=
-  | ? |  |  | 
+  | ; | [ | ] | ?
+  | -> | * | , | (
+  | ) | { | } | :
+  | < | > | = | ^=
+  | *= | /= | %= | +=
+  | -= | <<= | >>= | &=
+  | |= | $= | _ | .
+  | ! | ^ | - | +
+  | ~ | / | % | <<
+  | >> | & | | | $
+  | .. | ... | == | !=
+  | <= | >= |  | 
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -90,6 +90,7 @@ All other symbols are terminals.
   |  |  **|**  | ``String`` 
   |  |  **|**  | ``(`` //Type// ``)`` 
   | //Type3// | -> | ``[`` //Type// ``]`` 
+  |  |  **|**  | //Type3// ``?`` 
   |  |  **|**  | //Type4// 
   | //Type2// | -> | //[Type3]// 
   |  |  **|**  | //Type3// 
@@ -183,12 +184,14 @@ All other symbols are terminals.
   |  |  **|**  | //String// 
   |  |  **|**  | ``[`` //[Expr2]// ``]`` 
   |  |  **|**  | ``[`` //Expr2// //[ACpr]// ``]`` 
+  |  |  **|**  | ``null`` 
   |  |  **|**  | //Ident// 
   |  |  **|**  | //Expr13// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr13// ``[`` //[Slice]// ``]`` 
   |  |  **|**  | //Expr13// ``.`` //Ident// 
   |  |  **|**  | //Expr13// ``(`` //[CArg]// ``)`` 
   |  |  **|**  | ``super`` ``(`` //[CArg]// ``)`` 
+  |  |  **|**  | //Expr13// ``!`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //ACpr// | -> | ``for`` //Expr// ``in`` //Expr// 
   |  |  **|**  | ``for`` //Expr// ``in`` //Expr// ``step`` //Expr// 

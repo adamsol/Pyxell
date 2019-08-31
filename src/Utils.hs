@@ -28,7 +28,7 @@ type Type = Abs.Type Pos
 -- | Instances for displaying and comparing types and classes.
 instance {-# OVERLAPS #-} Show Type where
     show typ = case typ of
-        TUnknown _ -> "Unknown"
+        TUnknown _ -> "<unknown>"
         TVar _ (Ident x) -> x
         TVoid _ -> "Void"
         TInt _ -> "Int"
@@ -37,6 +37,7 @@ instance {-# OVERLAPS #-} Show Type where
         TChar _ -> "Char"
         TString _ -> "String"
         TArray _ t' -> "[" ++ show t' ++ "]"
+        TNullable _ t' -> show t' ++ "?"
         TTuple _ ts -> intercalate "*" (map show ts)
         TFunc _ as r -> intercalate "," (map show as) ++ "->" ++ show r
         TFuncDef _ _ _ as r _ -> show (tFunc (map typeArg as) r)
@@ -57,6 +58,7 @@ instance {-# OVERLAPS #-} Eq Type where
         (TChar _, TChar _) -> True
         (TString _, TString _) -> True
         (TArray _ t1', TArray _ t2') -> t1' == t2'
+        (TNullable _ t1', TNullable _ t2') -> t1' == t2'
         (TTuple _ ts1, TTuple _ ts2) -> ts1 == ts2
         (TFunc _ as1 r1, TFunc _ as2 r2) -> as1 == as2 && r1 == r2
         (TClass _ id1 _ _, TClass _ id2 _ _) -> id1 == id2
@@ -87,6 +89,8 @@ unifyTypes typ1 typ2 = do
             else if unifyTypes t1' (tArray tUnknown) == Just (tArray tUnknown) then Just (tArray tUnknown)
             else if unifyTypes (tArray tUnknown) t2' == Just (tArray tUnknown) then Just (tArray tUnknown)
             else Nothing  -- arrays are not covariant
+        (TNullable _ t1', TNullable _ t2') -> fmap tNullable (unifyTypes t1' t2')
+        (_, TNullable _ t2') -> fmap tNullable (unifyTypes t1 t2')
         (TTuple _ ts1, TTuple _ ts2) ->
             if length ts1 == length ts2 then fmap tTuple (sequence (map (uncurry unifyTypes) (zip ts1 ts2)))
             else Nothing
@@ -111,6 +115,7 @@ isUnknown :: Type -> Bool
 isUnknown t = case reduceType t of
     TUnknown _ -> True
     TArray _ t' -> isUnknown t'
+    TNullable _ t' -> isUnknown t'
     TTuple _ ts -> any isUnknown ts
     TFunc _ as r -> any isUnknown as || isUnknown r
     otherwise -> False
@@ -128,6 +133,7 @@ reduceType t = case t of
     TChar _ -> tChar
     TString _ -> tString
     TArray _ t' -> tArray (reduceType t')
+    TNullable _ t' -> tNullable (reduceType t')
     TTuple _ ts -> if length ts == 1 then reduceType (head ts) else tTuple (map reduceType ts)
     TFunc _ as r -> tFunc (map reduceType as) (reduceType r)
     TFuncDef _ _ _ as r _ -> tFunc (map typeArg as) (reduceType r)
@@ -144,6 +150,7 @@ retrieveType t = case t of
             Just (t', _) -> return $ t'  -- TODO: recursion for nested types
             otherwise -> return $ t
     TArray _ t' -> retrieveType t' >>= return.tArray
+    TNullable _ t' -> retrieveType t' >>= return.tNullable
     TTuple _ ts -> if length ts == 1 then retrieveType (head ts) else mapM retrieveType ts >>= return.tTuple
     TFunc _ as r -> do
         as <- mapM retrieveType as
@@ -170,6 +177,7 @@ tBool = TBool _pos
 tChar = TChar _pos
 tString = TString _pos
 tArray = TArray _pos
+tNullable = TNullable _pos
 tTuple = TTuple _pos
 tFunc = TFunc _pos
 tFuncDef = TFuncDef _pos

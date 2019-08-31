@@ -1,0 +1,6 @@
+
+func even(Int i) Int? def
+    return i % 2 == 0 ? i : null
+
+a = [even(i) for i in 0..1000]
+print a[875], a[876]

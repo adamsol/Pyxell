@@ -1,0 +1,6 @@
+
+Bool? x
+x = null
+print x
+x = true
+print x

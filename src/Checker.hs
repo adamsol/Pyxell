@@ -57,6 +57,7 @@ data StaticError = NotComparable Type Type
                  | NotClass Type
                  | AbstractClass Type
                  | InvalidSuperCall
+                 | NotNullable Type
                  | InvalidAttr Type Ident
                  | InvalidModule Ident
 
@@ -95,6 +96,7 @@ instance Show StaticError where
         NotClass typ -> "Type `" ++ show typ ++ "` is not a class."
         AbstractClass typ -> "Cannot instantiate an abstract class `" ++ show typ ++ "`."
         InvalidSuperCall -> "Cannot call `super` here."
+        NotNullable typ -> "Type `" ++ show typ ++ "` is not nullable."
         InvalidAttr typ (Ident a) -> "Type `" ++ show typ ++ "` has no attribute `" ++ a ++  "`."
         InvalidModule (Ident m) -> "Could not load module `" ++ m ++  "`."
 
@@ -610,6 +612,7 @@ checkExpr expression = do
             checkArrayCprs cprs $ do
                 (t, _) <- checkExpr expr
                 return $ (tArray t, False)
+        ENull pos -> return $ (tNullable tUnknown, False)
         EVar pos id -> do
             t <- checkVar pos id
             return $ (t, True)
@@ -816,6 +819,11 @@ checkExpr expression = do
                 Just _ -> do
                     checkExpr (ECall _pos (EVar _pos (Ident "#super")) ((APos _pos (EVar _pos (Ident "self"))) : args))
                 Nothing -> throw pos $ InvalidSuperCall
+        EAssert pos e -> do
+            (t, _) <- checkExpr e
+            case t of
+                TNullable _ t' -> return $ (t', False)
+                otherwise -> throw pos $ NotNullable t
         EPow pos expr1 expr2 -> checkBinary pos "^" expr1 expr2
         EMinus pos expr -> checkUnary pos "-" expr
         EPlus pos expr -> checkUnary pos "+" expr

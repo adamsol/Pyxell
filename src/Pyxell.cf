@@ -26,6 +26,7 @@ TBool.             Type4  ::= "Bool" ;
 TChar.             Type4  ::= "Char" ;
 TString.           Type4  ::= "String" ;
 TArray.            Type3  ::= "[" Type "]" ;
+TNullable.         Type3  ::= Type3 "?" ;
 TTuple.            Type2  ::= [Type3] ;
 TFunc.             Type1  ::= [Type2] "->" Type1 ;
 internal TFuncDef. Type1  ::= Ident [FVar] [FArg] Type Block ;
@@ -130,6 +131,7 @@ CprFor.            ACpr   ::= "for" Expr "in" Expr ;
 CprForStep.        ACpr   ::= "for" Expr "in" Expr "step" Expr ;
 CprIf.             ACpr   ::= "if" Expr ;
 separator nonempty ACpr       "" ;
+ENull.             Expr13 ::= "null" ;
 
 EVar.              Expr13 ::= Ident ;
 EIndex.            Expr13 ::= Expr13 "[" Expr "]" ;
@@ -143,6 +145,8 @@ ESuper.            Expr13 ::= "super" "(" [CArg] ")";
 APos.              CArg   ::= Expr2 ;
 ANamed.            CArg   ::= Ident "=" Expr2 ;
 separator          CArg       "," ;
+
+EAssert.           Expr13 ::= Expr13 "!" ;
 
 EPow.              Expr12 ::= Expr13 "^" Expr12 ;
 EMinus.            Expr12 ::= "-" Expr12;
