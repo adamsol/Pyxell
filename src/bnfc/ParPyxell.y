@@ -101,58 +101,59 @@ import ErrM
   '>>' { PT _ (TS _ 34) }
   '>>=' { PT _ (TS _ 35) }
   '?' { PT _ (TS _ 36) }
-  'Any' { PT _ (TS _ 37) }
-  'Bool' { PT _ (TS _ 38) }
-  'Char' { PT _ (TS _ 39) }
-  'Float' { PT _ (TS _ 40) }
-  'Int' { PT _ (TS _ 41) }
-  'Module' { PT _ (TS _ 42) }
-  'Num' { PT _ (TS _ 43) }
-  'String' { PT _ (TS _ 44) }
-  'Unknown' { PT _ (TS _ 45) }
-  'Void' { PT _ (TS _ 46) }
-  '[' { PT _ (TS _ 47) }
-  ']' { PT _ (TS _ 48) }
-  '^' { PT _ (TS _ 49) }
-  '^=' { PT _ (TS _ 50) }
-  '_' { PT _ (TS _ 51) }
-  'abstract' { PT _ (TS _ 52) }
-  'and' { PT _ (TS _ 53) }
-  'as' { PT _ (TS _ 54) }
-  'break' { PT _ (TS _ 55) }
-  'class' { PT _ (TS _ 56) }
-  'constructor' { PT _ (TS _ 57) }
-  'continue' { PT _ (TS _ 58) }
-  'def' { PT _ (TS _ 59) }
-  'do' { PT _ (TS _ 60) }
-  'elif' { PT _ (TS _ 61) }
-  'else' { PT _ (TS _ 62) }
-  'extern' { PT _ (TS _ 63) }
-  'false' { PT _ (TS _ 64) }
-  'for' { PT _ (TS _ 65) }
-  'func' { PT _ (TS _ 66) }
-  'hiding' { PT _ (TS _ 67) }
-  'if' { PT _ (TS _ 68) }
-  'in' { PT _ (TS _ 69) }
-  'lambda' { PT _ (TS _ 70) }
-  'not' { PT _ (TS _ 71) }
-  'null' { PT _ (TS _ 72) }
-  'only' { PT _ (TS _ 73) }
-  'or' { PT _ (TS _ 74) }
-  'print' { PT _ (TS _ 75) }
-  'return' { PT _ (TS _ 76) }
-  'skip' { PT _ (TS _ 77) }
-  'step' { PT _ (TS _ 78) }
-  'super' { PT _ (TS _ 79) }
-  'true' { PT _ (TS _ 80) }
-  'until' { PT _ (TS _ 81) }
-  'use' { PT _ (TS _ 82) }
-  'while' { PT _ (TS _ 83) }
-  '{' { PT _ (TS _ 84) }
-  '|' { PT _ (TS _ 85) }
-  '|=' { PT _ (TS _ 86) }
-  '}' { PT _ (TS _ 87) }
-  '~' { PT _ (TS _ 88) }
+  '?.' { PT _ (TS _ 37) }
+  'Any' { PT _ (TS _ 38) }
+  'Bool' { PT _ (TS _ 39) }
+  'Char' { PT _ (TS _ 40) }
+  'Float' { PT _ (TS _ 41) }
+  'Int' { PT _ (TS _ 42) }
+  'Module' { PT _ (TS _ 43) }
+  'Num' { PT _ (TS _ 44) }
+  'String' { PT _ (TS _ 45) }
+  'Unknown' { PT _ (TS _ 46) }
+  'Void' { PT _ (TS _ 47) }
+  '[' { PT _ (TS _ 48) }
+  ']' { PT _ (TS _ 49) }
+  '^' { PT _ (TS _ 50) }
+  '^=' { PT _ (TS _ 51) }
+  '_' { PT _ (TS _ 52) }
+  'abstract' { PT _ (TS _ 53) }
+  'and' { PT _ (TS _ 54) }
+  'as' { PT _ (TS _ 55) }
+  'break' { PT _ (TS _ 56) }
+  'class' { PT _ (TS _ 57) }
+  'constructor' { PT _ (TS _ 58) }
+  'continue' { PT _ (TS _ 59) }
+  'def' { PT _ (TS _ 60) }
+  'do' { PT _ (TS _ 61) }
+  'elif' { PT _ (TS _ 62) }
+  'else' { PT _ (TS _ 63) }
+  'extern' { PT _ (TS _ 64) }
+  'false' { PT _ (TS _ 65) }
+  'for' { PT _ (TS _ 66) }
+  'func' { PT _ (TS _ 67) }
+  'hiding' { PT _ (TS _ 68) }
+  'if' { PT _ (TS _ 69) }
+  'in' { PT _ (TS _ 70) }
+  'lambda' { PT _ (TS _ 71) }
+  'not' { PT _ (TS _ 72) }
+  'null' { PT _ (TS _ 73) }
+  'only' { PT _ (TS _ 74) }
+  'or' { PT _ (TS _ 75) }
+  'print' { PT _ (TS _ 76) }
+  'return' { PT _ (TS _ 77) }
+  'skip' { PT _ (TS _ 78) }
+  'step' { PT _ (TS _ 79) }
+  'super' { PT _ (TS _ 80) }
+  'true' { PT _ (TS _ 81) }
+  'until' { PT _ (TS _ 82) }
+  'use' { PT _ (TS _ 83) }
+  'while' { PT _ (TS _ 84) }
+  '{' { PT _ (TS _ 85) }
+  '|' { PT _ (TS _ 86) }
+  '|=' { PT _ (TS _ 87) }
+  '}' { PT _ (TS _ 88) }
+  '~' { PT _ (TS _ 89) }
 
   L_integ {PT _ (TI _)}
   L_ident {PT _ (TV _)}
@@ -653,6 +654,9 @@ Expr13 :: {
 }
 | 'super' '(' ListCArg ')' {
   (Just (tokenLineCol $1), AbsPyxell.ESuper (Just (tokenLineCol $1)) (snd $3)) 
+}
+| Expr13 '?.' Ident {
+  (fst $1, AbsPyxell.ESafeAttr (fst $1)(snd $1)(snd $3)) 
 }
 | Expr13 '!' {
   (fst $1, AbsPyxell.EAssert (fst $1)(snd $1)) 

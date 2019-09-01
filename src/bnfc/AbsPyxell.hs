@@ -282,6 +282,7 @@ data Expr a
     | EAttr a (Expr a) Ident
     | ECall a (Expr a) [CArg a]
     | ESuper a [CArg a]
+    | ESafeAttr a (Expr a) Ident
     | EAssert a (Expr a)
     | EPow a (Expr a) (Expr a)
     | EMinus a (Expr a)
@@ -327,6 +328,7 @@ instance Functor Expr where
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
         ECall a expr cargs -> ECall (f a) (fmap f expr) (map (fmap f) cargs)
         ESuper a cargs -> ESuper (f a) (map (fmap f) cargs)
+        ESafeAttr a expr ident -> ESafeAttr (f a) (fmap f expr) ident
         EAssert a expr -> EAssert (f a) (fmap f expr)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMinus a expr -> EMinus (f a) (fmap f expr)

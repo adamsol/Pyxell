@@ -437,10 +437,11 @@ select val typ opt1 opt2 = do
     return $ v
 
 -- | Outputs LLVM 'phi' instruction for given values and label names.
-phi :: [(Value, Value)] -> Run Value
-phi opts = do
+phi :: Type -> [(Value, Value)] -> Run Value
+phi typ opts = do
     v <- nextTemp
-    write $ indent [ v ++ " = phi i1 " ++ (intercalate ", " ["[" ++ v ++ ", %" ++ l ++ "]" | (v, l) <- opts]) ]
+    s <- strType typ
+    write $ indent [ v ++ " = phi " ++ s ++ " " ++ (intercalate ", " ["[" ++ v ++ ", %" ++ l ++ "]" | (v, l) <- opts]) ]
     return $ v
 
 -- | Outputs LLVM binary operation instruction.

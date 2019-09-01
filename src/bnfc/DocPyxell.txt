@@ -62,11 +62,11 @@ The symbols used in Pyxell are the following:
   | *= | /= | %= | +=
   | -= | <<= | >>= | &=
   | |= | $= | _ | .
-  | ! | ^ | - | +
-  | ~ | / | % | <<
-  | >> | & | | | $
-  | .. | ... | == | !=
-  | <= | >= |  | 
+  | ?. | ! | ^ | -
+  | + | ~ | / | %
+  | << | >> | & | |
+  | $ | .. | ... | ==
+  | != | <= | >= | 
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -191,6 +191,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr13// ``.`` //Ident// 
   |  |  **|**  | //Expr13// ``(`` //[CArg]// ``)`` 
   |  |  **|**  | ``super`` ``(`` //[CArg]// ``)`` 
+  |  |  **|**  | //Expr13// ``?.`` //Ident// 
   |  |  **|**  | //Expr13// ``!`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //ACpr// | -> | ``for`` //Expr// ``in`` //Expr// 

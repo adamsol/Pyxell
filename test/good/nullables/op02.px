@@ -1,0 +1,6 @@
+
+String? s
+s = null
+print s?.length
+s = "test"
+print s?.length

@@ -140,12 +140,12 @@ SliceExpr.         Slice  ::= Expr ;
 SliceNone.         Slice  ::= "" ;
 separator nonempty Slice      ":" ;
 EAttr.             Expr13 ::= Expr13 "." Ident ;
+ESafeAttr.         Expr13 ::= Expr13 "?." Ident ;
 ECall.             Expr13 ::= Expr13 "(" [CArg] ")";
 ESuper.            Expr13 ::= "super" "(" [CArg] ")";
 APos.              CArg   ::= Expr2 ;
 ANamed.            CArg   ::= Ident "=" Expr2 ;
 separator          CArg       "," ;
-
 EAssert.           Expr13 ::= Expr13 "!" ;
 
 EPow.              Expr12 ::= Expr13 "^" Expr12 ;

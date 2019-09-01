@@ -324,6 +324,7 @@ instance Print (Expr a) where
     EAttr _ expr id -> prPrec i 13 (concatD [prt 13 expr, doc (showString "."), prt 0 id])
     ECall _ expr cargs -> prPrec i 13 (concatD [prt 13 expr, doc (showString "("), prt 0 cargs, doc (showString ")")])
     ESuper _ cargs -> prPrec i 13 (concatD [doc (showString "super"), doc (showString "("), prt 0 cargs, doc (showString ")")])
+    ESafeAttr _ expr id -> prPrec i 13 (concatD [prt 13 expr, doc (showString "?."), prt 0 id])
     EAssert _ expr -> prPrec i 13 (concatD [prt 13 expr, doc (showString "!")])
     EPow _ expr1 expr2 -> prPrec i 12 (concatD [prt 13 expr1, doc (showString "^"), prt 12 expr2])
     EMinus _ expr -> prPrec i 12 (concatD [doc (showString "-"), prt 12 expr])

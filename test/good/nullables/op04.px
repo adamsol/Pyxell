@@ -1,0 +1,7 @@
+
+a = [2, 3] * 5
+[Int]? b = a
+print b?.length?.toString()?.length
+b = null
+print b?.length?.toString()?.length
+

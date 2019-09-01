@@ -163,6 +163,7 @@ transExpr x = case x of
   EAttr _ expr ident -> failure x
   ECall _ expr cargs -> failure x
   ESuper _ cargs -> failure x
+  ESafeAttr _ expr ident -> failure x
   EAssert _ expr -> failure x
   EPow _ expr1 expr2 -> failure x
   EMinus _ expr -> failure x

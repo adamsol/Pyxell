@@ -661,9 +661,30 @@ compileExpr expression = do
                 compileFor (eVar "i") (ERangeExcl _pos (eInt 0) (eVar "d")) (eInt 1) (compileBlock b) (const skip)
             return $ (t, p2)
         EAttr {} -> compileRval expression
+        ESafeAttr _ e id -> do
+            (t1, v1) <- compileExpr e
+            let TNullable _ t1' = t1
+            v2 <- gep t1 v1 ["0"] [0] >>= load t1'
+            v3 <- gep t1 v1 ["0"] [1] >>= load tBool
+            v4 <- binop "icmp eq" tBool v3 "1"
+            [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+            branch v4 l1 l2
+            label l1
+            Just (t2', v5) <- compileAttr t1' v2 id
+            v6 <- load t2' v5
+            v7 <- initNullable t2' (Just v6)
+            goto l3
+            label l2
+            v8 <- initNullable t2' Nothing
+            goto l3
+            label l3
+            let t2 = tNullable t2'
+            v9 <- phi t2 [(v7, l1), (v8, l2)]
+            return $ (t2, v9)
         ECall _ expr args -> do
             -- Build a map of arguments and their positions.
             let m = M.empty
+            [l1, l2, l3] <- sequence (replicate 3 nextLabel)  -- for safe calls
             (typ, func, m) <- case expr of
                 EVar _ id -> do
                     Just (t, p) <- getIdent id
@@ -684,6 +705,19 @@ compileExpr expression = do
                             let TFunc _ (t'':_) _ = reduceType t'  -- original class of method definition
                             p'' <- bitcast t t'' p
                             return $ (t', v', M.insert 0 (t'', Left p'') m)
+                ESafeAttr pos e id -> do
+                    (t1, v1) <- compileExpr e
+                    let TNullable _ t1' = t1
+                    v2 <- gep t1 v1 ["0"] [0] >>= load t1'
+                    v3 <- gep t1 v1 ["0"] [1] >>= load tBool
+                    v4 <- binop "icmp eq" tBool v3 "1"
+                    branch v4 l1 l2
+                    label l1
+                    Just (t2, v5) <- compileAttr t1' v2 id
+                    v6 <- load t2 v5
+                    let TFunc _ (t3:_) _ = reduceType t2  -- original class of method definition
+                    v7 <- bitcast t1' t3 v2
+                    return $ (t2, v6, M.insert 0 (t3, Left v7) m)
                 otherwise -> do
                     (t, p) <- compileExpr expr
                     return $ (t, p, m)
@@ -766,8 +800,18 @@ compileExpr expression = do
                                 otherwise -> return $ p
                             load typ p
                         otherwise -> return $ func
-                    v <- call r func args4
-                    return $ (r, v)
+                    v1 <- call r func args4
+                    case expr of
+                        ESafeAttr {} -> do
+                            v2 <- initNullable r (Just v1)
+                            goto l3
+                            label l2
+                            v3 <- initNullable r Nothing
+                            goto l3
+                            label l3
+                            v4 <- phi (tNullable r) [(v2, l1), (v3, l2)]
+                            return $ (tNullable r, v4)
+                        otherwise -> return $ (r, v1)
         ESuper _ args -> do
             (_, f) <- asks (M.! (Ident "#super"))
             compileExpr (ECall _pos (EVar _pos (Ident f)) ((APos _pos (EVar _pos (Ident "self"))) : args))
@@ -1017,10 +1061,10 @@ compileExpr expression = do
             goto l4
             label l4
             case op of
-                "eq" -> phi [("false", l1), ("true", l2), (v8, l3)]
-                "ne" -> phi [("true", l1), ("false", l2), (v8, l3)]
+                "eq" -> phi tBool [("false", l1), ("true", l2), (v8, l3)]
+                "ne" -> phi tBool [("true", l1), ("false", l2), (v8, l3)]
                 otherwise -> do
-                    phi [(v4, l1), (if op == "le" || op == "ge" then "true" else "false", l2), (v8, l3)]
+                    phi tBool [(v4, l1), (if op == "le" || op == "ge" then "true" else "false", l2), (v8, l3)]
         compileTupleCmp op typ val1 val2 idx lt lf = do
             t <- case typ of
                 TTuple _ ts -> return $ ts !! idx
@@ -1036,7 +1080,7 @@ compileExpr expression = do
                         label lt >> goto l2
                         label lf >> goto l2
                         label l2
-                        phi [("true", lt), ("false", lf), (v3, l1)]
+                        phi tBool [("true", lt), ("false", lf), (v3, l1)]
                     else do
                         l1 <- nextLabel
                         case op of
@@ -1066,7 +1110,7 @@ compileExpr expression = do
                     (_, v2) <- compileExpr expr2
                     l3 <- getLabel
                     goto exit >> label exit
-                    phi ([("false", l) | l <- l1:preds] ++ [(v2, l3)])
+                    phi tBool ([("false", l) | l <- l1:preds] ++ [(v2, l3)])
         compileOr expr1 expr2 preds exit = do
             (_, v1) <- compileExpr expr1
             l1 <- getLabel
@@ -1079,7 +1123,7 @@ compileExpr expression = do
                     (_, v2) <- compileExpr expr2
                     l3 <- getLabel
                     goto exit >> label exit
-                    phi ([("true", l) | l <- l1:preds] ++ [(v2, l3)])
+                    phi tBool ([("true", l) | l <- l1:preds] ++ [(v2, l3)])
 
 -- | Outputs LLVM code that evaluates a given expression as an r-value. Returns type and name of the result.
 compileRval :: Expr Pos -> Run Result

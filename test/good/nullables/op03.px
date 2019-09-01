@@ -1,0 +1,5 @@
+
+Bool? x = true
+print x?.toString()
+x = null
+print x?.toString()

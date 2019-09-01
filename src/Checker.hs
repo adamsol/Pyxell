@@ -704,8 +704,14 @@ checkExpr expression = do
                 TClass {} -> return $ True
                 otherwise -> return $ False
             return $ (t2, m)
+        ESafeAttr pos e id -> do
+            (t, _) <- checkExpr (EAttr pos (EAssert pos e) id)
+            return $ (tNullable t, False)
         ECall pos expr args -> do
             (typ, _) <- checkExpr expr
+            typ <- case expr of
+                ESafeAttr {} -> let TNullable _ t' = typ in return $ t'
+                otherwise -> return $ typ
             (vars, args1, args2, ret) <- case typ of
                 TFunc _ as r -> return $ ([], as, [], r)
                 TFuncDef _ _ vs as r _ -> return $ (vs, map typeArg as, as, reduceType r)
@@ -724,6 +730,9 @@ checkExpr expression = do
                     case t of
                         TModule _ -> return $ m
                         otherwise -> return $ M.insert 0 (Left t) m
+                ESafeAttr pos e id -> do
+                    (TNullable _ t, _) <- checkExpr e
+                    return $ M.insert 0 (Left t) m
                 otherwise -> return $ m
             (m, _) <- foldM' (m, False) (zip [(M.size m)..] args) $ \(m, named) (i, a) -> do
                 (pos', e, i, named) <- case (a, named) of
@@ -755,7 +764,9 @@ checkExpr expression = do
                     TAny _ -> return $ ret
                     TNum _ -> return $ ret
                     otherwise -> return $ r
-                return $ (r, False)
+                case expr of
+                    ESafeAttr {} -> return $ (tNullable r, False)
+                    otherwise -> return $ (r, False)
             where
                 checkArgs as1 as2 cont = case (as1, as2) of
                     (_, []) -> cont
