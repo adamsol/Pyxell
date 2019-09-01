@@ -63,6 +63,7 @@ transStmt x = case x of
   SAssgBAnd _ expr1 expr2 -> failure x
   SAssgBOr _ expr1 expr2 -> failure x
   SAssgBXor _ expr1 expr2 -> failure x
+  SAssgCoalesce _ expr1 expr2 -> failure x
   SIf _ branchs else_ -> failure x
   SWhile _ expr block -> failure x
   SUntil _ expr block -> failure x
@@ -161,9 +162,9 @@ transExpr x = case x of
   EIndex _ expr1 expr2 -> failure x
   ESlice _ expr slices -> failure x
   EAttr _ expr ident -> failure x
+  ESafeAttr _ expr ident -> failure x
   ECall _ expr cargs -> failure x
   ESuper _ cargs -> failure x
-  ESafeAttr _ expr ident -> failure x
   EAssert _ expr -> failure x
   EPow _ expr1 expr2 -> failure x
   EMinus _ expr -> failure x
@@ -187,6 +188,7 @@ transExpr x = case x of
   EAnd _ expr1 expr2 -> failure x
   EOr _ expr1 expr2 -> failure x
   ETuple _ exprs -> failure x
+  ECoalesce _ expr1 expr2 -> failure x
   ECond _ expr1 expr2 expr3 -> failure x
   ELambda _ idents expr -> failure x
 

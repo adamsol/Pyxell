@@ -101,6 +101,7 @@ SAssgBShr.         Stmt   ::= Expr ">>=" Expr;
 SAssgBAnd.         Stmt   ::= Expr "&=" Expr;
 SAssgBOr.          Stmt   ::= Expr "|=" Expr;
 SAssgBXor.         Stmt   ::= Expr "$=" Expr;
+SAssgCoalesce.     Stmt   ::= Expr "??=" Expr;
 
 SIf.               Stmt   ::= "if" [Branch] Else ;
 BElIf.             Branch ::= Expr "do" Block ;
@@ -187,6 +188,7 @@ separator nonempty Expr3      "," ;
 separator          Expr2      "," ;
 
 -- when these are above separator for Expr3, strange things happen
+ECoalesce.         Expr2  ::= Expr3 "??" Expr2 ;
 ECond.             Expr2  ::= Expr3 "?" Expr3 ":" Expr2 ;
 ELambda.           Expr2  ::= "lambda" [Ident] "->" Expr2 ;
 

@@ -86,6 +86,7 @@ data Stmt a
     | SAssgBAnd a (Expr a) (Expr a)
     | SAssgBOr a (Expr a) (Expr a)
     | SAssgBXor a (Expr a) (Expr a)
+    | SAssgCoalesce a (Expr a) (Expr a)
     | SIf a [Branch a] (Else a)
     | SWhile a (Expr a) (Block a)
     | SUntil a (Expr a) (Block a)
@@ -119,6 +120,7 @@ instance Functor Stmt where
         SAssgBAnd a expr1 expr2 -> SAssgBAnd (f a) (fmap f expr1) (fmap f expr2)
         SAssgBOr a expr1 expr2 -> SAssgBOr (f a) (fmap f expr1) (fmap f expr2)
         SAssgBXor a expr1 expr2 -> SAssgBXor (f a) (fmap f expr1) (fmap f expr2)
+        SAssgCoalesce a expr1 expr2 -> SAssgCoalesce (f a) (fmap f expr1) (fmap f expr2)
         SIf a branchs else_ -> SIf (f a) (map (fmap f) branchs) (fmap f else_)
         SWhile a expr block -> SWhile (f a) (fmap f expr) (fmap f block)
         SUntil a expr block -> SUntil (f a) (fmap f expr) (fmap f block)
@@ -280,9 +282,9 @@ data Expr a
     | EIndex a (Expr a) (Expr a)
     | ESlice a (Expr a) [Slice a]
     | EAttr a (Expr a) Ident
+    | ESafeAttr a (Expr a) Ident
     | ECall a (Expr a) [CArg a]
     | ESuper a [CArg a]
-    | ESafeAttr a (Expr a) Ident
     | EAssert a (Expr a)
     | EPow a (Expr a) (Expr a)
     | EMinus a (Expr a)
@@ -306,6 +308,7 @@ data Expr a
     | EAnd a (Expr a) (Expr a)
     | EOr a (Expr a) (Expr a)
     | ETuple a [Expr a]
+    | ECoalesce a (Expr a) (Expr a)
     | ECond a (Expr a) (Expr a) (Expr a)
     | ELambda a [Ident] (Expr a)
   deriving (Eq, Ord, Show, Read)
@@ -326,9 +329,9 @@ instance Functor Expr where
         EIndex a expr1 expr2 -> EIndex (f a) (fmap f expr1) (fmap f expr2)
         ESlice a expr slices -> ESlice (f a) (fmap f expr) (map (fmap f) slices)
         EAttr a expr ident -> EAttr (f a) (fmap f expr) ident
+        ESafeAttr a expr ident -> ESafeAttr (f a) (fmap f expr) ident
         ECall a expr cargs -> ECall (f a) (fmap f expr) (map (fmap f) cargs)
         ESuper a cargs -> ESuper (f a) (map (fmap f) cargs)
-        ESafeAttr a expr ident -> ESafeAttr (f a) (fmap f expr) ident
         EAssert a expr -> EAssert (f a) (fmap f expr)
         EPow a expr1 expr2 -> EPow (f a) (fmap f expr1) (fmap f expr2)
         EMinus a expr -> EMinus (f a) (fmap f expr)
@@ -352,5 +355,6 @@ instance Functor Expr where
         EAnd a expr1 expr2 -> EAnd (f a) (fmap f expr1) (fmap f expr2)
         EOr a expr1 expr2 -> EOr (f a) (fmap f expr1) (fmap f expr2)
         ETuple a exprs -> ETuple (f a) (map (fmap f) exprs)
+        ECoalesce a expr1 expr2 -> ECoalesce (f a) (fmap f expr1) (fmap f expr2)
         ECond a expr1 expr2 expr3 -> ECond (f a) (fmap f expr1) (fmap f expr2) (fmap f expr3)
         ELambda a idents expr -> ELambda (f a) idents (fmap f expr)

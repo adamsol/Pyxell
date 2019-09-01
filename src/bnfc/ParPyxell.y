@@ -102,58 +102,60 @@ import ErrM
   '>>=' { PT _ (TS _ 35) }
   '?' { PT _ (TS _ 36) }
   '?.' { PT _ (TS _ 37) }
-  'Any' { PT _ (TS _ 38) }
-  'Bool' { PT _ (TS _ 39) }
-  'Char' { PT _ (TS _ 40) }
-  'Float' { PT _ (TS _ 41) }
-  'Int' { PT _ (TS _ 42) }
-  'Module' { PT _ (TS _ 43) }
-  'Num' { PT _ (TS _ 44) }
-  'String' { PT _ (TS _ 45) }
-  'Unknown' { PT _ (TS _ 46) }
-  'Void' { PT _ (TS _ 47) }
-  '[' { PT _ (TS _ 48) }
-  ']' { PT _ (TS _ 49) }
-  '^' { PT _ (TS _ 50) }
-  '^=' { PT _ (TS _ 51) }
-  '_' { PT _ (TS _ 52) }
-  'abstract' { PT _ (TS _ 53) }
-  'and' { PT _ (TS _ 54) }
-  'as' { PT _ (TS _ 55) }
-  'break' { PT _ (TS _ 56) }
-  'class' { PT _ (TS _ 57) }
-  'constructor' { PT _ (TS _ 58) }
-  'continue' { PT _ (TS _ 59) }
-  'def' { PT _ (TS _ 60) }
-  'do' { PT _ (TS _ 61) }
-  'elif' { PT _ (TS _ 62) }
-  'else' { PT _ (TS _ 63) }
-  'extern' { PT _ (TS _ 64) }
-  'false' { PT _ (TS _ 65) }
-  'for' { PT _ (TS _ 66) }
-  'func' { PT _ (TS _ 67) }
-  'hiding' { PT _ (TS _ 68) }
-  'if' { PT _ (TS _ 69) }
-  'in' { PT _ (TS _ 70) }
-  'lambda' { PT _ (TS _ 71) }
-  'not' { PT _ (TS _ 72) }
-  'null' { PT _ (TS _ 73) }
-  'only' { PT _ (TS _ 74) }
-  'or' { PT _ (TS _ 75) }
-  'print' { PT _ (TS _ 76) }
-  'return' { PT _ (TS _ 77) }
-  'skip' { PT _ (TS _ 78) }
-  'step' { PT _ (TS _ 79) }
-  'super' { PT _ (TS _ 80) }
-  'true' { PT _ (TS _ 81) }
-  'until' { PT _ (TS _ 82) }
-  'use' { PT _ (TS _ 83) }
-  'while' { PT _ (TS _ 84) }
-  '{' { PT _ (TS _ 85) }
-  '|' { PT _ (TS _ 86) }
-  '|=' { PT _ (TS _ 87) }
-  '}' { PT _ (TS _ 88) }
-  '~' { PT _ (TS _ 89) }
+  '??' { PT _ (TS _ 38) }
+  '??=' { PT _ (TS _ 39) }
+  'Any' { PT _ (TS _ 40) }
+  'Bool' { PT _ (TS _ 41) }
+  'Char' { PT _ (TS _ 42) }
+  'Float' { PT _ (TS _ 43) }
+  'Int' { PT _ (TS _ 44) }
+  'Module' { PT _ (TS _ 45) }
+  'Num' { PT _ (TS _ 46) }
+  'String' { PT _ (TS _ 47) }
+  'Unknown' { PT _ (TS _ 48) }
+  'Void' { PT _ (TS _ 49) }
+  '[' { PT _ (TS _ 50) }
+  ']' { PT _ (TS _ 51) }
+  '^' { PT _ (TS _ 52) }
+  '^=' { PT _ (TS _ 53) }
+  '_' { PT _ (TS _ 54) }
+  'abstract' { PT _ (TS _ 55) }
+  'and' { PT _ (TS _ 56) }
+  'as' { PT _ (TS _ 57) }
+  'break' { PT _ (TS _ 58) }
+  'class' { PT _ (TS _ 59) }
+  'constructor' { PT _ (TS _ 60) }
+  'continue' { PT _ (TS _ 61) }
+  'def' { PT _ (TS _ 62) }
+  'do' { PT _ (TS _ 63) }
+  'elif' { PT _ (TS _ 64) }
+  'else' { PT _ (TS _ 65) }
+  'extern' { PT _ (TS _ 66) }
+  'false' { PT _ (TS _ 67) }
+  'for' { PT _ (TS _ 68) }
+  'func' { PT _ (TS _ 69) }
+  'hiding' { PT _ (TS _ 70) }
+  'if' { PT _ (TS _ 71) }
+  'in' { PT _ (TS _ 72) }
+  'lambda' { PT _ (TS _ 73) }
+  'not' { PT _ (TS _ 74) }
+  'null' { PT _ (TS _ 75) }
+  'only' { PT _ (TS _ 76) }
+  'or' { PT _ (TS _ 77) }
+  'print' { PT _ (TS _ 78) }
+  'return' { PT _ (TS _ 79) }
+  'skip' { PT _ (TS _ 80) }
+  'step' { PT _ (TS _ 81) }
+  'super' { PT _ (TS _ 82) }
+  'true' { PT _ (TS _ 83) }
+  'until' { PT _ (TS _ 84) }
+  'use' { PT _ (TS _ 85) }
+  'while' { PT _ (TS _ 86) }
+  '{' { PT _ (TS _ 87) }
+  '|' { PT _ (TS _ 88) }
+  '|=' { PT _ (TS _ 89) }
+  '}' { PT _ (TS _ 90) }
+  '~' { PT _ (TS _ 91) }
 
   L_integ {PT _ (TI _)}
   L_ident {PT _ (TV _)}
@@ -396,6 +398,9 @@ Stmt :: {
 }
 | Expr '$=' Expr {
   (fst $1, AbsPyxell.SAssgBXor (fst $1)(snd $1)(snd $3)) 
+}
+| Expr '??=' Expr {
+  (fst $1, AbsPyxell.SAssgCoalesce (fst $1)(snd $1)(snd $3)) 
 }
 | 'if' ListBranch Else {
   (Just (tokenLineCol $1), AbsPyxell.SIf (Just (tokenLineCol $1)) (snd $2)(snd $3)) 
@@ -649,14 +654,14 @@ Expr13 :: {
 | Expr13 '.' Ident {
   (fst $1, AbsPyxell.EAttr (fst $1)(snd $1)(snd $3)) 
 }
+| Expr13 '?.' Ident {
+  (fst $1, AbsPyxell.ESafeAttr (fst $1)(snd $1)(snd $3)) 
+}
 | Expr13 '(' ListCArg ')' {
   (fst $1, AbsPyxell.ECall (fst $1)(snd $1)(snd $3)) 
 }
 | 'super' '(' ListCArg ')' {
   (Just (tokenLineCol $1), AbsPyxell.ESuper (Just (tokenLineCol $1)) (snd $3)) 
-}
-| Expr13 '?.' Ident {
-  (fst $1, AbsPyxell.ESafeAttr (fst $1)(snd $1)(snd $3)) 
 }
 | Expr13 '!' {
   (fst $1, AbsPyxell.EAssert (fst $1)(snd $1)) 
@@ -932,7 +937,10 @@ ListExpr2 :: {
 Expr2 :: {
   (Maybe (Int, Int), Expr (Maybe (Int, Int)))
 }
-: Expr3 '?' Expr3 ':' Expr2 {
+: Expr3 '??' Expr2 {
+  (fst $1, AbsPyxell.ECoalesce (fst $1)(snd $1)(snd $3)) 
+}
+| Expr3 '?' Expr3 ':' Expr2 {
   (fst $1, AbsPyxell.ECond (fst $1)(snd $1)(snd $3)(snd $5)) 
 }
 | 'lambda' ListIdent '->' Expr2 {

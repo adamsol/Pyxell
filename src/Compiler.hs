@@ -151,6 +151,8 @@ compileStmt statement cont = do
             compileAssgOp EBOr expr1 expr2 cont
         SAssgBXor pos expr1 expr2 -> do
             compileAssgOp EBXor expr1 expr2 cont
+        SAssgCoalesce pos expr1 expr2 -> do
+            compileAssgOp ECoalesce expr1 expr2 cont
         SDeclAssg _ typ id expr -> do
             let t = reduceType typ
             (t', v') <- compileExpr expr
@@ -679,7 +681,7 @@ compileExpr expression = do
             goto l3
             label l3
             let t2 = tNullable t2'
-            v9 <- phi t2 [(v7, l1), (v8, l2)]
+            v9 <- select v4 t2 v7 v8
             return $ (t2, v9)
         ECall _ expr args -> do
             -- Build a map of arguments and their positions.
@@ -896,6 +898,25 @@ compileExpr expression = do
             l <- nextLabel
             v <- compileOr expr1 expr2 [] l
             return $ (tBool, v)
+        ECoalesce _ expr1 expr2 -> do
+            (t1, v1) <- compileExpr expr1
+            let TNullable _ t1' = t1
+            v2 <- gep t1 v1 ["0"] [0] >>= load t1'
+            v3 <- gep t1 v1 ["0"] [1] >>= load tBool
+            v4 <- binop "icmp eq" tBool v3 "0"
+            [l1, l2, l3] <- sequence (replicate 3 nextLabel)
+            branch v4 l1 l2
+            label l1
+            (t2, v5) <- compileExpr expr2
+            let Just t3 = unifyTypes t1' t2
+            v6 <- castValue t2 t3 v5
+            goto l3
+            label l2
+            v7 <- castValue t1' t3 v2
+            goto l3
+            label l3
+            v8 <- select v4 t3 v6 v7
+            return $ (t3, v8)
         ECond _ expr1 expr2 expr3 -> do
             (t1, v1) <- compileExpr expr1
             (t2, v2) <- compileExpr expr2

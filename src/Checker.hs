@@ -375,6 +375,8 @@ checkStmt statement cont = do
             checkAssgOp pos EBOr expr1 expr2 cont
         SAssgBXor pos expr1 expr2 -> do
             checkAssgOp pos EBXor expr1 expr2 cont
+        SAssgCoalesce pos expr1 expr2 -> do
+            checkAssgOp pos ECoalesce expr1 expr2 cont
         SDeclAssg pos typ id expr -> do
             checkType pos typ
             typ <- retrieveType typ
@@ -862,6 +864,8 @@ checkExpr expression = do
         ENot pos expr -> checkUnary pos "not" expr
         EAnd pos expr1 expr2 -> checkBinary pos "and" expr1 expr2
         EOr pos expr1 expr2 -> checkBinary pos "or" expr1 expr2
+        ECoalesce pos expr1 expr2 -> do
+            checkExpr (ECond pos (ECmp pos (Cmp1 pos expr1 (CmpNE pos) (ENull pos))) (EAssert pos expr1) expr2)
         ECond pos expr1 expr2 expr3 -> do
             (t1, _) <- checkExpr expr1
             case t1 of

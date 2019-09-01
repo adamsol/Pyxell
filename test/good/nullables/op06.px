@@ -1,0 +1,7 @@
+
+func f(Int? x) Int? def
+    print x
+    return x
+
+Int x = f(null) ?? f(0) ?? f(null)!
+print x

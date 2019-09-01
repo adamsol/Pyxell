@@ -61,12 +61,13 @@ The symbols used in Pyxell are the following:
   | < | > | = | ^=
   | *= | /= | %= | +=
   | -= | <<= | >>= | &=
-  | |= | $= | _ | .
-  | ?. | ! | ^ | -
-  | + | ~ | / | %
-  | << | >> | & | |
-  | $ | .. | ... | ==
-  | != | <= | >= | 
+  | |= | $= | ??= | _
+  | . | ?. | ! | ^
+  | - | + | ~ | /
+  | % | << | >> | &
+  | | | $ | .. | ...
+  | == | != | <= | >=
+  | ?? |  |  | 
 
 ===Comments===
 Single-line comments begin with --.Multiple-line comments are  enclosed with {- and -}.
@@ -129,6 +130,7 @@ All other symbols are terminals.
   |  |  **|**  | //Expr// ``&=`` //Expr// 
   |  |  **|**  | //Expr// ``|=`` //Expr// 
   |  |  **|**  | //Expr// ``$=`` //Expr// 
+  |  |  **|**  | //Expr// ``??=`` //Expr// 
   |  |  **|**  | ``if`` //[Branch]// //Else// 
   |  |  **|**  | ``while`` //Expr// ``do`` //Block// 
   |  |  **|**  | ``until`` //Expr// ``do`` //Block// 
@@ -189,9 +191,9 @@ All other symbols are terminals.
   |  |  **|**  | //Expr13// ``[`` //Expr// ``]`` 
   |  |  **|**  | //Expr13// ``[`` //[Slice]// ``]`` 
   |  |  **|**  | //Expr13// ``.`` //Ident// 
+  |  |  **|**  | //Expr13// ``?.`` //Ident// 
   |  |  **|**  | //Expr13// ``(`` //[CArg]// ``)`` 
   |  |  **|**  | ``super`` ``(`` //[CArg]// ``)`` 
-  |  |  **|**  | //Expr13// ``?.`` //Ident// 
   |  |  **|**  | //Expr13// ``!`` 
   |  |  **|**  | ``(`` //Expr// ``)`` 
   | //ACpr// | -> | ``for`` //Expr// ``in`` //Expr// 
@@ -254,7 +256,8 @@ All other symbols are terminals.
   | //[Expr2]// | -> | **eps**
   |  |  **|**  | //Expr2// 
   |  |  **|**  | //Expr2// ``,`` //[Expr2]// 
-  | //Expr2// | -> | //Expr3// ``?`` //Expr3// ``:`` //Expr2// 
+  | //Expr2// | -> | //Expr3// ``??`` //Expr2// 
+  |  |  **|**  | //Expr3// ``?`` //Expr3// ``:`` //Expr2// 
   |  |  **|**  | ``lambda`` //[Ident]// ``->`` //Expr2// 
   |  |  **|**  | //Expr3// 
   | //[Ident]// | -> | **eps**
