@@ -21,8 +21,6 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='',
                     help="file path pattern (relative to test folder)")
-parser.add_argument('-e', '--expect-errors', action='store_true',
-                    help="expect compiler errors when running intentionally invalid tests")
 parser.add_argument('-t', '--target-windows-gnu', action='store_true',
                     help="run compiler with -target x86_64-pc-windows-gnu")
 args = parser.parse_args()
@@ -44,14 +42,20 @@ for i, path in enumerate(tests, 1):
             params = '-target x86_64-pc-windows-gnu' if args.target_windows_gnu else ''
             subprocess.check_output(f'pyxell.exe {path} {params}', stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
-            if args.expect_errors:
-                print(f"{G}{e.output.decode()}{E}")
-                ok += 1
+            if os.path.isfile(path.replace(".px", ".err")):
+                error_message = e.output.decode()
+                with open(f'{path.replace(".px", ".err")}', 'r') as errfile:
+                    error_expected = errfile.read()
+                    if e.output.decode().endswith(error_expected):
+                        print(f"{G}{error_message}{E}")
+                        ok += 1
+                    else:
+                        print(f"{R}{error_message}\n---\n> {error_expected}{E}")
             else:
                 print(f"{R}Compiler returned error code {e.returncode}.\n{e.output.decode()}{E}")
             continue
         else:
-            if args.expect_errors:
+            if os.path.isfile(path.replace(".px", ".err")):
                 print(f"{R}Compiler returned code 0, but error expected!{E}")
                 continue
 
@@ -83,4 +87,3 @@ if i > 0:
         print(msg + f", {R}{i-ok} failed{E}.")
 else:
     print("No tests to run.")
-

@@ -139,7 +139,7 @@ Tests
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
 There is a Python script `test.py`.
-You can pass a path pattern to run only selected tests (e.g. `python test.py good` or `python test.py bad/arrays -e`).
+You can pass a path pattern to run only selected tests (e.g. `python test.py good`).
 To see all options, run it with `-h`.
 
 Tests serve currently also as a documentation of the language.
