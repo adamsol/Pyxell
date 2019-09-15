@@ -40,6 +40,7 @@ data StaticError = NotComparable Type Type
                  | NotType Ident
                  | NotVariable Ident
                  | NotInitialized Ident
+                 | MissingReturn Ident
                  | VoidDeclaration
                  | NotLvalue
                  | InvalidExpression String
@@ -80,6 +81,7 @@ instance Show StaticError where
         NotType (Ident x) -> "Identifier `" ++ x ++ "` does not represent a type."
         NotVariable (Ident x) -> "Identifier `" ++ x ++ "` does not represent a variable."
         NotInitialized (Ident x) -> "Identifier `" ++ x ++ "` might not have been initialized."
+        MissingReturn (Ident x) -> "Not all code paths return a value in function `" ++ x ++ "`."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
@@ -338,7 +340,7 @@ checkStmt statement cont = do
             case r of
                 Just (t, _) -> do
                     checkCast pos tVoid t
-                    cont
+                    updateVar (Ident "#return") $ cont
                 Nothing -> throw pos $ UnexpectedStatement "return"
         SRetExpr pos expr -> do
             (t1, _) <- checkExpr expr
@@ -346,7 +348,7 @@ checkStmt statement cont = do
             case r of
                 Just (t2, _) -> do
                     checkCast pos t1 t2
-                    cont
+                    updateVar (Ident "#return") $ cont
                 Nothing -> throw pos $ UnexpectedStatement "return"
         SSkip pos -> do
             cont
@@ -570,7 +572,11 @@ checkFunc pos id vars args ret block cont = do
             Just b -> nextLevel $ checkDecl pos t id True $ do  -- so recursion works inside the function
                 checkTypeVars vars $ checkArgs args False $ do
                     checkType pos ret
-                    localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ (checkBlock b >> skip)
+                    localVar (Ident "#return") (reduceType ret) (-1) (ret == tVoid) $ local (M.delete (Ident "#loop")) $ do
+                        s <- checkBlock b
+                        case S.member (Ident "#return") s of
+                            True -> skip
+                            False -> throw pos $ MissingReturn id
             Nothing -> skip
         cont
     where

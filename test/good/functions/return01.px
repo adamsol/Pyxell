@@ -1,0 +1,11 @@
+
+func f(Int x) Bool def
+    if x >= 0 do
+        if x > 0 do
+            return true
+        else do
+            return false
+    else do
+        return false
+
+print f(2), f(-1)
