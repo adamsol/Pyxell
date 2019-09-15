@@ -18,7 +18,9 @@ import Utils
 
 
 -- | Identifier environment: type and nesting level or namespace.
-data EnvItem = Level Int | Module Env deriving Show
+data EnvItem = Variable Int Bool  -- level of definition, whether initialized
+             | Module Env
+             deriving Show
 type Env = M.Map Ident (Type, EnvItem)
 
 -- | Checker monad: Reader for identifier environment, Error to report compilation errors.
@@ -37,6 +39,7 @@ data StaticError = NotComparable Type Type
                  | RepeatedMember Ident
                  | NotType Ident
                  | NotVariable Ident
+                 | NotInitialized Ident
                  | VoidDeclaration
                  | NotLvalue
                  | InvalidExpression String
@@ -76,6 +79,7 @@ instance Show StaticError where
         RepeatedMember (Ident x) -> "Repeated member `" ++ x ++ "` in class definition."
         NotType (Ident x) -> "Identifier `" ++ x ++ "` does not represent a type."
         NotVariable (Ident x) -> "Identifier `" ++ x ++ "` does not represent a variable."
+        NotInitialized (Ident x) -> "Identifier `" ++ x ++ "` might not have been initialized."
         VoidDeclaration -> "Cannot declare variable of type `Void`."
         NotLvalue -> "Expression cannot be assigned to."
         InvalidExpression expr -> "Could not parse expression `" ++ expr ++ "`."
@@ -115,19 +119,31 @@ throw pos err = do
 
 
 -- | Inserts a label into the map and continues with changed environment.
-localLevel :: String -> Int -> Run a -> Run a
-localLevel name lvl cont = do
-    local (M.insert (Ident name) (tVoid, Level lvl)) cont
+localLabel :: String -> Run a -> Run a
+localLabel name cont = do
+    local (M.insert (Ident name) (tVoid, Variable 0 True)) cont
 
--- | Inserts a variable into the map and continues with changed environment.
+-- | Inserts a type into the map and continues with changed environment.
 localType :: Ident -> Type -> Run a -> Run a
 localType id typ cont = do
-    local (M.insert id (typ, Level (-1))) cont
+    local (M.insert id (typ, Variable (-1) True)) cont
 
 -- | Inserts a variable into the map and continues with changed environment.
-localVar :: Ident -> Type -> Int -> Run a -> Run a
-localVar id typ lvl cont = do
-    local (M.insert id (typ, Level lvl)) cont
+localVar :: Ident -> Type -> Int -> Bool -> Run a -> Run a
+localVar id typ lvl init cont = do
+    local (M.insert id (typ, Variable lvl init)) cont
+
+-- | Sets a variable as initialized.
+updateVar :: Ident -> Run a -> Run a
+updateVar id cont = do
+    (t, Variable l _) <- asks (M.! id)
+    local (M.insert id (t, Variable l True)) cont
+
+-- | Sets variables as initialized.
+updateVars :: [Ident] -> Run a -> Run a
+updateVars ids cont = case ids of
+    [] -> cont
+    id:ids -> updateVar id $ updateVars ids $ cont
 
 -- | Gets an identifier from the environment.
 getIdent :: Ident -> Run (Maybe Type)
@@ -141,12 +157,12 @@ getIdent id = do
 nextLevel :: Run a -> Run a
 nextLevel cont = do
     l <- getLevel
-    localLevel "#level" (l+1) cont
+    local (M.insert (Ident "#level") (tVoid, Variable (l+1) False)) cont
 
 -- | Returns current nesting level.
 getLevel :: Run Int
 getLevel = do
-    Just (_, Level l) <- asks (M.lookup (Ident "#level"))
+    Just (_, Variable l _) <- asks (M.lookup (Ident "#level"))
     return $ l
 
 
@@ -156,8 +172,9 @@ checkVar pos id = do
     l1 <- getLevel
     r <- asks (M.lookup id)
     case r of
-        Just (t, Level l2) -> do
-            if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
+        Just (t, Variable l2 init) -> do
+            if not init then throw pos $ NotInitialized id
+            else if l2 > 0 && l1 > l2 then throw pos $ ClosureRequired id
             else if l2 < 0 then case t of
                 TClass {} -> return $ t
                 otherwise -> throw pos $ NotVariable id
@@ -173,7 +190,7 @@ checkType pos typ = do
         TVar _ id -> do
             r <- asks (M.lookup id)
             case r of
-                Just (t, Level (-1)) -> return $ t
+                Just (t, Variable (-1) _) -> return $ t
                 otherwise -> throw pos $ NotType id
         otherwise -> return $ typ
 
@@ -182,13 +199,13 @@ checkType_ :: Pos -> Type -> Run ()
 checkType_ pos typ = checkType pos typ >> skip
 
 -- | Declares a variable and continues with changed environment.
-checkDecl :: Pos -> Type -> Ident -> Run a -> Run a
-checkDecl pos typ id cont = do
+checkDecl :: Pos -> Type -> Ident -> Bool -> Run a -> Run a
+checkDecl pos typ id init cont = do
     case typ of
         TVoid _ -> throw pos $ VoidDeclaration
         otherwise -> do
             l <- getLevel
-            localVar id typ l cont
+            localVar id typ l init cont
 
 -- | Checks if one type can be cast to another and returns the unified type.
 checkCast :: Pos -> Type -> Type -> Run Type
@@ -226,11 +243,15 @@ checkProgram program name = do
             return $ M.insert (Ident name) (tModule, Module (M.difference env2 env1)) env1
 
 
--- | Checks a block with statements.
-checkBlock :: Block Pos -> Run ()
+-- | Checks a block with statements. Returns the set of variables that have been initialized.
+checkBlock :: Block Pos -> Run (S.Set Ident)
 checkBlock block = do
     case block of
-        SBlock pos stmts -> checkStmts stmts skip
+        SBlock pos stmts -> checkStmts stmts $ do
+            env <- ask
+            return $ S.fromList $ M.keys $ flip M.filter env $ \case
+                (_, Variable _ True) -> True
+                otherwise -> False
 
 -- | Checks a bunch of statements.
 checkStmts :: [Stmt Pos] -> Run a -> Run a
@@ -286,7 +307,7 @@ checkStmt statement cont = do
                         Nothing -> skip
                     return $ ([t'], extendMembers membs' membs)
             let t = tClass id bases membs
-            checkDecl pos t id $ localType id t $ do
+            checkDecl pos t id False $ localType id t $ do
                 forM membs $ \case
                     MField pos t _ -> do
                         checkType_ pos t
@@ -297,7 +318,7 @@ checkStmt statement cont = do
                     MMethod pos (Ident f) (TFuncDef _ id' _ as r b) -> do
                         c <- case bases of
                             [TClass _ _ _ ms] -> case findMember ms (Ident f) of
-                                Just (_, super@(TFuncDef {}), _) -> return $ localVar (Ident "#super") super 0
+                                Just (_, super@(TFuncDef {}), _) -> return $ localVar (Ident "#super") super 0 True
                                 otherwise -> return $ \x -> x
                             [] -> return $ \x -> x
                         c $ checkFunc pos id' [] as r (Just b) skip
@@ -382,23 +403,23 @@ checkStmt statement cont = do
             typ <- retrieveType typ
             (t, _) <- checkExpr expr
             checkCast pos t typ
-            checkDecl pos typ id cont
+            checkDecl pos typ id True cont
         SDecl pos typ id -> do
             checkType pos typ
             typ <- retrieveType typ
-            checkDecl pos typ id cont
+            checkDecl pos typ id False cont
         SIf pos brs el -> do
-            checkBranches brs
+            ss <- checkBranches brs
             case el of
                 EElse pos b -> do
-                    checkBlock b
-                    cont
+                    s <- checkBlock b
+                    updateVars (S.elems (foldl1 S.intersection (s:ss))) $ cont
                 EEmpty pos -> cont
         SWhile pos expr block -> do
-            localLevel "#loop" 0 $ checkCond pos expr block
+            localLabel "#loop" $ checkCond pos expr block
             cont
         SUntil pos expr block -> do
-            localLevel "#loop" 0 $ checkCond pos expr block
+            localLabel "#loop" $ checkCond pos expr block
             cont
         SFor pos expr1 expr2 block -> do
             checkStmt (SForStep pos expr1 expr2 (eInt 1) block) cont
@@ -430,11 +451,12 @@ checkStmt statement cont = do
         checkAssgOp pos op expr1 expr2 cont = do
             checkStmt (SAssg pos [expr1, op pos expr1 expr2]) cont
         checkBranches brs = case brs of
-            [] -> skip
+            [] -> return $ []
             b:bs -> case b of
                 BElIf pos expr block -> do
-                    checkCond pos expr block
-                    checkBranches bs
+                    s <- checkCond pos expr block
+                    ss <- checkBranches bs
+                    return $ s : ss
         checkCond pos expr block = do
             checkIf pos expr
             checkBlock block
@@ -452,9 +474,9 @@ checkAssgs pos exprs types cont = do
                 case r of
                     Just t -> do
                         checkCast pos typ t
-                        cont
+                        updateVar id $ cont
                     Nothing -> case isUnknown typ of
-                        False -> checkDecl pos (reduceType typ) id cont
+                        False -> checkDecl pos (reduceType typ) id True $ cont
                         True -> throw pos $ UnknownType
             EIndex {} -> do
                 (t, m) <- checkExpr expr
@@ -485,7 +507,7 @@ checkFor pos expr1 expr2 expr3 cont = do
     t1 <- checkForExpr pos expr2
     (t2, _) <- checkExpr expr3
     checkForStep pos t2 t1
-    localLevel "#loop" 0 $ case (expr1, t1) of
+    localLabel "#loop" $ case (expr1, t1) of
         (ETuple _ es, TTuple _ ts1) -> do
             if length es == length ts1 then case t2 of
                 TTuple _ ts2 -> do
@@ -543,12 +565,12 @@ checkFunc pos id vars args ret block cont = do
     t <- case block of
         Just b -> return $ tFuncDef id vars args ret b
         Nothing -> return $ tFuncExt id args ret
-    checkDecl pos t id $ do  -- so global functions are global
+    checkDecl pos t id True $ do  -- so global functions are global
         case block of
-            Just b -> nextLevel $ checkDecl pos t id $ do  -- so recursion works inside the function
+            Just b -> nextLevel $ checkDecl pos t id True $ do  -- so recursion works inside the function
                 checkTypeVars vars $ checkArgs args False $ do
                     checkType pos ret
-                    localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ checkBlock b
+                    localType (Ident "#return") (reduceType ret) $ local (M.delete (Ident "#loop")) $ (checkBlock b >> skip)
             Nothing -> skip
         cont
     where
@@ -560,13 +582,13 @@ checkFunc pos id vars args ret block cont = do
                 False -> do
                     let t = reduceType typ
                     checkType pos t
-                    checkDecl pos t id $ cont False
+                    checkDecl pos t id True $ cont False
                 True -> throw pos $ MissingDefault id
             ADefault pos typ id expr -> do
                 (t1, _) <- checkExpr expr
                 let t2 = reduceType typ
                 checkCast pos t1 t2
-                checkDecl pos t2 id $ cont True
+                checkDecl pos t2 id True $ cont True
 
 -- | Adds function's type variables to the environment.
 checkTypeVars :: [FVar Pos] -> Run a -> Run a
@@ -822,7 +844,7 @@ checkExpr expression = do
                     [] -> cont
                     (t, id):as -> checkLambdaArg t id $ checkLambdaArgs as cont
                 checkLambdaArg typ id cont = do
-                    checkDecl _pos typ id $ cont
+                    checkDecl _pos typ id True $ cont
         ESuper pos args -> do
             r <- asks $ M.lookup (Ident "#super")
             case r of

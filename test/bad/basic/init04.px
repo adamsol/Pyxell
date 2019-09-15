@@ -1,0 +1,5 @@
+
+Bool b
+if 0 != 1 do
+    b = true
+b' = b

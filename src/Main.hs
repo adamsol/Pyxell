@@ -57,7 +57,7 @@ main = do
                 ("random", abspath </> "lib/random.px"),
                 ("main", path) ]
             -- Type-check all files, passing down the environment.
-            (_, units) <- foldM' (M.fromList [(Ident "#level", (tVoid, Level 0))], []) paths $ \(env, units) (name, path) -> do
+            (_, units) <- foldM' (M.fromList [(Ident "#level", (tVoid, Variable 0 False))], []) paths $ \(env, units) (name, path) -> do
                 code <- readFile path
                 case pProgram $ resolveLayout True $ myLexer code of
                     Bad err -> do

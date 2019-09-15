@@ -1,0 +1,7 @@
+
+Bool b
+if 2 + 2 == 4 do
+    b = true
+elif 2 * 2 != 4 do
+    b = false
+print b
