@@ -275,10 +275,15 @@ convertLambda pos expression = do
                 ss <- mapM convertSlice slices
                 return $ ESlice pos e ss
             EAttr pos e id -> convertUnary (\e -> EAttr pos e id) e
+            ESafeAttr pos e id -> convertUnary (\e -> ESafeAttr pos e id) e
             ECall pos e args -> do
                 e <- convertExpr e
                 as <- mapM convertArg args
                 return $ ECall pos e as
+            ESuper pos args -> do
+                as <- mapM convertArg args
+                return $ ESuper pos as
+            EAssert pos e -> convertUnary (EAssert pos) e
             EPow pos e1 e2 -> convertBinary (EPow pos) e1 e2
             EMinus pos e -> convertUnary (EMinus pos) e
             EPlus pos e -> convertUnary (EPlus pos) e
@@ -302,6 +307,7 @@ convertLambda pos expression = do
             ENot pos e -> convertUnary (ENot pos) e
             EAnd pos e1 e2 -> convertBinary (EAnd pos) e1 e2
             EOr pos e1 e2 -> convertBinary (EOr pos) e1 e2
+            ECoalesce pos e1 e2 -> convertBinary (ECoalesce pos) e1 e2
             ECond pos e1 e2 e3 -> convertTernary (ECond pos) e1 e2 e3
             ETuple pos es -> convertMultiary (ETuple pos) es
             otherwise -> return $ expr

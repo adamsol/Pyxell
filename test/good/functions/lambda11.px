@@ -1,0 +1,14 @@
+
+func f(Int?->Int g, Int? x) Int def
+    return g(x)
+
+Int? x = 5
+print f(_!, x)
+
+x = null
+print f(_??3, x)
+
+func f'(Int?->Float? g, Int? x) Float? def
+    return g(x)
+
+print f'(_?.toFloat(), x)
