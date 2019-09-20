@@ -1,8 +1,10 @@
 
-Bool x
-x = false
-print x
+if true do
+    Bool x
+    x = false
+    print x
 
-Char x
-x = '*'
-print x
+if true do
+    Char x
+    x = '*'
+    print x

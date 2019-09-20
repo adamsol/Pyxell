@@ -209,6 +209,13 @@ checkDecl pos typ id init cont = do
             l <- getLevel
             localVar id typ l init cont
 
+checkNotDeclared :: Pos -> Ident -> Run ()
+checkNotDeclared pos id = do
+    r <- getIdent id
+    case r of
+        Nothing -> skip
+        Just _ -> throw pos $ RedeclaredIdentifier id
+
 -- | Checks if one type can be cast to another and returns the unified type.
 checkCast :: Pos -> Type -> Type -> Run Type
 checkCast pos typ1 typ2 = do
@@ -405,10 +412,12 @@ checkStmt statement cont = do
             typ <- retrieveType typ
             (t, _) <- checkExpr expr
             checkCast pos t typ
+            checkNotDeclared pos id
             checkDecl pos typ id True cont
         SDecl pos typ id -> do
             checkType pos typ
             typ <- retrieveType typ
+            checkNotDeclared pos id
             checkDecl pos typ id False cont
         SIf pos brs el -> do
             ss <- checkBranches brs
@@ -560,10 +569,7 @@ checkFor pos expr1 expr2 expr3 cont = do
 -- | Checks function's arguments and body.
 checkFunc :: Pos -> Ident -> [FVar Pos] -> [FArg Pos] -> Type -> Maybe (Block Pos) -> Run a -> Run a
 checkFunc pos id vars args ret block cont = do
-    r <- getIdent id
-    case r of
-        Nothing -> skip
-        Just _ -> throw pos $ RedeclaredIdentifier id
+    checkNotDeclared pos id
     t <- case block of
         Just b -> return $ tFuncDef id vars args ret b
         Nothing -> return $ tFuncExt id args ret

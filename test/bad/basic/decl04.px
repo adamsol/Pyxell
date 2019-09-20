@@ -1,0 +1,4 @@
+
+Int x = 0
+if true do
+    Bool x = true
