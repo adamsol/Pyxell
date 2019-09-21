@@ -252,10 +252,6 @@ functionScope id cont = do
     f <- functionName id
     localScope f cont
 
--- | Returns a special identifier for function's argument in the environment.
-argumentPointer :: Ident -> Ident -> Value
-argumentPointer f a = "@g." ++ escapeName f ++ "." ++ escapeName a
-
 
 -- | Outputs a function declaration.
 declare :: Type -> Value -> Run ()

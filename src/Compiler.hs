@@ -425,10 +425,6 @@ compileFunc id vars args1 rt block args2 = do
             i <- case r of  -- if the return type is a tuple, the result is in the zeroth argument
                 TTuple {} -> return $ 1
                 otherwise -> return $ 0
-            case S.null set of
-                True -> do  -- default arguments are compiled only once, since their type is known
-                    functionScope id $ forM_ args1 $ compileDefaultArg
-                False -> skip
             case block of
                 Just b -> define t id $ compileArgs args1 i $ localType (Ident "#return") r $ do
                     l <- nextLabel
@@ -442,18 +438,6 @@ compileFunc id vars args1 rt block args2 = do
                 Nothing -> do
                     localScope "!global" $ external p t
                     skip
-    where
-        compileDefaultArg arg = case arg of
-            ANoDefault {} -> skip
-            ADefault _ t id' e -> do
-                let p = argumentPointer id id'
-                s <- strType t
-                v <- defaultValue t
-                writeTop $ [ p ++ " = global " ++ s ++ " " ++ v ]
-                localScope "main" $ do
-                    (t', v') <- compileExpr e
-                    v <- castValue t' t v'
-                    store t v p
 
 -- | Outputs LLVM code for initialization of function arguments.
 compileArgs :: [FArg Pos] -> Int -> Run a -> Run a
@@ -746,10 +730,10 @@ compileExpr expression = do
                 return $ M.insert i r m
             -- Extend the map using default arguments.
             m <- foldM' m (zip [0..] args2) $ \m (i, a) -> case (a, M.lookup i m) of
-                (ADefault _ t id' _, Nothing) -> do
+                (ADefault _ t id' e, Nothing) -> do
                     t <- retrieveType t
-                    let p = argumentPointer id id'
-                    v <- load t p
+                    (t', v') <- compileExpr e
+                    v <- castValue t' t v'
                     return $ M.insert i (t, Left v) m
                 otherwise -> return $ m
             -- Call the function.
