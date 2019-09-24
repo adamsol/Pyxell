@@ -3,6 +3,8 @@ Pyxell
 
 ### Clear and easy to use multi-paradigm compiled programming language with static typing. ###
 
+*Note: due to limitations of BNFC and Haskell, the project will be rewritten to ANTLR and Python.*
+
 
 Motivation
 ----------
@@ -13,7 +15,7 @@ Do you enjoy functional programming in Haskell, yet find it overly complicated a
 
 Do you keep looking back at C++ for its speed and power, though can't stand its verbosity and ugliness in comparison to modern languages?
 
-That's why I started creating Pyxell - to bring together the best features of different programming languages.
+That's why I started creating Pyxell -- to bring together the best features of different programming languages.
 
 
 Examples
@@ -46,11 +48,21 @@ func fold<Any T>(T,T->T f, T a, [T] t) T def
 print fold(_*_, 1, [2, 3, 4])  -- factorial
 ```
 
+```
+class C def
+    String? s
+
+    constructor(String? s: null) def
+        self.s = s 
+
+c = C()
+print c.s?.length
+print c.s ?? "---"
+```
+
 
 Features
 --------
-
-This is a list of features planned for the 1.0 release. It will probably grow, maybe indefinitely :)
 
 * Python-like syntax with semantic indentation (+)
 * Strongly static typing with partial type inference (+)
@@ -68,18 +80,16 @@ This is a list of features planned for the 1.0 release. It will probably grow, m
 * Lambda expressions (+)
 * Generic functions (+/-)
 * Module system (+/-)
-* Classes with safe references (+/-)
+* Classes with safe references (+)
 * Separate nullable types (+)
 * Generic types
-* Multiple inheritance 
 * Containers library
+* Operator overloading
 * Arbitrary-precision arithmetic
 * Closures
 * Coroutines
-
-These features would be also nice to have, but are more complicated and have lower priority for me:
-
 * Exception handling
+* Multiple inheritance
 * Automatic memory management
 * Concurrency
 
@@ -130,7 +140,7 @@ If the program is correct, `code.ll` file and an executable should be created in
 If not, errors will be displayed, pointing to the erroneous code location.
 
 Run `make grammar` to run BNFC after changing the grammar (`src/Pyxell.cf`).
-Run `make libs` to only recompile runtime libraries (`lib/`).
+Run `make libs` to recompile only runtime libraries (`lib/`).
 
 
 Tests
@@ -149,24 +159,15 @@ You can browse them to learn the syntax and semantics.
 Final thoughts
 --------------
 
-Goal of this project is to create a language very simple and consistent and powerful enough to be useful
-for some basic tasks, where other languages are too verbose, unintuitive, error-prone or not fast enough.
-One example of such use-case could be solving algorithmic problems,
-without constantly looking into C++ STL documentation or creating tons of macros.
+The goal of this project is to create a language that would be simple, consistent, and powerful enough to be useful
+for some basic tasks, where other languages are too verbose, unintuitive, error-prone, or not fast enough.
+One example of a use-case could be solving algorithmic problems,
+without constantly looking into C++ STL documentation or defining tons of macros.
 
-I do know that there exist many interesting modern programming languages different from those widely-known,
+I do know that there exist many interesting modern programming languages apart from those widely-known,
 and most of them provide majority of features from my list. Even though I haven't used them,
-I've tried my best to learn about their details and discovered that none of them fully meets my expectations.
-
-From what I've found, only Boo has a clear Python-inspired syntax without braces, but is built on top of
-C# and .NET platform, which make it somewhat limited, even though I like C#.
-Other compiled languages with static typing and type inference are D, Go, Rust, Scala, and Kotlin,
+I tried my best to learn about their details and discovered that none of them fully meets my expectations.
+From what I've found, only Boo has an indentation-based syntax without braces, but is built on top of
+C# and .NET platform. Other compiled languages with static typing and type inference are D, Go, Rust, Scala, and Kotlin,
 but their syntax is uglier and they are either concentrated on some specific aspect like concurrency (the first 3),
-or built on top of Java (the other 2) which makes them even less interesting option for me.
-
-Of course this is only my subjective point of view. I may be wrong about some of these languages
-or I might have missed some cutting-edge features or maybe completely overlooked
-some other great languages to compare - in such case, please let me know.
-
-However, an important value of this project is also to learn new things, develop a language from scratch
-and implement it in my own way, which certainly no other existing language is able to provide.
+or built on top of Java (the other 2).
