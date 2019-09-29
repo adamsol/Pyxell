@@ -1,2 +1,4 @@
-argparse
-colorama
+antlr4-python3-runtime==4.7.2
+argparse==1.4.0
+colorama==0.4.1
+llvmlite==0.29.0

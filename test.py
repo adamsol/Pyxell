@@ -28,7 +28,8 @@ args = parser.parse_args()
 # Run tests that satisfy the pattern.
 tests = []
 for path in glob.glob('test/**/{}*.px'.format('[!_]' if '_' not in args.pattern else ''), recursive=True):
-    if args.pattern.replace('/', os.path.sep) in path:
+    path = path.replace(os.path.sep, '/')
+    if args.pattern in path:
         tests.append(path)
 n = len(tests)
 
@@ -40,7 +41,7 @@ for i, path in enumerate(tests, 1):
     with open('tmp.out', 'w') as outfile:
         try:
             params = '-target x86_64-pc-windows-gnu' if args.target_windows_gnu else ''
-            subprocess.check_output(f'pyxell.exe {path} {params}', stderr=subprocess.STDOUT)
+            subprocess.check_output(f'python -m src.main {path} {params}', stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             if os.path.isfile(path.replace(".px", ".err")):
                 error_message = e.output.decode()

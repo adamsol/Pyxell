@@ -3,7 +3,7 @@ Pyxell
 
 ### Clear and easy to use multi-paradigm compiled programming language with static typing. ###
 
-*Note: due to limitations of BNFC and Haskell, the project will be rewritten to ANTLR and Python.*
+*Note: Up to version 0.6.0 the project was developed in Haskell with BNFC. Now it is being rewritten to Python and ANTLR.*
 
 
 Motivation
@@ -106,20 +106,8 @@ Requirements
 
 These are the software versions that I use. Pyxell may work with others versions, but it is not guaranteed.
 
-* GHC 8.6.5 with `regex-compat` package
-* Clang 6.0.0 with C++ standard library
-* BNFC 2.8.2 with `176-source-position` branch (to recompile grammar)
+* ANTLR 4.7.2 (to build the parser)
 * Python 3.7.4 with packages from `requirements.txt` installed (to run tests)
-
-For BNFC to store source code position, install it from source:
-
-```
-git clone https://github.com/BNFC/bnfc.git
-cd bnfc/source
-git checkout 27079ebf057cce51e33afa619036cbaf6fb78398
-git cherry-pick 90e28a4cbecd8cfd4a154f2009d9c5dd4a2dbc78
-cabal install
-```
 
 To compile and link a Pyxell program correctly, a C++ standard library is required for Clang.
 This shouldn't be a problem on Linux, but on Windows this may not work out of the box.
@@ -132,14 +120,14 @@ Usage
 -----
 
 ```
-make bin libs
-./pyxell code.px
+make libs
+./pyxell.sh code.px
 ```
 
 If the program is correct, `code.ll` file and an executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
 
-Run `make grammar` to run BNFC after changing the grammar (`src/Pyxell.cf`).
+Run `make parser` to run ANTLR after changing the grammar (`src/Pyxell.g4`).
 Run `make libs` to recompile only runtime libraries (`lib/`).
 
 

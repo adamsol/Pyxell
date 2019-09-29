@@ -1,12 +1,7 @@
-all: grammar bin
+all: parser
 
-grammar:
-	+$(MAKE) -C bnfc
-
-bin:
-	ghc --make Main.hs -i./bnfc/ -o ../pyxell \
-	    -XFlexibleInstances -XFlexibleContexts -XLambdaCase \
-	    -fwarn-unused-imports -fno-warn-warnings-deprecations
+parser:
+	java -jar antlr*.jar Pyxell.g4 -visitor -no-listener -Dlanguage=Python3 -o antlr
 
 clean:
-	+$(MAKE) clean -C bnfc
+	rm -rf antlr/

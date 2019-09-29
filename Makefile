@@ -1,12 +1,9 @@
-all: grammar bin libs
+all: parser libs
 
-grammar:
-	+$(MAKE) grammar -C src
-bin:
-	+$(MAKE) bin -C src
+parser:
+	+$(MAKE) parser -C src
 libs:
-	./pyxell -l
+	./pyxell.py -l
 
 clean:
 	+$(MAKE) clean -C src
-	-rm -f pyxell pyxell.exe
