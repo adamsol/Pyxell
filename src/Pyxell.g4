@@ -5,8 +5,22 @@ program
   ;
 
 stmt
-  : 'print' expr ';' # StmtPrint
-  | (ID '=')* expr ';' # StmtAssg
+  : simple_stmt ';'
+  | compound_stmt
+  ;
+
+simple_stmt
+  : 'skip' # StmtSkip
+  | 'print' expr # StmtPrint
+  | (ID '=')* expr # StmtAssg
+  ;
+
+compound_stmt
+  : 'if' expr block ('elif' expr block)* ('else' block)? # StmtIf
+  ;
+
+block
+  : 'do' '{' stmt+ '}'
   ;
 
 expr
@@ -19,6 +33,7 @@ expr
 
 atom
   : INT # AtomInt
+  | ('true' | 'false') # AtomBool
   | ID # AtomId
   ;
 

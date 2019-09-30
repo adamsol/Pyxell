@@ -10,6 +10,7 @@ from .antlr.PyxellVisitor import PyxellVisitor
 
 tVoid = ll.VoidType()
 tInt = ll.IntType(64)
+tBool = ll.IntType(1)
 tChar = ll.IntType(8)
 
 def tFunc(args, ret=tVoid):
@@ -29,6 +30,7 @@ class PyxellCompiler(PyxellVisitor):
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
         }
         pass
+
 
     ### Helpers ###
 
@@ -51,6 +53,7 @@ class PyxellCompiler(PyxellVisitor):
 
         self.builder.store(value, var)
 
+
     ### Program ###
 
     def visitProgram(self, ctx):
@@ -60,6 +63,7 @@ class PyxellCompiler(PyxellVisitor):
         self.visitChildren(ctx)
         self.builder.position_at_end(func.blocks[-1])
         self.builder.ret(ll.Constant(tInt, 0))
+
 
     ### Statements ###
 
@@ -72,6 +76,35 @@ class PyxellCompiler(PyxellVisitor):
         value = self.visit(ctx.expr())
         for id in ctx.ID():
             self.assign(id, value)
+
+    def visitStmtIf(self, ctx):
+        exprs = ctx.expr()
+        blocks = ctx.block()
+
+        bbend = ll.Block(parent=self.builder.function)
+
+        def emitIfElse(index):
+            if len(exprs) <= index:
+                if len(blocks) > index:
+                    with self.local():
+                        self.visit(blocks[index])
+                return
+
+            cond = self.visit(exprs[index])
+            bbif = self.builder.function.append_basic_block()
+            bbelse = self.builder.function.append_basic_block()
+            self.builder.cbranch(cond, bbif, bbelse)
+
+            with self.builder._branch_helper(bbif, bbend):
+                with self.local():
+                    self.visit(blocks[index])
+
+            with self.builder._branch_helper(bbelse, bbend):
+                emitIfElse(index+1)
+
+        emitIfElse(0)
+        self.builder.function.blocks.append(bbend)
+        self.builder.position_at_end(bbend)
 
     ### Expressions ###
 
@@ -95,10 +128,14 @@ class PyxellCompiler(PyxellVisitor):
     def visitExprParentheses(self, ctx):
         return self.visit(ctx.expr())
 
+
     ### Atoms ###
 
     def visitAtomInt(self, ctx):
         return ll.Constant(tInt, ctx.INT())
+
+    def visitAtomBool(self, ctx):
+        return ll.Constant(tBool, int(ctx.getText() == 'true'))
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx.ID()))

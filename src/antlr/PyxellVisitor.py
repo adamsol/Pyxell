@@ -14,6 +14,16 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#stmt.
+    def visitStmt(self, ctx:PyxellParser.StmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#StmtSkip.
+    def visitStmtSkip(self, ctx:PyxellParser.StmtSkipContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#StmtPrint.
     def visitStmtPrint(self, ctx:PyxellParser.StmtPrintContext):
         return self.visitChildren(ctx)
@@ -21,6 +31,16 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#StmtAssg.
     def visitStmtAssg(self, ctx:PyxellParser.StmtAssgContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#StmtIf.
+    def visitStmtIf(self, ctx:PyxellParser.StmtIfContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#block.
+    def visitBlock(self, ctx:PyxellParser.BlockContext):
         return self.visitChildren(ctx)
 
 
@@ -46,6 +66,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#AtomInt.
     def visitAtomInt(self, ctx:PyxellParser.AtomIntContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#AtomBool.
+    def visitAtomBool(self, ctx:PyxellParser.AtomBoolContext):
         return self.visitChildren(ctx)
 
 
