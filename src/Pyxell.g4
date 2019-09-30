@@ -6,7 +6,7 @@ program
 
 stmt
   : 'print' expr ';' # StmtPrint
-  | ID '=' expr ';' # StmtAssg
+  | (ID '=')* expr ';' # StmtAssg
   ;
 
 expr

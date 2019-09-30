@@ -69,8 +69,9 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.call(self.builtins['putchar'], [ll.Constant(tChar, ord('\n'))])
 
     def visitStmtAssg(self, ctx):
-        v = self.visit(ctx.expr())
-        self.assign(ctx.ID(), v)
+        value = self.visit(ctx.expr())
+        for id in ctx.ID():
+            self.assign(id, value)
 
     ### Expressions ###
 
