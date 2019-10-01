@@ -106,7 +106,19 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.function.blocks.append(bbend)
         self.builder.position_at_end(bbend)
 
+
     ### Expressions ###
+
+    def visitExprParentheses(self, ctx):
+        return self.visit(ctx.expr())
+
+    def visitExprUnaryOp(self, ctx):
+        instruction = {
+            '+': self.builder.add,
+            '-': self.builder.sub,
+        }[ctx.op.text]
+
+        return instruction(ll.Constant(tInt, 0), self.visit(ctx.expr()))
 
     def visitExprBinaryOp(self, ctx):
         instruction = {
@@ -116,17 +128,16 @@ class PyxellCompiler(PyxellVisitor):
             '+': self.builder.add,
             '-': self.builder.sub,
         }[ctx.op.text]
+
         return instruction(self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
 
-    def visitExprUnaryOp(self, ctx):
-        instruction = {
-            '+': self.builder.add,
-            '-': self.builder.sub,
-        }[ctx.op.text]
-        return instruction(ll.Constant(tInt, 0), self.visit(ctx.expr()))
+    def visitExprCmp(self, ctx):
+        values = self.visit(ctx.expr(0)), self.visit(ctx.expr(1))
 
-    def visitExprParentheses(self, ctx):
-        return self.visit(ctx.expr())
+        if values[0].type == tBool:
+            return self.builder.icmp_unsigned(ctx.op.text, values[0], values[1])
+        else:
+            return self.builder.icmp_signed(ctx.op.text, values[0], values[1])
 
 
     ### Atoms ###

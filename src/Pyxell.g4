@@ -24,11 +24,12 @@ block
   ;
 
 expr
-  : expr op=('*' | '/' | '%') expr # ExprBinaryOp
-  | expr op=('+' | '-') expr # ExprBinaryOp
-  | op=('+' | '-') expr # ExprUnaryOp
+  : atom # ExprAtom
   | '(' expr ')' # ExprParentheses
-  | atom # ExprAtom
+  | op=('+' | '-') expr # ExprUnaryOp
+  | expr op=('*' | '/' | '%') expr # ExprBinaryOp
+  | expr op=('+' | '-') expr # ExprBinaryOp
+  | expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
   ;
 
 atom
