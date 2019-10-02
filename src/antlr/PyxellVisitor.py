@@ -69,6 +69,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
+    def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#AtomInt.
     def visitAtomInt(self, ctx:PyxellParser.AtomIntContext):
         return self.visitChildren(ctx)

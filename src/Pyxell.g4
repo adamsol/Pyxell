@@ -30,6 +30,9 @@ expr
   | expr op=('*' | '/' | '%') expr # ExprBinaryOp
   | expr op=('+' | '-') expr # ExprBinaryOp
   | expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
+  | op='not' expr # ExprUnaryOp
+  | <assoc=right> expr op='and' expr # ExprLogicalOp
+  | <assoc=right> expr op='or' expr # ExprLogicalOp
   ;
 
 atom

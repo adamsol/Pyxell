@@ -17,6 +17,12 @@ def tFunc(args, ret=tVoid):
     return ll.FunctionType(ret, args)
 
 
+### Constants ###
+
+vFalse = ll.Constant(tBool, 0)
+vTrue = ll.Constant(tBool, 1)
+
+
 ### Visitor ###
 
 class PyxellCompiler(PyxellVisitor):
@@ -81,10 +87,10 @@ class PyxellCompiler(PyxellVisitor):
         exprs = ctx.expr()
         blocks = ctx.block()
 
-        bbend = ll.Block(parent=self.builder.function)
+        bbend = ll.Block(self.builder.function)
 
         def emitIfElse(index):
-            if len(exprs) <= index:
+            if len(exprs) == index:
                 if len(blocks) > index:
                     with self.local():
                         self.visit(blocks[index])
@@ -113,12 +119,15 @@ class PyxellCompiler(PyxellVisitor):
         return self.visit(ctx.expr())
 
     def visitExprUnaryOp(self, ctx):
-        instruction = {
-            '+': self.builder.add,
-            '-': self.builder.sub,
-        }[ctx.op.text]
+        value = self.visit(ctx.expr())
+        op = ctx.op.text
 
-        return instruction(ll.Constant(tInt, 0), self.visit(ctx.expr()))
+        if op == '+':
+            return value
+        elif op == '-':
+            return self.builder.neg(value)
+        elif op == 'not':
+            return self.builder.not_(value)
 
     def visitExprBinaryOp(self, ctx):
         instruction = {
@@ -138,6 +147,35 @@ class PyxellCompiler(PyxellVisitor):
             return self.builder.icmp_unsigned(ctx.op.text, values[0], values[1])
         else:
             return self.builder.icmp_signed(ctx.op.text, values[0], values[1])
+
+    def visitExprLogicalOp(self, ctx):
+        op = ctx.op.text
+
+        bbstart = self.builder.basic_block
+        bbif = self.builder.function.append_basic_block()
+        bbend = ll.Block(self.builder.function)
+
+        cond1 = self.visit(ctx.expr(0))
+        if op == 'and':
+            self.builder.cbranch(cond1, bbif, bbend)
+        elif op == 'or':
+            self.builder.cbranch(cond1, bbend, bbif)
+
+        self.builder.position_at_end(bbend)
+        phi = self.builder.phi(tBool)
+        if op == 'and':
+            phi.add_incoming(vFalse, bbstart)
+        elif op == 'or':
+            phi.add_incoming(vTrue, bbstart)
+
+        with self.builder._branch_helper(bbif, bbend):
+            cond2 = self.visit(ctx.expr(1))
+            phi.add_incoming(cond2, self.builder.basic_block)
+
+        self.builder.function.blocks.append(bbend)
+        self.builder.position_at_end(bbend)
+
+        return phi
 
 
     ### Atoms ###
