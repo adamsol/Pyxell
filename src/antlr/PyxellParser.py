@@ -38,7 +38,7 @@ def serializedATN():
         buf.write("\2KO\5\f\7\tLM\7\32\2\2MO\5\f\7\5ND\3\2\2\2NF\3\2\2\2")
         buf.write("NJ\3\2\2\2NL\3\2\2\2Oa\3\2\2\2PQ\f\b\2\2QR\t\3\2\2R`\5")
         buf.write("\f\7\tST\f\7\2\2TU\t\2\2\2U`\5\f\7\bVW\f\6\2\2WX\t\4\2")
-        buf.write("\2X`\5\f\7\7YZ\f\4\2\2Z[\7\33\2\2[`\5\f\7\4\\]\f\3\2\2")
+        buf.write("\2X`\5\f\7\6YZ\f\4\2\2Z[\7\33\2\2[`\5\f\7\4\\]\f\3\2\2")
         buf.write("]^\7\34\2\2^`\5\f\7\3_P\3\2\2\2_S\3\2\2\2_V\3\2\2\2_Y")
         buf.write("\3\2\2\2_\\\3\2\2\2`c\3\2\2\2a_\3\2\2\2ab\3\2\2\2b\r\3")
         buf.write("\2\2\2ca\3\2\2\2dh\7\37\2\2eh\t\5\2\2fh\7 \2\2gd\3\2\2")
@@ -766,7 +766,7 @@ class PyxellParser ( Parser ):
                             self._errHandler.reportMatch(self)
                             self.consume()
                         self.state = 86
-                        self.expr(5)
+                        self.expr(4)
                         pass
 
                     elif la_ == 4:

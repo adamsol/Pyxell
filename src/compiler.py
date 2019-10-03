@@ -3,6 +3,7 @@ from contextlib import contextmanager
 
 import llvmlite.ir as ll
 
+from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
 
 
@@ -35,7 +36,6 @@ class PyxellCompiler(PyxellVisitor):
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
         }
-        pass
 
 
     ### Helpers ###
@@ -109,6 +109,7 @@ class PyxellCompiler(PyxellVisitor):
                 emitIfElse(index+1)
 
         emitIfElse(0)
+
         self.builder.function.blocks.append(bbend)
         self.builder.position_at_end(bbend)
 
@@ -141,21 +142,62 @@ class PyxellCompiler(PyxellVisitor):
         return instruction(self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
 
     def visitExprCmp(self, ctx):
-        values = self.visit(ctx.expr(0)), self.visit(ctx.expr(1))
+        ops = []
+        exprs = []
 
-        if values[0].type == tBool:
-            return self.builder.icmp_unsigned(ctx.op.text, values[0], values[1])
-        else:
-            return self.builder.icmp_signed(ctx.op.text, values[0], values[1])
+        while True:
+            exprs.append(ctx.expr(0))
+            ops.append(ctx.op.text)
+            if not isinstance(ctx.expr(1), PyxellParser.ExprCmpContext):
+                break
+            ctx = ctx.expr(1)
+        exprs.append(ctx.expr(1))
+
+        values = [self.visit(exprs[0])]
+
+        bbstart = self.builder.basic_block
+        bbend = ll.Block(self.builder.function)
+        self.builder.position_at_end(bbend)
+        phi = self.builder.phi(tBool)
+        self.builder.position_at_end(bbstart)
+
+        def emitCmp(op, left, right):
+            if left.type == tBool:
+                return self.builder.icmp_unsigned(op, left, right)
+            else:
+                return self.builder.icmp_signed(op, left, right)
+
+        def emitIf(index):
+            values.append(self.visit(exprs[index+1]))
+            cond = emitCmp(ops[index], values[index], values[index+1])
+
+            if len(exprs) == index+2:
+                phi.add_incoming(cond, self.builder.basic_block)
+                self.builder.branch(bbend)
+                return
+
+            phi.add_incoming(vFalse, self.builder.basic_block)
+            bbif = self.builder.function.append_basic_block()
+            self.builder.cbranch(cond, bbif, bbend)
+
+            with self.builder._branch_helper(bbif, bbend):
+                emitIf(index+1)
+
+        emitIf(0)
+
+        self.builder.function.blocks.append(bbend)
+        self.builder.position_at_end(bbend)
+
+        return phi
 
     def visitExprLogicalOp(self, ctx):
         op = ctx.op.text
 
+        cond1 = self.visit(ctx.expr(0))
         bbstart = self.builder.basic_block
         bbif = self.builder.function.append_basic_block()
         bbend = ll.Block(self.builder.function)
 
-        cond1 = self.visit(ctx.expr(0))
         if op == 'and':
             self.builder.cbranch(cond1, bbif, bbend)
         elif op == 'or':

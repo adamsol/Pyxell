@@ -1,0 +1,7 @@
+
+func f() Int def
+    print 0
+    return 0
+
+print f() <= f() == f()
+print f() < f() == f()
