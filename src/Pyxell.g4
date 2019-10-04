@@ -17,6 +17,8 @@ simple_stmt
 
 compound_stmt
   : 'if' expr block ('elif' expr block)* ('else' block)? # StmtIf
+  | 'while' expr block # StmtWhile
+  | 'until' expr block # StmtUntil
   ;
 
 block

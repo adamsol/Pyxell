@@ -39,6 +39,16 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#StmtWhile.
+    def visitStmtWhile(self, ctx:PyxellParser.StmtWhileContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#StmtUntil.
+    def visitStmtUntil(self, ctx:PyxellParser.StmtUntilContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#block.
     def visitBlock(self, ctx:PyxellParser.BlockContext):
         return self.visitChildren(ctx)

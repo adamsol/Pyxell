@@ -97,8 +97,8 @@ class PyxellCompiler(PyxellVisitor):
                 return
 
             cond = self.visit(exprs[index])
-            bbif = self.builder.function.append_basic_block()
-            bbelse = self.builder.function.append_basic_block()
+            bbif = self.builder.append_basic_block()
+            bbelse = self.builder.append_basic_block()
             self.builder.cbranch(cond, bbif, bbelse)
 
             with self.builder._branch_helper(bbif, bbend):
@@ -109,6 +109,38 @@ class PyxellCompiler(PyxellVisitor):
                 emitIfElse(index+1)
 
         emitIfElse(0)
+
+        self.builder.function.blocks.append(bbend)
+        self.builder.position_at_end(bbend)
+
+    def visitStmtWhile(self, ctx):
+        bbstart = self.builder.append_basic_block()
+        self.builder.branch(bbstart)
+        self.builder.position_at_end(bbstart)
+        cond = self.visit(ctx.expr())
+
+        bbwhile = self.builder.append_basic_block()
+        bbend = ll.Block(self.builder.function)
+        self.builder.cbranch(cond, bbwhile, bbend)
+
+        self.builder.position_at_end(bbwhile)
+        with self.local():
+            self.visit(ctx.block())
+        self.builder.branch(bbstart)
+
+        self.builder.function.blocks.append(bbend)
+        self.builder.position_at_end(bbend)
+
+    def visitStmtUntil(self, ctx):
+        bbuntil = self.builder.append_basic_block()
+        self.builder.branch(bbuntil)
+        bbend = ll.Block(self.builder.function)
+
+        self.builder.position_at_end(bbuntil)
+        with self.local():
+            self.visit(ctx.block())
+        cond = self.visit(ctx.expr())
+        self.builder.cbranch(cond, bbend, bbuntil)
 
         self.builder.function.blocks.append(bbend)
         self.builder.position_at_end(bbend)
