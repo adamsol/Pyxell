@@ -13,6 +13,7 @@ simple_stmt
   : 'skip' # StmtSkip
   | 'print' expr # StmtPrint
   | (ID '=')* expr # StmtAssg
+  | ID op=('*' | '/' | '%' | '+' | '-') '=' expr # StmtAssgExpr
   ;
 
 compound_stmt

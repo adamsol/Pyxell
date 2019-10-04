@@ -34,6 +34,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#StmtAssgExpr.
+    def visitStmtAssgExpr(self, ctx:PyxellParser.StmtAssgExprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#StmtIf.
     def visitStmtIf(self, ctx:PyxellParser.StmtIfContext):
         return self.visitChildren(ctx)

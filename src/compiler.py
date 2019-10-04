@@ -59,6 +59,16 @@ class PyxellCompiler(PyxellVisitor):
 
         self.builder.store(value, var)
 
+    def binop(self, op, left, right):
+        instruction = {
+            '*': self.builder.mul,
+            '/': self.builder.sdiv,
+            '%': self.builder.srem,
+            '+': self.builder.add,
+            '-': self.builder.sub,
+        }[op]
+        return instruction(left, right)
+
 
     ### Program ###
 
@@ -82,6 +92,11 @@ class PyxellCompiler(PyxellVisitor):
         value = self.visit(ctx.expr())
         for id in ctx.ID():
             self.assign(id, value)
+
+    def visitStmtAssgExpr(self, ctx):
+        var = self.get(ctx.ID())
+        value = self.binop(ctx.op.text, self.builder.load(var), self.visit(ctx.expr()))
+        self.builder.store(value, var)
 
     def visitStmtIf(self, ctx):
         exprs = ctx.expr()
@@ -163,15 +178,7 @@ class PyxellCompiler(PyxellVisitor):
             return self.builder.not_(value)
 
     def visitExprBinaryOp(self, ctx):
-        instruction = {
-            '*': self.builder.mul,
-            '/': self.builder.sdiv,
-            '%': self.builder.srem,
-            '+': self.builder.add,
-            '-': self.builder.sub,
-        }[ctx.op.text]
-
-        return instruction(self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
+        return self.binop(ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
 
     def visitExprCmp(self, ctx):
         ops = []
