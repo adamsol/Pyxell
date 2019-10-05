@@ -47,11 +47,11 @@ for i, path in enumerate(tests, 1):
                 error_message = e.output.decode()
                 with open(f'{path.replace(".px", ".err")}', 'r') as errfile:
                     error_expected = errfile.read()
-                    if e.output.decode().endswith(error_expected):
+                    if e.output.decode().strip().endswith(error_expected):
                         print(f"{G}{error_message}{E}")
                         ok += 1
                     else:
-                        print(f"{R}{error_message}\n---\n> {error_expected}{E}")
+                        print(f"{R}{error_message}---\n> {error_expected}{E}")
             else:
                 print(f"{R}Compiler returned error code {e.returncode}.\n{e.output.decode()}{E}")
             continue

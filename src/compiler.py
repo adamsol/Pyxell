@@ -1,30 +1,11 @@
 
 from contextlib import contextmanager
 
-import llvmlite.ir as ll
-
 from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
+from .errors import PyxellError as err
+from .types import *
 
-
-### Types ###
-
-tVoid = ll.VoidType()
-tInt = ll.IntType(64)
-tBool = ll.IntType(1)
-tChar = ll.IntType(8)
-
-def tFunc(args, ret=tVoid):
-    return ll.FunctionType(ret, args)
-
-
-### Constants ###
-
-vFalse = ll.Constant(tBool, 0)
-vTrue = ll.Constant(tBool, 1)
-
-
-### Visitor ###
 
 class PyxellCompiler(PyxellVisitor):
 
@@ -46,20 +27,37 @@ class PyxellCompiler(PyxellVisitor):
         yield
         self.env = tmp
 
-    def get(self, id):
-        return self.env[str(id)]
+    def throw(self, ctx, msg):
+        raise err(msg, ctx.start.line, ctx.start.column+1)
 
-    def assign(self, id, value):
+    def get(self, ctx, id):
+        try:
+            return self.env[str(id)]
+        except KeyError:
+            self.throw(ctx, err.UndeclaredIdentifier(id))
+
+    def cast(self, ctx, value, type):
+        if value.type != type:
+            raise self.throw(ctx, err.IllegalAssignment(value.type, type))
+
+        return value
+
+    def assign(self, ctx, id, value):
         id = str(id)
 
         try:
             var = self.env[id]
         except KeyError:
             var = self.env[id] = self.builder.alloca(value.type)
+        else:
+            value = self.cast(ctx, value, var.type.pointee)
 
         self.builder.store(value, var)
 
-    def binop(self, op, left, right):
+    def binop(self, ctx, op, left, right):
+        if not left.type == right.type == tInt:
+            self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
         instruction = {
             '*': self.builder.mul,
             '/': self.builder.sdiv,
@@ -68,6 +66,15 @@ class PyxellCompiler(PyxellVisitor):
             '-': self.builder.sub,
         }[op]
         return instruction(left, right)
+
+    def cmp(self, ctx, op, left, right):
+        if left.type != right.type:
+            self.throw(ctx, err.NotComparable(left.type, right.type))
+
+        if left.type == tBool:
+            return self.builder.icmp_unsigned(op, left, right)
+        else:
+            return self.builder.icmp_signed(op, left, right)
 
 
     ### Program ###
@@ -91,11 +98,11 @@ class PyxellCompiler(PyxellVisitor):
     def visitStmtAssg(self, ctx):
         value = self.visit(ctx.expr())
         for id in ctx.ID():
-            self.assign(id, value)
+            self.assign(ctx, id, value)
 
     def visitStmtAssgExpr(self, ctx):
-        var = self.get(ctx.ID())
-        value = self.binop(ctx.op.text, self.builder.load(var), self.visit(ctx.expr()))
+        var = self.get(ctx, ctx.ID())
+        value = self.binop(ctx, ctx.op.text, self.builder.load(var), self.visit(ctx.expr()))
         self.builder.store(value, var)
 
     def visitStmtIf(self, ctx):
@@ -111,7 +118,11 @@ class PyxellCompiler(PyxellVisitor):
                         self.visit(blocks[index])
                 return
 
-            cond = self.visit(exprs[index])
+            expr = exprs[index]
+            cond = self.visit(expr)
+            if cond.type != tBool:
+                self.throw(expr, err.IllegalAssignment(cond.type, tBool))
+
             bbif = self.builder.append_basic_block()
             bbelse = self.builder.append_basic_block()
             self.builder.cbranch(cond, bbif, bbelse)
@@ -132,7 +143,11 @@ class PyxellCompiler(PyxellVisitor):
         bbstart = self.builder.append_basic_block()
         self.builder.branch(bbstart)
         self.builder.position_at_end(bbstart)
-        cond = self.visit(ctx.expr())
+
+        expr = ctx.expr()
+        cond = self.visit(expr)
+        if cond.type != tBool:
+            self.throw(expr, err.IllegalAssignment(cond.type, tBool))
 
         bbwhile = self.builder.append_basic_block()
         bbend = ll.Block(self.builder.function)
@@ -154,7 +169,12 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.position_at_end(bbuntil)
         with self.local():
             self.visit(ctx.block())
-        cond = self.visit(ctx.expr())
+
+        expr = ctx.expr()
+        cond = self.visit(expr)
+        if cond.type != tBool:
+            self.throw(expr, err.IllegalAssignment(cond.type, tBool))
+
         self.builder.cbranch(cond, bbend, bbuntil)
 
         self.builder.function.blocks.append(bbend)
@@ -171,14 +191,20 @@ class PyxellCompiler(PyxellVisitor):
         op = ctx.op.text
 
         if op == '+':
+            if value.type != tInt:
+                self.throw(ctx, err.NoUnaryOperator(op, value.type))
             return value
         elif op == '-':
+            if value.type != tInt:
+                self.throw(ctx, err.NoUnaryOperator(op, value.type))
             return self.builder.neg(value)
         elif op == 'not':
+            if value.type != tBool:
+                self.throw(ctx, err.NoUnaryOperator(op, value.type))
             return self.builder.not_(value)
 
     def visitExprBinaryOp(self, ctx):
-        return self.binop(ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
+        return self.binop(ctx, ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
 
     def visitExprCmp(self, ctx):
         ops = []
@@ -200,15 +226,9 @@ class PyxellCompiler(PyxellVisitor):
         phi = self.builder.phi(tBool)
         self.builder.position_at_end(bbstart)
 
-        def emitCmp(op, left, right):
-            if left.type == tBool:
-                return self.builder.icmp_unsigned(op, left, right)
-            else:
-                return self.builder.icmp_signed(op, left, right)
-
         def emitIf(index):
             values.append(self.visit(exprs[index+1]))
-            cond = emitCmp(ops[index], values[index], values[index+1])
+            cond = self.cmp(ctx, ops[index], values[index], values[index+1])
 
             if len(exprs) == index+2:
                 phi.add_incoming(cond, self.builder.basic_block)
@@ -251,6 +271,8 @@ class PyxellCompiler(PyxellVisitor):
 
         with self.builder._branch_helper(bbif, bbend):
             cond2 = self.visit(ctx.expr(1))
+            if not cond1.type == cond2.type == tBool:
+                self.throw(ctx, err.NoBinaryOperator(op, cond1.type, cond2.type))
             phi.add_incoming(cond2, self.builder.basic_block)
 
         self.builder.function.blocks.append(bbend)
@@ -268,4 +290,4 @@ class PyxellCompiler(PyxellVisitor):
         return ll.Constant(tBool, int(ctx.getText() == 'true'))
 
     def visitAtomId(self, ctx):
-        return self.builder.load(self.get(ctx.ID()))
+        return self.builder.load(self.get(ctx, ctx.ID()))

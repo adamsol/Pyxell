@@ -10,6 +10,7 @@ from antlr4 import *
 from .antlr.PyxellLexer import PyxellLexer
 from .antlr.PyxellParser import PyxellParser
 from .compiler import PyxellCompiler
+from .errors import PyxellErrorListener, PyxellError
 from .indentation import transform_indented_code
 
 
@@ -23,23 +24,34 @@ filepath = Path(args.filepath)
 filename, ext = os.path.splitext(filepath)
 abspath = Path(__file__).parents[1]
 
-# Read the code and transform indents.
-pyxell_code = filepath.read_text()
-pyxell_code = transform_indented_code(pyxell_code)
+try:
+    # Read the code and transform indents.
+    pyxell_code = filepath.read_text()
+    pyxell_code = transform_indented_code(pyxell_code)
 
-# Parse the program.
-input_stream = InputStream(pyxell_code)
-lexer = PyxellLexer(input_stream)
-stream = CommonTokenStream(lexer)
-parser = PyxellParser(stream)
-tree = parser.program()
+    # Parse the program.
+    input_stream = InputStream(pyxell_code)
+    lexer = PyxellLexer(input_stream)
+    stream = CommonTokenStream(lexer)
+    parser = PyxellParser(stream)
+    parser.removeErrorListeners()
+    parser.addErrorListener(PyxellErrorListener())
+    tree = parser.program()
 
-# Generate LLVM code.
-compiler = PyxellCompiler()
-compiler.visit(tree)
-llvm_code = str(compiler.module)
+    # Generate LLVM code.
+    compiler = PyxellCompiler()
+    compiler.visit(tree)
+    llvm_code = str(compiler.module)
+
+except FileNotFoundError:
+    print("File not found.")
+    exit(1)
+
+except PyxellError as error:
+    print(str(error))
+    exit(1)
 
 # Create an executable.
 with open(f'{filename}.ll', 'w') as file:
     file.write(llvm_code)
-subprocess.run(['clang', f'{filename}.ll', f'{abspath / "lib/io.ll"}', f'{abspath / "lib/base.ll"}', '-o', f'{filename}.exe', '-O2'] + args.clangargs)
+subprocess.check_output(['clang', f'{filename}.ll', f'{abspath / "lib/io.ll"}', f'{abspath / "lib/base.ll"}', '-o', f'{filename}.exe', '-O2'] + args.clangargs)

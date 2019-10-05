@@ -51,4 +51,5 @@ fragment DIGIT : [0-9] ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | [_'] ;
 
-WS: [ \n\r\t]+ -> skip;
+WS : [ \n\r\t]+ -> skip ;
+ERR : . ;

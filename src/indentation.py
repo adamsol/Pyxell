@@ -1,7 +1,7 @@
 
 import re
 
-from .errors import IndentationError
+from .errors import PyxellError
 
 
 def transform_indented_code(code):
@@ -24,7 +24,7 @@ def transform_indented_code(code):
         if new_block:
             if not (indent.startswith(prev_indent) and len(indent) > len(indents[-1])):
                 # New block must be indented more than the previous one.
-                raise IndentationError(i+1)
+                raise PyxellError(PyxellError.InvalidIndentation(), i+1)
             indents.append(indent)
             new_block = False
         else:
@@ -35,7 +35,7 @@ def transform_indented_code(code):
                     lines[i-1] += '}'
                     indents.pop()
                 else:
-                    raise IndentationError(i+1)
+                    raise PyxellError(PyxellError.InvalidIndentation(), i+1)
 
         if re.search(r'\W(do|def)\s*$', line):
             lines[i] += '{'
