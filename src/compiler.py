@@ -56,7 +56,23 @@ class PyxellCompiler(PyxellVisitor):
 
         self.builder.store(value, var)
 
-    def binop(self, ctx, op, left, right):
+    def unaryop(self, ctx, op, value):
+        if op in ('+', '-', '~'):
+            type = tInt
+        elif op == 'not':
+            type = tBool
+
+        if value.type != type:
+            self.throw(ctx, err.NoUnaryOperator(op, value.type))
+
+        if op == '+':
+            return value
+        elif op == '-':
+            return self.builder.neg(value)
+        elif op in ('~', 'not'):
+            return self.builder.not_(value)
+
+    def binaryop(self, ctx, op, left, right):
         if not left.type == right.type == tInt:
             self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -66,6 +82,11 @@ class PyxellCompiler(PyxellVisitor):
             '%': self.builder.srem,
             '+': self.builder.add,
             '-': self.builder.sub,
+            '<<': self.builder.shl,
+            '>>': self.builder.ashr,
+            '&': self.builder.and_,
+            '$': self.builder.xor,
+            '|': self.builder.or_,
         }[op]
         return instruction(left, right)
 
@@ -141,7 +162,7 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitStmtAssgExpr(self, ctx):
         var = self.get(ctx, ctx.ID())
-        value = self.binop(ctx, ctx.op.text, self.builder.load(var), self.visit(ctx.expr()))
+        value = self.binaryop(ctx, ctx.op.text, self.builder.load(var), self.visit(ctx.expr()))
         self.builder.store(value, var)
 
     def visitStmtIf(self, ctx):
@@ -242,24 +263,10 @@ class PyxellCompiler(PyxellVisitor):
         self.throw(ctx, err.NoAttribute(value.type, id))
 
     def visitExprUnaryOp(self, ctx):
-        value = self.visit(ctx.expr())
-        op = ctx.op.text
-
-        if op == '+':
-            if value.type != tInt:
-                self.throw(ctx, err.NoUnaryOperator(op, value.type))
-            return value
-        elif op == '-':
-            if value.type != tInt:
-                self.throw(ctx, err.NoUnaryOperator(op, value.type))
-            return self.builder.neg(value)
-        elif op == 'not':
-            if value.type != tBool:
-                self.throw(ctx, err.NoUnaryOperator(op, value.type))
-            return self.builder.not_(value)
+        return self.unaryop(ctx, ctx.op.text, self.visit(ctx.expr()))
 
     def visitExprBinaryOp(self, ctx):
-        return self.binop(ctx, ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
+        return self.binaryop(ctx, ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
 
     def visitExprCmp(self, ctx):
         exprs = []

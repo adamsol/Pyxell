@@ -13,7 +13,7 @@ simple_stmt
   : 'skip' # StmtSkip
   | 'print' expr? # StmtPrint
   | (lvalue '=')* expr # StmtAssg
-  | ID op=('*' | '/' | '%' | '+' | '-') '=' expr # StmtAssgExpr
+  | ID op=('*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
   ;
 
 lvalue
@@ -34,9 +34,13 @@ expr
   : atom # ExprAtom
   | '(' expr ')' # ExprParentheses
   | expr '.' ID # ExprAttr
-  | op=('+' | '-') expr # ExprUnaryOp
+  | op=('+' | '-' | '~') expr # ExprUnaryOp
   | expr op=('*' | '/' | '%') expr # ExprBinaryOp
   | expr op=('+' | '-') expr # ExprBinaryOp
+  | expr op=('<<' | '>>') expr # ExprBinaryOp
+  | expr op='&' expr # ExprBinaryOp
+  | expr op='$' expr # ExprBinaryOp
+  | expr op='|' expr # ExprBinaryOp
   | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp
