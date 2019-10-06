@@ -14,6 +14,7 @@ class PyxellCompiler(PyxellVisitor):
         self.builder = ll.IRBuilder()
         self.module = ll.Module()
         self.builtins = {
+            'malloc': ll.Function(self.module, tFunc([tInt], tPtr()), 'malloc'),
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
             'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
@@ -72,10 +73,26 @@ class PyxellCompiler(PyxellVisitor):
         if left.type != right.type:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
-        if left.type == tBool:
+        if left.type == tInt:
+            return self.builder.icmp_signed(op, left, right)
+        elif left.type == tBool:
             return self.builder.icmp_unsigned(op, left, right)
         else:
-            return self.builder.icmp_signed(op, left, right)
+            self.throw(ctx, err.NotComparable(left.type, right.type))
+
+    def print(self, ctx, value):
+        if value.type == tInt:
+            self.builder.call(self.builtins['writeInt'], [value])
+        elif value.type == tBool:
+            self.builder.call(self.builtins['writeBool'], [value])
+        elif value.type.isTuple():
+            for i in range(len(value.type.elements)):
+                if i > 0:
+                    self.builder.call(self.builtins['putchar'], [vChar(' ')])
+                elem = self.builder.extract_value(value, [i])
+                self.print(ctx, elem)
+        else:
+            self.throw(ctx, err.NotPrintable(value.type))
 
 
     ### Program ###
@@ -95,19 +112,32 @@ class PyxellCompiler(PyxellVisitor):
         expr = ctx.expr()
         if expr:
             value = self.visit(expr)
-            if value.type == tInt:
-                self.builder.call(self.builtins['writeInt'], [value])
-            elif value.type == tBool:
-                self.builder.call(self.builtins['writeBool'], [value])
-            else:
-                self.throw(expr, err.NotPrintable(value.type))
+            self.print(expr, value)
 
-        self.builder.call(self.builtins['putchar'], [ll.Constant(tChar, ord('\n'))])
+        self.builder.call(self.builtins['putchar'], [vChar('\n')])
 
     def visitStmtAssg(self, ctx):
         value = self.visit(ctx.expr())
-        for id in ctx.ID():
-            self.assign(ctx, id, value)
+
+        for lvalue in ctx.lvalue():
+            ids = self.visit(lvalue)
+            len1 = len(ids)
+
+            if value.type.isTuple():
+                len2 = len(value.type.elements)
+                if len1 > 1 and len1 != len2:
+                    self.throw(ctx, err.CannotUnpack(value.type, len1))
+            elif len1 > 1:
+                self.throw(ctx, err.CannotUnpack(value.type, len1))
+
+            if len1 == 1:
+                self.assign(ctx, ids[0], value)
+            else:
+                for i, id in enumerate(ids):
+                    self.assign(ctx, id, self.builder.extract_value(value, [i]))
+
+    def visitLvalue(self, ctx):
+        return ctx.ID()
 
     def visitStmtAssgExpr(self, ctx):
         var = self.get(ctx, ctx.ID())
@@ -195,6 +225,22 @@ class PyxellCompiler(PyxellVisitor):
     def visitExprParentheses(self, ctx):
         return self.visit(ctx.expr())
 
+    def visitExprAttr(self, ctx):
+        value = self.visit(ctx.expr())
+        id = str(ctx.ID())
+
+        if value.type.isTuple():
+            if len(id) > 1:
+                self.throw(ctx, err.NoAttribute(value.type, id))
+
+            index = ord(id) - ord('a')
+            if not 0 <= index < len(value.type.elements):
+                self.throw(ctx, err.NoAttribute(value.type, id))
+
+            return self.builder.extract_value(value, [index])
+
+        self.throw(ctx, err.NoAttribute(value.type, id))
+
     def visitExprUnaryOp(self, ctx):
         value = self.visit(ctx.expr())
         op = ctx.op.text
@@ -216,9 +262,8 @@ class PyxellCompiler(PyxellVisitor):
         return self.binop(ctx, ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
 
     def visitExprCmp(self, ctx):
-        ops = []
         exprs = []
-
+        ops = []
         while True:
             exprs.append(ctx.expr(0))
             ops.append(ctx.op.text)
@@ -289,14 +334,39 @@ class PyxellCompiler(PyxellVisitor):
 
         return phi
 
+    def visitExprTuple(self, ctx):
+        exprs = []
+        while True:
+            exprs.append(ctx.expr(0))
+            if not isinstance(ctx.expr(1), PyxellParser.ExprTupleContext):
+                break
+            ctx = ctx.expr(1)
+        exprs.append(ctx.expr(1))
+
+        values = [self.visit(expr) for expr in exprs]
+        type = tTuple(value.type for value in values)
+
+        size = self.builder.gep(vNull(type), [vIndex(1)])
+        size = self.builder.ptrtoint(size, tInt)
+
+        tuple = self.builder.call(self.builtins['malloc'], [size])
+        tuple = self.builder.bitcast(tuple, tPtr(type))
+
+        for i, value in enumerate(values):
+            ptr = self.builder.gep(tuple, [vIndex(0), vIndex(i)])
+            self.builder.store(value, ptr)
+
+        return self.builder.load(tuple)
+
+
 
     ### Atoms ###
 
     def visitAtomInt(self, ctx):
-        return ll.Constant(tInt, ctx.INT())
+        return vInt(ctx.INT())
 
     def visitAtomBool(self, ctx):
-        return ll.Constant(tBool, int(ctx.getText() == 'true'))
+        return vBool(ctx.getText() == 'true')
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx, ctx.ID()))

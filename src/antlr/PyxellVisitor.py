@@ -39,6 +39,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#lvalue.
+    def visitLvalue(self, ctx:PyxellParser.LvalueContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#StmtIf.
     def visitStmtIf(self, ctx:PyxellParser.StmtIfContext):
         return self.visitChildren(ctx)
@@ -69,8 +74,18 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprTuple.
+    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprAtom.
     def visitExprAtom(self, ctx:PyxellParser.ExprAtomContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprAttr.
+    def visitExprAttr(self, ctx:PyxellParser.ExprAttrContext):
         return self.visitChildren(ctx)
 
 

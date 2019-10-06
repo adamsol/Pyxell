@@ -12,8 +12,12 @@ stmt
 simple_stmt
   : 'skip' # StmtSkip
   | 'print' expr? # StmtPrint
-  | (ID '=')* expr # StmtAssg
+  | (lvalue '=')* expr # StmtAssg
   | ID op=('*' | '/' | '%' | '+' | '-') '=' expr # StmtAssgExpr
+  ;
+
+lvalue
+  : ID (',' ID)*
   ;
 
 compound_stmt
@@ -29,6 +33,7 @@ block
 expr
   : atom # ExprAtom
   | '(' expr ')' # ExprParentheses
+  | expr '.' ID # ExprAttr
   | op=('+' | '-') expr # ExprUnaryOp
   | expr op=('*' | '/' | '%') expr # ExprBinaryOp
   | expr op=('+' | '-') expr # ExprBinaryOp
@@ -36,6 +41,7 @@ expr
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp
   | <assoc=right> expr op='or' expr # ExprLogicalOp
+  | <assoc=right> expr ',' expr # ExprTuple
   ;
 
 atom
@@ -48,6 +54,7 @@ INT : DIGIT+ ;
 ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;
+fragment LETTER : [a-z] ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | [_'] ;
 
