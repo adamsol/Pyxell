@@ -18,6 +18,7 @@ class PyxellCompiler(PyxellVisitor):
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
             'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
+            'Int_pow': ll.Function(self.module, tFunc([tInt, tInt], tInt), 'func.Int_pow'),
         }
 
 
@@ -76,19 +77,22 @@ class PyxellCompiler(PyxellVisitor):
         if not left.type == right.type == tInt:
             self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
-        instruction = {
-            '*': self.builder.mul,
-            '/': self.builder.sdiv,
-            '%': self.builder.srem,
-            '+': self.builder.add,
-            '-': self.builder.sub,
-            '<<': self.builder.shl,
-            '>>': self.builder.ashr,
-            '&': self.builder.and_,
-            '$': self.builder.xor,
-            '|': self.builder.or_,
-        }[op]
-        return instruction(left, right)
+        if op == '^':
+            return self.builder.call(self.builtins['Int_pow'], [left, right])
+        else:
+            instruction = {
+                '*': self.builder.mul,
+                '/': self.builder.sdiv,
+                '%': self.builder.srem,
+                '+': self.builder.add,
+                '-': self.builder.sub,
+                '<<': self.builder.shl,
+                '>>': self.builder.ashr,
+                '&': self.builder.and_,
+                '$': self.builder.xor,
+                '|': self.builder.or_,
+            }[op]
+            return instruction(left, right)
 
     def cmp(self, ctx, op, left, right):
         if left.type != right.type:
