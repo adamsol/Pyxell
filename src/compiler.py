@@ -79,11 +79,26 @@ class PyxellCompiler(PyxellVisitor):
 
         if op == '^':
             return self.builder.call(self.builtins['Int_pow'], [left, right])
+        elif op == '/':
+            v1 = self.builder.sdiv(left, right)
+            v2 = self.builder.sub(v1, vInt(1))
+            v3 = self.builder.xor(left, right)
+            v4 = self.builder.icmp_signed('<', v3, vInt(0))
+            v5 = self.builder.select(v4, v2, v1)
+            v6 = self.builder.mul(v1, right)
+            v7 = self.builder.icmp_signed('!=', v6, left)
+            return self.builder.select(v7, v5, v1)
+        elif op == '%':
+            v1 = self.builder.srem(left, right)
+            v2 = self.builder.add(v1, right)
+            v3 = self.builder.xor(left, right)
+            v4 = self.builder.icmp_signed('<', v3, vInt(0))
+            v5 = self.builder.select(v4, v2, v1)
+            v6 = self.builder.icmp_signed('==', v1, vInt(0))
+            return self.builder.select(v6, v1, v5)
         else:
             instruction = {
                 '*': self.builder.mul,
-                '/': self.builder.sdiv,
-                '%': self.builder.srem,
                 '+': self.builder.add,
                 '-': self.builder.sub,
                 '<<': self.builder.shl,
