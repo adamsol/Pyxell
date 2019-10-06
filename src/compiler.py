@@ -15,6 +15,7 @@ class PyxellCompiler(PyxellVisitor):
         self.module = ll.Module()
         self.builtins = {
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
+            'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
         }
 
@@ -91,8 +92,16 @@ class PyxellCompiler(PyxellVisitor):
     ### Statements ###
 
     def visitStmtPrint(self, ctx):
-        value = self.visit(ctx.expr())
-        self.builder.call(self.builtins['writeInt'], [value])
+        expr = ctx.expr()
+        if expr:
+            value = self.visit(expr)
+            if value.type == tInt:
+                self.builder.call(self.builtins['writeInt'], [value])
+            elif value.type == tBool:
+                self.builder.call(self.builtins['writeBool'], [value])
+            else:
+                self.throw(expr, err.NotPrintable(value.type))
+
         self.builder.call(self.builtins['putchar'], [ll.Constant(tChar, ord('\n'))])
 
     def visitStmtAssg(self, ctx):

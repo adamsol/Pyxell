@@ -11,7 +11,7 @@ stmt
 
 simple_stmt
   : 'skip' # StmtSkip
-  | 'print' expr # StmtPrint
+  | 'print' expr? # StmtPrint
   | (ID '=')* expr # StmtAssg
   | ID op=('*' | '/' | '%' | '+' | '-') '=' expr # StmtAssgExpr
   ;
