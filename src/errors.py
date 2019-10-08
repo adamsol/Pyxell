@@ -21,6 +21,7 @@ class PyxellError(Exception):
     NotIndexable = lambda t: f"Type `{t.show()}` is not indexable"
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
+    UnknownType = lambda: f"Cannot settle type of the expression"
 
     def __init__(self, msg, line, column=None):
         text = f"Line {line}"

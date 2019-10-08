@@ -44,9 +44,15 @@ class PyxellCompiler(PyxellVisitor):
 
     def cast(self, ctx, value, type):
         if value.type != type:
-            raise self.throw(ctx, err.IllegalAssignment(value.type, type))
+            self.throw(ctx, err.IllegalAssignment(value.type, type))
 
         return value
+
+    def unify(self, ctx, *values):
+        if not all(values[0].type == value.type for value in values):
+            self.throw(ctx, err.UnknownType())
+
+        return values
 
     def assign(self, ctx, id, value):
         id = str(id)
@@ -211,9 +217,7 @@ class PyxellCompiler(PyxellVisitor):
                 return
 
             expr = exprs[index]
-            cond = self.visit(expr)
-            if cond.type != tBool:
-                self.throw(expr, err.IllegalAssignment(cond.type, tBool))
+            cond = self.cast(expr, self.visit(expr), tBool)
 
             bbif = self.builder.append_basic_block()
             bbelse = self.builder.append_basic_block()
@@ -237,9 +241,7 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.position_at_end(bbstart)
 
         expr = ctx.expr()
-        cond = self.visit(expr)
-        if cond.type != tBool:
-            self.throw(expr, err.IllegalAssignment(cond.type, tBool))
+        cond = self.cast(expr, self.visit(expr), tBool)
 
         bbwhile = self.builder.append_basic_block()
         bbend = ll.Block(self.builder.function)
@@ -263,9 +265,7 @@ class PyxellCompiler(PyxellVisitor):
             self.visit(ctx.block())
 
         expr = ctx.expr()
-        cond = self.visit(expr)
-        if cond.type != tBool:
-            self.throw(expr, err.IllegalAssignment(cond.type, tBool))
+        cond = self.cast(expr, self.visit(expr), tBool)
 
         self.builder.cbranch(cond, bbend, bbuntil)
 
@@ -280,11 +280,7 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitExprIndex(self, ctx):
         exprs = ctx.expr()
-
-        index = self.visit(exprs[1])
-        if index.type != tInt:
-            self.throw(exprs[1], err.IllegalAssignment(index.type, tInt))
-
+        index = self.cast(exprs[1], self.visit(exprs[1]), tInt)
         value = self.visit(exprs[0])
 
         if value.type.isString():
@@ -392,6 +388,15 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.position_at_end(bbend)
 
         return phi
+
+    def visitExprCond(self, ctx):
+        exprs = ctx.expr()
+        cond, *values = [self.visit(expr) for expr in exprs]
+
+        cond = self.cast(exprs[0], cond, tBool)
+        values = self.unify(ctx, *values)
+
+        return self.builder.select(cond, *values)
 
     def visitExprTuple(self, ctx):
         exprs = []

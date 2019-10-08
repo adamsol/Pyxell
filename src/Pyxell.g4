@@ -47,6 +47,7 @@ expr
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp
   | <assoc=right> expr op='or' expr # ExprLogicalOp
+  | <assoc=right> expr '?' expr ':' expr # ExprCond
   | <assoc=right> expr ',' expr # ExprTuple
   ;
 

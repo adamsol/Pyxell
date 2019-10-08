@@ -84,6 +84,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprCond.
+    def visitExprCond(self, ctx:PyxellParser.ExprCondContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprAtom.
     def visitExprAtom(self, ctx:PyxellParser.ExprAtomContext):
         return self.visitChildren(ctx)
