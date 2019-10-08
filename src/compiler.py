@@ -1,4 +1,5 @@
 
+import ast
 from contextlib import contextmanager
 
 from .antlr.PyxellParser import PyxellParser
@@ -15,6 +16,7 @@ class PyxellCompiler(PyxellVisitor):
         self.module = ll.Module()
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()), 'malloc'),
+            'write': ll.Function(self.module, tFunc([tString]), 'func.write'),
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
             'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
@@ -125,6 +127,8 @@ class PyxellCompiler(PyxellVisitor):
             self.builder.call(self.builtins['writeInt'], [value])
         elif value.type == tBool:
             self.builder.call(self.builtins['writeBool'], [value])
+        elif value.type.isString():
+            self.builder.call(self.builtins['write'], [value])
         elif value.type.isTuple():
             for i in range(len(value.type.elements)):
                 if i > 0:
@@ -133,6 +137,12 @@ class PyxellCompiler(PyxellVisitor):
                 self.print(ctx, elem)
         else:
             self.throw(ctx, err.NotPrintable(value.type))
+
+    def malloc(self, type):
+        size = self.builder.gep(vNull(type), [vIndex(1)])
+        size = self.builder.ptrtoint(size, tInt)
+        ptr = self.builder.call(self.builtins['malloc'], [size])
+        return self.builder.bitcast(ptr, tPtr(type))
 
 
     ### Program ###
@@ -269,7 +279,13 @@ class PyxellCompiler(PyxellVisitor):
         value = self.visit(ctx.expr())
         id = str(ctx.ID())
 
-        if value.type.isTuple():
+        if value.type.isString():
+            if id != "length":
+                self.throw(ctx, err.NoAttribute(value.type, id))
+
+            return self.builder.extract_value(value, [1])
+
+        elif value.type.isTuple():
             if len(id) > 1:
                 self.throw(ctx, err.NoAttribute(value.type, id))
 
@@ -372,18 +388,13 @@ class PyxellCompiler(PyxellVisitor):
         values = [self.visit(expr) for expr in exprs]
         type = tTuple(value.type for value in values)
 
-        size = self.builder.gep(vNull(type), [vIndex(1)])
-        size = self.builder.ptrtoint(size, tInt)
-
-        tuple = self.builder.call(self.builtins['malloc'], [size])
-        tuple = self.builder.bitcast(tuple, tPtr(type))
+        tuple = self.malloc(type)
 
         for i, value in enumerate(values):
             ptr = self.builder.gep(tuple, [vIndex(0), vIndex(i)])
             self.builder.store(value, ptr)
 
         return self.builder.load(tuple)
-
 
 
     ### Atoms ###
@@ -393,6 +404,23 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitAtomBool(self, ctx):
         return vBool(ctx.getText() == 'true')
+
+    def visitAtomString(self, ctx):
+        lit = ast.literal_eval(str(ctx.STRING()))
+        value = ll.Constant(ll.ArrayType(tChar, len(lit)), [vChar(c) for c in lit])
+
+        string = self.malloc(tString)
+
+        pointer = self.builder.gep(string, [vIndex(0), vIndex(0)])
+        array = ll.GlobalVariable(self.module, value.type, self.module.get_unique_name('str'))
+        array.global_constant = True
+        array.initializer = value
+        self.builder.store(self.builder.gep(array, [vIndex(0), vIndex(0)]), pointer)
+
+        length = self.builder.gep(string, [vIndex(0), vIndex(1)])
+        self.builder.store(vInt(value.type.count), length)
+
+        return self.builder.load(string)
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx, ctx.ID()))

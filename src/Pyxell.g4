@@ -52,10 +52,12 @@ expr
 atom
   : INT # AtomInt
   | ('true' | 'false') # AtomBool
+  | STRING # AtomString
   | ID # AtomId
   ;
 
 INT : DIGIT+ ;
+STRING : '"' (~[\\"] | ('\\' ["\\nt]))* '"' ;
 ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;

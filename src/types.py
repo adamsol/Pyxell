@@ -7,22 +7,29 @@ tInt = ll.IntType(64)
 tBool = ll.IntType(1)
 tChar = ll.IntType(8)
 
+def tPtr(type=tChar):
+    return type.as_pointer()
+
+tString = ll.LiteralStructType([tPtr(), tInt])
+tString.kind = 'string'
+
+def isString(type):
+    return getattr(type, 'kind', None) == 'string'
+
+ll.Type.isString = isString
+
 def tTuple(elements):
     type = ll.LiteralStructType(elements)
     type.kind = 'tuple'
     return type
 
-def tFunc(args, ret=tVoid):
-    return ll.FunctionType(ret, args)
-
-def tPtr(type=tChar):
-    return type.as_pointer()
-
-
 def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
 
 ll.Type.isTuple = isTuple
+
+def tFunc(args, ret=tVoid):
+    return ll.FunctionType(ret, args)
 
 
 def showType(type):
@@ -34,6 +41,8 @@ def showType(type):
         return 'Bool'
     if type == tChar:
         return 'Char'
+    if type.isString():
+        return 'String'
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     return str(type)
