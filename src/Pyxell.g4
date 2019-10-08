@@ -33,6 +33,7 @@ block
 expr
   : atom # ExprAtom
   | '(' expr ')' # ExprParentheses
+  | expr '[' expr ']' # ExprIndex
   | expr '.' ID # ExprAttr
   | <assoc=right> expr op='^' expr # ExprBinaryOp
   | op=('+' | '-' | '~') expr # ExprUnaryOp
@@ -52,16 +53,17 @@ expr
 atom
   : INT # AtomInt
   | ('true' | 'false') # AtomBool
+  | CHAR # AtomChar
   | STRING # AtomString
   | ID # AtomId
   ;
 
 INT : DIGIT+ ;
+CHAR : '\'' (~[\\'] | ('\\' ['\\nt]))* '\'' ;
 STRING : '"' (~[\\"] | ('\\' ["\\nt]))* '"' ;
 ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;
-fragment LETTER : [a-z] ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | [_'] ;
 

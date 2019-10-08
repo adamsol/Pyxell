@@ -19,6 +19,7 @@ class PyxellCompiler(PyxellVisitor):
             'write': ll.Function(self.module, tFunc([tString]), 'func.write'),
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
             'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
+            'writeChar': ll.Function(self.module, tFunc([tChar]), 'func.writeChar'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
             'Int_pow': ll.Function(self.module, tFunc([tInt, tInt], tInt), 'func.Int_pow'),
         }
@@ -115,7 +116,7 @@ class PyxellCompiler(PyxellVisitor):
         if left.type != right.type:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
-        if left.type == tInt:
+        if left.type in (tInt, tChar):
             return self.builder.icmp_signed(op, left, right)
         elif left.type == tBool:
             return self.builder.icmp_unsigned(op, left, right)
@@ -127,6 +128,8 @@ class PyxellCompiler(PyxellVisitor):
             self.builder.call(self.builtins['writeInt'], [value])
         elif value.type == tBool:
             self.builder.call(self.builtins['writeBool'], [value])
+        elif value.type == tChar:
+            self.builder.call(self.builtins['writeChar'], [value])
         elif value.type.isString():
             self.builder.call(self.builtins['write'], [value])
         elif value.type.isTuple():
@@ -275,6 +278,20 @@ class PyxellCompiler(PyxellVisitor):
     def visitExprParentheses(self, ctx):
         return self.visit(ctx.expr())
 
+    def visitExprIndex(self, ctx):
+        exprs = ctx.expr()
+
+        index = self.visit(exprs[1])
+        if index.type != tInt:
+            self.throw(exprs[1], err.IllegalAssignment(index.type, tInt))
+
+        value = self.visit(exprs[0])
+
+        if value.type.isString():
+            return self.builder.load(self.builder.gep(self.builder.extract_value(value, [0]), [index]))
+
+        self.throw(ctx, err.NotIndexable(value.type))
+
     def visitExprAttr(self, ctx):
         value = self.visit(ctx.expr())
         id = str(ctx.ID())
@@ -404,6 +421,10 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitAtomBool(self, ctx):
         return vBool(ctx.getText() == 'true')
+
+    def visitAtomChar(self, ctx):
+        lit = ast.literal_eval(str(ctx.CHAR()))
+        return vChar(lit)
 
     def visitAtomString(self, ctx):
         lit = ast.literal_eval(str(ctx.STRING()))

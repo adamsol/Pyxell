@@ -79,6 +79,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprIndex.
+    def visitExprIndex(self, ctx:PyxellParser.ExprIndexContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprAtom.
     def visitExprAtom(self, ctx:PyxellParser.ExprAtomContext):
         return self.visitChildren(ctx)
@@ -111,6 +116,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#AtomBool.
     def visitAtomBool(self, ctx:PyxellParser.AtomBoolContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#AtomChar.
+    def visitAtomChar(self, ctx:PyxellParser.AtomCharContext):
         return self.visitChildren(ctx)
 
 
