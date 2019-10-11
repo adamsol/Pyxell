@@ -19,6 +19,7 @@ class PyxellError(Exception):
     NoUnaryOperator = lambda op, t: f"No unary operator `{op}` defined for `{t.show()}`"
     NotComparable = lambda t1, t2: f"Cannot compare `{t1.show()}` with `{t2.show()}`"
     NotIndexable = lambda t: f"Type `{t.show()}` is not indexable"
+    NotLvalue = lambda: f"Expression cannot be assigned to"
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
     UnknownType = lambda: f"Cannot settle type of the expression"

@@ -42,29 +42,45 @@ class PyxellCompiler(PyxellVisitor):
         except KeyError:
             self.throw(ctx, err.UndeclaredIdentifier(id))
 
+    def index(self, ctx, *exprs):
+        collection, index = [self.visit(expr) for expr in exprs]
+
+        if collection.type.isString() or collection.type.isArray():
+            index = self.cast(exprs[1], index, tInt)
+            return self.builder.gep(self.builder.extract_value(collection, [0]), [index])
+        else:
+            self.throw(ctx, err.NotIndexable(collection.type))
+
     def cast(self, ctx, value, type):
         if value.type != type:
             self.throw(ctx, err.IllegalAssignment(value.type, type))
-
         return value
 
     def unify(self, ctx, *values):
         if not all(values[0].type == value.type for value in values):
             self.throw(ctx, err.UnknownType())
-
         return values
 
-    def assign(self, ctx, id, value):
-        id = str(id)
-
-        try:
-            var = self.env[id]
-        except KeyError:
-            var = self.env[id] = self.builder.alloca(value.type)
+    def lvalue(self, ctx, expr, declare=None):
+        if isinstance(expr, PyxellParser.ExprAtomContext):
+            atom = expr.atom()
+            if not isinstance(atom, PyxellParser.AtomIdContext):
+                self.throw(ctx, err.NotLvalue())
+            id = str(atom.ID())
+            if id not in self.env:
+                if declare is None:
+                    self.throw(ctx, err.UndeclaredIdentifier(id))
+                self.env[id] = self.builder.alloca(declare)
+            return self.env[id]
+        elif isinstance(expr, PyxellParser.ExprIndexContext):
+            return self.index(ctx, *expr.expr())
         else:
-            value = self.cast(ctx, value, var.type.pointee)
+            self.throw(ctx, err.NotLvalue())
 
-        self.builder.store(value, var)
+    def assign(self, ctx, expr, value):
+        ptr = self.lvalue(ctx, expr, declare=value.type)
+        value = self.cast(ctx, value, ptr.type.pointee)
+        self.builder.store(value, ptr)
 
     def unaryop(self, ctx, op, value):
         if op in ('+', '-', '~'):
@@ -179,8 +195,8 @@ class PyxellCompiler(PyxellVisitor):
         value = self.visit(ctx.any_expr())
 
         for lvalue in ctx.lvalue():
-            ids = self.visit(lvalue)
-            len1 = len(ids)
+            exprs = lvalue.expr()
+            len1 = len(exprs)
 
             if value.type.isTuple():
                 len2 = len(value.type.elements)
@@ -190,18 +206,15 @@ class PyxellCompiler(PyxellVisitor):
                 self.throw(ctx, err.CannotUnpack(value.type, len1))
 
             if len1 == 1:
-                self.assign(ctx, ids[0], value)
+                self.assign(lvalue, exprs[0], value)
             else:
-                for i, id in enumerate(ids):
-                    self.assign(ctx, id, self.builder.extract_value(value, [i]))
-
-    def visitLvalue(self, ctx):
-        return ctx.ID()
+                for i, expr in enumerate(exprs):
+                    self.assign(lvalue, expr, self.builder.extract_value(value, [i]))
 
     def visitStmtAssgExpr(self, ctx):
-        var = self.get(ctx, ctx.ID())
-        value = self.binaryop(ctx, ctx.op.text, self.builder.load(var), self.visit(ctx.expr()))
-        self.builder.store(value, var)
+        ptr = self.lvalue(ctx, ctx.expr(0))
+        value = self.binaryop(ctx, ctx.op.text, self.builder.load(ptr), self.visit(ctx.expr(1)))
+        self.builder.store(value, ptr)
 
     def visitStmtIf(self, ctx):
         exprs = ctx.expr()
@@ -279,14 +292,7 @@ class PyxellCompiler(PyxellVisitor):
         return self.visit(ctx.any_expr())
 
     def visitExprIndex(self, ctx):
-        exprs = ctx.expr()
-        index = self.cast(exprs[1], self.visit(exprs[1]), tInt)
-        value = self.visit(exprs[0])
-
-        if value.type.isString() or value.type.isArray():
-            return self.builder.load(self.builder.gep(self.builder.extract_value(value, [0]), [index]))
-
-        self.throw(ctx, err.NotIndexable(value.type))
+        return self.builder.load(self.index(ctx, *ctx.expr()))
 
     def visitExprAttr(self, ctx):
         value = self.visit(ctx.expr())

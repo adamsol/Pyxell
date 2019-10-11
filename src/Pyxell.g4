@@ -13,11 +13,11 @@ simple_stmt
   : 'skip' # StmtSkip
   | 'print' any_expr? # StmtPrint
   | (lvalue '=')* any_expr # StmtAssg
-  | ID op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
+  | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
   ;
 
 lvalue
-  : ID (',' ID)*
+  : expr (',' expr)*
   ;
 
 compound_stmt
