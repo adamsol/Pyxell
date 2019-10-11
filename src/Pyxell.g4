@@ -11,8 +11,8 @@ stmt
 
 simple_stmt
   : 'skip' # StmtSkip
-  | 'print' expr? # StmtPrint
-  | (lvalue '=')* expr # StmtAssg
+  | 'print' any_expr? # StmtPrint
+  | (lvalue '=')* any_expr # StmtAssg
   | ID op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
   ;
 
@@ -30,9 +30,14 @@ block
   : 'do' '{' stmt+ '}'
   ;
 
+any_expr
+  : expr
+  | tuple_expr
+  ;
+
 expr
   : atom # ExprAtom
-  | '(' expr ')' # ExprParentheses
+  | '(' any_expr ')' # ExprParentheses
   | expr '[' expr ']' # ExprIndex
   | expr '.' ID # ExprAttr
   | <assoc=right> expr op='^' expr # ExprBinaryOp
@@ -48,7 +53,10 @@ expr
   | <assoc=right> expr op='and' expr # ExprLogicalOp
   | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
-  | <assoc=right> expr ',' expr # ExprTuple
+  ;
+
+tuple_expr
+  : (expr ',')+ expr? # ExprTuple
   ;
 
 atom
@@ -56,6 +64,7 @@ atom
   | ('true' | 'false') # AtomBool
   | CHAR # AtomChar
   | STRING # AtomString
+  | '[' (expr ',')* expr? ']' # AtomArray
   | ID # AtomId
   ;
 

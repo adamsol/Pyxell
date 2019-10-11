@@ -147,8 +147,8 @@ class PyxellCompiler(PyxellVisitor):
         else:
             self.throw(ctx, err.NotPrintable(value.type))
 
-    def malloc(self, type):
-        size = self.builder.gep(vNull(type), [vIndex(1)])
+    def malloc(self, type, n=1):
+        size = self.builder.gep(vNull(type), [vIndex(n)])
         size = self.builder.ptrtoint(size, tInt)
         ptr = self.builder.call(self.builtins['malloc'], [size])
         return self.builder.bitcast(ptr, tPtr(type))
@@ -168,7 +168,7 @@ class PyxellCompiler(PyxellVisitor):
     ### Statements ###
 
     def visitStmtPrint(self, ctx):
-        expr = ctx.expr()
+        expr = ctx.any_expr()
         if expr:
             value = self.visit(expr)
             self.print(expr, value)
@@ -176,7 +176,7 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.call(self.builtins['putchar'], [vChar('\n')])
 
     def visitStmtAssg(self, ctx):
-        value = self.visit(ctx.expr())
+        value = self.visit(ctx.any_expr())
 
         for lvalue in ctx.lvalue():
             ids = self.visit(lvalue)
@@ -276,14 +276,14 @@ class PyxellCompiler(PyxellVisitor):
     ### Expressions ###
 
     def visitExprParentheses(self, ctx):
-        return self.visit(ctx.expr())
+        return self.visit(ctx.any_expr())
 
     def visitExprIndex(self, ctx):
         exprs = ctx.expr()
         index = self.cast(exprs[1], self.visit(exprs[1]), tInt)
         value = self.visit(exprs[0])
 
-        if value.type.isString():
+        if value.type.isString() or value.type.isArray():
             return self.builder.load(self.builder.gep(self.builder.extract_value(value, [0]), [index]))
 
         self.throw(ctx, err.NotIndexable(value.type))
@@ -292,7 +292,7 @@ class PyxellCompiler(PyxellVisitor):
         value = self.visit(ctx.expr())
         id = str(ctx.ID())
 
-        if value.type.isString():
+        if value.type.isString() or value.type.isArray():
             if id != "length":
                 self.throw(ctx, err.NoAttribute(value.type, id))
 
@@ -399,21 +399,14 @@ class PyxellCompiler(PyxellVisitor):
         return self.builder.select(cond, *values)
 
     def visitExprTuple(self, ctx):
-        exprs = []
-        while True:
-            exprs.append(ctx.expr(0))
-            if not isinstance(ctx.expr(1), PyxellParser.ExprTupleContext):
-                break
-            ctx = ctx.expr(1)
-        exprs.append(ctx.expr(1))
-
+        exprs = ctx.expr()
         values = [self.visit(expr) for expr in exprs]
-        type = tTuple(value.type for value in values)
 
+        type = tTuple(value.type for value in values)
         tuple = self.malloc(type)
 
         for i, value in enumerate(values):
-            ptr = self.builder.gep(tuple, [vIndex(0), vIndex(i)])
+            ptr = self.builder.gep(tuple, [vInt(0), vIndex(i)])
             self.builder.store(value, ptr)
 
         return self.builder.load(tuple)
@@ -433,20 +426,40 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitAtomString(self, ctx):
         lit = ast.literal_eval(str(ctx.STRING()))
-        value = ll.Constant(ll.ArrayType(tChar, len(lit)), [vChar(c) for c in lit])
+        values = [vChar(c) for c in lit]
+        const = ll.Constant(ll.ArrayType(tChar, len(lit)), values)
 
         string = self.malloc(tString)
 
-        pointer = self.builder.gep(string, [vIndex(0), vIndex(0)])
-        array = ll.GlobalVariable(self.module, value.type, self.module.get_unique_name('str'))
+        pointer = self.builder.gep(string, [vInt(0), vIndex(0)])
+        array = ll.GlobalVariable(self.module, const.type, self.module.get_unique_name('str'))
         array.global_constant = True
-        array.initializer = value
-        self.builder.store(self.builder.gep(array, [vIndex(0), vIndex(0)]), pointer)
+        array.initializer = const
+        self.builder.store(self.builder.gep(array, [vInt(0), vInt(0)]), pointer)
 
-        length = self.builder.gep(string, [vIndex(0), vIndex(1)])
-        self.builder.store(vInt(value.type.count), length)
+        length = self.builder.gep(string, [vInt(0), vIndex(1)])
+        self.builder.store(vInt(const.type.count), length)
 
         return self.builder.load(string)
+
+    def visitAtomArray(self, ctx):
+        exprs = ctx.expr()
+        values = self.unify(ctx, *[self.visit(expr) for expr in exprs])
+
+        subtype = values[0].type
+        type = tArray(subtype)
+        array = self.malloc(type)
+
+        pointer = self.builder.gep(array, [vInt(0), vIndex(0)])
+        memory = self.malloc(subtype, len(values))
+        for i, value in enumerate(values):
+            self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
+        self.builder.store(memory, pointer)
+
+        length = self.builder.gep(array, [vInt(0), vIndex(1)])
+        self.builder.store(vInt(len(values)), length)
+
+        return self.builder.load(array)
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx, ctx.ID()))

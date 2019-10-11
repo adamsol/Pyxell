@@ -2,31 +2,55 @@
 import llvmlite.ir as ll
 
 
+class CustomStructType(ll.LiteralStructType):
+
+    def __init__(self, elements, kind):
+        super().__init__(elements)
+        self.kind = kind
+
+    def __eq__(self, other):
+        if not super().__eq__(other):
+            return False
+        return self.kind == other.kind
+
+
 tVoid = ll.VoidType()
 tInt = ll.IntType(64)
 tBool = ll.IntType(1)
 tChar = ll.IntType(8)
 
+
 def tPtr(type=tChar):
     return type.as_pointer()
 
-tString = ll.LiteralStructType([tPtr(), tInt])
-tString.kind = 'string'
+
+tString = CustomStructType([tPtr(), tInt], 'string')
 
 def isString(type):
     return getattr(type, 'kind', None) == 'string'
 
 ll.Type.isString = isString
 
-def tTuple(elements):
-    type = ll.LiteralStructType(elements)
-    type.kind = 'tuple'
+
+def tArray(subtype):
+    type = CustomStructType([tPtr(subtype), tInt], 'array')
+    type.subtype = subtype
     return type
+
+def isArray(type):
+    return getattr(type, 'kind', None) == 'array'
+
+ll.Type.isArray = isArray
+
+
+def tTuple(elements):
+    return CustomStructType(elements, 'tuple')
 
 def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
 
 ll.Type.isTuple = isTuple
+
 
 def tFunc(args, ret=tVoid):
     return ll.FunctionType(ret, args)
@@ -43,6 +67,8 @@ def showType(type):
         return 'Char'
     if type.isString():
         return 'String'
+    if type.isArray():
+        return f'[{type.subtype.show()}]'
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     return str(type)

@@ -64,6 +64,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#any_expr.
+    def visitAny_expr(self, ctx:PyxellParser.Any_exprContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprUnaryOp.
     def visitExprUnaryOp(self, ctx:PyxellParser.ExprUnaryOpContext):
         return self.visitChildren(ctx)
@@ -71,11 +76,6 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprCmp.
     def visitExprCmp(self, ctx:PyxellParser.ExprCmpContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#ExprTuple.
-    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
         return self.visitChildren(ctx)
 
 
@@ -114,6 +114,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprTuple.
+    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#AtomInt.
     def visitAtomInt(self, ctx:PyxellParser.AtomIntContext):
         return self.visitChildren(ctx)
@@ -131,6 +136,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#AtomString.
     def visitAtomString(self, ctx:PyxellParser.AtomStringContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#AtomArray.
+    def visitAtomArray(self, ctx:PyxellParser.AtomArrayContext):
         return self.visitChildren(ctx)
 
 
