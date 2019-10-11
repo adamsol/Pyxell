@@ -47,6 +47,9 @@ class PyxellCompiler(PyxellVisitor):
 
         if collection.type.isString() or collection.type.isArray():
             index = self.cast(exprs[1], index, tInt)
+            length = self.builder.extract_value(collection, [1])
+            cmp = self.builder.icmp_signed('>=', index, vInt(0))
+            index = self.builder.select(cmp, index, self.builder.add(index, length))
             return self.builder.gep(self.builder.extract_value(collection, [0]), [index])
         else:
             self.throw(ctx, err.NotIndexable(collection.type))
