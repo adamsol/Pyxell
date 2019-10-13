@@ -1,0 +1,4 @@
+
+for x in [1] do
+    skip
+print x

@@ -59,13 +59,18 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#StmtFor.
+    def visitStmtFor(self, ctx:PyxellParser.StmtForContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#block.
     def visitBlock(self, ctx:PyxellParser.BlockContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#any_expr.
-    def visitAny_expr(self, ctx:PyxellParser.Any_exprContext):
+    # Visit a parse tree produced by PyxellParser#ExprTuple.
+    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
         return self.visitChildren(ctx)
 
 
@@ -109,13 +114,13 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
-    def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
+    # Visit a parse tree produced by PyxellParser#ExprRange.
+    def visitExprRange(self, ctx:PyxellParser.ExprRangeContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprTuple.
-    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
+    # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
+    def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
         return self.visitChildren(ctx)
 
 

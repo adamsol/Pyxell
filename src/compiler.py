@@ -172,6 +172,19 @@ class PyxellCompiler(PyxellVisitor):
         ptr = self.builder.call(self.builtins['malloc'], [size])
         return self.builder.bitcast(ptr, tPtr(type))
 
+    def tuple(self, values):
+        if len(values) == 1:
+            return values[0]
+
+        type = tTuple([value.type for value in values])
+        tuple = self.malloc(type)
+
+        for i, value in enumerate(values):
+            ptr = self.builder.gep(tuple, [vInt(0), vIndex(i)])
+            self.builder.store(value, ptr)
+
+        return self.builder.load(tuple)
+
 
     ### Program ###
 
@@ -187,7 +200,7 @@ class PyxellCompiler(PyxellVisitor):
     ### Statements ###
 
     def visitStmtPrint(self, ctx):
-        expr = ctx.any_expr()
+        expr = ctx.tuple_expr()
         if expr:
             value = self.visit(expr)
             self.print(expr, value)
@@ -195,7 +208,7 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.call(self.builtins['putchar'], [vChar('\n')])
 
     def visitStmtAssg(self, ctx):
-        value = self.visit(ctx.any_expr())
+        value = self.visit(ctx.tuple_expr())
 
         for lvalue in ctx.lvalue():
             exprs = lvalue.expr()
@@ -288,11 +301,117 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.function.blocks.append(bbend)
         self.builder.position_at_end(bbend)
 
+    def visitStmtFor(self, ctx):
+        exprs = ctx.tuple_expr()
+        vars = exprs[0].expr()
+        iterables = exprs[1].expr()
+
+        types = []
+        steps = []
+        indices = []
+        conditions = []
+        getters = []
+
+        def prepare(iterable, step):  # must be a function so that lambdas work properly
+            desc = self.builder.icmp_signed('<', step, vInt(0))
+
+            if isinstance(iterable, PyxellParser.ExprRangeContext):
+                values = [self.visit(expr) for expr in iterable.expr()]
+                type = values[0].type
+                types.append(type)
+                if type not in (tInt, tChar):
+                    self.throw(iterable, err.UnknownType())
+                if len(values) > 1:
+                    values[1] = self.cast(iterable, values[1], type)
+                if type != tInt:
+                    step = self.builder.trunc(step, type)
+                index = self.builder.alloca(type)
+                start = values[0]
+                if len(values) == 1:
+                    cond = lambda v: vTrue
+                elif iterable.dots.text == '..':
+                    cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>=', v, values[1]), self.builder.icmp_signed('<=', v, values[1]))
+                elif iterable.dots.text == '...':
+                    cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>', v, values[1]), self.builder.icmp_signed('<', v, values[1]))
+                getter = lambda v: v
+            else:
+                value = self.visit(iterable)
+                if value.type.isString():
+                    types.append(tChar)
+                elif value.type.isArray():
+                    types.append(value.type.subtype)
+                else:
+                    self.throw(ctx, err.NotIterable(value.type))
+                index = self.builder.alloca(tInt)
+                array = self.builder.extract_value(value, [0])
+                length = self.builder.extract_value(value, [1])
+                end1 = self.builder.sub(length, vInt(1))
+                end2 = vInt(0)
+                start = self.builder.select(desc, end1, end2)
+                cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>=', v, end2), self.builder.icmp_signed('<=', v, end1))
+                getter = lambda v: self.builder.load(self.builder.gep(array, [v]))
+
+            self.builder.store(start, index)
+            steps.append(step)
+            indices.append(index)
+            conditions.append(cond)
+            getters.append(getter)
+
+        _steps = [vInt(1)]
+        if len(exprs) > 2:
+            _steps = [self.visit(expr) for expr in exprs[2].expr()]
+        if len(_steps) == 1:
+            _steps *= len(iterables)
+        if len(exprs) > 2:
+            t1 = tTuple([step.type for step in _steps])
+            t2 = tTuple([tInt] * len(iterables))
+            if t1 != t2:
+                self.throw(ctx, err.IllegalAssignment(t1, t2))
+
+        for iterable, step in zip(iterables, _steps):
+            prepare(iterable, step)
+
+        label_start = self.builder.append_basic_block()
+        self.builder.branch(label_start)
+        self.builder.position_at_end(label_start)        
+        label_end = ll.Block(self.builder.function)
+            
+        for index, cond in zip(indices, conditions):
+            label = ll.Block(self.builder.function)
+            self.builder.cbranch(cond(self.builder.load(index)), label, label_end)
+            self.builder.function.blocks.append(label)
+            self.builder.position_at_end(label)
+
+        with self.local():
+            if len(vars) == 1 and len(types) > 1:
+                tuple = self.tuple([getters[i](self.builder.load(index)) for i, index in enumerate(indices)])
+                self.assign(exprs[0], vars[0], tuple)
+            elif len(vars) > 1 and len(types) == 1:
+                for i, var in enumerate(vars):
+                    tuple = getters[0](self.builder.load(indices[0]))
+                    self.assign(exprs[0], var, self.builder.extract_value(tuple, [i]))
+            elif len(vars) == len(types):
+                for var, index, getter in zip(vars, indices, getters):
+                    self.assign(exprs[0], var, getter(self.builder.load(index)))
+            else:
+                self.throw(exprs[0], err.CannotUnpack(tTuple(types), len(vars)))
+
+            self.visit(ctx.block())
+
+        for index, step, type in zip(indices, steps, types):
+            value = self.builder.add(self.builder.load(index), step)
+            self.builder.store(value, index)
+
+        self.builder.branch(label_start)
+            
+        self.builder.function.blocks.append(label_end)
+        self.builder.position_at_end(label_end)
+
 
     ### Expressions ###
 
     def visitExprParentheses(self, ctx):
-        return self.visit(ctx.any_expr())
+        return self.visit(ctx.tuple_expr())
 
     def visitExprIndex(self, ctx):
         return self.builder.load(self.index(ctx, *ctx.expr()))
@@ -324,6 +443,9 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitExprBinaryOp(self, ctx):
         return self.binaryop(ctx, ctx.op.text, self.visit(ctx.expr(0)), self.visit(ctx.expr(1)))
+
+    def visitExprRange(self, ctx):
+        self.throw(ctx, err.UnknownType())
 
     def visitExprCmp(self, ctx):
         exprs = []
@@ -410,15 +532,7 @@ class PyxellCompiler(PyxellVisitor):
     def visitExprTuple(self, ctx):
         exprs = ctx.expr()
         values = [self.visit(expr) for expr in exprs]
-
-        type = tTuple(value.type for value in values)
-        tuple = self.malloc(type)
-
-        for i, value in enumerate(values):
-            ptr = self.builder.gep(tuple, [vInt(0), vIndex(i)])
-            self.builder.store(value, ptr)
-
-        return self.builder.load(tuple)
+        return self.tuple(values)
 
 
     ### Atoms ###

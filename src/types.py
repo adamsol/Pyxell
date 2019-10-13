@@ -44,6 +44,8 @@ ll.Type.isArray = isArray
 
 
 def tTuple(elements):
+    if len(elements) == 1:
+        return elements[0]
     return CustomStructType(elements, 'tuple')
 
 def isTuple(type):

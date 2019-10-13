@@ -1,6 +1,6 @@
 
+x = 0
 for x in [-2, 3, 5] step -1 do
     skip
-
 for n in [5, 6, 7] * 3 step x do
     print n
