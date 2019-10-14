@@ -14,6 +14,7 @@ simple_stmt
   | 'print' tuple_expr? # StmtPrint
   | (lvalue '=')* tuple_expr # StmtAssg
   | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
+  | s=('break' | 'continue') # StmtLoopControl
   ;
 
 lvalue

@@ -236,7 +236,7 @@ class PyxellCompiler(PyxellVisitor):
         exprs = ctx.expr()
         blocks = ctx.block()
 
-        bbend = ll.Block(self.builder.function)
+        label_end = ll.Block(self.builder.function)
 
         def emitIfElse(index):
             if len(exprs) == index:
@@ -248,58 +248,65 @@ class PyxellCompiler(PyxellVisitor):
             expr = exprs[index]
             cond = self.cast(expr, self.visit(expr), tBool)
 
-            bbif = self.builder.append_basic_block()
-            bbelse = self.builder.append_basic_block()
-            self.builder.cbranch(cond, bbif, bbelse)
+            label_if = self.builder.append_basic_block()
+            label_else = self.builder.append_basic_block()
+            self.builder.cbranch(cond, label_if, label_else)
 
-            with self.builder._branch_helper(bbif, bbend):
+            with self.builder._branch_helper(label_if, label_end):
                 with self.local():
                     self.visit(blocks[index])
 
-            with self.builder._branch_helper(bbelse, bbend):
+            with self.builder._branch_helper(label_else, label_end):
                 emitIfElse(index+1)
 
         emitIfElse(0)
 
-        self.builder.function.blocks.append(bbend)
-        self.builder.position_at_end(bbend)
+        self.builder.function.blocks.append(label_end)
+        self.builder.position_at_end(label_end)
 
     def visitStmtWhile(self, ctx):
-        bbstart = self.builder.append_basic_block()
-        self.builder.branch(bbstart)
-        self.builder.position_at_end(bbstart)
+        label_start = self.builder.append_basic_block()
+        self.builder.branch(label_start)
+        self.builder.position_at_end(label_start)
+        label_end = ll.Block(self.builder.function)
 
         expr = ctx.expr()
         cond = self.cast(expr, self.visit(expr), tBool)
 
-        bbwhile = self.builder.append_basic_block()
-        bbend = ll.Block(self.builder.function)
-        self.builder.cbranch(cond, bbwhile, bbend)
+        label_while = self.builder.append_basic_block()
+        self.builder.cbranch(cond, label_while, label_end)
+        self.builder.position_at_end(label_while)
 
-        self.builder.position_at_end(bbwhile)
         with self.local():
-            self.visit(ctx.block())
-        self.builder.branch(bbstart)
+            self.env['#continue'] = label_start
+            self.env['#break'] = label_end
 
-        self.builder.function.blocks.append(bbend)
-        self.builder.position_at_end(bbend)
+            self.visit(ctx.block())
+
+        self.builder.branch(label_start)
+
+        self.builder.function.blocks.append(label_end)
+        self.builder.position_at_end(label_end)
 
     def visitStmtUntil(self, ctx):
-        bbuntil = self.builder.append_basic_block()
-        self.builder.branch(bbuntil)
-        bbend = ll.Block(self.builder.function)
+        label_start = self.builder.append_basic_block()
+        self.builder.branch(label_start)
+        self.builder.position_at_end(label_start)
+        label_end = ll.Block(self.builder.function)
 
-        self.builder.position_at_end(bbuntil)
         with self.local():
+            self.env['#continue'] = label_start
+            self.env['#break'] = label_end
+
             self.visit(ctx.block())
 
         expr = ctx.expr()
         cond = self.cast(expr, self.visit(expr), tBool)
 
-        self.builder.cbranch(cond, bbend, bbuntil)
+        self.builder.cbranch(cond, label_end, label_start)
 
-        self.builder.function.blocks.append(bbend)
-        self.builder.position_at_end(bbend)
+        self.builder.function.blocks.append(label_end)
+        self.builder.position_at_end(label_end)
 
     def visitStmtFor(self, ctx):
         exprs = ctx.tuple_expr()
@@ -373,7 +380,8 @@ class PyxellCompiler(PyxellVisitor):
 
         label_start = self.builder.append_basic_block()
         self.builder.branch(label_start)
-        self.builder.position_at_end(label_start)        
+        self.builder.position_at_end(label_start)
+        label_cont = ll.Block(self.builder.function)
         label_end = ll.Block(self.builder.function)
             
         for index, cond in zip(indices, conditions):
@@ -383,6 +391,9 @@ class PyxellCompiler(PyxellVisitor):
             self.builder.position_at_end(label)
 
         with self.local():
+            self.env['#continue'] = label_cont
+            self.env['#break'] = label_end
+
             if len(vars) == 1 and len(types) > 1:
                 tuple = self.tuple([getters[i](self.builder.load(index)) for i, index in enumerate(indices)])
                 self.assign(exprs[0], vars[0], tuple)
@@ -398,6 +409,10 @@ class PyxellCompiler(PyxellVisitor):
 
             self.visit(ctx.block())
 
+        self.builder.function.blocks.append(label_cont)
+        self.builder.branch(label_cont)
+        self.builder.position_at_end(label_cont)
+
         for index, step, type in zip(indices, steps, types):
             value = self.builder.add(self.builder.load(index), step)
             self.builder.store(value, index)
@@ -406,6 +421,15 @@ class PyxellCompiler(PyxellVisitor):
             
         self.builder.function.blocks.append(label_end)
         self.builder.position_at_end(label_end)
+
+    def visitStmtLoopControl(self, ctx):
+        stmt = ctx.s.text  # 'break' / 'continue'
+        try:
+            label = self.env[f'#{stmt}']
+        except KeyError:
+            self.throw(ctx, err.UnexpectedStatement(stmt))
+        else:
+            self.builder.branch(label)
 
 
     ### Expressions ###
@@ -460,11 +484,11 @@ class PyxellCompiler(PyxellVisitor):
 
         values = [self.visit(exprs[0])]
 
-        bbstart = self.builder.basic_block
-        bbend = ll.Block(self.builder.function)
-        self.builder.position_at_end(bbend)
+        label_start = self.builder.basic_block
+        label_end = ll.Block(self.builder.function)
+        self.builder.position_at_end(label_end)
         phi = self.builder.phi(tBool)
-        self.builder.position_at_end(bbstart)
+        self.builder.position_at_end(label_start)
 
         def emitIf(index):
             values.append(self.visit(exprs[index+1]))
@@ -472,20 +496,20 @@ class PyxellCompiler(PyxellVisitor):
 
             if len(exprs) == index+2:
                 phi.add_incoming(cond, self.builder.basic_block)
-                self.builder.branch(bbend)
+                self.builder.branch(label_end)
                 return
 
             phi.add_incoming(vFalse, self.builder.basic_block)
-            bbif = self.builder.function.append_basic_block()
-            self.builder.cbranch(cond, bbif, bbend)
+            label_if = self.builder.function.append_basic_block()
+            self.builder.cbranch(cond, label_if, label_end)
 
-            with self.builder._branch_helper(bbif, bbend):
+            with self.builder._branch_helper(label_if, label_end):
                 emitIf(index+1)
 
         emitIf(0)
 
-        self.builder.function.blocks.append(bbend)
-        self.builder.position_at_end(bbend)
+        self.builder.function.blocks.append(label_end)
+        self.builder.position_at_end(label_end)
 
         return phi
 

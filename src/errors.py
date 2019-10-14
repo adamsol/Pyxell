@@ -23,6 +23,7 @@ class PyxellError(Exception):
     NotLvalue = lambda: f"Expression cannot be assigned to"
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
+    UnexpectedStatement = lambda s: f"Unexpected `{s}` statement"
     UnknownType = lambda: f"Cannot settle type of the expression"
 
     def __init__(self, msg, line, column=None):
