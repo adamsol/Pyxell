@@ -148,21 +148,57 @@ class PyxellCompiler(PyxellVisitor):
         else:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
+    def write(self, str):
+        for char in str:
+            self.builder.call(self.builtins['putchar'], [vChar(char)])
+
     def print(self, ctx, value):
         if value.type == tInt:
             self.builder.call(self.builtins['writeInt'], [value])
+
         elif value.type == tBool:
             self.builder.call(self.builtins['writeBool'], [value])
+
         elif value.type == tChar:
             self.builder.call(self.builtins['writeChar'], [value])
+
         elif value.type.isString():
             self.builder.call(self.builtins['write'], [value])
+
+        elif value.type.isArray():
+            self.write('[')
+
+            length = self.builder.extract_value(value, [1])
+            index = self.builder.alloca(tInt)
+            self.builder.store(vInt(0), index)
+
+            label_start = self.builder.append_basic_block()
+            self.builder.branch(label_start)
+            self.builder.position_at_end(label_start)
+            label_end = ll.Block(self.builder.function)
+
+            with self.builder.if_then(self.builder.icmp_signed('>', self.builder.load(index), vInt(0))):
+                self.write(', ')
+
+            elem = self.builder.gep(self.builder.extract_value(value, [0]), [self.builder.load(index)])
+            self.print(ctx, self.builder.load(elem))
+
+            self.builder.store(self.builder.add(self.builder.load(index), vInt(1)), index)
+            cond = self.builder.icmp_signed('<', self.builder.load(index), length)
+            self.builder.cbranch(cond, label_start, label_end)
+
+            self.builder.function.blocks.append(label_end)
+            self.builder.position_at_end(label_end)
+
+            self.write(']')
+
         elif value.type.isTuple():
             for i in range(len(value.type.elements)):
                 if i > 0:
-                    self.builder.call(self.builtins['putchar'], [vChar(' ')])
+                    self.write(' ')
                 elem = self.builder.extract_value(value, [i])
                 self.print(ctx, elem)
+
         else:
             self.throw(ctx, err.NotPrintable(value.type))
 
@@ -204,8 +240,7 @@ class PyxellCompiler(PyxellVisitor):
         if expr:
             value = self.visit(expr)
             self.print(expr, value)
-
-        self.builder.call(self.builtins['putchar'], [vChar('\n')])
+        self.write('\n')
 
     def visitStmtAssg(self, ctx):
         value = self.visit(ctx.tuple_expr())
