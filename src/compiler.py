@@ -16,6 +16,7 @@ class PyxellCompiler(PyxellVisitor):
         self.module = ll.Module()
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()), 'malloc'),
+            'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]), 'memcpy'),
             'write': ll.Function(self.module, tFunc([tString]), 'func.write'),
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
             'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
@@ -85,6 +86,21 @@ class PyxellCompiler(PyxellVisitor):
         value = self.cast(ctx, value, ptr.type.pointee)
         self.builder.store(value, ptr)
 
+    def sizeof(self, type, length=vInt(1)):
+        return self.builder.ptrtoint(self.builder.gep(vNull(type), [length]), tInt)
+
+    def malloc(self, type, length=vInt(1)):
+        size = self.sizeof(type, length)
+        ptr = self.builder.call(self.builtins['malloc'], [size])
+        return self.builder.bitcast(ptr, tPtr(type))
+
+    def memcpy(self, dest, src, length):
+        type = dest.type
+        dest = self.builder.bitcast(dest, tPtr())
+        src = self.builder.bitcast(src, tPtr())
+        size = self.sizeof(type.pointee, length)
+        return self.builder.call(self.builtins['memcpy'], [dest, src, size])
+
     def unaryop(self, ctx, op, value):
         if op in ('+', '-', '~'):
             type = tInt
@@ -102,40 +118,78 @@ class PyxellCompiler(PyxellVisitor):
             return self.builder.not_(value)
 
     def binaryop(self, ctx, op, left, right):
-        if not left.type == right.type == tInt:
-            self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
-
         if op == '^':
-            return self.builder.call(self.builtins['Int_pow'], [left, right])
+            if left.type == right.type == tInt:
+                return self.builder.call(self.builtins['Int_pow'], [left, right])
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
         elif op == '/':
-            v1 = self.builder.sdiv(left, right)
-            v2 = self.builder.sub(v1, vInt(1))
-            v3 = self.builder.xor(left, right)
-            v4 = self.builder.icmp_signed('<', v3, vInt(0))
-            v5 = self.builder.select(v4, v2, v1)
-            v6 = self.builder.mul(v1, right)
-            v7 = self.builder.icmp_signed('!=', v6, left)
-            return self.builder.select(v7, v5, v1)
+            if left.type == right.type == tInt:
+                v1 = self.builder.sdiv(left, right)
+                v2 = self.builder.sub(v1, vInt(1))
+                v3 = self.builder.xor(left, right)
+                v4 = self.builder.icmp_signed('<', v3, vInt(0))
+                v5 = self.builder.select(v4, v2, v1)
+                v6 = self.builder.mul(v1, right)
+                v7 = self.builder.icmp_signed('!=', v6, left)
+                return self.builder.select(v7, v5, v1)
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
         elif op == '%':
-            v1 = self.builder.srem(left, right)
-            v2 = self.builder.add(v1, right)
-            v3 = self.builder.xor(left, right)
-            v4 = self.builder.icmp_signed('<', v3, vInt(0))
-            v5 = self.builder.select(v4, v2, v1)
-            v6 = self.builder.icmp_signed('==', v1, vInt(0))
-            return self.builder.select(v6, v1, v5)
+            if left.type == right.type == tInt:
+                v1 = self.builder.srem(left, right)
+                v2 = self.builder.add(v1, right)
+                v3 = self.builder.xor(left, right)
+                v4 = self.builder.icmp_signed('<', v3, vInt(0))
+                v5 = self.builder.select(v4, v2, v1)
+                v6 = self.builder.icmp_signed('==', v1, vInt(0))
+                return self.builder.select(v6, v1, v5)
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
+        elif op == '+':
+            if left.type == right.type == tInt:
+                return self.builder.add(left, right)
+
+            elif left.type == right.type and (left.type == tString or left.type.isArray()):
+                type = left.type
+                subtype = type.subtype if type.isArray() else tChar
+
+                length1 = self.builder.extract_value(left, [1])
+                length2 = self.builder.extract_value(right, [1])
+                length = self.builder.add(length1, length2)
+
+                array1 = self.builder.extract_value(left, [0])
+                array2 = self.builder.extract_value(right, [0])
+                array = self.malloc(subtype, length)
+
+                self.memcpy(array, array1, length1)
+                self.memcpy(self.builder.gep(array, [length1]), array2, length2)
+
+                value = self.malloc(type)
+                self.builder.store(array, self.builder.gep(value, [vInt(0), vIndex(0)]))
+                self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
+                return self.builder.load(value)
+
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
         else:
-            instruction = {
-                '*': self.builder.mul,
-                '+': self.builder.add,
-                '-': self.builder.sub,
-                '<<': self.builder.shl,
-                '>>': self.builder.ashr,
-                '&': self.builder.and_,
-                '$': self.builder.xor,
-                '|': self.builder.or_,
-            }[op]
-            return instruction(left, right)
+            if left.type == right.type == tInt:
+                instruction = {
+                    '*': self.builder.mul,
+                    '-': self.builder.sub,
+                    '<<': self.builder.shl,
+                    '>>': self.builder.ashr,
+                    '&': self.builder.and_,
+                    '$': self.builder.xor,
+                    '|': self.builder.or_,
+                }[op]
+                return instruction(left, right)
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
     def cmp(self, ctx, op, left, right):
         if left.type != right.type:
@@ -201,12 +255,6 @@ class PyxellCompiler(PyxellVisitor):
 
         else:
             self.throw(ctx, err.NotPrintable(value.type))
-
-    def malloc(self, type, n=1):
-        size = self.builder.gep(vNull(type), [vIndex(n)])
-        size = self.builder.ptrtoint(size, tInt)
-        ptr = self.builder.call(self.builtins['malloc'], [size])
-        return self.builder.bitcast(ptr, tPtr(type))
 
     def tuple(self, values):
         if len(values) == 1:
@@ -633,7 +681,7 @@ class PyxellCompiler(PyxellVisitor):
         array = self.malloc(type)
 
         pointer = self.builder.gep(array, [vInt(0), vIndex(0)])
-        memory = self.malloc(subtype, len(values))
+        memory = self.malloc(subtype, vInt(len(values)))
         for i, value in enumerate(values):
             self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
         self.builder.store(memory, pointer)
