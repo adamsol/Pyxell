@@ -25,10 +25,10 @@ def tPtr(type=tChar):
 
 
 tString = CustomStructType([tPtr(), tInt], 'string')
+tString.subtype = tChar
 
 def isString(type):
     return getattr(type, 'kind', None) == 'string'
-
 ll.Type.isString = isString
 
 
@@ -39,7 +39,6 @@ def tArray(subtype):
 
 def isArray(type):
     return getattr(type, 'kind', None) == 'array'
-
 ll.Type.isArray = isArray
 
 
@@ -50,12 +49,16 @@ def tTuple(elements):
 
 def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
-
 ll.Type.isTuple = isTuple
 
 
 def tFunc(args, ret=tVoid):
     return ll.FunctionType(ret, args)
+
+
+def isIndexable(type):
+    return type == tString or type.isArray()
+ll.Type.isIndexable = isIndexable
 
 
 def showType(type):
@@ -74,7 +77,6 @@ def showType(type):
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     return str(type)
-
 ll.Type.show = showType
 
 

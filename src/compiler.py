@@ -46,7 +46,7 @@ class PyxellCompiler(PyxellVisitor):
     def index(self, ctx, *exprs):
         collection, index = [self.visit(expr) for expr in exprs]
 
-        if collection.type.isString() or collection.type.isArray():
+        if collection.type.isIndexable():
             index = self.cast(exprs[1], index, tInt)
             length = self.builder.extract_value(collection, [1])
             cmp = self.builder.icmp_signed('>=', index, vInt(0))
@@ -124,6 +124,47 @@ class PyxellCompiler(PyxellVisitor):
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
+        elif op == '*':
+            if left.type == right.type == tInt:
+                return self.builder.mul(left, right)
+
+            elif left.type.isIndexable() and right.type == tInt:
+                type = left.type
+                subtype = type.subtype
+
+                src = self.builder.extract_value(left, [0])
+                src_length = self.builder.extract_value(left, [1])
+                length = self.builder.mul(src_length, right)
+                dest = self.malloc(subtype, length)
+
+                index = self.builder.alloca(tInt)
+                self.builder.store(vInt(0), index)
+
+                label_start = self.builder.append_basic_block()
+                self.builder.branch(label_start)
+                self.builder.position_at_end(label_start)
+                label_end = ll.Block(self.builder.function)
+
+                self.memcpy(self.builder.gep(dest, [self.builder.load(index)]), src, src_length)
+
+                self.builder.store(self.builder.add(self.builder.load(index), src_length), index)
+                cond = self.builder.icmp_signed('<', self.builder.load(index), length)
+                self.builder.cbranch(cond, label_start, label_end)
+
+                self.builder.function.blocks.append(label_end)
+                self.builder.position_at_end(label_end)
+
+                value = self.malloc(type)
+                self.builder.store(dest, self.builder.gep(value, [vInt(0), vIndex(0)]))
+                self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
+                return self.builder.load(value)
+
+            elif left.type == tInt and right.type.isIndexable():
+                return self.binaryop(ctx, op, right, left)
+
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
         elif op == '/':
             if left.type == right.type == tInt:
                 v1 = self.builder.sdiv(left, right)
@@ -153,9 +194,9 @@ class PyxellCompiler(PyxellVisitor):
             if left.type == right.type == tInt:
                 return self.builder.add(left, right)
 
-            elif left.type == right.type and (left.type == tString or left.type.isArray()):
+            elif left.type == right.type and left.type.isIndexable():
                 type = left.type
-                subtype = type.subtype if type.isArray() else tChar
+                subtype = type.subtype
 
                 length1 = self.builder.extract_value(left, [1])
                 length2 = self.builder.extract_value(right, [1])
@@ -179,7 +220,6 @@ class PyxellCompiler(PyxellVisitor):
         else:
             if left.type == right.type == tInt:
                 instruction = {
-                    '*': self.builder.mul,
                     '-': self.builder.sub,
                     '<<': self.builder.shl,
                     '>>': self.builder.ashr,
@@ -527,7 +567,7 @@ class PyxellCompiler(PyxellVisitor):
         value = self.visit(ctx.expr())
         id = str(ctx.ID())
 
-        if value.type.isString() or value.type.isArray():
+        if value.type.isIndexable():
             if id != "length":
                 self.throw(ctx, err.NoAttribute(value.type, id))
 
