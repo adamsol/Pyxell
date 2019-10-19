@@ -242,8 +242,54 @@ class PyxellCompiler(PyxellVisitor):
 
         if left.type in (tInt, tChar):
             return self.builder.icmp_signed(op, left, right)
+
         elif left.type == tBool:
             return self.builder.icmp_unsigned(op, left, right)
+
+        elif left.type.isTuple():
+            with self.block() as (label_start, label_end):
+                label_true = ll.Block(self.builder.function)
+                label_false = ll.Block(self.builder.function)
+
+                for i in range(len(left.type.elements)):
+                    label_cont = ll.Block(self.builder.function)
+
+                    values = self.builder.extract_value(left, i), self.builder.extract_value(right, i)
+                    cond = self.cmp(ctx, op + '=' if op in ('<', '>') else op, *values)
+
+                    if op == '!=':
+                        self.builder.cbranch(cond, label_true, label_cont)
+                    else:
+                        self.builder.cbranch(cond, label_cont, label_false)
+
+                    self.builder.function.blocks.append(label_cont)
+                    self.builder.position_at_end(label_cont)
+
+                    if op in ('<=', '>=', '<', '>'):
+                        label_cont = ll.Block(self.builder.function)
+
+                        cond2 = self.cmp(ctx, '!=', *values)
+                        self.builder.cbranch(cond2, label_true, label_cont)
+
+                        if op in ('<', '>'):
+                            cond = cond2
+
+                        self.builder.function.blocks.append(label_cont)
+                        self.builder.position_at_end(label_cont)
+
+                self.builder.branch(label_end)
+
+                for label in [label_true, label_false]:
+                    self.builder.function.blocks.append(label)
+                    self.builder.position_at_end(label)
+                    self.builder.branch(label_end)
+
+            phi = self.builder.phi(tBool)
+            phi.add_incoming(vTrue, label_true)
+            phi.add_incoming(vFalse, label_false)
+            phi.add_incoming(cond, label_cont)
+            return phi
+
         else:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
