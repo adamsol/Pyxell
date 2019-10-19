@@ -1,6 +1,8 @@
 
 import llvmlite.ir as ll
 
+from .utils import extend_class
+
 
 class CustomStructType(ll.LiteralStructType):
 
@@ -27,9 +29,9 @@ def tPtr(type=tChar):
 tString = CustomStructType([tPtr(), tInt], 'string')
 tString.subtype = tChar
 
+@extend_class(ll.Type)
 def isString(type):
     return getattr(type, 'kind', None) == 'string'
-ll.Type.isString = isString
 
 
 def tArray(subtype):
@@ -37,9 +39,9 @@ def tArray(subtype):
     type.subtype = subtype
     return type
 
+@extend_class(ll.Type)
 def isArray(type):
     return getattr(type, 'kind', None) == 'array'
-ll.Type.isArray = isArray
 
 
 def tTuple(elements):
@@ -47,21 +49,22 @@ def tTuple(elements):
         return elements[0]
     return CustomStructType(elements, 'tuple')
 
+@extend_class(ll.Type)
 def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
-ll.Type.isTuple = isTuple
 
 
 def tFunc(args, ret=tVoid):
     return ll.FunctionType(ret, args)
 
 
-def isIndexable(type):
+@extend_class(ll.Type)
+def isCollection(type):
     return type == tString or type.isArray()
-ll.Type.isIndexable = isIndexable
 
 
-def showType(type):
+@extend_class(ll.Type)
+def show(type):
     if type == tVoid:
         return 'Void'
     if type == tInt:
@@ -77,7 +80,6 @@ def showType(type):
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     return str(type)
-ll.Type.show = showType
 
 
 def vInt(n):
