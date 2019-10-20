@@ -96,6 +96,9 @@ class PyxellCompiler(PyxellVisitor):
         value = self.cast(ctx, value, ptr.type.pointee)
         self.builder.store(value, ptr)
 
+    def inc(self, ptr, step=vInt(1)):
+        self.builder.store(self.builder.add(self.builder.load(ptr), step), ptr)
+
     def sizeof(self, type, length=vInt(1)):
         return self.builder.ptrtoint(self.builder.gep(vNull(type), [length]), tInt)
 
@@ -246,6 +249,70 @@ class PyxellCompiler(PyxellVisitor):
         elif left.type == tBool:
             return self.builder.icmp_unsigned(op, left, right)
 
+        elif left.type.isCollection():
+            array1 = self.builder.extract_value(left, [0])
+            array2 = self.builder.extract_value(right, [0])
+            length1 = self.builder.extract_value(left, [1])
+            length2 = self.builder.extract_value(right, [1])
+
+            index = self.builder.alloca(tInt)
+            self.builder.store(vInt(0), index)
+
+            with self.block() as (label_start, label_end):
+                label_true = ll.Block(self.builder.function)
+                label_false = ll.Block(self.builder.function)
+                label_cont = ll.Block(self.builder.function)
+                label_length = ll.Block(self.builder.function)
+
+                i = self.builder.load(index)
+
+                for length in [length1, length2]:
+                    label = ll.Block(self.builder.function)
+                    self.builder.cbranch(self.builder.icmp_signed('<', i, length), label, label_length)
+                    self.builder.function.blocks.append(label)
+                    self.builder.position_at_end(label)
+
+                values = [self.builder.load(self.builder.gep(array, [i])) for array in [array1, array2]]
+                cond = self.cmp(ctx, op + '=' if op in ('<', '>') else op, *values)
+
+                if op == '!=':
+                    self.builder.cbranch(cond, label_true, label_cont)
+                else:
+                    self.builder.cbranch(cond, label_cont, label_false)
+
+                self.builder.function.blocks.append(label_cont)
+                self.builder.position_at_end(label_cont)
+
+                if op in ('<=', '>=', '<', '>'):
+                    label_cont = ll.Block(self.builder.function)
+
+                    cond2 = self.cmp(ctx, '!=', *values)
+                    self.builder.cbranch(cond2, label_true, label_cont)
+
+                    self.builder.function.blocks.append(label_cont)
+                    self.builder.position_at_end(label_cont)
+
+                self.inc(index)
+
+                self.builder.branch(label_start)
+
+                for label in [label_true, label_false]:
+                    self.builder.function.blocks.append(label)
+                    self.builder.position_at_end(label)
+                    self.builder.branch(label_end)
+
+                self.builder.function.blocks.append(label_length)
+                self.builder.position_at_end(label_length)
+
+                length_cond = self.builder.icmp_signed(op, length1, length2)
+                self.builder.branch(label_end)
+
+            phi = self.builder.phi(tBool)
+            phi.add_incoming(vTrue, label_true)
+            phi.add_incoming(vFalse, label_false)
+            phi.add_incoming(length_cond, label_length)
+            return phi
+
         elif left.type.isTuple():
             with self.block() as (label_start, label_end):
                 label_true = ll.Block(self.builder.function)
@@ -254,7 +321,7 @@ class PyxellCompiler(PyxellVisitor):
                 for i in range(len(left.type.elements)):
                     label_cont = ll.Block(self.builder.function)
 
-                    values = self.builder.extract_value(left, i), self.builder.extract_value(right, i)
+                    values = [self.builder.extract_value(tuple, i) for tuple in [left, right]]
                     cond = self.cmp(ctx, op + '=' if op in ('<', '>') else op, *values)
 
                     if op == '!=':
@@ -271,9 +338,6 @@ class PyxellCompiler(PyxellVisitor):
                         cond2 = self.cmp(ctx, '!=', *values)
                         self.builder.cbranch(cond2, label_true, label_cont)
 
-                        if op in ('<', '>'):
-                            cond = cond2
-
                         self.builder.function.blocks.append(label_cont)
                         self.builder.position_at_end(label_cont)
 
@@ -287,7 +351,7 @@ class PyxellCompiler(PyxellVisitor):
             phi = self.builder.phi(tBool)
             phi.add_incoming(vTrue, label_true)
             phi.add_incoming(vFalse, label_false)
-            phi.add_incoming(cond, label_cont)
+            phi.add_incoming(vBool(op not in ('!=', '<', '>')), label_cont)
             return phi
 
         else:
@@ -324,7 +388,8 @@ class PyxellCompiler(PyxellVisitor):
                 elem = self.builder.gep(self.builder.extract_value(value, [0]), [self.builder.load(index)])
                 self.print(ctx, self.builder.load(elem))
 
-                self.builder.store(self.builder.add(self.builder.load(index), vInt(1)), index)
+                self.inc(index)
+
                 cond = self.builder.icmp_signed('<', self.builder.load(index), length)
                 self.builder.cbranch(cond, label_start, label_end)
 
@@ -561,8 +626,7 @@ class PyxellCompiler(PyxellVisitor):
             self.builder.position_at_end(label_cont)
 
             for index, step, type in zip(indices, steps, types):
-                value = self.builder.add(self.builder.load(index), step)
-                self.builder.store(value, index)
+                self.inc(index, step)
 
             self.builder.branch(label_start)
 

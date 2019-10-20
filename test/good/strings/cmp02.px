@@ -2,7 +2,6 @@
 x = "y"
 x = "x"
 y = "y"
-if x > y or x == y do
-    print 2
-elif x <= y and x != y and "abc" > "ab" do
-    print "ok"
+print x > y or y <= x or x == y
+print x < y >= x != y
+print "abc" > "ab" and "" <= "a"
