@@ -18,6 +18,7 @@ class CustomStructType(ll.LiteralStructType):
 
 tVoid = ll.VoidType()
 tInt = ll.IntType(64)
+tFloat = ll.DoubleType()
 tBool = ll.IntType(1)
 tChar = ll.IntType(8)
 
@@ -69,6 +70,8 @@ def show(type):
         return 'Void'
     if type == tInt:
         return 'Int'
+    if type == tFloat:
+        return 'Float'
     if type == tBool:
         return 'Bool'
     if type == tChar:
@@ -83,7 +86,10 @@ def show(type):
 
 
 def vInt(n):
-    return ll.Constant(tInt, n)
+    return ll.Constant(tInt, str(n))
+
+def vFloat(f):
+    return ll.Constant(tFloat, str(f))
 
 def vBool(b):
     return ll.Constant(tBool, int(b))

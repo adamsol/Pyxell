@@ -19,10 +19,12 @@ class PyxellCompiler(PyxellVisitor):
             'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]), 'memcpy'),
             'write': ll.Function(self.module, tFunc([tString]), 'func.write'),
             'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
+            'writeFloat': ll.Function(self.module, tFunc([tFloat]), 'func.writeFloat'),
             'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
             'writeChar': ll.Function(self.module, tFunc([tChar]), 'func.writeChar'),
             'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
             'Int_pow': ll.Function(self.module, tFunc([tInt, tInt], tInt), 'func.Int_pow'),
+            'Float_pow': ll.Function(self.module, tFunc([tFloat, tFloat], tFloat), 'func.Float_pow'),
         }
 
 
@@ -71,9 +73,12 @@ class PyxellCompiler(PyxellVisitor):
         return value
 
     def unify(self, ctx, *values):
-        if not all(values[0].type == value.type for value in values):
+        if all(value.type == values[0].type for value in values):
+            return values
+        elif all(value.type in (tInt, tFloat) for value in values):
+            return [(self.builder.sitofp(value, tFloat) if value.type == tInt else value) for value in values]
+        else:
             self.throw(ctx, err.UnknownType())
-        return values
 
     def lvalue(self, ctx, expr, declare=None):
         if isinstance(expr, PyxellParser.ExprAtomContext):
@@ -115,31 +120,46 @@ class PyxellCompiler(PyxellVisitor):
         return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
     def unaryop(self, ctx, op, value):
-        if op in ('+', '-', '~'):
-            type = tInt
+        if op in ('+', '-'):
+            types = [tInt, tFloat]
+        elif op == '~':
+            types = [tInt]
         elif op == 'not':
-            type = tBool
+            types = [tBool]
 
-        if value.type != type:
+        if value.type not in types:
             self.throw(ctx, err.NoUnaryOperator(op, value.type))
 
         if op == '+':
             return value
         elif op == '-':
-            return self.builder.neg(value)
+            if value.type == tInt:
+                return self.builder.sub(vInt(0), value)
+            elif value.type == tFloat:
+                return self.builder.fsub(vFloat(0), value)
         elif op in ('~', 'not'):
             return self.builder.not_(value)
 
     def binaryop(self, ctx, op, left, right):
+        if left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+            left, right = self.unify(ctx, left, right)
+
         if op == '^':
             if left.type == right.type == tInt:
                 return self.builder.call(self.builtins['Int_pow'], [left, right])
+
+            elif left.type == right.type == tFloat:
+                return self.builder.call(self.builtins['Float_pow'], [left, right])
+
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '*':
             if left.type == right.type == tInt:
                 return self.builder.mul(left, right)
+
+            elif left.type == right.type == tFloat:
+                return self.builder.fmul(left, right)
 
             elif left.type.isCollection() and right.type == tInt:
                 type = left.type
@@ -154,7 +174,6 @@ class PyxellCompiler(PyxellVisitor):
                 self.builder.store(vInt(0), index)
 
                 with self.block() as (label_start, label_end):
-
                     i = self.builder.load(index)
                     self.memcpy(self.builder.gep(dest, [i]), src, src_length)
                     self.builder.store(self.builder.add(i, src_length), index)
@@ -183,6 +202,10 @@ class PyxellCompiler(PyxellVisitor):
                 v6 = self.builder.mul(v1, right)
                 v7 = self.builder.icmp_signed('!=', v6, left)
                 return self.builder.select(v7, v5, v1)
+
+            elif left.type == right.type == tFloat:
+                return self.builder.fdiv(left, right)
+
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -201,6 +224,9 @@ class PyxellCompiler(PyxellVisitor):
         elif op == '+':
             if left.type == right.type == tInt:
                 return self.builder.add(left, right)
+
+            elif left.type == right.type == tFloat:
+                return self.builder.fadd(left, right)
 
             elif left.type == right.type and left.type.isCollection():
                 type = left.type
@@ -225,10 +251,19 @@ class PyxellCompiler(PyxellVisitor):
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
+        elif op == '-':
+            if left.type == right.type == tInt:
+                return self.builder.sub(left, right)
+
+            elif left.type == right.type == tFloat:
+                return self.builder.fsub(left, right)
+
+            else:
+                self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
+
         else:
             if left.type == right.type == tInt:
                 instruction = {
-                    '-': self.builder.sub,
                     '<<': self.builder.shl,
                     '>>': self.builder.ashr,
                     '&': self.builder.and_,
@@ -240,11 +275,17 @@ class PyxellCompiler(PyxellVisitor):
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
     def cmp(self, ctx, op, left, right):
+        if left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+            left, right = self.unify(ctx, left, right)
+
         if left.type != right.type:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
         if left.type in (tInt, tChar):
             return self.builder.icmp_signed(op, left, right)
+
+        elif left.type == tFloat:
+            return self.builder.fcmp_ordered(op, left, right)
 
         elif left.type == tBool:
             return self.builder.icmp_unsigned(op, left, right)
@@ -364,6 +405,9 @@ class PyxellCompiler(PyxellVisitor):
     def print(self, ctx, value):
         if value.type == tInt:
             self.builder.call(self.builtins['writeInt'], [value])
+
+        elif value.type == tFloat:
+            self.builder.call(self.builtins['writeFloat'], [value])
 
         elif value.type == tBool:
             self.builder.call(self.builtins['writeBool'], [value])
@@ -764,6 +808,9 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitAtomInt(self, ctx):
         return vInt(ctx.INT())
+
+    def visitAtomFloat(self, ctx):
+        return vFloat(ctx.FLOAT())
 
     def visitAtomBool(self, ctx):
         return vBool(ctx.getText() == 'true')

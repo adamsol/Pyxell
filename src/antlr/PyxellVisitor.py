@@ -134,6 +134,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#AtomFloat.
+    def visitAtomFloat(self, ctx:PyxellParser.AtomFloatContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#AtomBool.
     def visitAtomBool(self, ctx:PyxellParser.AtomBoolContext):
         return self.visitChildren(ctx)
