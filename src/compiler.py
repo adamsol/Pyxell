@@ -102,7 +102,8 @@ class PyxellCompiler(PyxellVisitor):
         self.builder.store(value, ptr)
 
     def inc(self, ptr, step=vInt(1)):
-        self.builder.store(self.builder.add(self.builder.load(ptr), step), ptr)
+        add = self.builder.fadd if ptr.type.pointee == tFloat else self.builder.add
+        self.builder.store(add(self.builder.load(ptr), step), ptr)
 
     def sizeof(self, type, length=vInt(1)):
         return self.builder.ptrtoint(self.builder.gep(vNull(type), [length]), tInt)
@@ -579,26 +580,36 @@ class PyxellCompiler(PyxellVisitor):
         getters = []
 
         def prepare(iterable, step):  # must be a function so that lambdas work properly
-            desc = self.builder.icmp_signed('<', step, vInt(0))
 
             if isinstance(iterable, PyxellParser.ExprRangeContext):
                 values = [self.visit(expr) for expr in iterable.expr()]
                 type = values[0].type
                 types.append(type)
-                if type not in (tInt, tChar):
+                if type not in (tInt, tFloat, tChar):
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
-                if type != tInt:
-                    step = self.builder.trunc(step, type)
+                if step.type != type:
+                    if type == tFloat:
+                        step = self.builder.sitofp(step, type)
+                    else:
+                        self.cast(iterable, step, tInt)
+                        if type == tChar:
+                            step = self.builder.trunc(step, type)
+                if type == tFloat:
+                    cmp = self.builder.fcmp_ordered
+                    desc = cmp('<', step, vFloat(0))
+                else:
+                    cmp = self.builder.icmp_signed
+                    desc = cmp('<', step, vInt(0))
                 index = self.builder.alloca(type)
                 start = values[0]
                 if len(values) == 1:
                     cond = lambda v: vTrue
                 elif iterable.dots.text == '..':
-                    cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>=', v, values[1]), self.builder.icmp_signed('<=', v, values[1]))
+                    cond = lambda v: self.builder.select(desc, cmp('>=', v, values[1]), cmp('<=', v, values[1]))
                 elif iterable.dots.text == '...':
-                    cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>', v, values[1]), self.builder.icmp_signed('<', v, values[1]))
+                    cond = lambda v: self.builder.select(desc, cmp('>', v, values[1]), cmp('<', v, values[1]))
                 getter = lambda v: v
             else:
                 value = self.visit(iterable)
@@ -608,6 +619,7 @@ class PyxellCompiler(PyxellVisitor):
                     types.append(value.type.subtype)
                 else:
                     self.throw(ctx, err.NotIterable(value.type))
+                desc = self.builder.icmp_signed('<', step, vInt(0))
                 index = self.builder.alloca(tInt)
                 array = self.builder.extract_value(value, [0])
                 length = self.builder.extract_value(value, [1])
@@ -628,11 +640,8 @@ class PyxellCompiler(PyxellVisitor):
             _steps = [self.visit(expr) for expr in exprs[2].expr()]
         if len(_steps) == 1:
             _steps *= len(iterables)
-        if len(exprs) > 2:
-            t1 = tTuple([step.type for step in _steps])
-            t2 = tTuple([tInt] * len(iterables))
-            if t1 != t2:
-                self.throw(ctx, err.IllegalAssignment(t1, t2))
+        if len(exprs) > 2 and len(_steps) != len(iterables):
+            self.throw(ctx, err.InvalidLoopStep())
 
         for iterable, step in zip(iterables, _steps):
             prepare(iterable, step)

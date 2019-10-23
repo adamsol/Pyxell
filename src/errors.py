@@ -10,10 +10,12 @@ class PyxellErrorListener(ErrorListener):
 
 class PyxellError(Exception):
 
-    CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
-    IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
     InvalidIndentation = lambda: f"Indentation error"
     InvalidSyntax = lambda: f"Syntax error"
+
+    CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
+    IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
+    InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"
     NoUnaryOperator = lambda op, t: f"No unary operator `{op}` defined for `{t.show()}`"
