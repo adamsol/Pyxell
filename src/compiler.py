@@ -80,6 +80,14 @@ class PyxellCompiler(PyxellVisitor):
         else:
             self.throw(ctx, err.UnknownType())
 
+    def declare(self, ctx, type, id):
+        id = str(id)
+        if id in self.env:
+            self.throw(ctx, err.RedeclaredIdentifier(id))
+        ptr = self.builder.alloca(type)
+        self.env[id] = ptr
+        return ptr
+
     def lvalue(self, ctx, expr, declare=None):
         if isinstance(expr, PyxellParser.ExprAtomContext):
             atom = expr.atom()
@@ -89,7 +97,7 @@ class PyxellCompiler(PyxellVisitor):
             if id not in self.env:
                 if declare is None:
                     self.throw(ctx, err.UndeclaredIdentifier(id))
-                self.env[id] = self.builder.alloca(declare)
+                self.declare(ctx, declare, id)
             return self.env[id]
         elif isinstance(expr, PyxellParser.ExprIndexContext):
             return self.index(ctx, *expr.expr())
@@ -484,6 +492,16 @@ class PyxellCompiler(PyxellVisitor):
             self.print(expr, value)
         self.write('\n')
 
+    def visitStmtDecl(self, ctx):
+        type = self.visit(ctx.typ())
+        id = ctx.ID()
+        ptr = self.declare(ctx, type, id)
+
+        expr = ctx.tuple_expr()
+        if expr:
+            value = self.cast(ctx, self.visit(expr), type)
+            self.builder.store(value, ptr)
+
     def visitStmtAssg(self, ctx):
         value = self.visit(ctx.tuple_expr())
 
@@ -867,3 +885,28 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx, ctx.ID()))
+
+
+    ### Types ###
+
+    def visitTypePrimitive(self, ctx):
+        return {
+            'Int': tInt,
+            'Float': tFloat,
+            'Bool': tBool,
+            'Char': tChar,
+            'String': tString,
+        }[ctx.getText()]
+
+    def visitTypeArray(self, ctx):
+        return tArray(self.visit(ctx.typ()))
+
+    def visitTypeTuple(self, ctx):
+        types = []
+        while True:
+            types.append(self.visit(ctx.typ(0)))
+            if not isinstance(ctx.typ(1), PyxellParser.TypeTupleContext):
+                break
+            ctx = ctx.typ(1)
+        types.append(self.visit(ctx.typ(1)))
+        return tTuple(types)

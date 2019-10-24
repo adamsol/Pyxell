@@ -12,6 +12,7 @@ stmt
 simple_stmt
   : 'skip' # StmtSkip
   | 'print' tuple_expr? # StmtPrint
+  | typ ID ('=' tuple_expr)? # StmtDecl
   | (lvalue '=')* tuple_expr # StmtAssg
   | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
   | s=('break' | 'continue') # StmtLoopControl
@@ -67,6 +68,16 @@ atom
   | STRING # AtomString
   | '[' (expr ',')* expr? ']' # AtomArray
   | ID # AtomId
+  ;
+
+typ
+  : 'Int' # TypePrimitive
+  | 'Float' # TypePrimitive
+  | 'Bool' # TypePrimitive
+  | 'Char' # TypePrimitive
+  | 'String' # TypePrimitive
+  | '[' typ ']' # TypeArray
+  | <assoc=right> typ '*' typ # TypeTuple
   ;
 
 INT : DIGIT+ ;
