@@ -26,6 +26,7 @@ class PyxellError(Exception):
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
     RedeclaredIdentifier = lambda id: f"Identifier `{id}` is already declared"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
+    UninitializedIdentifier = lambda id: f"Identifier `{id}` might not have been initialized"
     UnexpectedStatement = lambda s: f"Unexpected `{s}` statement"
     UnknownType = lambda: f"Cannot settle type of the expression"
 

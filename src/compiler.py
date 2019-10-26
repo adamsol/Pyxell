@@ -12,6 +12,7 @@ class PyxellCompiler(PyxellVisitor):
 
     def __init__(self):
         self.env = {}
+        self.initialized = set()
         self.builder = ll.IRBuilder()
         self.module = ll.Module()
         self.builtins = {
@@ -32,9 +33,11 @@ class PyxellCompiler(PyxellVisitor):
 
     @contextmanager
     def local(self):
-        tmp = self.env.copy()
+        env = self.env.copy()
+        initialized = self.initialized.copy()
         yield
-        self.env = tmp
+        self.env = env
+        self.initialized = initialized
 
     @contextmanager
     def block(self):
@@ -50,10 +53,12 @@ class PyxellCompiler(PyxellVisitor):
         raise err(msg, ctx.start.line, ctx.start.column+1)
 
     def get(self, ctx, id):
-        try:
-            return self.env[str(id)]
-        except KeyError:
+        id = str(id)
+        if id not in self.env:
             self.throw(ctx, err.UndeclaredIdentifier(id))
+        if id not in self.initialized:
+            self.throw(ctx, err.UninitializedIdentifier(id))
+        return self.env[id]
 
     def index(self, ctx, *exprs):
         collection, index = [self.visit(expr) for expr in exprs]
@@ -80,15 +85,17 @@ class PyxellCompiler(PyxellVisitor):
         else:
             self.throw(ctx, err.UnknownType())
 
-    def declare(self, ctx, type, id):
+    def declare(self, ctx, type, id, initialize=False):
         id = str(id)
         if id in self.env:
             self.throw(ctx, err.RedeclaredIdentifier(id))
         ptr = self.builder.alloca(type)
         self.env[id] = ptr
+        if initialize:
+            self.initialized.add(id)
         return ptr
 
-    def lvalue(self, ctx, expr, declare=None):
+    def lvalue(self, ctx, expr, declare=None, initialize=False):
         if isinstance(expr, PyxellParser.ExprAtomContext):
             atom = expr.atom()
             if not isinstance(atom, PyxellParser.AtomIdContext):
@@ -98,6 +105,8 @@ class PyxellCompiler(PyxellVisitor):
                 if declare is None:
                     self.throw(ctx, err.UndeclaredIdentifier(id))
                 self.declare(ctx, declare, id)
+            if initialize:
+                self.initialized.add(id)
             return self.env[id]
         elif isinstance(expr, PyxellParser.ExprIndexContext):
             return self.index(ctx, *expr.expr())
@@ -105,7 +114,7 @@ class PyxellCompiler(PyxellVisitor):
             self.throw(ctx, err.NotLvalue())
 
     def assign(self, ctx, expr, value):
-        ptr = self.lvalue(ctx, expr, declare=value.type)
+        ptr = self.lvalue(ctx, expr, declare=value.type, initialize=True)
         value = self.cast(ctx, value, ptr.type.pointee)
         self.builder.store(value, ptr)
 
@@ -495,9 +504,8 @@ class PyxellCompiler(PyxellVisitor):
     def visitStmtDecl(self, ctx):
         type = self.visit(ctx.typ())
         id = ctx.ID()
-        ptr = self.declare(ctx, type, id)
-
         expr = ctx.tuple_expr()
+        ptr = self.declare(ctx, type, id, initialize=bool(expr))
         if expr:
             value = self.cast(ctx, self.visit(expr), type)
             self.builder.store(value, ptr)
@@ -532,6 +540,7 @@ class PyxellCompiler(PyxellVisitor):
         blocks = ctx.block()
 
         with self.block() as (label_start, label_end):
+            initialized_vars = []
 
             def emitIfElse(index):
                 if len(exprs) == index:
@@ -550,11 +559,15 @@ class PyxellCompiler(PyxellVisitor):
                 with self.builder._branch_helper(label_if, label_end):
                     with self.local():
                         self.visit(blocks[index])
+                        initialized_vars.append(self.initialized)
 
                 with self.builder._branch_helper(label_else, label_end):
                     emitIfElse(index+1)
 
             emitIfElse(0)
+
+            if len(blocks) > len(exprs):  # there is an `else` statement
+                self.initialized.update(set.intersection(*initialized_vars))
 
     def visitStmtWhile(self, ctx):
         with self.block() as (label_start, label_end):
