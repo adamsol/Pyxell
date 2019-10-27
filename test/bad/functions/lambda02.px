@@ -1,5 +1,5 @@
 
-func f(String,Int->String g) String def
+func f(String->Int->String g) String def
     return g("abc", 2)
 
 f(lambda x, y -> x - y)

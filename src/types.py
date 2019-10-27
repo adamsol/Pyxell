@@ -91,13 +91,13 @@ def show(type):
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     if type.isFunc():
-        return ','.join(t.show() for t in type.args) + '->' + type.ret.show()
+        return '->'.join(t.show() for t in type.args) + '->' + type.ret.show()
     return str(type)
 
 
 @extend_class(ll.Type)
 def default(type):
-    return ll.Constant(type, 0)
+    return ll.Constant(type, 0 if type in (tInt, tFloat, tBool, tChar) else 'null')
 
 
 def vInt(n):

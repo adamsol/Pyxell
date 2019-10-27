@@ -1,5 +1,5 @@
 
-func call(Bool,String->Void f) def
+func call(Bool->String->Void f) def
     f(true, "$")
 
 func f(Int a, Bool b, Char c, String d: "---") def

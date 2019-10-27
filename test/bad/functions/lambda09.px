@@ -1,5 +1,5 @@
 
-func f(Int,Int->Int g) def
+func f(Int->Int->Int g) def
     return
 
 f(_)

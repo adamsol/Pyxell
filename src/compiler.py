@@ -988,6 +988,9 @@ class PyxellCompiler(PyxellVisitor):
             'String': tString,
         }[ctx.getText()]
 
+    def visitTypeParentheses(self, ctx):
+        return self.visit(ctx.typ())
+
     def visitTypeArray(self, ctx):
         return tArray(self.visit(ctx.typ()))
 
@@ -1000,3 +1003,16 @@ class PyxellCompiler(PyxellVisitor):
             ctx = ctx.typ(1)
         types.append(self.visit(ctx.typ(1)))
         return tTuple(types)
+
+    def visitTypeFunc(self, ctx):
+        types = []
+        while True:
+            types.append(self.visit(ctx.typ(0)))
+            if not isinstance(ctx.typ(1), PyxellParser.TypeFuncContext):
+                break
+            ctx = ctx.typ(1)
+        types.append(self.visit(ctx.typ(1)))
+        return tFunc(types[:-1], types[-1])
+
+    def visitTypeFunc0(self, ctx):
+        return tFunc([], self.visit(ctx.typ()))

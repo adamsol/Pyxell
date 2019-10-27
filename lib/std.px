@@ -169,7 +169,7 @@ func filter<Any A>(A->Bool f, [A] a) [A] def
 func map<Any A, Any B>(A->B f, [A] a) [B] def
     return [f(x) for x in a]
 
-func reduce<Any A, Any B>(A,B->B f, B r, [A] a) B def
+func reduce<Any A, Any B>(A->B->B f, B r, [A] a) B def
     for x in a do
         r = f(x, r)
     return r

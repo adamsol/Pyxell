@@ -2,7 +2,7 @@
 func concat(String a, String b) String def
     return a + b
 
-func id(String,String->String f) String,String->String def
+func id(String->String->String f) String->String->String def
     return f
 
 f = id(id(concat))

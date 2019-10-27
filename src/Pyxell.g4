@@ -87,8 +87,11 @@ typ
   | 'Bool' # TypePrimitive
   | 'Char' # TypePrimitive
   | 'String' # TypePrimitive
+  | '(' typ ')' # TypeParentheses
   | '[' typ ']' # TypeArray
   | <assoc=right> typ '*' typ # TypeTuple
+  | <assoc=right> typ '->' typ # TypeFunc
+  | '->' typ # TypeFunc0
   ;
 
 INT : DIGIT+ ;
