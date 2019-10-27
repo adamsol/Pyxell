@@ -49,6 +49,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#StmtReturn.
+    def visitStmtReturn(self, ctx:PyxellParser.StmtReturnContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#lvalue.
     def visitLvalue(self, ctx:PyxellParser.LvalueContext):
         return self.visitChildren(ctx)
@@ -74,8 +79,23 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#block.
-    def visitBlock(self, ctx:PyxellParser.BlockContext):
+    # Visit a parse tree produced by PyxellParser#StmtFunc.
+    def visitStmtFunc(self, ctx:PyxellParser.StmtFuncContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#arg.
+    def visitArg(self, ctx:PyxellParser.ArgContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#do_block.
+    def visitDo_block(self, ctx:PyxellParser.Do_blockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#def_block.
+    def visitDef_block(self, ctx:PyxellParser.Def_blockContext):
         return self.visitChildren(ctx)
 
 
@@ -86,6 +106,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprUnaryOp.
     def visitExprUnaryOp(self, ctx:PyxellParser.ExprUnaryOpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprCall.
+    def visitExprCall(self, ctx:PyxellParser.ExprCallContext):
         return self.visitChildren(ctx)
 
 

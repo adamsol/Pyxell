@@ -16,6 +16,7 @@ simple_stmt
   | (lvalue '=')* tuple_expr # StmtAssg
   | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
   | s=('break' | 'continue') # StmtLoopControl
+  | 'return' tuple_expr? # StmtReturn
   ;
 
 lvalue
@@ -23,14 +24,23 @@ lvalue
   ;
 
 compound_stmt
-  : 'if' expr block ('elif' expr block)* ('else' block)? # StmtIf
-  | 'while' expr block # StmtWhile
-  | 'until' expr block # StmtUntil
-  | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? block # StmtFor
+  : 'if' expr do_block ('elif' expr do_block)* ('else' do_block)? # StmtIf
+  | 'while' expr do_block # StmtWhile
+  | 'until' expr do_block # StmtUntil
+  | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? do_block # StmtFor
+  | 'func' ID '(' (arg ',')* arg? ')' ret=typ? def_block # StmtFunc
   ;
 
-block
+arg
+  : typ ID
+  ;
+
+do_block
   : 'do' '{' stmt+ '}'
+  ;
+
+def_block
+  : 'def' '{' stmt+ '}'
   ;
 
 tuple_expr
@@ -42,6 +52,7 @@ expr
   | '(' tuple_expr ')' # ExprParentheses
   | expr '[' expr ']' # ExprIndex
   | expr '.' ID # ExprAttr
+  | expr '(' (expr ',')* expr? ')' # ExprCall
   | <assoc=right> expr op='^' expr # ExprBinaryOp
   | op=('+' | '-' | '~') expr # ExprUnaryOp
   | expr op=('*' | '/' | '%') expr # ExprBinaryOp
@@ -50,8 +61,7 @@ expr
   | expr op='&' expr # ExprBinaryOp
   | expr op='$' expr # ExprBinaryOp
   | expr op='|' expr # ExprBinaryOp
-  | expr dots='..' expr # ExprRange
-  | expr dots='...' expr # ExprRange
+  | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange
   | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
   | op='not' expr # ExprUnaryOp
@@ -71,7 +81,8 @@ atom
   ;
 
 typ
-  : 'Int' # TypePrimitive
+  : 'Void' # TypePrimitive
+  | 'Int' # TypePrimitive
   | 'Float' # TypePrimitive
   | 'Bool' # TypePrimitive
   | 'Char' # TypePrimitive

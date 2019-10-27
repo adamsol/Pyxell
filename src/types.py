@@ -56,7 +56,15 @@ def isTuple(type):
 
 
 def tFunc(args, ret=tVoid):
-    return ll.FunctionType(ret, args)
+    type = tPtr(ll.FunctionType(ret, args))
+    type.args = args
+    type.ret = ret
+    type.kind = 'function'
+    return type
+
+@extend_class(ll.Type)
+def isFunc(type):
+    return getattr(type, 'kind', None) == 'function'
 
 
 @extend_class(ll.Type)
@@ -82,7 +90,14 @@ def show(type):
         return f'[{type.subtype.show()}]'
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
+    if type.isFunc():
+        return ','.join(t.show() for t in type.args) + '->' + type.ret.show()
     return str(type)
+
+
+@extend_class(ll.Type)
+def default(type):
+    return ll.Constant(type, 0)
 
 
 def vInt(n):

@@ -16,16 +16,16 @@ class PyxellCompiler(PyxellVisitor):
         self.builder = ll.IRBuilder()
         self.module = ll.Module()
         self.builtins = {
-            'malloc': ll.Function(self.module, tFunc([tInt], tPtr()), 'malloc'),
-            'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]), 'memcpy'),
-            'write': ll.Function(self.module, tFunc([tString]), 'func.write'),
-            'writeInt': ll.Function(self.module, tFunc([tInt]), 'func.writeInt'),
-            'writeFloat': ll.Function(self.module, tFunc([tFloat]), 'func.writeFloat'),
-            'writeBool': ll.Function(self.module, tFunc([tBool]), 'func.writeBool'),
-            'writeChar': ll.Function(self.module, tFunc([tChar]), 'func.writeChar'),
-            'putchar': ll.Function(self.module, tFunc([tChar]), 'putchar'),
-            'Int_pow': ll.Function(self.module, tFunc([tInt, tInt], tInt), 'func.Int_pow'),
-            'Float_pow': ll.Function(self.module, tFunc([tFloat, tFloat], tFloat), 'func.Float_pow'),
+            'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
+            'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]).pointee, 'memcpy'),
+            'write': ll.Function(self.module, tFunc([tString]).pointee, 'func.write'),
+            'writeInt': ll.Function(self.module, tFunc([tInt]).pointee, 'func.writeInt'),
+            'writeFloat': ll.Function(self.module, tFunc([tFloat]).pointee, 'func.writeFloat'),
+            'writeBool': ll.Function(self.module, tFunc([tBool]).pointee, 'func.writeBool'),
+            'writeChar': ll.Function(self.module, tFunc([tChar]).pointee, 'func.writeChar'),
+            'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
+            'Int_pow': ll.Function(self.module, tFunc([tInt, tInt], tInt).pointee, 'func.Int_pow'),
+            'Float_pow': ll.Function(self.module, tFunc([tFloat, tFloat], tFloat).pointee, 'func.Float_pow'),
         }
 
 
@@ -85,9 +85,11 @@ class PyxellCompiler(PyxellVisitor):
         else:
             self.throw(ctx, err.UnknownType())
 
-    def declare(self, ctx, type, id, initialize=False):
+    def declare(self, ctx, type, id, redeclare=False, initialize=False):
+        if type == tVoid:
+            self.throw(ctx, err.InvalidDeclaration(type))
         id = str(id)
-        if id in self.env:
+        if id in self.env and not redeclare:
             self.throw(ctx, err.RedeclaredIdentifier(id))
         ptr = self.builder.alloca(type)
         self.env[id] = ptr
@@ -484,8 +486,8 @@ class PyxellCompiler(PyxellVisitor):
     ### Program ###
 
     def visitProgram(self, ctx):
-        func = ll.Function(self.module, tFunc([], tInt), 'main')
-        entry = func.append_basic_block()
+        func = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
+        entry = func.append_basic_block('entry')
         self.builder.position_at_end(entry)
         self.visitChildren(ctx)
         self.builder.position_at_end(func.blocks[-1])
@@ -537,7 +539,7 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitStmtIf(self, ctx):
         exprs = ctx.expr()
-        blocks = ctx.block()
+        blocks = ctx.do_block()
 
         with self.block() as (label_start, label_end):
             initialized_vars = []
@@ -582,7 +584,7 @@ class PyxellCompiler(PyxellVisitor):
                 self.env['#continue'] = label_start
                 self.env['#break'] = label_end
 
-                self.visit(ctx.block())
+                self.visit(ctx.do_block())
 
             self.builder.branch(label_start)
 
@@ -592,7 +594,7 @@ class PyxellCompiler(PyxellVisitor):
                 self.env['#continue'] = label_start
                 self.env['#break'] = label_end
 
-                self.visit(ctx.block())
+                self.visit(ctx.do_block())
 
             expr = ctx.expr()
             cond = self.cast(expr, self.visit(expr), tBool)
@@ -703,7 +705,7 @@ class PyxellCompiler(PyxellVisitor):
                 else:
                     self.throw(exprs[0], err.CannotUnpack(tTuple(types), len(vars)))
 
-                self.visit(ctx.block())
+                self.visit(ctx.do_block())
 
             self.builder.function.blocks.append(label_cont)
             self.builder.branch(label_cont)
@@ -715,13 +717,71 @@ class PyxellCompiler(PyxellVisitor):
             self.builder.branch(label_start)
 
     def visitStmtLoopControl(self, ctx):
-        stmt = ctx.s.text  # 'break' / 'continue'
+        stmt = ctx.s.text  # `break` / `continue`
+
         try:
             label = self.env[f'#{stmt}']
         except KeyError:
             self.throw(ctx, err.UnexpectedStatement(stmt))
+
+        self.builder.branch(label)
+
+    def visitStmtFunc(self, ctx):
+        id = str(ctx.ID())
+
+        args = [(self.visit(arg.typ()), arg.ID()) for arg in ctx.arg()]
+        arg_types = [arg[0] for arg in args]
+
+        ret_type = self.visit(ctx.ret) if ctx.ret else tVoid
+
+        func_type = tFunc(arg_types, ret_type)
+        func = ll.Function(self.module, func_type.pointee, self.module.get_unique_name('def.'+id))
+        func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name(id))
+        func_ptr.initializer = func
+        self.env[id] = func_ptr
+        self.initialized.add(id)
+
+        prev_label = self.builder.basic_block
+        entry = func.append_basic_block('entry')
+        self.builder.position_at_end(entry)
+
+        with self.local():
+            self.env['#return'] = ret_type
+            self.env.pop('#continue', None)
+            self.env.pop('#break', None)
+
+            for (type, id), value in zip(args, func.args):
+                ptr = self.declare(ctx, type, id, redeclare=True, initialize=True)
+                self.env[id] = ptr
+                self.builder.store(value, ptr)
+
+            self.visit(ctx.def_block())
+
+            if ret_type == tVoid:
+                self.builder.ret_void()
+            else:
+                if '#return' not in self.initialized:
+                    self.throw(ctx, err.MissingReturn(id))
+                self.builder.ret(ret_type.default())
+
+        self.builder.position_at_end(prev_label)
+
+    def visitStmtReturn(self, ctx):
+        try:
+            type = self.env['#return']
+        except KeyError:
+            self.throw(ctx, err.UnexpectedStatement('return'))
+
+        self.initialized.add('#return')
+
+        expr = ctx.tuple_expr()
+        if expr:
+            value = self.cast(ctx, self.visit(expr), type)
+            self.builder.ret(value)
         else:
-            self.builder.branch(label)
+            if type != tVoid:
+                self.throw(ctx, err.IllegalAssignment(tVoid, type))
+            self.builder.ret_void()
 
 
     ### Expressions ###
@@ -753,6 +813,22 @@ class PyxellCompiler(PyxellVisitor):
             return self.builder.extract_value(value, [index])
 
         self.throw(ctx, err.NoAttribute(value.type, id))
+
+    def visitExprCall(self, ctx):
+        exprs = ctx.expr()
+
+        func = self.visit(exprs[0])
+        if not func.type.isFunc():
+            self.throw(ctx, err.NotFunction(func.type))
+
+        exprs = exprs[1:]
+        if len(exprs) < len(func.type.args):
+            self.throw(ctx, err.TooFewArguments(func.type))
+        if len(exprs) > len(func.type.args):
+            self.throw(ctx, err.TooManyArguments(func.type))
+        args = [self.cast(expr, self.visit(expr), type) for expr, type in zip(exprs, func.type.args)]
+
+        return self.builder.call(func, args)
 
     def visitExprUnaryOp(self, ctx):
         return self.unaryop(ctx, ctx.op.text, self.visit(ctx.expr()))
@@ -904,6 +980,7 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitTypePrimitive(self, ctx):
         return {
+            'Void': tVoid,
             'Int': tInt,
             'Float': tFloat,
             'Bool': tBool,
