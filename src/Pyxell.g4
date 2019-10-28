@@ -28,11 +28,11 @@ compound_stmt
   | 'while' expr do_block # StmtWhile
   | 'until' expr do_block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? do_block # StmtFor
-  | 'func' ID '(' (arg ',')* arg? ')' ret=typ? def_block # StmtFunc
+  | 'func' ID '(' (arg ',')* arg? ')' (ret=typ)? def_block # StmtFunc
   ;
 
 arg
-  : typ ID
+  : typ ID (':' default=expr)?
   ;
 
 do_block

@@ -1,4 +1,6 @@
 
+from collections import namedtuple
+
 import llvmlite.ir as ll
 
 from .utils import extend_class
@@ -55,8 +57,11 @@ def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
 
 
+Arg = namedtuple('Arg', ['type', 'name', 'default'], defaults=[None]*3)
+
 def tFunc(args, ret=tVoid):
-    type = tPtr(ll.FunctionType(ret, args))
+    args = [arg if isinstance(arg, Arg) else Arg(arg) for arg in args]
+    type = tPtr(ll.FunctionType(ret, [arg.type for arg in args]))
     type.args = args
     type.ret = ret
     type.kind = 'function'
@@ -91,7 +96,7 @@ def show(type):
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     if type.isFunc():
-        return '->'.join(t.show() for t in type.args) + '->' + type.ret.show()
+        return '->'.join(arg.type.show() for arg in type.args) + '->' + type.ret.show()
     return str(type)
 
 

@@ -1,6 +1,7 @@
 
 import ast
 from contextlib import contextmanager
+from itertools import zip_longest
 
 from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
@@ -38,6 +39,16 @@ class PyxellCompiler(PyxellVisitor):
         yield
         self.env = env
         self.initialized = initialized
+
+    @contextmanager
+    def no_output(self):
+        dummy_module = ll.Module()
+        dummy_func = ll.Function(dummy_module, tFunc([]).pointee, 'dummy')
+        dummy_label = dummy_func.append_basic_block('dummy')
+        prev_label = self.builder.basic_block
+        self.builder.position_at_end(dummy_label)
+        yield
+        self.builder.position_at_end(prev_label)
 
     @contextmanager
     def block(self):
@@ -729,12 +740,23 @@ class PyxellCompiler(PyxellVisitor):
     def visitStmtFunc(self, ctx):
         id = str(ctx.ID())
 
-        args = [(self.visit(arg.typ()), arg.ID()) for arg in ctx.arg()]
-        arg_types = [arg[0] for arg in args]
+        args = []
+        expect_default = False
+        for arg in ctx.arg():
+            type = self.visit(arg.typ())
+            name = str(arg.ID())
+            default = arg.default
+            if default:
+                with self.no_output():
+                    self.cast(default, self.visit(default), type)
+                expect_default = True
+            elif expect_default:
+                self.throw(arg, err.MissingDefault(name))
+            args.append(Arg(type, name, arg.default))
 
         ret_type = self.visit(ctx.ret) if ctx.ret else tVoid
 
-        func_type = tFunc(arg_types, ret_type)
+        func_type = tFunc(args, ret_type)
         func = ll.Function(self.module, func_type.pointee, self.module.get_unique_name('def.'+id))
         func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name(id))
         func_ptr.initializer = func
@@ -750,7 +772,7 @@ class PyxellCompiler(PyxellVisitor):
             self.env.pop('#continue', None)
             self.env.pop('#break', None)
 
-            for (type, id), value in zip(args, func.args):
+            for (type, id, default), value in zip(args, func.args):
                 ptr = self.declare(ctx, type, id, redeclare=True, initialize=True)
                 self.env[id] = ptr
                 self.builder.store(value, ptr)
@@ -822,11 +844,22 @@ class PyxellCompiler(PyxellVisitor):
             self.throw(ctx, err.NotFunction(func.type))
 
         exprs = exprs[1:]
-        if len(exprs) < len(func.type.args):
-            self.throw(ctx, err.TooFewArguments(func.type))
         if len(exprs) > len(func.type.args):
             self.throw(ctx, err.TooManyArguments(func.type))
-        args = [self.cast(expr, self.visit(expr), type) for expr, type in zip(exprs, func.type.args)]
+
+        args = []
+        for call_arg, func_arg in zip_longest(exprs, func.type.args):
+            if call_arg:
+                expr = call_arg
+            elif func_arg.default:
+                expr = func_arg.default
+            else:
+                break
+            value = self.cast(expr, self.visit(expr), func_arg.type)
+            args.append(value)
+
+        if len(args) < len(func.type.args):
+            self.throw(ctx, err.TooFewArguments(func.type))
 
         return self.builder.call(func, args)
 

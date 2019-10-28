@@ -17,6 +17,7 @@ class PyxellError(Exception):
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
+    MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     MissingReturn = lambda id: f"Not all code paths return a value in function `{id}`"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"
