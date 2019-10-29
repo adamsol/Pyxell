@@ -28,10 +28,10 @@ compound_stmt
   | 'while' expr do_block # StmtWhile
   | 'until' expr do_block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? do_block # StmtFor
-  | 'func' ID '(' (arg ',')* arg? ')' (ret=typ)? def_block # StmtFunc
+  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? def_block # StmtFunc
   ;
 
-arg
+func_arg
   : typ ID (':' default=expr)?
   ;
 
@@ -52,7 +52,7 @@ expr
   | '(' tuple_expr ')' # ExprParentheses
   | expr '[' expr ']' # ExprIndex
   | expr '.' ID # ExprAttr
-  | expr '(' (expr ',')* expr? ')' # ExprCall
+  | expr '(' (call_arg ',')* call_arg? ')' # ExprCall
   | <assoc=right> expr op='^' expr # ExprBinaryOp
   | op=('+' | '-' | '~') expr # ExprUnaryOp
   | expr op=('*' | '/' | '%') expr # ExprBinaryOp
@@ -68,6 +68,10 @@ expr
   | <assoc=right> expr op='and' expr # ExprLogicalOp
   | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
+  ;
+
+call_arg
+  : (ID '=')? expr
   ;
 
 atom

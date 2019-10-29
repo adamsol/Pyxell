@@ -1,7 +1,6 @@
 
 import ast
 from contextlib import contextmanager
-from itertools import zip_longest
 
 from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
@@ -742,7 +741,7 @@ class PyxellCompiler(PyxellVisitor):
 
         args = []
         expect_default = False
-        for arg in ctx.arg():
+        for arg in ctx.func_arg():
             type = self.visit(arg.typ())
             name = str(arg.ID())
             default = arg.default
@@ -837,29 +836,47 @@ class PyxellCompiler(PyxellVisitor):
         self.throw(ctx, err.NoAttribute(value.type, id))
 
     def visitExprCall(self, ctx):
-        exprs = ctx.expr()
-
-        func = self.visit(exprs[0])
+        func = self.visit(ctx.expr())
         if not func.type.isFunc():
             self.throw(ctx, err.NotFunction(func.type))
 
-        exprs = exprs[1:]
-        if len(exprs) > len(func.type.args):
-            self.throw(ctx, err.TooManyArguments(func.type))
-
         args = []
-        for call_arg, func_arg in zip_longest(exprs, func.type.args):
-            if call_arg:
-                expr = call_arg
+        pos_args = {}
+        named_args = {}
+
+        for i, call_arg in enumerate(ctx.call_arg()):
+            name = call_arg.ID()
+            expr = call_arg.expr()
+            if name:
+                name = str(name)
+                if name in named_args:
+                    self.throw(ctx, err.RepeatedArgument(name))
+                named_args[name] = expr
+            else:
+                if named_args:
+                    self.throw(ctx, err.ExpectedNamedArgument())
+                pos_args[i] = expr
+
+        for i, func_arg in enumerate(func.type.args):
+            name = func_arg.name
+            if name in named_args:
+                if i in pos_args:
+                    self.throw(ctx, err.RepeatedArgument(name))
+                expr = named_args.pop(name)
+            elif i in pos_args:
+                expr = pos_args.pop(i)
             elif func_arg.default:
                 expr = func_arg.default
             else:
-                break
+                self.throw(ctx, err.TooFewArguments(func.type))
+
             value = self.cast(expr, self.visit(expr), func_arg.type)
             args.append(value)
 
-        if len(args) < len(func.type.args):
-            self.throw(ctx, err.TooFewArguments(func.type))
+        if named_args:
+            self.throw(ctx, err.UnexpectedArgument(next(iter(named_args))))
+        if pos_args:
+            self.throw(ctx, err.TooManyArguments(func.type))
 
         return self.builder.call(func, args)
 

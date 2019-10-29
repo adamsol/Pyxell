@@ -14,6 +14,7 @@ class PyxellError(Exception):
     InvalidSyntax = lambda: f"Syntax error"
 
     CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
+    ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
@@ -29,10 +30,12 @@ class PyxellError(Exception):
     NotFunction = lambda t: f"Type `{t.show()}` is not a function"
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
     RedeclaredIdentifier = lambda id: f"Identifier `{id}` is already declared"
+    RepeatedArgument = lambda id: f"Repeated argument `{id}`"
     TooFewArguments = lambda t: f"Too few arguments for function `{t.show()}`"
     TooManyArguments = lambda t: f"Too many arguments for function `{t.show()}`"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
     UninitializedIdentifier = lambda id: f"Identifier `{id}` might not have been initialized"
+    UnexpectedArgument = lambda id: f"Unexpected argument `{id}`"
     UnexpectedStatement = lambda s: f"Unexpected `{s}` statement"
     UnknownType = lambda: f"Cannot settle type of the expression"
 

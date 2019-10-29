@@ -84,8 +84,8 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#arg.
-    def visitArg(self, ctx:PyxellParser.ArgContext):
+    # Visit a parse tree produced by PyxellParser#func_arg.
+    def visitFunc_arg(self, ctx:PyxellParser.Func_argContext):
         return self.visitChildren(ctx)
 
 
@@ -156,6 +156,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
     def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#call_arg.
+    def visitCall_arg(self, ctx:PyxellParser.Call_argContext):
         return self.visitChildren(ctx)
 
 
