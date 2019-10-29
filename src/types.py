@@ -26,10 +26,12 @@ tChar = ll.IntType(8)
 
 
 def tPtr(type=tChar):
-    return type.as_pointer()
+    ptr_type = type.as_pointer()
+    ptr_type.kind = getattr(type, 'kind', None)
+    return ptr_type
 
 
-tString = CustomStructType([tPtr(), tInt], 'string')
+tString = tPtr(CustomStructType([tPtr(), tInt], 'string'))
 tString.subtype = tChar
 
 @extend_class(ll.Type)
@@ -38,7 +40,7 @@ def isString(type):
 
 
 def tArray(subtype):
-    type = CustomStructType([tPtr(subtype), tInt], 'array')
+    type = tPtr(CustomStructType([tPtr(subtype), tInt], 'array'))
     type.subtype = subtype
     return type
 
@@ -50,7 +52,9 @@ def isArray(type):
 def tTuple(elements):
     if len(elements) == 1:
         return elements[0]
-    return CustomStructType(elements, 'tuple')
+    type = tPtr(CustomStructType(elements, 'tuple'))
+    type.elements = elements
+    return type
 
 @extend_class(ll.Type)
 def isTuple(type):

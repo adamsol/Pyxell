@@ -70,15 +70,18 @@ class PyxellCompiler(PyxellVisitor):
             self.throw(ctx, err.UninitializedIdentifier(id))
         return self.env[id]
 
+    def extract(self, value, *indices):
+        return self.builder.load(self.builder.gep(value, [vInt(0), *map(vIndex, indices)]))
+
     def index(self, ctx, *exprs):
         collection, index = [self.visit(expr) for expr in exprs]
 
         if collection.type.isCollection():
             index = self.cast(exprs[1], index, tInt)
-            length = self.builder.extract_value(collection, [1])
+            length = self.extract(collection, 1)
             cmp = self.builder.icmp_signed('>=', index, vInt(0))
             index = self.builder.select(cmp, index, self.builder.add(index, length))
-            return self.builder.gep(self.builder.extract_value(collection, [0]), [index])
+            return self.builder.gep(self.extract(collection, 0), [index])
         else:
             self.throw(ctx, err.NotIndexable(collection.type))
 
@@ -142,9 +145,9 @@ class PyxellCompiler(PyxellVisitor):
         return self.builder.ptrtoint(self.builder.gep(vNull(type), [length]), tInt)
 
     def malloc(self, type, length=vInt(1)):
-        size = self.sizeof(type, length)
+        size = self.sizeof(type.pointee, length)
         ptr = self.builder.call(self.builtins['malloc'], [size])
-        return self.builder.bitcast(ptr, tPtr(type))
+        return self.builder.bitcast(ptr, type)
 
     def memcpy(self, dest, src, length):
         type = dest.type
@@ -199,10 +202,10 @@ class PyxellCompiler(PyxellVisitor):
                 type = left.type
                 subtype = type.subtype
 
-                src = self.builder.extract_value(left, [0])
-                src_length = self.builder.extract_value(left, [1])
+                src = self.extract(left, 0)
+                src_length = self.extract(left, 1)
                 length = self.builder.mul(src_length, right)
-                dest = self.malloc(subtype, length)
+                dest = self.malloc(tPtr(subtype), length)
 
                 index = self.builder.alloca(tInt)
                 self.builder.store(vInt(0), index)
@@ -218,7 +221,7 @@ class PyxellCompiler(PyxellVisitor):
                 value = self.malloc(type)
                 self.builder.store(dest, self.builder.gep(value, [vInt(0), vIndex(0)]))
                 self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
-                return self.builder.load(value)
+                return value
 
             elif left.type == tInt and right.type.isCollection():
                 return self.binaryop(ctx, op, right, left)
@@ -266,13 +269,13 @@ class PyxellCompiler(PyxellVisitor):
                 type = left.type
                 subtype = type.subtype
 
-                length1 = self.builder.extract_value(left, [1])
-                length2 = self.builder.extract_value(right, [1])
+                length1 = self.extract(left, 1)
+                length2 = self.extract(right, 1)
                 length = self.builder.add(length1, length2)
 
-                array1 = self.builder.extract_value(left, [0])
-                array2 = self.builder.extract_value(right, [0])
-                array = self.malloc(subtype, length)
+                array1 = self.extract(left, 0)
+                array2 = self.extract(right, 0)
+                array = self.malloc(tPtr(subtype), length)
 
                 self.memcpy(array, array1, length1)
                 self.memcpy(self.builder.gep(array, [length1]), array2, length2)
@@ -280,7 +283,7 @@ class PyxellCompiler(PyxellVisitor):
                 value = self.malloc(type)
                 self.builder.store(array, self.builder.gep(value, [vInt(0), vIndex(0)]))
                 self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
-                return self.builder.load(value)
+                return value
 
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
@@ -325,10 +328,10 @@ class PyxellCompiler(PyxellVisitor):
             return self.builder.icmp_unsigned(op, left, right)
 
         elif left.type.isCollection():
-            array1 = self.builder.extract_value(left, [0])
-            array2 = self.builder.extract_value(right, [0])
-            length1 = self.builder.extract_value(left, [1])
-            length2 = self.builder.extract_value(right, [1])
+            array1 = self.extract(left, 0)
+            array2 = self.extract(right, 0)
+            length1 = self.extract(left, 1)
+            length2 = self.extract(right, 1)
 
             index = self.builder.alloca(tInt)
             self.builder.store(vInt(0), index)
@@ -396,7 +399,7 @@ class PyxellCompiler(PyxellVisitor):
                 for i in range(len(left.type.elements)):
                     label_cont = ll.Block(self.builder.function)
 
-                    values = [self.builder.extract_value(tuple, i) for tuple in [left, right]]
+                    values = [self.extract(tuple, i) for tuple in [left, right]]
                     cond = self.cmp(ctx, op + '=' if op in ('<', '>') else op, *values)
 
                     if op == '!=':
@@ -455,7 +458,7 @@ class PyxellCompiler(PyxellVisitor):
         elif value.type.isArray():
             self.write('[')
 
-            length = self.builder.extract_value(value, [1])
+            length = self.extract(value, 1)
             index = self.builder.alloca(tInt)
             self.builder.store(vInt(0), index)
 
@@ -463,7 +466,7 @@ class PyxellCompiler(PyxellVisitor):
                 with self.builder.if_then(self.builder.icmp_signed('>', self.builder.load(index), vInt(0))):
                     self.write(', ')
 
-                elem = self.builder.gep(self.builder.extract_value(value, [0]), [self.builder.load(index)])
+                elem = self.builder.gep(self.extract(value, 0), [self.builder.load(index)])
                 self.print(ctx, self.builder.load(elem))
 
                 self.inc(index)
@@ -477,8 +480,7 @@ class PyxellCompiler(PyxellVisitor):
             for i in range(len(value.type.elements)):
                 if i > 0:
                     self.write(' ')
-                elem = self.builder.extract_value(value, [i])
-                self.print(ctx, elem)
+                self.print(ctx, self.extract(value, i))
 
         else:
             self.throw(ctx, err.NotPrintable(value.type))
@@ -494,7 +496,7 @@ class PyxellCompiler(PyxellVisitor):
             ptr = self.builder.gep(tuple, [vInt(0), vIndex(i)])
             self.builder.store(value, ptr)
 
-        return self.builder.load(tuple)
+        return tuple
 
 
     ### Program ###
@@ -544,7 +546,7 @@ class PyxellCompiler(PyxellVisitor):
                 self.assign(lvalue, exprs[0], value)
             else:
                 for i, expr in enumerate(exprs):
-                    self.assign(lvalue, expr, self.builder.extract_value(value, [i]))
+                    self.assign(lvalue, expr, self.extract(value, i))
 
     def visitStmtAssgExpr(self, ctx):
         ptr = self.lvalue(ctx, ctx.expr(0))
@@ -668,8 +670,8 @@ class PyxellCompiler(PyxellVisitor):
                     self.throw(ctx, err.NotIterable(value.type))
                 desc = self.builder.icmp_signed('<', step, vInt(0))
                 index = self.builder.alloca(tInt)
-                array = self.builder.extract_value(value, [0])
-                length = self.builder.extract_value(value, [1])
+                array = self.extract(value, 0)
+                length = self.extract(value, 1)
                 end1 = self.builder.sub(length, vInt(1))
                 end2 = vInt(0)
                 start = self.builder.select(desc, end1, end2)
@@ -712,7 +714,7 @@ class PyxellCompiler(PyxellVisitor):
                 elif len(vars) > 1 and len(types) == 1:
                     for i, var in enumerate(vars):
                         tuple = getters[0](self.builder.load(indices[0]))
-                        self.assign(exprs[0], var, self.builder.extract_value(tuple, [i]))
+                        self.assign(exprs[0], var, self.extract(tuple, i))
                 elif len(vars) == len(types):
                     for var, index, getter in zip(vars, indices, getters):
                         self.assign(exprs[0], var, getter(self.builder.load(index)))
@@ -825,7 +827,7 @@ class PyxellCompiler(PyxellVisitor):
             if id != "length":
                 self.throw(ctx, err.NoAttribute(value.type, id))
 
-            return self.builder.extract_value(value, [1])
+            return self.extract(value, 1)
 
         elif value.type.isTuple():
             if len(id) > 1:
@@ -835,7 +837,7 @@ class PyxellCompiler(PyxellVisitor):
             if not 0 <= index < len(value.type.elements):
                 self.throw(ctx, err.NoAttribute(value.type, id))
 
-            return self.builder.extract_value(value, [index])
+            return self.extract(value, index)
 
         self.throw(ctx, err.NoAttribute(value.type, id))
 
@@ -1005,7 +1007,7 @@ class PyxellCompiler(PyxellVisitor):
         length = self.builder.gep(string, [vInt(0), vIndex(1)])
         self.builder.store(vInt(const.type.count), length)
 
-        return self.builder.load(string)
+        return string
 
     def visitAtomArray(self, ctx):
         exprs = ctx.expr()
@@ -1016,7 +1018,7 @@ class PyxellCompiler(PyxellVisitor):
         array = self.malloc(type)
 
         pointer = self.builder.gep(array, [vInt(0), vIndex(0)])
-        memory = self.malloc(subtype, vInt(len(values)))
+        memory = self.malloc(tPtr(subtype), vInt(len(values)))
         for i, value in enumerate(values):
             self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
         self.builder.store(memory, pointer)
@@ -1024,7 +1026,7 @@ class PyxellCompiler(PyxellVisitor):
         length = self.builder.gep(array, [vInt(0), vIndex(1)])
         self.builder.store(vInt(len(values)), length)
 
-        return self.builder.load(array)
+        return array
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx, ctx.ID()))
