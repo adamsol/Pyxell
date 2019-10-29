@@ -101,7 +101,11 @@ class PyxellCompiler(PyxellVisitor):
         id = str(id)
         if id in self.env and not redeclare:
             self.throw(ctx, err.RedeclaredIdentifier(id))
-        ptr = self.builder.alloca(type)
+        if self.builder.basic_block.parent._name == 'main':
+            ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
+            ptr.initializer = type.default()
+        else:
+            ptr = self.builder.alloca(type)
         self.env[id] = ptr
         if initialize:
             self.initialized.add(id)
