@@ -86,32 +86,49 @@ class PyxellCompiler(PyxellVisitor):
             self.throw(ctx, err.NotIndexable(collection.type))
 
     def cast(self, ctx, value, type):
-        if value.type != type:
+        if not types_compatible(value.type, type):
             self.throw(ctx, err.IllegalAssignment(value.type, type))
-        return value
+        return value if value.type == type else self.builder.bitcast(value, type)
 
     def unify(self, ctx, *values):
-        if all(value.type == values[0].type for value in values):
-            return values
-        elif all(value.type in (tInt, tFloat) for value in values):
-            return [(self.builder.sitofp(value, tFloat) if value.type == tInt else value) for value in values]
-        else:
-            self.throw(ctx, err.UnknownType())
+        if not values:
+            return []
+        values = list(values)
+
+        type = values[0].type
+        for value in values[1:]:
+            type = unify_types(value.type, type)
+            if type is None:
+                self.throw(ctx, err.UnknownType())
+
+        for i, value in enumerate(values):
+            if value.type == tInt and type == tFloat:
+                values[i] = self.builder.sitofp(value, type)
+            else:
+                values[i] = self.cast(ctx, value, type)
+
+        return values
 
     def declare(self, ctx, type, id, redeclare=False, initialize=False):
         if type == tVoid:
             self.throw(ctx, err.InvalidDeclaration(type))
+        if type.isUnknown():
+            self.throw(ctx, err.UnknownType())
+
         id = str(id)
         if id in self.env and not redeclare:
             self.throw(ctx, err.RedeclaredIdentifier(id))
+
         if self.builder.basic_block.parent._name == 'main':
             ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
             ptr.initializer = type.default()
         else:
             ptr = self.builder.alloca(type)
+
         self.env[id] = ptr
         if initialize:
             self.initialized.add(id)
+
         return ptr
 
     def lvalue(self, ctx, expr, declare=None, initialize=False):
@@ -312,10 +329,9 @@ class PyxellCompiler(PyxellVisitor):
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
     def cmp(self, ctx, op, left, right):
-        if left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+        try:
             left, right = self.unify(ctx, left, right)
-
-        if left.type != right.type:
+        except err:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
         if left.type in (tInt, tChar):
@@ -432,6 +448,9 @@ class PyxellCompiler(PyxellVisitor):
             phi.add_incoming(vBool(op not in ('!=', '<', '>')), label_cont)
             return phi
 
+        elif left.type == tUnknown:
+            return vTrue
+
         else:
             self.throw(ctx, err.NotComparable(left.type, right.type))
 
@@ -463,16 +482,20 @@ class PyxellCompiler(PyxellVisitor):
             self.builder.store(vInt(0), index)
 
             with self.block() as (label_start, label_end):
-                with self.builder.if_then(self.builder.icmp_signed('>', self.builder.load(index), vInt(0))):
+                i = self.builder.load(index)
+
+                with self.builder.if_then(self.builder.icmp_signed('>=', i, length)):
+                    self.builder.branch(label_end)
+
+                with self.builder.if_then(self.builder.icmp_signed('>', i, vInt(0))):
                     self.write(', ')
 
-                elem = self.builder.gep(self.extract(value, 0), [self.builder.load(index)])
+                elem = self.builder.gep(self.extract(value, 0), [i])
                 self.print(ctx, self.builder.load(elem))
 
                 self.inc(index)
 
-                cond = self.builder.icmp_signed('<', self.builder.load(index), length)
-                self.builder.cbranch(cond, label_start, label_end)
+                self.builder.branch(label_start)
 
             self.write(']')
 
@@ -481,6 +504,9 @@ class PyxellCompiler(PyxellVisitor):
                 if i > 0:
                     self.write(' ')
                 self.print(ctx, self.extract(value, i))
+
+        elif value.type == tUnknown:
+            pass
 
         else:
             self.throw(ctx, err.NotPrintable(value.type))
@@ -1013,7 +1039,7 @@ class PyxellCompiler(PyxellVisitor):
         exprs = ctx.expr()
         values = self.unify(ctx, *[self.visit(expr) for expr in exprs])
 
-        subtype = values[0].type
+        subtype = values[0].type if values else tUnknown
         type = tArray(subtype)
         array = self.malloc(type)
 

@@ -6,6 +6,18 @@ import llvmlite.ir as ll
 from .utils import extend_class
 
 
+class UnknownType(ll.Type):
+
+    def _to_string(self):
+        return 'i8*'
+
+    def __eq__(self, other):
+        return isinstance(other, UnknownType)
+
+    def __hash__(self):
+        return hash(UnknownType)
+
+
 class CustomStructType(ll.LiteralStructType):
 
     def __init__(self, elements, kind):
@@ -79,6 +91,52 @@ def isFunc(type):
 @extend_class(ll.Type)
 def isCollection(type):
     return type == tString or type.isArray()
+
+
+tUnknown = UnknownType()
+
+@extend_class(ll.Type)
+def isUnknown(type):
+    if type == tUnknown:
+        return True
+    if type.isArray():
+        return type.subtype.isUnknown()
+    if type.isTuple():
+        return any(elem.isUnknown() for elem in type.elements)
+    if type.isFunc():
+        return any(arg.type.isUnknown() for arg in type.args) or type.ret.isUnknown()
+    return False
+
+
+def types_compatible(type1, type2):
+    if type1 == type2:
+        return True
+    if type1.isArray() and type2.isArray():
+        return types_compatible(type1.subtype, type2.subtype)
+    if type1.isTuple() and type2.isTuple():
+        return len(type1.elements) == len(type2.elements) and \
+               all(types_compatible(t1, t2) for t1, t2 in zip(type1.elements, type2.elements))
+    if type1 == tUnknown or type2 == tUnknown:
+        return True
+    return False
+
+
+def unify_types(type1, type2):
+    if type1 == type2:
+        return type1
+    if type1 == tFloat and type2 == tInt or type1 == tInt and type2 == tFloat:
+        return tFloat
+    if type1.isArray() and type2.isArray():
+        subtype = unify_types(type1.subtype, type2.subtype)
+        return tArray(subtype) if subtype else None
+    if type1.isTuple() and type2.isTuple():
+        elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
+        return tTuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
+    if type1 == tUnknown:
+        return type2
+    if type2 == tUnknown:
+        return type1
+    return None
 
 
 @extend_class(ll.Type)
