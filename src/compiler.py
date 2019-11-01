@@ -8,12 +8,19 @@ from .errors import PyxellError as err
 from .types import *
 
 
+class CustomIRBuilder(ll.IRBuilder):
+
+    def _set_terminator(self, term):
+        self.basic_block.terminator = None  # to prevent llvmlite's AssertionError
+        super()._set_terminator(term)
+
+
 class PyxellCompiler(PyxellVisitor):
 
     def __init__(self):
         self.env = {}
         self.initialized = set()
-        self.builder = ll.IRBuilder()
+        self.builder = CustomIRBuilder()
         self.module = ll.Module()
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
