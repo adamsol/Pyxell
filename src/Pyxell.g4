@@ -28,7 +28,7 @@ compound_stmt
   | 'while' expr do_block # StmtWhile
   | 'until' expr do_block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? do_block # StmtFor
-  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? def_block # StmtFunc
+  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? (def_block | 'extern' ';') # StmtFunc
   ;
 
 func_arg
@@ -85,12 +85,7 @@ atom
   ;
 
 typ
-  : 'Void' # TypePrimitive
-  | 'Int' # TypePrimitive
-  | 'Float' # TypePrimitive
-  | 'Bool' # TypePrimitive
-  | 'Char' # TypePrimitive
-  | 'String' # TypePrimitive
+  : ('Void' | 'Int' | 'Float' | 'Bool' | 'Char' | 'String') # TypePrimitive
   | '(' typ ')' # TypeParentheses
   | '[' typ ']' # TypeArray
   | <assoc=right> typ '*' typ # TypeTuple

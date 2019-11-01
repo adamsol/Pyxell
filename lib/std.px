@@ -15,24 +15,6 @@ func readInt() Int extern
 func readChar() Char extern
 
 
-func min<Num T>(T a, T b) T def
-    return a < b ? a : b
-
-func max<Num T>(T a, T b) T def
-    return b < a ? a : b
-
-func clamp<Num T>(T x, T a, T b) T def
-    y = x < a ? a : x
-    z = y > b ? b : y
-    return z
-
-func abs<Num T>(T x) T def
-    return x >= 0 ? x : -x
-
-func sign<Num T>(T x) Int def
-    return x > 0 ? 1 : x < 0 ? -1 : 0
-
-
 func Int_pow(Int b, Int e) Int def
     if e < 0 do
         return 0
@@ -85,37 +67,6 @@ func StringArray_join([String] array, String sep: "") String def
     return CharArray_asString(r)
 
 
-func Array_prepareSlice(Int l, Int a, Bool a', Int b, Bool b', Int c) Int*Int def
-    if not a' do
-        a = c > 0 ? 0 : l
-    elif a < 0 do
-        a += l
-    a = clamp(a, 0, l)
-
-    if not b' do
-        b = c > 0 ? l : 0
-    elif b < 0 do
-        b += l
-    b = clamp(b, 0, l)
-
-    d = c > 0 ? b - a : a - b
-    d = (d-1) / abs(c) + 1
-
-    if c < 0 do
-        a -= 1
-
-    return a, d
-
-
-func Array_compare<Any T>([T] a1, [T] a2) Int def
-    for x1, x2 in a1, a2 do
-        if x1 < x2 do
-            return -1
-        if x1 > x2 do
-            return 1
-    return a1.length - a2.length
-
-
 func Int_toString(Int n) String extern
 func Float_toString(Float f) String extern
 
@@ -149,27 +100,3 @@ func Char_toInt(Char c) Int def
 
 func Char_toFloat(Char c) Float def
     return ord(c) - 48.0
-
-
-func all<Any A>(A->Bool f, [A] a) Bool def
-    for x in a do
-        if not f(x) do
-            return false
-    return true
-
-func any<Any A>(A->Bool f, [A] a) Bool def
-    for x in a do
-        if f(x) do
-            return true
-    return false
-
-func filter<Any A>(A->Bool f, [A] a) [A] def
-    return [x for x in a if f(x)]
-
-func map<Any A, Any B>(A->B f, [A] a) [B] def
-    return [f(x) for x in a]
-
-func reduce<Any A, Any B>(A->B->B f, B r, [A] a) B def
-    for x in a do
-        r = f(x, r)
-    return r

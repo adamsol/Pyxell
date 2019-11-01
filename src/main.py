@@ -26,7 +26,7 @@ abspath = Path(__file__).parents[1]
 
 try:
     # Read the code and transform indents.
-    pyxell_code = filepath.read_text()
+    pyxell_code = Path(abspath/'lib/std.px').read_text() + filepath.read_text()
     pyxell_code = transform_indented_code(pyxell_code)
 
     # Parse the program.
@@ -54,4 +54,4 @@ except PyxellError as error:
 # Create an executable.
 with open(f'{filename}.ll', 'w') as file:
     file.write(llvm_code)
-subprocess.check_output(['clang', f'{filename}.ll', f'{abspath / "lib/io.ll"}', f'{abspath / "lib/base.ll"}', '-o', f'{filename}.exe', '-O2'] + args.clangargs)
+subprocess.check_output(['clang', f'{filename}.ll', abspath/'lib/io.ll', abspath/'lib/base.ll', '-o', f'{filename}.exe', '-O2'] + args.clangargs)

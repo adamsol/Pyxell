@@ -25,14 +25,7 @@ class PyxellCompiler(PyxellVisitor):
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
             'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]).pointee, 'memcpy'),
-            'write': ll.Function(self.module, tFunc([tString]).pointee, 'func.write'),
-            'writeInt': ll.Function(self.module, tFunc([tInt]).pointee, 'func.writeInt'),
-            'writeFloat': ll.Function(self.module, tFunc([tFloat]).pointee, 'func.writeFloat'),
-            'writeBool': ll.Function(self.module, tFunc([tBool]).pointee, 'func.writeBool'),
-            'writeChar': ll.Function(self.module, tFunc([tChar]).pointee, 'func.writeChar'),
             'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
-            'Int_pow': ll.Function(self.module, tFunc([tInt, tInt], tInt).pointee, 'func.Int_pow'),
-            'Float_pow': ll.Function(self.module, tFunc([tFloat, tFloat], tFloat).pointee, 'func.Float_pow'),
         }
 
 
@@ -91,6 +84,68 @@ class PyxellCompiler(PyxellVisitor):
             return self.builder.gep(self.extract(collection, 0), [index])
         else:
             self.throw(ctx, err.NotIndexable(collection.type))
+
+    def attribute(self, ctx, value, attr):
+        type = value.type
+        attr = str(attr)
+        
+        if type == tInt:
+            if attr == 'toString':
+                return self.get(ctx, 'Int_toString')
+            elif attr == 'toFloat':
+                return self.get(ctx, 'Int_toFloat')
+
+        elif type == tFloat:
+            if attr == 'toString':
+                return self.get(ctx, 'Float_toString')
+            elif attr == 'toInt':
+                return self.get(ctx, 'Float_toInt')
+
+        elif type == tBool:
+            if attr == 'toString':
+                return self.get(ctx, 'Bool_toString')
+            elif attr == 'toInt':
+                return self.get(ctx, 'Bool_toInt')
+            elif attr == 'toFloat':
+                return self.get(ctx, 'Bool_toFloat')
+
+        elif type == tChar:
+            if attr == 'toString':
+                return self.get(ctx, 'Char_toString')
+            elif attr == 'toInt':
+                return self.get(ctx, 'Char_toInt')
+            elif attr == 'toFloat':
+                return self.get(ctx, 'Char_toFloat')
+
+        elif type.isCollection():
+            if attr == 'length':
+                return self.extract(value, 1)
+            elif type == tString:
+                if attr == 'toString':
+                    return self.get(ctx, 'String_toString')
+                elif attr == 'toArray':
+                    return self.get(ctx, 'String_toArray')
+                elif attr == 'toInt':
+                    return self.get(ctx, 'String_toInt')
+                elif attr == 'toFloat':
+                    return self.get(ctx, 'String_toFloat')
+            elif type.isArray():
+                if attr == 'join':
+                    if type.subtype == tChar:
+                        return self.get(ctx, 'CharArray_join')
+                    elif type.subtype == tString:
+                        return self.get(ctx, 'StringArray_join')
+
+        elif type.isTuple() and len(attr) == 1:
+            index = ord(attr) - ord('a')
+            if 0 <= index < len(type.elements):
+                return self.extract(value, index)
+
+        self.throw(ctx, err.NoAttribute(type, attr))
+
+    def call(self, ctx, name, *values):
+        func = self.builder.load(self.get(ctx, name))
+        return self.builder.call(func, values)
 
     def cast(self, ctx, value, type):
         if not types_compatible(value.type, type):
@@ -207,10 +262,10 @@ class PyxellCompiler(PyxellVisitor):
 
         if op == '^':
             if left.type == right.type == tInt:
-                return self.builder.call(self.builtins['Int_pow'], [left, right])
+                return self.call(ctx, 'Int_pow', left, right)
 
             elif left.type == right.type == tFloat:
-                return self.builder.call(self.builtins['Float_pow'], [left, right])
+                return self.call(ctx, 'Float_pow', left, right)
 
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
@@ -467,19 +522,19 @@ class PyxellCompiler(PyxellVisitor):
 
     def print(self, ctx, value):
         if value.type == tInt:
-            self.builder.call(self.builtins['writeInt'], [value])
+            self.call(ctx, 'writeInt', value)
 
         elif value.type == tFloat:
-            self.builder.call(self.builtins['writeFloat'], [value])
+            self.call(ctx, 'writeFloat', value)
 
         elif value.type == tBool:
-            self.builder.call(self.builtins['writeBool'], [value])
+            self.call(ctx, 'writeBool', value)
 
         elif value.type == tChar:
-            self.builder.call(self.builtins['writeChar'], [value])
+            self.call(ctx, 'writeChar', value)
 
         elif value.type.isString():
-            self.builder.call(self.builtins['write'], [value])
+            self.call(ctx, 'write', value)
 
         elif value.type.isArray():
             self.write('[')
@@ -795,6 +850,14 @@ class PyxellCompiler(PyxellVisitor):
         ret_type = self.visit(ctx.ret) if ctx.ret else tVoid
 
         func_type = tFunc(args, ret_type)
+        func_def = ctx.def_block()
+
+        if not func_def:  # `extern`
+            func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name('f.'+id))
+            self.env[id] = func_ptr
+            self.initialized.add(id)
+            return
+
         func = ll.Function(self.module, func_type.pointee, self.module.get_unique_name('def.'+id))
         func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name(id))
         func_ptr.initializer = func
@@ -815,7 +878,7 @@ class PyxellCompiler(PyxellVisitor):
                 self.env[id] = ptr
                 self.builder.store(value, ptr)
 
-            self.visit(ctx.def_block())
+            self.visit(func_def)
 
             if ret_type == tVoid:
                 self.builder.ret_void()
@@ -854,28 +917,18 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitExprAttr(self, ctx):
         value = self.visit(ctx.expr())
-        id = str(ctx.ID())
-
-        if value.type.isCollection():
-            if id != "length":
-                self.throw(ctx, err.NoAttribute(value.type, id))
-
-            return self.extract(value, 1)
-
-        elif value.type.isTuple():
-            if len(id) > 1:
-                self.throw(ctx, err.NoAttribute(value.type, id))
-
-            index = ord(id) - ord('a')
-            if not 0 <= index < len(value.type.elements):
-                self.throw(ctx, err.NoAttribute(value.type, id))
-
-            return self.extract(value, index)
-
-        self.throw(ctx, err.NoAttribute(value.type, id))
+        return self.attribute(ctx, value, ctx.ID())
 
     def visitExprCall(self, ctx):
-        func = self.visit(ctx.expr())
+        expr = ctx.expr()
+
+        if isinstance(expr, PyxellParser.ExprAttrContext):
+            obj = self.visit(expr.expr())
+            func = self.builder.load(self.attribute(expr, obj, expr.ID()))
+        else:
+            obj = None
+            func = self.visit(expr)
+
         if not func.type.isFunc():
             self.throw(ctx, err.NotFunction(func.type))
 
@@ -896,7 +949,8 @@ class PyxellCompiler(PyxellVisitor):
                     self.throw(ctx, err.ExpectedNamedArgument())
                 pos_args[i] = expr
 
-        for i, func_arg in enumerate(func.type.args):
+        func_args = func.type.args[1:] if obj else func.type.args
+        for i, func_arg in enumerate(func_args):
             name = func_arg.name
             if name in named_args:
                 if i in pos_args:
@@ -916,6 +970,9 @@ class PyxellCompiler(PyxellVisitor):
             self.throw(ctx, err.UnexpectedArgument(next(iter(named_args))))
         if pos_args:
             self.throw(ctx, err.TooManyArguments(func.type))
+
+        if obj:
+            args.insert(0, obj)
 
         return self.builder.call(func, args)
 
