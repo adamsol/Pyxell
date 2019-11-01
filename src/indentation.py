@@ -14,9 +14,9 @@ def transform_indented_code(code):
 
     for i in range(len(lines)):
         line = lines[i]
-        match = re.search(r'^(\s*)\S', line)
-        if not match:
-            # Skip line with whitespace only.
+        match = re.match(r'(\s*)(\S+)', line)
+        if not match or match.group(2).startswith('--'):
+            # Skip line with comment or whitespace only.
             continue
         indent = match.group(1)
         prev_indent = indents[-1]
@@ -37,11 +37,11 @@ def transform_indented_code(code):
                 else:
                     raise PyxellError(PyxellError.InvalidIndentation(), i+1)
 
-        if re.search(r'\W(do|def)\s*$', line):
-            lines[i] += '{'
+        if re.search(r'\W(do|def)\s*(--.*)?$', line):
+            lines[i] += '\r{'
             new_block = True
         else:
-            lines[i] += ';'
+            lines[i] += '\r;'
 
     indents.pop()
     lines[-1] += '}' * len(indents)

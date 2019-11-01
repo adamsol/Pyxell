@@ -1,8 +1,13 @@
 
--- test
-x = "{--2"  -- + "x"
-{-
-multi
-line
- -}
-print{---}x
+------------
+--@ test @--
+------------
+
+if true do---; print false
+ --
+    x = "--".length -- print false
+  --- x = 1;
+    print x  ----- 2
+
+else do --
+    print false

@@ -8,7 +8,7 @@ import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3E")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3F")
         buf.write("\u0135\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\3\2\7\2\36\n\2\f\2\16\2!\13\2\3\2\3\2\3\3\3\3\3")
@@ -195,7 +195,7 @@ class PyxellParser ( Parser ):
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "INT", "FLOAT", "CHAR", "STRING", "ID", 
-                      "WS", "ERR" ]
+                      "COMMENT", "WS", "ERR" ]
 
     RULE_program = 0
     RULE_stmt = 1
@@ -281,8 +281,9 @@ class PyxellParser ( Parser ):
     CHAR=63
     STRING=64
     ID=65
-    WS=66
-    ERR=67
+    COMMENT=66
+    WS=67
+    ERR=68
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
