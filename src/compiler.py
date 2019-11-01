@@ -364,6 +364,12 @@ class PyxellCompiler(PyxellVisitor):
                 self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
                 return value
 
+            elif left.type == tString and right.type == tChar:
+                return self.binaryop(ctx, op, left, self.call(ctx, 'Char_toString', right))
+
+            elif left.type == tChar and right.type == tString:
+                return self.binaryop(ctx, op, self.call(ctx, 'Char_toString', left), right)
+
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
 
