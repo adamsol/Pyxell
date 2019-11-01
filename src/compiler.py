@@ -75,17 +75,20 @@ class PyxellCompiler(PyxellVisitor):
     def extract(self, value, *indices):
         return self.builder.load(self.builder.gep(value, [vInt(0), *map(vIndex, indices)]))
 
-    def index(self, ctx, *exprs):
+    def index(self, ctx, *exprs, lvalue=False):
         collection, index = [self.visit(expr) for expr in exprs]
 
         if collection.type.isCollection():
+            if lvalue and not collection.type.isArray():
+                self.throw(exprs[0], err.NotLvalue())
+
             index = self.cast(exprs[1], index, tInt)
             length = self.extract(collection, 1)
             cmp = self.builder.icmp_signed('>=', index, vInt(0))
             index = self.builder.select(cmp, index, self.builder.add(index, length))
             return self.builder.gep(self.extract(collection, 0), [index])
-        else:
-            self.throw(ctx, err.NotIndexable(collection.type))
+
+        self.throw(ctx, err.NotIndexable(collection.type))
 
     def attribute(self, ctx, value, attr):
         type = value.type
@@ -200,18 +203,22 @@ class PyxellCompiler(PyxellVisitor):
             atom = expr.atom()
             if not isinstance(atom, PyxellParser.AtomIdContext):
                 self.throw(ctx, err.NotLvalue())
+
             id = str(atom.ID())
             if id not in self.env:
                 if declare is None:
                     self.throw(ctx, err.UndeclaredIdentifier(id))
                 self.declare(ctx, declare, id)
+
             if initialize:
                 self.initialized.add(id)
+
             return self.env[id]
+
         elif isinstance(expr, PyxellParser.ExprIndexContext):
-            return self.index(ctx, *expr.expr())
-        else:
-            self.throw(ctx, err.NotLvalue())
+            return self.index(ctx, *expr.expr(), lvalue=True)
+
+        self.throw(ctx, err.NotLvalue())
 
     def assign(self, ctx, expr, value):
         ptr = self.lvalue(ctx, expr, declare=value.type, initialize=True)
