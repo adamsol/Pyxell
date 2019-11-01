@@ -1,9 +1,7 @@
-all: parser libs
+all: parser
 
 parser:
-	+$(MAKE) parser -C src
-libs:
-	./pyxell.py -l
+	"$(MAKE)" parser -C src
 
 clean:
-	+$(MAKE) clean -C src
+	"$(MAKE)" clean -C src
