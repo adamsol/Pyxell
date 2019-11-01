@@ -43,10 +43,6 @@ def_block
   : 'def' '{' stmt+ '}'
   ;
 
-tuple_expr
-  : (expr ',')* expr # ExprTuple
-  ;
-
 expr
   : atom # ExprAtom
   | '(' tuple_expr ')' # ExprParentheses
@@ -68,6 +64,14 @@ expr
   | <assoc=right> expr op='and' expr # ExprLogicalOp
   | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
+  ;
+
+tuple_expr
+  : (expr ',')* expr # ExprTuple
+  ;
+
+interpolation_expr
+  : tuple_expr EOF # ExprInterpolation
   ;
 
 call_arg

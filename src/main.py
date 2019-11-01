@@ -5,13 +5,10 @@ import os
 import subprocess
 from pathlib import Path
 
-from antlr4 import *
-
-from .antlr.PyxellLexer import PyxellLexer
-from .antlr.PyxellParser import PyxellParser
 from .compiler import PyxellCompiler
-from .errors import PyxellErrorListener, PyxellError
+from .errors import PyxellError
 from .indentation import transform_indented_code
+from .parsing import parse_program
 
 
 # Parse arguments.
@@ -30,13 +27,7 @@ try:
     pyxell_code = transform_indented_code(pyxell_code)
 
     # Parse the program.
-    input_stream = InputStream(pyxell_code)
-    lexer = PyxellLexer(input_stream)
-    stream = CommonTokenStream(lexer)
-    parser = PyxellParser(stream)
-    parser.removeErrorListeners()
-    parser.addErrorListener(PyxellErrorListener())
-    tree = parser.program()
+    tree = parse_program(pyxell_code)
 
     # Generate LLVM code.
     compiler = PyxellCompiler()

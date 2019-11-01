@@ -1,10 +1,12 @@
 
 import ast
+import re
 from contextlib import contextmanager
 
 from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
 from .errors import PyxellError as err
+from .parsing import parse_expr
 from .types import *
 
 
@@ -143,8 +145,8 @@ class PyxellCompiler(PyxellVisitor):
 
         self.throw(ctx, err.NoAttribute(type, attr))
 
-    def call(self, ctx, name, *values):
-        func = self.builder.load(self.get(ctx, name))
+    def call(self, name, *values):
+        func = self.builder.load(self.env[name])
         return self.builder.call(func, values)
 
     def cast(self, ctx, value, type):
@@ -262,10 +264,10 @@ class PyxellCompiler(PyxellVisitor):
 
         if op == '^':
             if left.type == right.type == tInt:
-                return self.call(ctx, 'Int_pow', left, right)
+                return self.call('Int_pow', left, right)
 
             elif left.type == right.type == tFloat:
-                return self.call(ctx, 'Float_pow', left, right)
+                return self.call('Float_pow', left, right)
 
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
@@ -365,10 +367,10 @@ class PyxellCompiler(PyxellVisitor):
                 return value
 
             elif left.type == tString and right.type == tChar:
-                return self.binaryop(ctx, op, left, self.call(ctx, 'Char_toString', right))
+                return self.binaryop(ctx, op, left, self.call('Char_toString', right))
 
             elif left.type == tChar and right.type == tString:
-                return self.binaryop(ctx, op, self.call(ctx, 'Char_toString', left), right)
+                return self.binaryop(ctx, op, self.call('Char_toString', left), right)
 
             else:
                 self.throw(ctx, err.NoBinaryOperator(op, left.type, right.type))
@@ -528,19 +530,19 @@ class PyxellCompiler(PyxellVisitor):
 
     def print(self, ctx, value):
         if value.type == tInt:
-            self.call(ctx, 'writeInt', value)
+            self.call('writeInt', value)
 
         elif value.type == tFloat:
-            self.call(ctx, 'writeFloat', value)
+            self.call('writeFloat', value)
 
         elif value.type == tBool:
-            self.call(ctx, 'writeBool', value)
+            self.call('writeBool', value)
 
         elif value.type == tChar:
-            self.call(ctx, 'writeChar', value)
+            self.call('writeChar', value)
 
         elif value.type.isString():
-            self.call(ctx, 'write', value)
+            self.call('write', value)
 
         elif value.type.isArray():
             self.write('[')
@@ -579,18 +581,44 @@ class PyxellCompiler(PyxellVisitor):
         else:
             self.throw(ctx, err.NotPrintable(value.type))
 
+    def string(self, lit):
+        const = ll.Constant(ll.ArrayType(tChar, len(lit)), [vChar(c) for c in lit])
+        result = self.malloc(tString)
+
+        array = ll.GlobalVariable(self.module, const.type, self.module.get_unique_name('str'))
+        array.global_constant = True
+        array.initializer = const
+        memory = self.builder.gep(array, [vInt(0), vInt(0)])
+
+        self.builder.store(memory, self.builder.gep(result, [vInt(0), vIndex(0)]))
+        self.builder.store(vInt(const.type.count), self.builder.gep(result, [vInt(0), vIndex(1)]))
+
+        return result
+
+    def array(self, subtype, values):
+        type = tArray(subtype)
+        result = self.malloc(type)
+
+        memory = self.malloc(tPtr(subtype), vInt(len(values)))
+        for i, value in enumerate(values):
+            self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
+
+        self.builder.store(memory, self.builder.gep(result, [vInt(0), vIndex(0)]))
+        self.builder.store(vInt(len(values)), self.builder.gep(result, [vInt(0), vIndex(1)]))
+
+        return result
+
     def tuple(self, values):
         if len(values) == 1:
             return values[0]
 
         type = tTuple([value.type for value in values])
-        tuple = self.malloc(type)
+        result = self.malloc(type)
 
         for i, value in enumerate(values):
-            ptr = self.builder.gep(tuple, [vInt(0), vIndex(i)])
-            self.builder.store(value, ptr)
+            self.builder.store(value, self.builder.gep(result, [vInt(0), vIndex(i)]))
 
-        return tuple
+        return result
 
 
     ### Program ###
@@ -1071,6 +1099,9 @@ class PyxellCompiler(PyxellVisitor):
         values = [self.visit(expr) for expr in exprs]
         return self.tuple(values)
 
+    def visitExprInterpolation(self, ctx):
+        return self.visit(ctx.tuple_expr())
+
 
     ### Atoms ###
 
@@ -1089,40 +1120,38 @@ class PyxellCompiler(PyxellVisitor):
 
     def visitAtomString(self, ctx):
         lit = ast.literal_eval(str(ctx.STRING()))
-        values = [vChar(c) for c in lit]
-        const = ll.Constant(ll.ArrayType(tChar, len(lit)), values)
+        parts = re.split(r'{([^}]+)}', lit)
 
-        string = self.malloc(tString)
+        if len(parts) > 1:
+            lits, tags = parts[::2], parts[1::2]
+            values = [None] * len(parts)
 
-        pointer = self.builder.gep(string, [vInt(0), vIndex(0)])
-        array = ll.GlobalVariable(self.module, const.type, self.module.get_unique_name('str'))
-        array.global_constant = True
-        array.initializer = const
-        self.builder.store(self.builder.gep(array, [vInt(0), vInt(0)]), pointer)
+            for i, lit in enumerate(lits):
+                values[i*2] = self.string(lit)
 
-        length = self.builder.gep(string, [vInt(0), vIndex(1)])
-        self.builder.store(vInt(const.type.count), length)
+            for i, tag in enumerate(tags):
+                try:
+                    expr = parse_expr(tag)
+                except err:
+                    self.throw(ctx, err.InvalidExpression(tag))
+                try:
+                    value = self.visit(expr)
+                except err as e:
+                    self.throw(ctx, str(e).partition(': ')[2][:-1])
 
-        return string
+                func = self.builder.load(self.attribute(ctx, value, 'toString'))
+                values[i*2+1] = self.builder.call(func, [value])
+
+            return self.call('StringArray_join', self.array(tString, values), self.string(''))
+
+        else:
+            return self.string(lit)
 
     def visitAtomArray(self, ctx):
         exprs = ctx.expr()
         values = self.unify(ctx, *[self.visit(expr) for expr in exprs])
-
         subtype = values[0].type if values else tUnknown
-        type = tArray(subtype)
-        array = self.malloc(type)
-
-        pointer = self.builder.gep(array, [vInt(0), vIndex(0)])
-        memory = self.malloc(tPtr(subtype), vInt(len(values)))
-        for i, value in enumerate(values):
-            self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
-        self.builder.store(memory, pointer)
-
-        length = self.builder.gep(array, [vInt(0), vIndex(1)])
-        self.builder.store(vInt(len(values)), length)
-
-        return array
+        return self.array(subtype, values)
 
     def visitAtomId(self, ctx):
         return self.builder.load(self.get(ctx, ctx.ID()))

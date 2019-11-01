@@ -99,11 +99,6 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprTuple.
-    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by PyxellParser#ExprUnaryOp.
     def visitExprUnaryOp(self, ctx:PyxellParser.ExprUnaryOpContext):
         return self.visitChildren(ctx)
@@ -156,6 +151,16 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
     def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprTuple.
+    def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprInterpolation.
+    def visitExprInterpolation(self, ctx:PyxellParser.ExprInterpolationContext):
         return self.visitChildren(ctx)
 
 

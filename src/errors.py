@@ -17,6 +17,7 @@ class PyxellError(Exception):
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
+    InvalidExpression = lambda e: f"Could not parse expression `{e}`"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
     MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     MissingReturn = lambda id: f"Not all code paths return a value in function `{id}`"
