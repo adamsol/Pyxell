@@ -6,6 +6,9 @@ import glob
 import os
 import subprocess
 from timeit import default_timer as timer
+from pathlib import Path
+
+from src.main import run_compiler
 
 # Setup terminal colors.
 R = colorama.Style.BRIGHT + colorama.Fore.RED
@@ -40,25 +43,30 @@ for i, path in enumerate(tests, 1):
 
     with open('tmp.out', 'w') as outfile:
         try:
-            params = '-target x86_64-pc-windows-gnu' if args.target_windows_gnu else ''
-            subprocess.check_output(f'python -m src.main {path} {params}', stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            if os.path.isfile(path.replace(".px", ".err")):
-                error_message = e.output.decode()
-                with open(f'{path.replace(".px", ".err")}', 'r') as errfile:
-                    error_expected = errfile.read()
-                    if e.output.decode().strip().endswith(error_expected):
-                        print(f"{G}{error_message}{E}")
-                        ok += 1
-                    else:
-                        print(f"{R}{error_message}---\n> {error_expected}{E}")
+            error_expected = Path(path.replace(".px", ".err")).read_text()
+        except FileNotFoundError:
+            error_expected = None
+
+        try:
+            params = ['-target', 'x86_64-pc-windows-gnu'] if args.target_windows_gnu else []
+            run_compiler(path, params)
+        except KeyboardInterrupt:
+            exit(1)
+        except Exception as e:
+            error_message = str(e)
+            if error_expected:
+                if error_message.strip().endswith(error_expected):
+                    print(f"{G}{error_message}{E}")
+                    ok += 1
+                else:
+                    print(f"{R}{error_message}\n---\n> {error_expected}{E}")
             else:
-                print(f"{R}Compiler returned error code {e.returncode}.\n{e.output.decode()}{E}")
+                print(f"{R}{error_message}{E}")
             continue
-        else:
-            if os.path.isfile(path.replace(".px", ".err")):
-                print(f"{R}Compiler returned code 0, but error expected!{E}")
-                continue
+
+        if error_expected:
+            print(f"{R}Program compiled successfully, but error expected.\n---\n> {error_expected}{E}")
+            continue
 
         t1 = timer()
         try:
