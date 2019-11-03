@@ -19,6 +19,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#StmtUse.
+    def visitStmtUse(self, ctx:PyxellParser.StmtUseContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#StmtSkip.
     def visitStmtSkip(self, ctx:PyxellParser.StmtSkipContext):
         return self.visitChildren(ctx)
@@ -201,6 +206,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#AtomId.
     def visitAtomId(self, ctx:PyxellParser.AtomIdContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#id_list.
+    def visitId_list(self, ctx:PyxellParser.Id_listContext):
         return self.visitChildren(ctx)
 
 

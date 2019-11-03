@@ -13,24 +13,25 @@ abspath = Path(__file__).parents[1]
 
 
 def run_compiler(filepath, clangargs):
-    filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
 
-    # Read the code and transform indents.
-    pyxell_code = Path(abspath/'lib/std.px').read_text() + filepath.read_text()
-    pyxell_code = transform_indented_code(pyxell_code)
+    units = {
+        **{name: abspath/f'lib/{name}.px' for name in [
+            'std', 'math', 'time', 'random',
+        ]},
+        'main': Path(filepath),
+    }
 
-    # Parse the program.
-    tree = parse_program(pyxell_code)
-
-    # Generate LLVM code.
     compiler = PyxellCompiler()
-    compiler.visit(tree)
-    llvm_code = str(compiler.module)
 
-    # Create an executable.
+    for name, path in units.items():
+        code = transform_indented_code(path.read_text())
+        tree = parse_program(code)
+        compiler.visitProgram(tree, unit=name)
+
     with open(f'{filename}.ll', 'w') as file:
-        file.write(llvm_code)
+        file.write(compiler.llvm())
+
     try:
         subprocess.check_output(['clang', f'{filename}.ll', abspath/'lib/io.ll', abspath/'lib/base.ll', '-o', f'{filename}.exe', '-O2', *clangargs], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:

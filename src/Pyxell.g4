@@ -10,7 +10,8 @@ stmt
   ;
 
 simple_stmt
-  : 'skip' # StmtSkip
+  : 'use' name=ID ('only' only=id_list | 'hiding' hiding=id_list | 'as' as_=ID)? # StmtUse
+  | 'skip' # StmtSkip
   | 'print' tuple_expr? # StmtPrint
   | typ ID ('=' tuple_expr)? # StmtDecl
   | (lvalue '=')* tuple_expr # StmtAssg
@@ -86,6 +87,10 @@ atom
   | STRING # AtomString
   | '[' (expr ',')* expr? ']' # AtomArray
   | ID # AtomId
+  ;
+
+id_list
+  : (ID ',')* ID
   ;
 
 typ

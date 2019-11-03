@@ -17,21 +17,51 @@ class CustomIRBuilder(ll.IRBuilder):
         super()._set_terminator(term)
 
 
+class Unit:
+
+    def __init__(self, env, initialized):
+        self.env = env
+        self.initialized = initialized
+
+
 class PyxellCompiler(PyxellVisitor):
 
     def __init__(self):
-        self.env = {}
-        self.initialized = set()
+        self.units = {}
+        self._unit = None
         self.builder = CustomIRBuilder()
         self.module = ll.Module()
+        self.main = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
+        self.builder.position_at_end(self.main.append_basic_block('entry'))
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
             'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]).pointee, 'memcpy'),
             'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
         }
 
+    def llvm(self):
+        if not self.builder.basic_block.is_terminated:
+            self.builder.ret(ll.Constant(tInt, 0))
+        return str(self.module)
+
 
     ### Helpers ###
+
+    @property
+    def env(self):
+        return self._unit.env
+
+    @env.setter
+    def env(self, env):
+        self._unit.env = env
+
+    @property
+    def initialized(self):
+        return self._unit.initialized
+
+    @initialized.setter
+    def initialized(self, initialized):
+        self._unit.initialized = initialized
 
     @contextmanager
     def local(self):
@@ -40,6 +70,13 @@ class PyxellCompiler(PyxellVisitor):
         yield
         self.env = env
         self.initialized = initialized
+
+    @contextmanager
+    def unit(self, name):
+        _unit = self._unit
+        self._unit = self.units[name]
+        yield
+        self._unit = _unit
 
     @contextmanager
     def no_output(self):
@@ -64,13 +101,14 @@ class PyxellCompiler(PyxellVisitor):
     def throw(self, ctx, msg):
         raise err(msg, ctx.start.line, ctx.start.column+1)
 
-    def get(self, ctx, id):
+    def get(self, ctx, id, load=True):
         id = str(id)
         if id not in self.env:
             self.throw(ctx, err.UndeclaredIdentifier(id))
         if id not in self.initialized:
             self.throw(ctx, err.UninitializedIdentifier(id))
-        return self.env[id]
+        ptr = self.env[id]
+        return self.builder.load(ptr) if load else ptr
 
     def extract(self, value, *indices):
         return self.builder.load(self.builder.gep(value, [vInt(0), *map(vIndex, indices)]))
@@ -90,63 +128,77 @@ class PyxellCompiler(PyxellVisitor):
 
         self.throw(ctx, err.NotIndexable(collection.type))
 
-    def attribute(self, ctx, value, attr):
-        type = value.type
+    def attribute(self, ctx, expr, attr):
         attr = str(attr)
+
+        if isinstance(expr, PyxellParser.ExprAtomContext):
+            atom = expr.atom()
+            if isinstance(atom, PyxellParser.AtomIdContext):
+                id = str(atom.ID())
+                if id in self.units:
+                    with self.unit(id):
+                        return None, self.get(ctx, attr)
+
+        obj = self.visit(expr)
+        type = obj.type
+        value = None
         
         if type == tInt:
             if attr == 'toString':
-                return self.get(ctx, 'Int_toString')
+                value = self.get(ctx, 'Int_toString')
             elif attr == 'toFloat':
-                return self.get(ctx, 'Int_toFloat')
+                value = self.get(ctx, 'Int_toFloat')
 
         elif type == tFloat:
             if attr == 'toString':
-                return self.get(ctx, 'Float_toString')
+                value = self.get(ctx, 'Float_toString')
             elif attr == 'toInt':
-                return self.get(ctx, 'Float_toInt')
+                value = self.get(ctx, 'Float_toInt')
 
         elif type == tBool:
             if attr == 'toString':
-                return self.get(ctx, 'Bool_toString')
+                value = self.get(ctx, 'Bool_toString')
             elif attr == 'toInt':
-                return self.get(ctx, 'Bool_toInt')
+                value = self.get(ctx, 'Bool_toInt')
             elif attr == 'toFloat':
-                return self.get(ctx, 'Bool_toFloat')
+                value = self.get(ctx, 'Bool_toFloat')
 
         elif type == tChar:
             if attr == 'toString':
-                return self.get(ctx, 'Char_toString')
+                value = self.get(ctx, 'Char_toString')
             elif attr == 'toInt':
-                return self.get(ctx, 'Char_toInt')
+                value = self.get(ctx, 'Char_toInt')
             elif attr == 'toFloat':
-                return self.get(ctx, 'Char_toFloat')
+                value = self.get(ctx, 'Char_toFloat')
 
         elif type.isCollection():
             if attr == 'length':
-                return self.extract(value, 1)
+                value = self.extract(obj, 1)
             elif type == tString:
                 if attr == 'toString':
-                    return self.get(ctx, 'String_toString')
+                    value = self.get(ctx, 'String_toString')
                 elif attr == 'toArray':
-                    return self.get(ctx, 'String_toArray')
+                    value = self.get(ctx, 'String_toArray')
                 elif attr == 'toInt':
-                    return self.get(ctx, 'String_toInt')
+                    value = self.get(ctx, 'String_toInt')
                 elif attr == 'toFloat':
-                    return self.get(ctx, 'String_toFloat')
+                    value = self.get(ctx, 'String_toFloat')
             elif type.isArray():
                 if attr == 'join':
                     if type.subtype == tChar:
-                        return self.get(ctx, 'CharArray_join')
+                        value = self.get(ctx, 'CharArray_join')
                     elif type.subtype == tString:
-                        return self.get(ctx, 'StringArray_join')
+                        value = self.get(ctx, 'StringArray_join')
 
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')
             if 0 <= index < len(type.elements):
-                return self.extract(value, index)
+                value = self.extract(obj, index)
 
-        self.throw(ctx, err.NoAttribute(type, attr))
+        if value is None:
+            self.throw(ctx, err.NoAttribute(type, attr))
+
+        return obj, value
 
     def call(self, name, *values):
         func = self.builder.load(self.env[name])
@@ -630,16 +682,45 @@ class PyxellCompiler(PyxellVisitor):
 
     ### Program ###
 
-    def visitProgram(self, ctx):
-        func = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
-        entry = func.append_basic_block('entry')
-        self.builder.position_at_end(entry)
-        self.visitChildren(ctx)
-        self.builder.position_at_end(func.blocks[-1])
-        self.builder.ret(ll.Constant(tInt, 0))
+    def visitProgram(self, ctx, unit=None):
+        self.units[unit] = Unit({}, set())
+        with self.unit(unit):
+            if unit != 'std':
+                self.env = self.units['std'].env.copy()
+                self.initialized = self.units['std'].initialized.copy()
+            self.visitChildren(ctx)
 
 
     ### Statements ###
+
+    def visitStmtUse(self, ctx):
+        name = ctx.name.text
+        if name not in self.units:
+            self.throw(ctx, err.InvalidModule(name))
+
+        unit = self.units[name]
+        if ctx.only:
+            for id in ctx.only.ID():
+                id = str(id)
+                if id not in unit.env:
+                    self.throw(ctx.only, err.UndeclaredIdentifier(id))
+                self.env[id] = unit.env[id]
+                if id in unit.initialized:
+                    self.initialized.add(id)
+        elif ctx.hiding:
+            hidden = set()
+            for id in ctx.hiding.ID():
+                id = str(id)
+                if id not in unit.env:
+                    self.throw(ctx.hiding, err.UndeclaredIdentifier(id))
+                hidden.add(id)
+            self.env.update({x: unit.env[x] for x in unit.env.keys() - hidden})
+            self.initialized.update(unit.initialized - hidden)
+        elif ctx.as_:
+            self.units[ctx.as_.text] = unit
+        else:
+            self.env.update(unit.env)
+            self.initialized.update(unit.initialized)
 
     def visitStmtPrint(self, ctx):
         expr = ctx.tuple_expr()
@@ -957,15 +1038,14 @@ class PyxellCompiler(PyxellVisitor):
         return self.builder.load(self.index(ctx, *ctx.expr()))
 
     def visitExprAttr(self, ctx):
-        value = self.visit(ctx.expr())
-        return self.attribute(ctx, value, ctx.ID())
+        obj, value = self.attribute(ctx, ctx.expr(), ctx.ID())
+        return value
 
     def visitExprCall(self, ctx):
         expr = ctx.expr()
 
         if isinstance(expr, PyxellParser.ExprAttrContext):
-            obj = self.visit(expr.expr())
-            func = self.builder.load(self.attribute(expr, obj, expr.ID()))
+            obj, func = self.attribute(expr, expr.expr(), expr.ID())
         else:
             obj = None
             func = self.visit(expr)
@@ -1142,12 +1222,11 @@ class PyxellCompiler(PyxellVisitor):
                 except err:
                     self.throw(ctx, err.InvalidExpression(tag))
                 try:
-                    value = self.visit(expr)
+                    obj, func = self.attribute(ctx, expr, 'toString')
                 except err as e:
                     self.throw(ctx, str(e).partition(': ')[2][:-1])
 
-                func = self.builder.load(self.attribute(ctx, value, 'toString'))
-                values[i*2+1] = self.builder.call(func, [value])
+                values[i*2+1] = self.builder.call(func, [obj])
 
             return self.call('StringArray_join', self.array(tString, values), self.string(''))
 
@@ -1161,7 +1240,7 @@ class PyxellCompiler(PyxellVisitor):
         return self.array(subtype, values)
 
     def visitAtomId(self, ctx):
-        return self.builder.load(self.get(ctx, ctx.ID()))
+        return self.get(ctx, ctx.ID())
 
 
     ### Types ###

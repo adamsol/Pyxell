@@ -19,6 +19,7 @@ class PyxellError(Exception):
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidExpression = lambda e: f"Could not parse expression `{e}`"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
+    InvalidModule = lambda id: f"Could not find module `{id}`"
     MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     MissingReturn = lambda id: f"Not all code paths return a value in function `{id}`"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
