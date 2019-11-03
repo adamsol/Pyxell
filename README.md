@@ -104,16 +104,21 @@ Details
 Requirements
 ------------
 
-These are the software versions that I use. Pyxell may work with others versions, but it is not guaranteed.
+* Python 3.8 with packages from `requirements.txt`.
 
-* ANTLR 4.7.2 (to build the parser)
-* Python 3.7.4 with packages from `requirements.txt` installed (to run tests)
+Sometimes installation of `llvmlite` fails.
+If a problem occurs, try using `easy_install` instead of `pip install`.
 
-To compile and link a Pyxell program correctly, a C++ standard library is required for Clang.
-This shouldn't be a problem on Linux, but on Windows this may not work out of the box.
+* Clang 6 with C++ standard library.
+
+The library shouldn't be a problem on Linux, but on Windows this may not work out of the box.
 In some cases Windows SDK installation may be required
 or it may be necessary to run `pyxell` with `-target x86_64-pc-windows-gnu`
 (run `test.py` with `-t` argument to use this).
+
+* ANTLR 4.7.2 (to build the parser).
+
+Put `antlr-4.7.2-complete.jar` file into `src` folder.
 
 
 Usage
