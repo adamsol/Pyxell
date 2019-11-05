@@ -8,7 +8,7 @@ import subprocess
 from timeit import default_timer as timer
 from pathlib import Path
 
-from src.main import run_compiler
+from src.main import compile
 
 # Setup terminal colors.
 R = colorama.Style.BRIGHT + colorama.Fore.RED
@@ -49,7 +49,7 @@ for i, path in enumerate(tests, 1):
 
         try:
             params = ['-target', 'x86_64-pc-windows-gnu'] if args.target_windows_gnu else []
-            run_compiler(path, params)
+            compile(path, params)
         except KeyboardInterrupt:
             exit(1)
         except Exception as e:

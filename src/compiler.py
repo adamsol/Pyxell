@@ -31,17 +31,35 @@ class PyxellCompiler:
         self._unit = None
         self.builder = CustomIRBuilder()
         self.module = ll.Module()
-        self.main = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
-        self.builder.position_at_end(self.main.append_basic_block('entry'))
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
             'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]).pointee, 'memcpy'),
             'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
         }
+        self.main = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
+        self.init = ll.Function(self.module, tFunc([]).pointee, 'init')
+        self.builder.position_at_end(self.init.append_basic_block('entry'))
 
-    def llvm(self):
-        if not self.builder.basic_block.is_terminated:
-            self.builder.ret(ll.Constant(tInt, 0))
+    def run(self, ast, unit):
+        self.units[unit] = Unit({}, set())
+        with self.unit(unit):
+            if unit != 'std':
+                self.env = self.units['std'].env.copy()
+                self.initialized = self.units['std'].initialized.copy()
+            self.compile(ast)
+
+    def run_main(self, ast):
+        self.builder.ret_void()
+        self.main.blocks = []
+        self.builder.position_at_end(self.main.append_basic_block('entry'))
+        self.builder.call(self.init, [])
+        self.run(ast, 'main')
+        self.builder.ret(ll.Constant(tInt, 0))
+
+    def compile(self, node):
+        return getattr(self, 'compile'+node['node'])(node)
+
+    def llvm_ir(self):
         return str(self.module)
 
 
@@ -233,7 +251,7 @@ class PyxellCompiler:
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
 
-        if self.builder.basic_block.parent._name == 'main':
+        if self.builder.function._name in ('init', 'main'):
             ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
             ptr.initializer = type.default()
         else:
@@ -670,20 +688,6 @@ class PyxellCompiler:
             self.builder.store(value, self.builder.gep(result, [vInt(0), vIndex(i)]))
 
         return result
-
-
-    ### Compilation ###
-
-    def compileUnit(self, ast, unit):
-        self.units[unit] = Unit({}, set())
-        with self.unit(unit):
-            if unit != 'std':
-                self.env = self.units['std'].env.copy()
-                self.initialized = self.units['std'].initialized.copy()
-            self.compile(ast)
-
-    def compile(self, node):
-        return getattr(self, 'compile'+node['node'])(node)
 
 
     ### Statements ###

@@ -12,25 +12,25 @@ from .parsing import parse_program
 abspath = Path(__file__).parents[1]
 
 
-def run_compiler(filepath, clangargs):
+compiler = PyxellCompiler()
+
+for name in ['std', 'math', 'time', 'random']:
+    path = abspath/f'lib/{name}.px'
+    code = transform_indented_code(path.read_text())
+    ast = parse_program(code)
+    compiler.run(ast, name)
+
+
+def compile(filepath, clangargs):
+    filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
 
-    units = {
-        **{name: abspath/f'lib/{name}.px' for name in [
-            'std', 'math', 'time', 'random',
-        ]},
-        'main': Path(filepath),
-    }
-
-    compiler = PyxellCompiler()
-
-    for name, path in units.items():
-        code = transform_indented_code(path.read_text())
-        ast = parse_program(code)
-        compiler.compileUnit(ast, name)
+    code = transform_indented_code(filepath.read_text())
+    ast = parse_program(code)
+    compiler.run_main(ast)
 
     with open(f'{filename}.ll', 'w') as file:
-        file.write(compiler.llvm())
+        file.write(compiler.llvm_ir())
 
     try:
         subprocess.check_output(['clang', f'{filename}.ll', abspath/'lib/io.ll', abspath/'lib/base.ll', '-o', f'{filename}.exe', '-O2', *clangargs], stderr=subprocess.STDOUT)
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     try:
-        run_compiler(args.filepath, args.clangargs)
+        compile(args.filepath, args.clangargs)
     except Exception as e:
         print(str(e))
         exit(1)
