@@ -26,8 +26,8 @@ def run_compiler(filepath, clangargs):
 
     for name, path in units.items():
         code = transform_indented_code(path.read_text())
-        tree = parse_program(code)
-        compiler.visitProgram(tree, unit=name)
+        ast = parse_program(code)
+        compiler.compileUnit(ast, name)
 
     with open(f'{filename}.ll', 'w') as file:
         file.write(compiler.llvm())

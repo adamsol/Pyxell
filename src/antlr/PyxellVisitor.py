@@ -89,18 +89,13 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#func_arg.
-    def visitFunc_arg(self, ctx:PyxellParser.Func_argContext):
+    # Visit a parse tree produced by PyxellParser#FuncArg.
+    def visitFuncArg(self, ctx:PyxellParser.FuncArgContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#do_block.
-    def visitDo_block(self, ctx:PyxellParser.Do_blockContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#def_block.
-    def visitDef_block(self, ctx:PyxellParser.Def_blockContext):
+    # Visit a parse tree produced by PyxellParser#block.
+    def visitBlock(self, ctx:PyxellParser.BlockContext):
         return self.visitChildren(ctx)
 
 
@@ -154,6 +149,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprArray.
+    def visitExprArray(self, ctx:PyxellParser.ExprArrayContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
     def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
         return self.visitChildren(ctx)
@@ -169,8 +169,8 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#call_arg.
-    def visitCall_arg(self, ctx:PyxellParser.Call_argContext):
+    # Visit a parse tree produced by PyxellParser#CallArg.
+    def visitCallArg(self, ctx:PyxellParser.CallArgContext):
         return self.visitChildren(ctx)
 
 
@@ -196,11 +196,6 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#AtomString.
     def visitAtomString(self, ctx:PyxellParser.AtomStringContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#AtomArray.
-    def visitAtomArray(self, ctx:PyxellParser.AtomArrayContext):
         return self.visitChildren(ctx)
 
 

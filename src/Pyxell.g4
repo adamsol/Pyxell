@@ -25,29 +25,26 @@ lvalue
   ;
 
 compound_stmt
-  : 'if' expr do_block ('elif' expr do_block)* ('else' do_block)? # StmtIf
-  | 'while' expr do_block # StmtWhile
-  | 'until' expr do_block # StmtUntil
-  | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? do_block # StmtFor
-  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? (def_block | 'extern' ';') # StmtFunc
+  : 'if' expr 'do' block ('elif' expr 'do' block)* ('else' 'do' block)? # StmtIf
+  | 'while' expr 'do' block # StmtWhile
+  | 'until' expr 'do' block # StmtUntil
+  | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? 'do' block # StmtFor
+  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
   ;
 
 func_arg
-  : typ ID (':' default=expr)?
+  : typ ID (':' expr)? # FuncArg
   ;
 
-do_block
-  : 'do' '{' stmt+ '}'
-  ;
-
-def_block
-  : 'def' '{' stmt+ '}'
+block
+  : '{' stmt+ '}'
   ;
 
 expr
   : atom # ExprAtom
   | '(' tuple_expr ')' # ExprParentheses
-  | expr '[' expr ']' # ExprIndex
+  | '[' (expr ',')* expr? ']' # ExprArray
+  | expr '[' tuple_expr ']' # ExprIndex
   | expr '.' ID # ExprAttr
   | expr '(' (call_arg ',')* call_arg? ')' # ExprCall
   | <assoc=right> expr op='^' expr # ExprBinaryOp
@@ -76,7 +73,7 @@ interpolation_expr
   ;
 
 call_arg
-  : (ID '=')? expr
+  : (ID '=')? expr # CallArg
   ;
 
 atom
@@ -85,7 +82,6 @@ atom
   | ('true' | 'false') # AtomBool
   | CHAR # AtomChar
   | STRING # AtomString
-  | '[' (expr ',')* expr? ']' # AtomArray
   | ID # AtomId
   ;
 

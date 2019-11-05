@@ -6,6 +6,14 @@ import llvmlite.ir as ll
 from .utils import extend_class
 
 
+__all__ = [
+    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tTuple', 'tFunc', 'tUnknown',
+    'Arg',
+    'types_compatible', 'unify_types',
+    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull', 'vIndex',
+]
+
+
 class UnknownType(ll.Type):
 
     def _to_string(self):
@@ -28,6 +36,9 @@ class CustomStructType(ll.LiteralStructType):
         if not super().__eq__(other):
             return False
         return self.kind == other.kind
+
+    def __hash__(self):
+        return hash(CustomStructType)
 
 
 tVoid = ll.VoidType()
@@ -62,8 +73,6 @@ def isArray(type):
 
 
 def tTuple(elements):
-    if len(elements) == 1:
-        return elements[0]
     type = tPtr(CustomStructType(elements, 'tuple'))
     type.elements = elements
     return type
@@ -168,13 +177,13 @@ def default(type):
 
 
 def vInt(n):
-    return ll.Constant(tInt, str(n))
+    return ll.Constant(tInt, n)
 
 def vFloat(f):
-    return ll.Constant(tFloat, str(f))
+    return ll.Constant(tFloat, f)
 
 def vBool(b):
-    return ll.Constant(tBool, int(b))
+    return ll.Constant(tBool, b)
 
 vFalse = vBool(False)
 vTrue = vBool(True)
