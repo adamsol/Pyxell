@@ -962,7 +962,7 @@ class PyxellCompiler:
         for arg in node['args']:
             type = arg['type']
             name = arg['name']
-            default = arg['default']
+            default = arg.get('default')
             if default:
                 with self.no_output():
                     self.cast(default, self.compile(default), type)
@@ -1024,11 +1024,13 @@ class PyxellCompiler:
         expr = node['expr']
         if expr:
             value = self.cast(node, self.compile(expr), type)
-            self.builder.ret(value)
-        else:
-            if type != tVoid:
-                self.throw(node, err.IllegalAssignment(tVoid, type))
+        elif type != tVoid:
+            self.throw(node, err.IllegalAssignment(tVoid, type))
+
+        if type == tVoid:
             self.builder.ret_void()
+        else:
+            self.builder.ret(value)
 
 
     ### Expressions ###
@@ -1088,7 +1090,35 @@ class PyxellCompiler:
             else:
                 self.throw(node, err.TooFewArguments(func.type))
 
-            value = self.cast(expr, self.compile(expr), func_arg.type)
+            if expr['node'] == 'ExprLambda':
+                ids = expr['ids']
+                type = func_arg.type
+                if len(ids) < len(type.args):
+                    self.throw(node, err.TooFewArguments(type))
+                if len(ids) > len(type.args):
+                    self.throw(node, err.TooManyArguments(type))
+                pos = expr['position']
+                id = self.module.get_unique_name('lambda')
+                self.compile({
+                    'node': 'StmtFunc',
+                    'position': pos,
+                    'id': id,
+                    'args': [{
+                        'type': arg.type,
+                        'name': name,
+                    } for arg, name in zip(type.args, ids)],
+                    'ret': type.ret,
+                    'block': {
+                        'node': 'StmtReturn',
+                        'position': pos,
+                        'expr': expr['expr'],
+                    },
+                })
+                value = self.get(expr, id)
+            else:
+                value = self.compile(expr)
+
+            value = self.cast(expr, value, func_arg.type)
             args.append(value)
 
         if named_args:
@@ -1176,6 +1206,9 @@ class PyxellCompiler:
         cond = self.cast(exprs[0], cond, tBool)
         values = self.unify(node, *values)
         return self.builder.select(cond, *values)
+
+    def compileExprLambda(self, node):
+        self.throw(node, err.UnknownType())
 
     def compileExprTuple(self, node):
         values = lmap(self.compile, node['exprs'])

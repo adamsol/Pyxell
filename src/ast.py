@@ -249,6 +249,13 @@ class PyxellASTVisitor(PyxellVisitor):
             'exprs': self.visit(ctx.expr()),
         }
 
+    def visitExprLambda(self, ctx):
+        return {
+            **_node(ctx, 'ExprLambda'),
+            'ids': self.visit(ctx.ID()),
+            'expr': self.visit(ctx.expr()),
+        }
+
     def visitExprTuple(self, ctx):
         elems = self.visit(ctx.expr())
         if len(elems) == 1:

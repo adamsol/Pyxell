@@ -104,11 +104,6 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprCall.
-    def visitExprCall(self, ctx:PyxellParser.ExprCallContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by PyxellParser#ExprCmp.
     def visitExprCmp(self, ctx:PyxellParser.ExprCmpContext):
         return self.visitChildren(ctx)
@@ -116,11 +111,6 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprIndex.
     def visitExprIndex(self, ctx:PyxellParser.ExprIndexContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#ExprCond.
-    def visitExprCond(self, ctx:PyxellParser.ExprCondContext):
         return self.visitChildren(ctx)
 
 
@@ -139,6 +129,26 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprArray.
+    def visitExprArray(self, ctx:PyxellParser.ExprArrayContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
+    def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprCall.
+    def visitExprCall(self, ctx:PyxellParser.ExprCallContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprCond.
+    def visitExprCond(self, ctx:PyxellParser.ExprCondContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprBinaryOp.
     def visitExprBinaryOp(self, ctx:PyxellParser.ExprBinaryOpContext):
         return self.visitChildren(ctx)
@@ -149,13 +159,8 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprArray.
-    def visitExprArray(self, ctx:PyxellParser.ExprArrayContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
-    def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
+    # Visit a parse tree produced by PyxellParser#ExprLambda.
+    def visitExprLambda(self, ctx:PyxellParser.ExprLambdaContext):
         return self.visitChildren(ctx)
 
 
