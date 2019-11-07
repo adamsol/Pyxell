@@ -302,9 +302,12 @@ class PyxellASTVisitor(PyxellVisitor):
         }
 
     def visitAtomId(self, ctx):
+        id = self.visit(ctx.ID())
+        if id == '_':
+            return _node(ctx, 'AtomStub')
         return {
             **_node(ctx, 'AtomId'),
-            'id': self.visit(ctx.ID()),
+            'id': id,
         }
 
 

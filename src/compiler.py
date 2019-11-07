@@ -689,6 +689,51 @@ class PyxellCompiler:
 
         return result
 
+    def convert_lambda(self, expr):
+        ids = []
+
+        def convert_expr(expr):
+            nonlocal ids
+            node = expr['node']
+
+            if node in ['ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple']:
+                return {
+                    **expr,
+                    'exprs': lmap(convert_expr, expr['exprs']),
+                }
+            if node in ['ExprAttr', 'ExprUnaryOp']:
+                return {
+                    **expr,
+                    'expr': convert_expr(expr['expr']),
+                }
+            if node == 'ExprCall':
+                return {
+                    **expr,
+                    'expr': convert_expr(expr['expr']),
+                    'args': [{
+                        **arg,
+                        'expr': convert_expr(arg['expr']),
+                    } for arg in expr['args']],
+                }
+            if node == 'AtomStub':
+                id = f'${len(ids)}'
+                ids.append(id)
+                return {
+                    **expr,
+                    'node': 'AtomId',
+                    'id': id,
+                }
+            return expr
+
+        expr = convert_expr(expr)
+        if ids:
+            return {
+                **expr,
+                'node': 'ExprLambda',
+                'ids': ids,
+                'expr': expr,
+            }
+        return expr
 
     ### Statements ###
 
@@ -1090,6 +1135,7 @@ class PyxellCompiler:
             else:
                 self.throw(node, err.TooFewArguments(func.type))
 
+            expr = self.convert_lambda(expr)
             if expr['node'] == 'ExprLambda':
                 ids = expr['ids']
                 type = func_arg.type
@@ -1259,3 +1305,6 @@ class PyxellCompiler:
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])
+
+    def compileAtomStub(self, node):
+        self.throw(node, err.UnknownType())

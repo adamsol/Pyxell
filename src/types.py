@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import llvmlite.ir as ll
 
-from .utils import extend_class
+from .utils import *
 
 
 __all__ = [
