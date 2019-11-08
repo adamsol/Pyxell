@@ -117,7 +117,7 @@ class PyxellCompiler:
         self.builder.position_at_end(label_end)
 
     def throw(self, node, msg):
-        line, column = node['position']
+        line, column = node.get('position', (1, 1))
         raise err(msg, line, column)
 
     def get(self, node, id, load=True):
@@ -664,6 +664,49 @@ class PyxellCompiler:
 
         return result
 
+    def convert_string(self, node, lit):
+        parts = re.split(r'{([^}]+)}', lit)
+
+        if len(parts) == 1:
+            return node
+
+        lits, tags = parts[::2], parts[1::2]
+        exprs = [None] * len(parts)
+
+        for i, lit in enumerate(lits):
+            exprs[i*2] = {
+                'node': 'AtomString',
+                'string': lit,
+            }
+
+        for i, tag in enumerate(tags):
+            try:
+                expr = parse_expr(tag)
+            except err:
+                self.throw(node, err.InvalidExpression(tag))
+            exprs[i*2+1] ={
+                'node': 'ExprCall',
+                'expr': {
+                    'node': 'ExprAttr',
+                    'expr': expr,
+                    'attr': 'toString',
+                },
+                'args': [],
+            }
+
+        return {
+            'node': 'ExprCall',
+            'expr': {
+                'node': 'ExprAttr',
+                'expr': {
+                    'node': 'ExprArray',
+                    'exprs': exprs,
+                },
+                'attr': 'join',
+            },
+            'args': [],
+        }
+
     def array(self, subtype, values):
         type = tArray(subtype)
         result = self.malloc(type)
@@ -715,6 +758,11 @@ class PyxellCompiler:
                         'expr': convert_expr(arg['expr']),
                     } for arg in expr['args']],
                 }
+            if node == 'AtomString':
+                expr = self.convert_string(expr, expr['string'])
+                if expr['node'] == 'AtomString':
+                    return expr
+                return convert_expr(expr)
             if node == 'AtomStub':
                 id = f'${len(ids)}'
                 ids.append(id)
@@ -734,6 +782,7 @@ class PyxellCompiler:
                 'expr': expr,
             }
         return expr
+
 
     ### Statements ###
 
@@ -1145,11 +1194,10 @@ class PyxellCompiler:
                     self.throw(node, err.TooFewArguments(type))
                 if len(ids) > len(type.args):
                     self.throw(node, err.TooManyArguments(type))
-                pos = expr['position']
                 id = self.module.get_unique_name('lambda')
                 self.compile({
+                    **expr,
                     'node': 'StmtFunc',
-                    'position': pos,
                     'id': id,
                     'args': [{
                         'type': arg.type,
@@ -1157,8 +1205,8 @@ class PyxellCompiler:
                     } for arg, name in zip(type.args, ids)],
                     'ret': type.ret,
                     'block': {
+                        **expr,
                         'node': 'StmtReturn',
-                        'position': pos,
                         'expr': expr['expr'],
                     },
                 })
@@ -1278,32 +1326,16 @@ class PyxellCompiler:
         return vChar(node['char'])
 
     def compileAtomString(self, node):
-        lit = node['string']
-        parts = re.split(r'{([^}]+)}', lit)
-
-        if len(parts) > 1:
-            lits, tags = parts[::2], parts[1::2]
-            values = [None] * len(parts)
-
-            for i, lit in enumerate(lits):
-                values[i*2] = self.string(lit)
-
-            for i, tag in enumerate(tags):
-                try:
-                    expr = parse_expr(tag)
-                except err:
-                    self.throw(node, err.InvalidExpression(tag))
-                try:
-                    obj, func = self.attribute(node, expr, 'toString')
-                except err as e:
-                    self.throw(node, str(e).partition(': ')[2][:-1])
-
-                values[i*2+1] = self.builder.call(func, [obj])
-
-            return self.call('StringArray_join', self.array(tString, values), self.string(''))
-
-        else:
-            return self.string(lit)
+        expr = self.convert_string(node, node['string'])
+        if expr['node'] == 'AtomString':
+            return self.string(expr['string'])
+        try:
+            return self.compile(expr)
+        except err as e:
+            self.throw({
+                **node,
+                'position': [e.line+node['position'][0]-1, e.column+node['position'][1]+1],
+            }, str(e).partition(': ')[2][:-1])
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])

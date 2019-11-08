@@ -44,6 +44,8 @@ class PyxellError(Exception):
     UnknownType = lambda: f"Cannot settle type of the expression"
 
     def __init__(self, msg, line, column=None):
+        self.line = line
+        self.column = column
         text = f"Line {line}"
         if column:
             text += f", column {column}"

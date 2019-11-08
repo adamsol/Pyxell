@@ -1,0 +1,6 @@
+
+func f(Int->Bool->String g, Int n, Bool b) String def
+    return g(n, b)
+
+print f("2+2={_*2} {not _}", 2, true)
+print f("{(_>0)==_}...", 0, false)
