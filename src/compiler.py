@@ -1139,6 +1139,8 @@ class PyxellCompiler:
             if expr['node'] == 'ExprLambda':
                 ids = expr['ids']
                 type = func_arg.type
+                if not type.isFunc():
+                    self.throw(node, err.IllegalLambda())
                 if len(ids) < len(type.args):
                     self.throw(node, err.TooFewArguments(type))
                 if len(ids) > len(type.args):
@@ -1184,7 +1186,7 @@ class PyxellCompiler:
         return self.binaryop(node, node['op'], *map(self.compile, node['exprs']))
 
     def compileExprRange(self, node):
-        self.throw(node, err.UnknownType())
+        self.throw(node, err.IllegalRange())
 
     def compileExprCmp(self, node):
         exprs = node['exprs']
@@ -1254,7 +1256,7 @@ class PyxellCompiler:
         return self.builder.select(cond, *values)
 
     def compileExprLambda(self, node):
-        self.throw(node, err.UnknownType())
+        self.throw(node, err.IllegalLambda())
 
     def compileExprTuple(self, node):
         values = lmap(self.compile, node['exprs'])
@@ -1307,4 +1309,4 @@ class PyxellCompiler:
         return self.get(node, node['id'])
 
     def compileAtomStub(self, node):
-        self.throw(node, err.UnknownType())
+        self.throw(node, err.IllegalLambda())

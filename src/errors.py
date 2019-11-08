@@ -16,6 +16,8 @@ class PyxellError(Exception):
     CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
+    IllegalLambda = lambda: "Lambda expression cannot be used in this context"
+    IllegalRange = lambda: "Range expression cannot be used in this context"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidExpression = lambda e: f"Could not parse expression `{e}`"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
