@@ -28,7 +28,7 @@ compound_stmt
   : 'if' expr 'do' block ('elif' expr 'do' block)* ('else' 'do' block)? # StmtIf
   | 'while' expr 'do' block # StmtWhile
   | 'until' expr 'do' block # StmtUntil
-  | 'for' tuple_expr 'in' tuple_expr ('step' step=tuple_expr)? 'do' block # StmtFor
+  | 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? 'do' block # StmtFor
   | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
   ;
 
@@ -44,6 +44,7 @@ expr
   : atom # ExprAtom
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
+  | '[' expr comprehension+ ']' # ExprArrayComprehension
   | expr '[' tuple_expr ']' # ExprIndex
   | expr '.' ID # ExprAttr
   | expr '(' (call_arg ',')* call_arg? ')' # ExprCall
@@ -71,6 +72,11 @@ tuple_expr
 
 interpolation_expr
   : tuple_expr EOF # ExprInterpolation
+  ;
+
+comprehension
+  : 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? # ComprehensionGenerator
+  | 'if' expr # ComprehensionFilter
   ;
 
 call_arg

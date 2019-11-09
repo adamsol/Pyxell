@@ -33,6 +33,7 @@ class PyxellCompiler:
         self.module = ll.Module()
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
+            'realloc': ll.Function(self.module, tFunc([tPtr(), tInt], tPtr()).pointee, 'realloc'),
             'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]).pointee, 'memcpy'),
             'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
         }
@@ -83,6 +84,9 @@ class PyxellCompiler:
 
     @contextmanager
     def local(self):
+        if getattr(self, 'prevent_local', False):
+            yield
+            return
         env = self.env.copy()
         initialized = self.initialized.copy()
         yield
@@ -97,7 +101,9 @@ class PyxellCompiler:
         self._unit = _unit
 
     @contextmanager
-    def no_output(self):
+    def no_output(self, prevent_local=False):
+        if prevent_local:
+            self.prevent_local = True
         dummy_module = ll.Module()
         dummy_func = ll.Function(dummy_module, tFunc([]).pointee, 'dummy')
         dummy_label = dummy_func.append_basic_block('dummy')
@@ -105,6 +111,8 @@ class PyxellCompiler:
         self.builder.position_at_end(dummy_label)
         yield
         self.builder.position_at_end(prev_label)
+        if prevent_local:
+            self.prevent_local = False
 
     @contextmanager
     def block(self):
@@ -297,6 +305,13 @@ class PyxellCompiler:
     def malloc(self, type, length=vInt(1)):
         size = self.sizeof(type.pointee, length)
         ptr = self.builder.call(self.builtins['malloc'], [size])
+        return self.builder.bitcast(ptr, type)
+
+    def realloc(self, ptr, length=vInt(1)):
+        type = ptr.type
+        size = self.sizeof(type.pointee, length)
+        ptr = self.builder.bitcast(ptr, tPtr())
+        ptr = self.builder.call(self.builtins['realloc'], [ptr, size])
         return self.builder.bitcast(ptr, type)
 
     def memcpy(self, dest, src, length):
@@ -707,16 +722,19 @@ class PyxellCompiler:
             'args': [],
         }
 
-    def array(self, subtype, values):
+    def array(self, subtype, values, length=None):
         type = tArray(subtype)
         result = self.malloc(type)
 
-        memory = self.malloc(tPtr(subtype), vInt(len(values)))
+        if length is None:
+            length = len(values)
+
+        memory = self.malloc(tPtr(subtype), vInt(length))
         for i, value in enumerate(values):
             self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
 
         self.builder.store(memory, self.builder.gep(result, [vInt(0), vIndex(0)]))
-        self.builder.store(vInt(len(values)), self.builder.gep(result, [vInt(0), vIndex(1)]))
+        self.builder.store(vInt(length), self.builder.gep(result, [vInt(0), vIndex(1)]))
 
         return result
 
@@ -744,19 +762,28 @@ class PyxellCompiler:
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
                 }
-            if node in ['ExprAttr', 'ExprUnaryOp']:
+            if node == 'ExprArrayComprehension':
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
+                    'comprehensions': lmap(convert_expr, expr['comprehensions']),
+                }
+            if node == 'ComprehensionGenerator':
+                return {
+                    **expr,
+                    'iterables': lmap(convert_expr, expr['iterables']),
+                    'steps': lmap(convert_expr, expr['steps']),
                 }
             if node == 'ExprCall':
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
-                    'args': [{
-                        **arg,
-                        'expr': convert_expr(arg['expr']),
-                    } for arg in expr['args']],
+                    'args': lmap(convert_expr, expr['args']),
+                }
+            if node in ['ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp']:
+                return {
+                    **expr,
+                    'expr': convert_expr(expr['expr']),
                 }
             if node == 'AtomString':
                 expr = self.convert_string(expr, expr['string'])
@@ -861,6 +888,22 @@ class PyxellCompiler:
         ptr = self.lvalue(node, node['exprs'][0])
         value = self.binaryop(node, node['op'], self.builder.load(ptr), self.compile(node['exprs'][1]))
         self.builder.store(value, ptr)
+
+    def compileStmtAppend(self, node):
+        # Special instruction for array comprehension.
+        array = self.compile(node['array'])
+        length = self.extract(array, 1)
+        index = self.compile(node['index'])
+
+        with self.builder.if_then(self.builder.icmp_signed('==', index, length)):
+            length = self.builder.shl(length, vInt(1))
+            memory = self.realloc(self.extract(array, 0), length)
+            self.builder.store(memory, self.builder.gep(array, [vInt(0), vIndex(0)]))
+            self.builder.store(length, self.builder.gep(array, [vInt(0), vIndex(1)]))
+
+        value = self.compile(node['expr'])
+        self.builder.store(value, self.builder.gep(self.extract(array, 0), [index]))
+        self.builder.store(self.builder.add(index, vInt(1)), self.lvalue(node, node['index']))
 
     def compileStmtIf(self, node):
         exprs = node['exprs']
@@ -1134,6 +1177,62 @@ class PyxellCompiler:
         values = self.unify(node, *map(self.compile, exprs))
         subtype = values[0].type if values else tUnknown
         return self.array(subtype, values)
+
+    def compileExprArrayComprehension(self, node):
+        expr = node['expr']
+
+        n = len(self.env)
+        value, array, index = [{
+            'node': 'AtomId',
+            'id': f'$cpr_{name}{n}',
+        } for name in ['value', 'array', 'index']]
+
+        stmt = inner_stmt = {
+            'node': 'StmtAssg',
+            'lvalues': [{
+                'node': 'Lvalue',
+                'exprs': [value],
+            }],
+            'expr': expr,
+        }
+
+        for i, cpr in reversed(list(enumerate(node['comprehensions']))):
+            if cpr['node'] == 'ComprehensionGenerator':
+                stmt = {
+                    **cpr,
+                    'node': 'StmtFor',
+                    'block': stmt,
+                }
+            elif cpr['node'] == 'ComprehensionFilter':
+                if i == 0:
+                    self.throw(cpr, err.InvalidSyntax())
+                stmt = {
+                    **cpr,
+                    'node': 'StmtIf',
+                    'exprs': [cpr['expr']],
+                    'blocks': [stmt],
+                }
+
+        # A small hack to obtain type of the expression.
+        with self.local():
+            with self.no_output(prevent_local=True):
+                self.compile(stmt)
+                type = self.compile(value).type
+
+        self.assign(node, array, self.array(type, [], length=4))
+        self.assign(node, index, vInt(0))
+
+        inner_stmt['node'] = 'StmtAppend'
+        inner_stmt['array'] = array
+        inner_stmt['index'] = index
+
+        self.compile(stmt)
+
+        result = self.compile(array)
+        length = self.compile(index)
+        self.builder.store(length, self.builder.gep(result, [vInt(0), vIndex(1)]))
+
+        return result
 
     def compileExprIndex(self, node):
         return self.builder.load(self.index(node, *node['exprs']))

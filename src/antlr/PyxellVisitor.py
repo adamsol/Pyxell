@@ -139,6 +139,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprArrayComprehension.
+    def visitExprArrayComprehension(self, ctx:PyxellParser.ExprArrayComprehensionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprCall.
     def visitExprCall(self, ctx:PyxellParser.ExprCallContext):
         return self.visitChildren(ctx)
@@ -171,6 +176,16 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprInterpolation.
     def visitExprInterpolation(self, ctx:PyxellParser.ExprInterpolationContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ComprehensionGenerator.
+    def visitComprehensionGenerator(self, ctx:PyxellParser.ComprehensionGeneratorContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ComprehensionFilter.
+    def visitComprehensionFilter(self, ctx:PyxellParser.ComprehensionFilterContext):
         return self.visitChildren(ctx)
 
 

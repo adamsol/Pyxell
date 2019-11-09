@@ -172,6 +172,28 @@ class PyxellASTVisitor(PyxellVisitor):
             'exprs': self.visit(ctx.expr()),
         }
 
+    def visitExprArrayComprehension(self, ctx):
+        return {
+            **_node(ctx, 'ExprArrayComprehension'),
+            'expr': self.visit(ctx.expr()),
+            'comprehensions': self.visit(ctx.comprehension()),
+        }
+
+    def visitComprehensionGenerator(self, ctx):
+        exprs = ctx.tuple_expr()
+        return {
+            **_node(ctx, 'ComprehensionGenerator'),
+            'vars': self.visit(exprs[0].expr()),
+            'iterables': self.visit(exprs[1].expr()),
+            'steps': self.visit(exprs[2].expr()) if len(exprs) > 2 else [],
+        }
+
+    def visitComprehensionFilter(self, ctx):
+        return {
+            **_node(ctx, 'ComprehensionFilter'),
+            'expr': self.visit(ctx.expr()),
+        }
+
     def visitExprIndex(self, ctx):
         return {
             **_node(ctx, 'ExprIndex'),
