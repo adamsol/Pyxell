@@ -38,8 +38,7 @@ class PyxellCompiler:
             'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
         }
         self.main = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
-        self.init = ll.Function(self.module, tFunc([]).pointee, 'init')
-        self.builder.position_at_end(self.init.append_basic_block('entry'))
+        self.builder.position_at_end(self.main.append_basic_block('entry'))
 
     def run(self, ast, unit):
         self.units[unit] = Unit({}, set())
@@ -50,10 +49,6 @@ class PyxellCompiler:
             self.compile(ast)
 
     def run_main(self, ast):
-        self.builder.ret_void()
-        self.main.blocks = []
-        self.builder.position_at_end(self.main.append_basic_block('entry'))
-        self.builder.call(self.init, [])
         self.run(ast, 'main')
         self.builder.ret(ll.Constant(tInt, 0))
 
@@ -259,7 +254,7 @@ class PyxellCompiler:
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
 
-        if self.builder.function._name in ('init', 'main'):
+        if self.builder.function._name == 'main':
             ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
             ptr.initializer = type.default()
         else:

@@ -9,6 +9,7 @@ from timeit import default_timer as timer
 from pathlib import Path
 
 from src.main import compile
+from src.errors import PyxellError
 
 # Setup terminal colors.
 R = colorama.Style.BRIGHT + colorama.Fore.RED
@@ -52,7 +53,7 @@ for i, path in enumerate(tests, 1):
             compile(path, params)
         except KeyboardInterrupt:
             exit(1)
-        except Exception as e:
+        except PyxellError as e:
             error_message = str(e)
             if error_expected:
                 if error_message.strip().endswith(error_expected):
@@ -62,6 +63,9 @@ for i, path in enumerate(tests, 1):
                     print(f"{R}{error_message}\n---\n> {error_expected}{E}")
             else:
                 print(f"{R}{error_message}{E}")
+            continue
+        except subprocess.CalledProcessError as e:
+            print(f"{R}{e.output.decode()}{E}")
             continue
 
         if error_expected:
