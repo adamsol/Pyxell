@@ -200,6 +200,13 @@ class PyxellASTVisitor(PyxellVisitor):
             'exprs': [self.visit(ctx.expr()), self.visit(ctx.tuple_expr())],
         }
 
+    def visitExprSlice(self, ctx):
+        return {
+            **_node(ctx, 'ExprSlice'),
+            'expr': self.visit(ctx.expr(0)),
+            'slice': self.visit([ctx.e1, ctx.e2, ctx.e3]),
+        }
+
     def visitExprAttr(self, ctx):
         return {
             **_node(ctx, 'ExprAttr'),

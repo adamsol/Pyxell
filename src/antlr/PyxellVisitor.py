@@ -154,6 +154,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprSlice.
+    def visitExprSlice(self, ctx:PyxellParser.ExprSliceContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprBinaryOp.
     def visitExprBinaryOp(self, ctx:PyxellParser.ExprBinaryOpContext):
         return self.visitChildren(ctx)

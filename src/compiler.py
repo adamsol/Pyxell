@@ -722,14 +722,14 @@ class PyxellCompiler:
         result = self.malloc(type)
 
         if length is None:
-            length = len(values)
+            length = vInt(len(values))
 
-        memory = self.malloc(tPtr(subtype), vInt(length))
+        memory = self.malloc(tPtr(subtype), length)
         for i, value in enumerate(values):
             self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
 
         self.builder.store(memory, self.builder.gep(result, [vInt(0), vIndex(0)]))
-        self.builder.store(vInt(length), self.builder.gep(result, [vInt(0), vIndex(1)]))
+        self.builder.store(length, self.builder.gep(result, [vInt(0), vIndex(1)]))
 
         return result
 
@@ -749,6 +749,9 @@ class PyxellCompiler:
         ids = []
 
         def convert_expr(expr):
+            if expr is None:
+                return
+
             nonlocal ids
             node = expr['node']
 
@@ -756,6 +759,12 @@ class PyxellCompiler:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
+                }
+            if node == 'ExprSlice':
+                return {
+                    **expr,
+                    'expr': convert_expr(expr['expr']),
+                    'slice': lmap(convert_expr, expr['slice']),
                 }
             if node == 'ExprArrayComprehension':
                 return {
@@ -880,8 +889,9 @@ class PyxellCompiler:
                     self.assign(lvalue, expr, self.extract(value, i))
 
     def compileStmtAssgExpr(self, node):
-        ptr = self.lvalue(node, node['exprs'][0])
-        value = self.binaryop(node, node['op'], self.builder.load(ptr), self.compile(node['exprs'][1]))
+        exprs = node['exprs']
+        ptr = self.lvalue(node, exprs[0])
+        value = self.binaryop(node, node['op'], self.builder.load(ptr), self.compile(exprs[1]))
         self.builder.store(value, ptr)
 
     def compileStmtAppend(self, node):
@@ -1030,7 +1040,7 @@ class PyxellCompiler:
             conditions.append(cond)
             getters.append(getter)
 
-        _steps = lmap(self.compile, node['steps']) or [vInt(1)]
+        _steps = lmap(self.compile, node.get('steps', [])) or [vInt(1)]
         if len(_steps) == 1:
             _steps *= len(iterables)
         elif len(_steps) != len(iterables):
@@ -1214,7 +1224,7 @@ class PyxellCompiler:
                 self.compile(stmt)
                 type = self.compile(value).type
 
-        self.assign(node, array, self.array(type, [], length=4))
+        self.assign(node, array, self.array(type, [], length=vInt(4)))
         self.assign(node, index, vInt(0))
 
         inner_stmt['node'] = 'StmtAppend'
@@ -1231,6 +1241,51 @@ class PyxellCompiler:
 
     def compileExprIndex(self, node):
         return self.builder.load(self.index(node, *node['exprs']))
+
+    def compileExprSlice(self, node):
+        slice = node['slice']
+
+        n = len(self.env)
+        array, length, start, end, step, index = [{
+            'node': 'AtomId',
+            'id': f'slice_{name}{n}',  # FIXME
+        } for name in ['array', 'length', 'start', 'end', 'step', 'index']]
+
+        self.assign(node, array, self.compile(node['expr']))
+
+        with self.no_output():
+            type = self.compile(array).type
+
+        if not type.isCollection():
+            self.throw(node, err.NotIndexable(type))
+
+        self.assign(node, length, self.compile(parse_expr('{t}.length'.format(t=array['id']))))
+
+        if slice[2] is None:
+            self.assign(node, step, vInt(1))
+        else:
+            self.assign(node, step, self.cast(slice[2], self.compile(slice[2]), tInt))
+
+        if slice[0] is None:
+            self.assign(node, start, self.compile(parse_expr('{c} > 0 ? 0 : {l}'.format(c=step['id'], l=length['id']))))
+        else:
+            self.assign(node, start, self.cast(slice[0], self.compile(slice[0]), tInt))
+            self.assign(node, start, self.compile(parse_expr('{a} < 0 ? {a} + {l} : {a}'.format(a=start['id'], l=length['id']))))
+        self.assign(node, start, self.compile(parse_expr('{a} < 0 ? 0 : {a} > {l} ? {l} : {a}'.format(a=start['id'], l=length['id']))))
+
+        if slice[1] is None:
+            self.assign(node, end, self.compile(parse_expr('{c} > 0 ? {l} : 0'.format(c=step['id'], l=length['id']))))
+        else:
+            self.assign(node, end, self.cast(slice[1], self.compile(slice[1]), tInt))
+            self.assign(node, end, self.compile(parse_expr('{b} < 0 ? {b} + {l} : {b}'.format(b=end['id'], l=length['id']))))
+        self.assign(node, end, self.compile(parse_expr('{b} < 0 ? 0 : {b} > {l} ? {l} : {b}'.format(b=end['id'], l=length['id']))))
+
+        self.assign(node, start, self.compile(parse_expr('{c} < 0 ? {a} - 1 : {a}'.format(a=start['id'], c=step['id']))))
+        self.assign(node, end, self.compile(parse_expr('{c} < 0 ? {b} - 1 : {b}'.format(b=end['id'], c=step['id']))))
+
+        result = self.compile(parse_expr('[{t}[{i}] for {i} in {a}...{b} step {c}]'.format(t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])))
+
+        return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == tString else result
 
     def compileExprAttr(self, node):
         obj, value = self.attribute(node, node['expr'], node['attr'])
