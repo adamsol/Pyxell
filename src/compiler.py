@@ -131,8 +131,11 @@ class PyxellCompiler:
         ptr = self.env[id]
         return self.builder.load(ptr) if load else ptr
 
-    def extract(self, value, *indices):
-        return self.builder.load(self.builder.gep(value, [vInt(0), *map(vIndex, indices)]))
+    def extract(self, ptr, *indices):
+        return self.builder.load(self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
+
+    def insert(self, value, ptr, *indices):
+        return self.builder.store(value, self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
 
     def index(self, node, *exprs, lvalue=False):
         collection, index = [self.compile(expr) for expr in exprs]
@@ -388,10 +391,10 @@ class PyxellCompiler:
                     cond = self.builder.icmp_signed('<', self.builder.load(index), length)
                     self.builder.cbranch(cond, label_start, label_end)
 
-                value = self.malloc(type)
-                self.builder.store(dest, self.builder.gep(value, [vInt(0), vIndex(0)]))
-                self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
-                return value
+                result = self.malloc(type)
+                self.insert(dest, result, 0)
+                self.insert(length, result, 1)
+                return result
 
             elif left.type == tInt and right.type.isCollection():
                 return self.binaryop(node, op, right, left)
@@ -450,10 +453,10 @@ class PyxellCompiler:
                 self.memcpy(array, array1, length1)
                 self.memcpy(self.builder.gep(array, [length1]), array2, length2)
 
-                value = self.malloc(type)
-                self.builder.store(array, self.builder.gep(value, [vInt(0), vIndex(0)]))
-                self.builder.store(length, self.builder.gep(value, [vInt(0), vIndex(1)]))
-                return value
+                result = self.malloc(type)
+                self.insert(array, result, 0)
+                self.insert(length, result, 1)
+                return result
 
             elif left.type == tString and right.type == tChar:
                 return self.binaryop(node, op, left, self.call('Char_toString', right))
@@ -681,16 +684,17 @@ class PyxellCompiler:
 
     def string(self, lit):
         const = ll.Constant(ll.ArrayType(tChar, len(lit)), [vChar(c) for c in lit])
-        result = self.malloc(tString)
 
         array = ll.GlobalVariable(self.module, const.type, self.module.get_unique_name('str'))
         array.global_constant = True
         array.initializer = const
+
         memory = self.builder.gep(array, [vInt(0), vInt(0)])
+        length = vInt(const.type.count)
 
-        self.builder.store(memory, self.builder.gep(result, [vInt(0), vIndex(0)]))
-        self.builder.store(vInt(const.type.count), self.builder.gep(result, [vInt(0), vIndex(1)]))
-
+        result = self.malloc(tString)
+        self.insert(memory, result, 0)
+        self.insert(length, result, 1)
         return result
 
     def convert_string(self, node, lit):
@@ -738,7 +742,6 @@ class PyxellCompiler:
 
     def array(self, subtype, values, length=None):
         type = tArray(subtype)
-        result = self.malloc(type)
 
         if length is None:
             length = vInt(len(values))
@@ -747,15 +750,15 @@ class PyxellCompiler:
         for i, value in enumerate(values):
             self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
 
-        self.builder.store(memory, self.builder.gep(result, [vInt(0), vIndex(0)]))
-        self.builder.store(length, self.builder.gep(result, [vInt(0), vIndex(1)]))
-
+        result = self.malloc(type)
+        self.insert(memory, result, 0)
+        self.insert(length, result, 1)
         return result
 
     def nullable(self, value):
-        ptr = self.malloc(tNullable(value.type))
-        self.builder.store(value, self.builder.gep(ptr, [vInt(0)]))
-        return ptr
+        result = self.malloc(tNullable(value.type))
+        self.insert(value, result)
+        return result
 
     def tuple(self, values):
         if len(values) == 1:
@@ -765,7 +768,7 @@ class PyxellCompiler:
         result = self.malloc(type)
 
         for i, value in enumerate(values):
-            self.builder.store(value, self.builder.gep(result, [vInt(0), vIndex(i)]))
+            self.insert(value, result, i)
 
         return result
 
@@ -927,12 +930,13 @@ class PyxellCompiler:
         with self.builder.if_then(self.builder.icmp_signed('==', index, length)):
             length = self.builder.shl(length, vInt(1))
             memory = self.realloc(self.extract(array, 0), length)
-            self.builder.store(memory, self.builder.gep(array, [vInt(0), vIndex(0)]))
-            self.builder.store(length, self.builder.gep(array, [vInt(0), vIndex(1)]))
+            self.insert(memory, array, 0)
+            self.insert(length, array, 1)
 
         value = self.compile(node['expr'])
         self.builder.store(value, self.builder.gep(self.extract(array, 0), [index]))
-        self.builder.store(self.builder.add(index, vInt(1)), self.lvalue(node, node['index']))
+
+        self.inc(self.lvalue(node, node['index']))
 
     def compileStmtIf(self, node):
         exprs = node['exprs']
@@ -1260,7 +1264,7 @@ class PyxellCompiler:
 
             result = self.compile(array)
             length = self.compile(index)
-            self.builder.store(length, self.builder.gep(result, [vInt(0), vIndex(1)]))
+            self.insert(length, result, 1)
 
         return result
 
@@ -1310,6 +1314,7 @@ class PyxellCompiler:
 
             result = self.compile(parse_expr('[{t}[{i}] for {i} in {a}...{b} step {c}]'.format(t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])))
 
+        # `CharArray_asString` is used directly, because `.join` would copy the array redundantly.
         return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == tString else result
 
     def compileExprAttr(self, node):

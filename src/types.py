@@ -10,7 +10,7 @@ __all__ = [
     'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tUnknown',
     'Arg',
     'can_cast', 'unify_types',
-    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull', 'vIndex',
+    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull',
 ]
 
 
@@ -215,6 +215,3 @@ def vChar(c):
 
 def vNull(type):
     return ll.Constant(type, 'null')
-
-def vIndex(i):
-    return ll.Constant(ll.IntType(32), i)
