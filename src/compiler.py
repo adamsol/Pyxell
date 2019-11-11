@@ -222,8 +222,10 @@ class PyxellCompiler:
         return self.builder.call(func, values)
 
     def cast(self, node, value, type):
-        if not types_compatible(value.type, type):
+        if not can_cast(value.type, type):
             self.throw(node, err.IllegalAssignment(value.type, type))
+        if not value.type.isNullable() and type.isNullable():
+            return self.cast(node, self.nullable(value), type)
         return value if value.type == type else self.builder.bitcast(value, type)
 
     def unify(self, node, *values):
@@ -297,7 +299,7 @@ class PyxellCompiler:
         self.builder.store(add(self.builder.load(ptr), step), ptr)
 
     def sizeof(self, type, length=vInt(1)):
-        return self.builder.ptrtoint(self.builder.gep(vNull(type), [length]), tInt)
+        return self.builder.ptrtoint(self.builder.gep(vNull(tPtr(type)), [length]), tInt)
 
     def malloc(self, type, length=vInt(1)):
         size = self.sizeof(type.pointee, length)
@@ -319,17 +321,23 @@ class PyxellCompiler:
         return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
     def unaryop(self, node, op, value):
-        if op in ('+', '-'):
-            types = [tInt, tFloat]
-        elif op == '~':
-            types = [tInt]
-        elif op == 'not':
-            types = [tBool]
+        if op == '!':
+            if not value.type.isNullable():
+                self.throw(node, err.NotNullable(value.type))
+        else:
+            if op in ('+', '-'):
+                types = [tInt, tFloat]
+            elif op == '~':
+                types = [tInt]
+            elif op == 'not':
+                types = [tBool]
 
-        if value.type not in types:
-            self.throw(node, err.NoUnaryOperator(op, value.type))
+            if value.type not in types:
+                self.throw(node, err.NoUnaryOperator(op, value.type))
 
-        if op == '+':
+        if op == '!':
+            return self.extract(value)
+        elif op == '+':
             return value
         elif op == '-':
             if value.type == tInt:
@@ -610,22 +618,24 @@ class PyxellCompiler:
             self.builder.call(self.builtins['putchar'], [vChar(char)])
 
     def print(self, node, value):
-        if value.type == tInt:
+        type = value.type
+        
+        if type == tInt:
             self.call('writeInt', value)
 
-        elif value.type == tFloat:
+        elif type == tFloat:
             self.call('writeFloat', value)
 
-        elif value.type == tBool:
+        elif type == tBool:
             self.call('writeBool', value)
 
-        elif value.type == tChar:
+        elif type == tChar:
             self.call('writeChar', value)
 
-        elif value.type.isString():
+        elif type.isString():
             self.call('write', value)
 
-        elif value.type.isArray():
+        elif type.isArray():
             self.write('[')
 
             length = self.extract(value, 1)
@@ -649,6 +659,13 @@ class PyxellCompiler:
                 self.builder.branch(label_start)
 
             self.write(']')
+
+        elif type.isNullable():
+            with self.builder.if_else(self.builder.icmp_signed('!=', value, vNull(type))) as (label_if, label_else):
+                with label_if:
+                    self.print(node, self.extract(value))
+                with label_else:
+                    self.write('null')
 
         elif value.type.isTuple():
             for i in range(len(value.type.elements)):
@@ -734,6 +751,11 @@ class PyxellCompiler:
         self.builder.store(length, self.builder.gep(result, [vInt(0), vIndex(1)]))
 
         return result
+
+    def nullable(self, value):
+        ptr = self.malloc(tNullable(value.type))
+        self.builder.store(value, self.builder.gep(ptr, [vInt(0)]))
+        return ptr
 
     def tuple(self, values):
         if len(values) == 1:
@@ -1488,6 +1510,9 @@ class PyxellCompiler:
                 **node,
                 'position': [e.line+node['position'][0]-1, e.column+node['position'][1]+1],
             }, str(e).partition(': ')[2][:-1])
+
+    def compileAtomNull(self, node):
+        return vNull(tNullable(tUnknown))
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])

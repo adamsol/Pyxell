@@ -224,6 +224,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#AtomNull.
+    def visitAtomNull(self, ctx:PyxellParser.AtomNullContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#AtomId.
     def visitAtomId(self, ctx:PyxellParser.AtomIdContext):
         return self.visitChildren(ctx)
@@ -251,6 +256,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#TypeFunc0.
     def visitTypeFunc0(self, ctx:PyxellParser.TypeFunc0Context):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#TypeNullable.
+    def visitTypeNullable(self, ctx:PyxellParser.TypeNullableContext):
         return self.visitChildren(ctx)
 
 

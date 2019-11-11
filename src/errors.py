@@ -32,6 +32,7 @@ class PyxellError(Exception):
     NotIterable = lambda t: f"Type `{t.show()}` is not iterable"
     NotLvalue = lambda: f"Expression cannot be assigned to"
     NotFunction = lambda t: f"Type `{t.show()}` is not a function"
+    NotNullable = lambda t: f"Type `{t.show()}` is not nullable"
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
     RedeclaredIdentifier = lambda id: f"Identifier `{id}` is already declared"
     RepeatedArgument = lambda id: f"Repeated argument `{id}`"

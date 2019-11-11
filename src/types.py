@@ -7,9 +7,9 @@ from .utils import *
 
 
 __all__ = [
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tTuple', 'tFunc', 'tUnknown',
+    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tUnknown',
     'Arg',
-    'types_compatible', 'unify_types',
+    'can_cast', 'unify_types',
     'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull', 'vIndex',
 ]
 
@@ -72,6 +72,17 @@ def isArray(type):
     return getattr(type, 'kind', None) == 'array'
 
 
+def tNullable(subtype):
+    type = tPtr(subtype)
+    type.subtype = subtype
+    type.kind = 'nullable'
+    return type
+
+@extend_class(ll.Type)
+def isNullable(type):
+    return getattr(type, 'kind', None) == 'nullable'
+
+
 def tTuple(elements):
     type = tPtr(CustomStructType(elements, 'tuple'))
     type.elements = elements
@@ -117,14 +128,18 @@ def isUnknown(type):
     return False
 
 
-def types_compatible(type1, type2):
+def can_cast(type1, type2):
     if type1 == type2:
         return True
     if type1.isArray() and type2.isArray():
-        return types_compatible(type1.subtype, type2.subtype)
+        return can_cast(type1.subtype, type2.subtype)
+    if type1.isNullable() and type2.isNullable():
+        return can_cast(type1.subtype, type2.subtype)
+    if type2.isNullable():
+        return can_cast(type1, type2.subtype)
     if type1.isTuple() and type2.isTuple():
         return len(type1.elements) == len(type2.elements) and \
-               all(types_compatible(t1, t2) for t1, t2 in zip(type1.elements, type2.elements))
+               all(can_cast(t1, t2) for t1, t2 in zip(type1.elements, type2.elements))
     if type1 == tUnknown or type2 == tUnknown:
         return True
     return False
@@ -138,6 +153,9 @@ def unify_types(type1, type2):
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
         return tArray(subtype) if subtype else None
+    if type1.isNullable() or type2.isNullable():
+        subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
+        return tNullable(subtype) if subtype else None
     if type1.isTuple() and type2.isTuple():
         elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
         return tTuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
@@ -164,10 +182,14 @@ def show(type):
         return 'String'
     if type.isArray():
         return f'[{type.subtype.show()}]'
+    if type.isNullable():
+        return f'{type.subtype.show()}?'
     if type.isTuple():
         return '*'.join(t.show() for t in type.elements)
     if type.isFunc():
         return '->'.join(arg.type.show() for arg in type.args) + '->' + type.ret.show()
+    if type == tUnknown:
+        return '<Unknown>'
     return str(type)
 
 
@@ -191,8 +213,8 @@ vTrue = vBool(True)
 def vChar(c):
     return ll.Constant(tChar, ord(c))
 
-def vNull(type=tChar):
-    return ll.Constant(tPtr(type), 'null')
+def vNull(type):
+    return ll.Constant(type, 'null')
 
 def vIndex(i):
     return ll.Constant(ll.IntType(32), i)

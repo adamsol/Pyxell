@@ -49,6 +49,7 @@ expr
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice
   | expr '.' ID # ExprAttr
   | expr '(' (call_arg ',')* call_arg? ')' # ExprCall
+  | expr op='!' # ExprUnaryOp
   | <assoc=right> expr op='^' expr # ExprBinaryOp
   | op=('+' | '-' | '~') expr # ExprUnaryOp
   | expr op=('*' | '/' | '%') expr # ExprBinaryOp
@@ -90,6 +91,7 @@ atom
   | ('true' | 'false') # AtomBool
   | CHAR # AtomChar
   | STRING # AtomString
+  | 'null' # AtomNull
   | ID # AtomId
   ;
 
@@ -101,6 +103,7 @@ typ
   : ('Void' | 'Int' | 'Float' | 'Bool' | 'Char' | 'String') # TypePrimitive
   | '(' typ ')' # TypeParentheses
   | '[' typ ']' # TypeArray
+  | typ '?' # TypeNullable
   | <assoc=right> typ '*' typ # TypeTuple
   | <assoc=right> typ '->' typ # TypeFunc
   | '->' typ # TypeFunc0

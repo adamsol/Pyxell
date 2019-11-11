@@ -330,6 +330,11 @@ class PyxellASTVisitor(PyxellVisitor):
             'string': ast.literal_eval(self.visit(ctx.STRING())),
         }
 
+    def visitAtomNull(self, ctx):
+        return {
+            **_node(ctx, 'AtomNull'),
+        }
+
     def visitAtomId(self, ctx):
         id = self.visit(ctx.ID())
         if id == '_':
@@ -357,6 +362,9 @@ class PyxellASTVisitor(PyxellVisitor):
 
     def visitTypeArray(self, ctx):
         return tArray(self.visit(ctx.typ()))
+
+    def visitTypeNullable(self, ctx):
+        return tNullable(self.visit(ctx.typ()))
 
     def visitTypeTuple(self, ctx):
         types = []
