@@ -160,9 +160,12 @@ class PyxellCompiler:
                     return None, self.get(node, attr)
 
         obj = self.compile(expr)
+        return obj, self.attr(node, obj, attr)
+
+    def attr(self, node, obj, attr):
         type = obj.type
         value = None
-        
+
         if type == tInt:
             if attr == 'toString':
                 value = self.get(node, 'Int_toString')
@@ -218,7 +221,7 @@ class PyxellCompiler:
         if value is None:
             self.throw(node, err.NoAttribute(type, attr))
 
-        return obj, value
+        return value
 
     def call(self, name, *values):
         func = self.builder.load(self.env[name])
@@ -1318,14 +1321,51 @@ class PyxellCompiler:
         return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == tString else result
 
     def compileExprAttr(self, node):
-        obj, value = self.attribute(node, node['expr'], node['attr'])
-        return value
+        expr = node['expr']
+        attr = node['attr']
+
+        if node.get('safe'):
+            obj = self.compile(expr)
+            if not obj.type.isNullable():
+                self.throw(node, err.NotNullable(obj.type))
+
+            label_null = self.builder.basic_block
+
+            with self.builder.if_then(self.builder.icmp_unsigned('!=', obj, vNull(obj.type))):
+                label_notnull = self.builder.basic_block
+                value = self.nullable(self.attr(node, self.extract(obj), attr))
+                type = value.type
+
+            phi = self.builder.phi(type)
+            phi.add_incoming(value, label_notnull)
+            phi.add_incoming(vNull(type), label_null)
+            return phi
+
+        else:
+            obj, value = self.attribute(node, expr, attr)
+            return value
 
     def compileExprCall(self, node):
         expr = node['expr']
+        safe_call = expr.get('safe', False)
 
         if expr['node'] == 'ExprAttr':
-            obj, func = self.attribute(expr, expr['expr'], expr['attr'])
+            if safe_call:
+                obj = self.compile(expr['expr'])
+                if not obj.type.isNullable():
+                    self.throw(node, err.NotNullable(obj.type))
+
+                label_null = self.builder.basic_block
+                label_notnull = self.builder.append_basic_block()
+                label_end = self.builder.append_basic_block()
+
+                self.builder.cbranch(self.builder.icmp_unsigned('!=', obj, vNull(obj.type)), label_notnull, label_end)
+                self.builder.position_at_end(label_notnull)
+
+                obj = self.extract(obj)
+                func = self.attr(expr, obj, expr['attr'])
+            else:
+                obj, func = self.attribute(expr, expr['expr'], expr['attr'])
         else:
             obj = None
             func = self.compile(expr)
@@ -1404,7 +1444,22 @@ class PyxellCompiler:
         if obj:
             args.insert(0, obj)
 
-        return self.builder.call(func, args)
+        result = self.builder.call(func, args)
+
+        if safe_call:
+            value = self.nullable(result)
+            type = value.type
+
+            label_notnull = self.builder.basic_block
+            self.builder.branch(label_end)
+            self.builder.position_at_end(label_end)
+
+            phi = self.builder.phi(type)
+            phi.add_incoming(value, label_notnull)
+            phi.add_incoming(vNull(type), label_null)
+            return phi
+
+        return result
 
     def compileExprUnaryOp(self, node):
         return self.unaryop(node, node['op'], self.compile(node['expr']))

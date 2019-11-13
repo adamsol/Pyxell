@@ -4,4 +4,3 @@ a = [2, 3] * 5
 print b?.length?.toString()?.length
 b = null
 print b?.length?.toString()?.length
-

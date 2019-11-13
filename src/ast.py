@@ -212,6 +212,7 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ExprAttr'),
             'expr': self.visit(ctx.expr()),
             'attr': self.visit(ctx.ID()),
+            'safe': bool(ctx.safe),
         }
 
     def visitExprCall(self, ctx):
