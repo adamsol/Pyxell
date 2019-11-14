@@ -60,6 +60,7 @@ expr
   | expr op='|' expr # ExprBinaryOp
   | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange
+  | expr op=('is' | 'isn\'t') expr # ExprIs
   | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp

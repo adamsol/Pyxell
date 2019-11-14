@@ -1,0 +1,4 @@
+
+Bool? b = null
+Char? c = null
+b is c

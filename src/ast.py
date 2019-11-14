@@ -250,6 +250,13 @@ class PyxellASTVisitor(PyxellVisitor):
             'inclusive': ctx.dots.text == '..',
         }
 
+    def visitExprIs(self, ctx):
+        return {
+            **_node(ctx, 'ExprIs'),
+            'exprs': self.visit(ctx.expr()),
+            'not': ctx.op.text != 'is',
+        }
+
     def visitExprCmp(self, ctx):
         exprs = []
         ops = []

@@ -1,6 +1,4 @@
 
 String? s
 s = "null"
-print s == null
-print "null" == s
-print s != "null"
+print s is null

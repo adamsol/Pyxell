@@ -26,6 +26,7 @@ class PyxellError(Exception):
     MissingReturn = lambda id: f"Not all code paths return a value in function `{id}`"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"
+    NoStrictComparison = lambda t1, t2: f"Strict comparison cannot be used for `{t1.show()}` and `{t2.show()}`"
     NoUnaryOperator = lambda op, t: f"No unary operator `{op}` defined for `{t.show()}`"
     NotComparable = lambda t1, t2: f"Cannot compare `{t1.show()}` with `{t2.show()}`"
     NotIndexable = lambda t: f"Type `{t.show()}` is not indexable"

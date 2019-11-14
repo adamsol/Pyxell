@@ -316,6 +316,7 @@ class PyxellCompiler:
         type = ptr.type
         size = self.sizeof(type.pointee, length)
         ptr = self.builder.bitcast(ptr, tPtr())
+        ptr = self.builder.bitcast(ptr, tPtr())
         ptr = self.builder.call(self.builtins['realloc'], [ptr, size])
         return self.builder.bitcast(ptr, type)
 
@@ -785,7 +786,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in ['ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple']:
+            if node in ['ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIs', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple']:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -1469,6 +1470,14 @@ class PyxellCompiler:
 
     def compileExprRange(self, node):
         self.throw(node, err.IllegalRange())
+
+    def compileExprIs(self, node):
+        left, right = map(self.compile, node['exprs'])
+        if not left.type.isNullable() or not right.type.isNullable() or unify_types(left.type, right.type) is None:
+            self.throw(node, err.NoStrictComparison(left.type, right.type))
+
+        left, right = self.unify(node, left, right)
+        return self.builder.icmp_unsigned('!=' if node.get('not') else '==', left, right)
 
     def compileExprCmp(self, node):
         exprs = node['exprs']
