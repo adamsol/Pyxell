@@ -55,6 +55,13 @@ class PyxellCompiler:
     def compile(self, node):
         return getattr(self, 'compile'+node['node'])(node)
 
+    def expr(self, code, **params):
+        return self.compile(parse_expr(code.format(**params)))
+
+    def throw(self, node, msg):
+        line, column = node.get('position', (1, 1))
+        raise err(msg, line, column)
+
     def llvm_ir(self):
         return str(self.module)
 
@@ -119,10 +126,6 @@ class PyxellCompiler:
         self.builder.function.blocks.append(label_end)
         self.builder.position_at_end(label_end)
 
-    def throw(self, node, msg):
-        line, column = node.get('position', (1, 1))
-        raise err(msg, line, column)
-
     def get(self, node, id, load=True):
         if id not in self.env:
             self.throw(node, err.UndeclaredIdentifier(id))
@@ -151,6 +154,23 @@ class PyxellCompiler:
             return self.builder.gep(self.extract(collection, 0), [index])
 
         self.throw(node, err.NotIndexable(collection.type))
+
+    def safe(self, node, value, callback_notnull, callback_null):
+        if not value.type.isNullable():
+            self.throw(node, err.NotNullable(value.type))
+
+        with self.builder.if_else(self.builder.icmp_unsigned('!=', value, vNull())) as (label_notnull, label_null):
+            with label_notnull:
+                value_notnull = callback_notnull()
+                label_notnull = self.builder.basic_block
+            with label_null:
+                value_null = callback_null()
+                label_null = self.builder.basic_block
+
+        phi = self.builder.phi(value_notnull.type)
+        phi.add_incoming(value_notnull, label_notnull)
+        phi.add_incoming(value_null, label_null)
+        return phi
 
     def attribute(self, node, expr, attr):
         if expr['node'] == 'AtomId':
@@ -719,9 +739,13 @@ class PyxellCompiler:
         for i, tag in enumerate(tags):
             try:
                 expr = parse_expr(tag)
-            except err:
-                self.throw(node, err.InvalidExpression(tag))
-            exprs[i*2+1] ={
+            except err as e:
+                self.throw({
+                    **node,
+                    'position': [e.line+node['position'][0]-1, e.column+node['position'][1]+1],
+                }, err.InvalidSyntax())
+
+            exprs[i*2+1] = {
                 'node': 'ExprCall',
                 'expr': {
                     'node': 'ExprAttr',
@@ -1292,7 +1316,7 @@ class PyxellCompiler:
             if not type.isCollection():
                 self.throw(node, err.NotIndexable(type))
 
-            self.assign(node, length, self.compile(parse_expr('{t}.length'.format(t=array['id']))))
+            self.assign(node, length, self.expr('{t}.length', t=array['id']))
 
             if slice[2] is None:
                 self.assign(node, step, vInt(1))
@@ -1300,23 +1324,23 @@ class PyxellCompiler:
                 self.assign(node, step, self.cast(slice[2], self.compile(slice[2]), tInt))
 
             if slice[0] is None:
-                self.assign(node, start, self.compile(parse_expr('{c} > 0 ? 0 : {l}'.format(c=step['id'], l=length['id']))))
+                self.assign(node, start, self.expr('{c} > 0 ? 0 : {l}', c=step['id'], l=length['id']))
             else:
                 self.assign(node, start, self.cast(slice[0], self.compile(slice[0]), tInt))
-                self.assign(node, start, self.compile(parse_expr('{a} < 0 ? {a} + {l} : {a}'.format(a=start['id'], l=length['id']))))
-            self.assign(node, start, self.compile(parse_expr('{a} < 0 ? 0 : {a} > {l} ? {l} : {a}'.format(a=start['id'], l=length['id']))))
+                self.assign(node, start, self.expr('{a} < 0 ? {a} + {l} : {a}', a=start['id'], l=length['id']))
+            self.assign(node, start, self.expr('{a} < 0 ? 0 : {a} > {l} ? {l} : {a}', a=start['id'], l=length['id']))
 
             if slice[1] is None:
-                self.assign(node, end, self.compile(parse_expr('{c} > 0 ? {l} : 0'.format(c=step['id'], l=length['id']))))
+                self.assign(node, end, self.expr('{c} > 0 ? {l} : 0', c=step['id'], l=length['id']))
             else:
                 self.assign(node, end, self.cast(slice[1], self.compile(slice[1]), tInt))
-                self.assign(node, end, self.compile(parse_expr('{b} < 0 ? {b} + {l} : {b}'.format(b=end['id'], l=length['id']))))
-            self.assign(node, end, self.compile(parse_expr('{b} < 0 ? 0 : {b} > {l} ? {l} : {b}'.format(b=end['id'], l=length['id']))))
+                self.assign(node, end, self.expr('{b} < 0 ? {b} + {l} : {b}', b=end['id'], l=length['id']))
+            self.assign(node, end, self.expr('{b} < 0 ? 0 : {b} > {l} ? {l} : {b}', b=end['id'], l=length['id']))
 
-            self.assign(node, start, self.compile(parse_expr('{c} < 0 ? {a} - 1 : {a}'.format(a=start['id'], c=step['id']))))
-            self.assign(node, end, self.compile(parse_expr('{c} < 0 ? {b} - 1 : {b}'.format(b=end['id'], c=step['id']))))
+            self.assign(node, start, self.expr('{c} < 0 ? {a} - 1 : {a}', a=start['id'], c=step['id']))
+            self.assign(node, end, self.expr('{c} < 0 ? {b} - 1 : {b}', b=end['id'], c=step['id']))
 
-            result = self.compile(parse_expr('[{t}[{i}] for {i} in {a}...{b} step {c}]'.format(t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])))
+            result = self.expr('[{t}[{i}] for {i} in {a}...{b} step {c}]', t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])
 
         # `CharArray_asString` is used directly, because `.join` would copy the array redundantly.
         return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == tString else result
@@ -1327,140 +1351,110 @@ class PyxellCompiler:
 
         if node.get('safe'):
             obj = self.compile(expr)
-            if not obj.type.isNullable():
-                self.throw(node, err.NotNullable(obj.type))
+            return self.safe(node, obj, lambda: self.nullable(self.attr(node, self.extract(obj), attr)), vNull)
 
-            label_null = self.builder.basic_block
-
-            with self.builder.if_then(self.builder.icmp_unsigned('!=', obj, vNull(obj.type))):
-                label_notnull = self.builder.basic_block
-                value = self.nullable(self.attr(node, self.extract(obj), attr))
-                type = value.type
-
-            phi = self.builder.phi(type)
-            phi.add_incoming(value, label_notnull)
-            phi.add_incoming(vNull(type), label_null)
-            return phi
-
-        else:
-            obj, value = self.attribute(node, expr, attr)
-            return value
+        obj, value = self.attribute(node, expr, attr)
+        return value
 
     def compileExprCall(self, node):
         expr = node['expr']
-        safe_call = expr.get('safe', False)
+
+        def call(obj, func):
+            if not func.type.isFunc():
+                self.throw(node, err.NotFunction(func.type))
+
+            args = []
+            pos_args = {}
+            named_args = {}
+
+            for i, call_arg in enumerate(node['args']):
+                name = call_arg['name']
+                expr = call_arg['expr']
+                if name:
+                    if name in named_args:
+                        self.throw(node, err.RepeatedArgument(name))
+                    named_args[name] = expr
+                else:
+                    if named_args:
+                        self.throw(node, err.ExpectedNamedArgument())
+                    pos_args[i] = expr
+
+            func_args = func.type.args[1:] if obj else func.type.args
+            for i, func_arg in enumerate(func_args):
+                name = func_arg.name
+                if name in named_args:
+                    if i in pos_args:
+                        self.throw(node, err.RepeatedArgument(name))
+                    expr = named_args.pop(name)
+                elif i in pos_args:
+                    expr = pos_args.pop(i)
+                elif func_arg.default:
+                    expr = func_arg.default
+                else:
+                    self.throw(node, err.TooFewArguments(func.type))
+
+                expr = self.convert_lambda(expr)
+                if expr['node'] == 'ExprLambda':
+                    ids = expr['ids']
+                    type = func_arg.type
+                    if not type.isFunc():
+                        self.throw(node, err.IllegalLambda())
+                    if len(ids) < len(type.args):
+                        self.throw(node, err.TooFewArguments(type))
+                    if len(ids) > len(type.args):
+                        self.throw(node, err.TooManyArguments(type))
+                    id = self.module.get_unique_name('lambda')
+                    self.compile({
+                        **expr,
+                        'node': 'StmtFunc',
+                        'id': id,
+                        'args': [{
+                            'type': arg.type,
+                            'name': name,
+                        } for arg, name in zip(type.args, ids)],
+                        'ret': type.ret,
+                        'block': {
+                            **expr,
+                            'node': 'StmtReturn',
+                            'expr': expr['expr'],
+                        },
+                    })
+                    value = self.get(expr, id)
+                else:
+                    value = self.compile(expr)
+
+                value = self.cast(expr, value, func_arg.type)
+                args.append(value)
+
+            if named_args:
+                self.throw(node, err.UnexpectedArgument(next(iter(named_args))))
+            if pos_args:
+                self.throw(node, err.TooManyArguments(func.type))
+
+            if obj:
+                args.insert(0, obj)
+
+            return self.builder.call(func, args)
 
         if expr['node'] == 'ExprAttr':
-            if safe_call:
+            attr = expr['attr']
+
+            if expr.get('safe'):
                 obj = self.compile(expr['expr'])
-                if not obj.type.isNullable():
-                    self.throw(node, err.NotNullable(obj.type))
 
-                label_null = self.builder.basic_block
-                label_notnull = self.builder.append_basic_block()
-                label_end = self.builder.append_basic_block()
+                def callback():
+                    value = self.extract(obj)
+                    func = self.attr(node, value, attr)
+                    return self.nullable(call(value, func))
 
-                self.builder.cbranch(self.builder.icmp_unsigned('!=', obj, vNull(obj.type)), label_notnull, label_end)
-                self.builder.position_at_end(label_notnull)
-
-                obj = self.extract(obj)
-                func = self.attr(expr, obj, expr['attr'])
+                return self.safe(node, obj, callback, vNull)
             else:
-                obj, func = self.attribute(expr, expr['expr'], expr['attr'])
+                obj, func = self.attribute(expr, expr['expr'], attr)
         else:
             obj = None
             func = self.compile(expr)
 
-        if not func.type.isFunc():
-            self.throw(node, err.NotFunction(func.type))
-
-        args = []
-        pos_args = {}
-        named_args = {}
-
-        for i, call_arg in enumerate(node['args']):
-            name = call_arg['name']
-            expr = call_arg['expr']
-            if name:
-                if name in named_args:
-                    self.throw(node, err.RepeatedArgument(name))
-                named_args[name] = expr
-            else:
-                if named_args:
-                    self.throw(node, err.ExpectedNamedArgument())
-                pos_args[i] = expr
-
-        func_args = func.type.args[1:] if obj else func.type.args
-        for i, func_arg in enumerate(func_args):
-            name = func_arg.name
-            if name in named_args:
-                if i in pos_args:
-                    self.throw(node, err.RepeatedArgument(name))
-                expr = named_args.pop(name)
-            elif i in pos_args:
-                expr = pos_args.pop(i)
-            elif func_arg.default:
-                expr = func_arg.default
-            else:
-                self.throw(node, err.TooFewArguments(func.type))
-
-            expr = self.convert_lambda(expr)
-            if expr['node'] == 'ExprLambda':
-                ids = expr['ids']
-                type = func_arg.type
-                if not type.isFunc():
-                    self.throw(node, err.IllegalLambda())
-                if len(ids) < len(type.args):
-                    self.throw(node, err.TooFewArguments(type))
-                if len(ids) > len(type.args):
-                    self.throw(node, err.TooManyArguments(type))
-                id = self.module.get_unique_name('lambda')
-                self.compile({
-                    **expr,
-                    'node': 'StmtFunc',
-                    'id': id,
-                    'args': [{
-                        'type': arg.type,
-                        'name': name,
-                    } for arg, name in zip(type.args, ids)],
-                    'ret': type.ret,
-                    'block': {
-                        **expr,
-                        'node': 'StmtReturn',
-                        'expr': expr['expr'],
-                    },
-                })
-                value = self.get(expr, id)
-            else:
-                value = self.compile(expr)
-
-            value = self.cast(expr, value, func_arg.type)
-            args.append(value)
-
-        if named_args:
-            self.throw(node, err.UnexpectedArgument(next(iter(named_args))))
-        if pos_args:
-            self.throw(node, err.TooManyArguments(func.type))
-
-        if obj:
-            args.insert(0, obj)
-
-        result = self.builder.call(func, args)
-
-        if safe_call:
-            value = self.nullable(result)
-            type = value.type
-
-            label_notnull = self.builder.basic_block
-            self.builder.branch(label_end)
-            self.builder.position_at_end(label_end)
-
-            phi = self.builder.phi(type)
-            phi.add_incoming(value, label_notnull)
-            phi.add_incoming(vNull(type), label_null)
-            return phi
-
-        return result
+        return call(obj, func)
 
     def compileExprUnaryOp(self, node):
         return self.unaryop(node, node['op'], self.compile(node['expr']))
@@ -1581,7 +1575,7 @@ class PyxellCompiler:
             }, str(e).partition(': ')[2][:-1])
 
     def compileAtomNull(self, node):
-        return vNull(tNullable(tUnknown))
+        return vNull()
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])

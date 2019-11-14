@@ -213,5 +213,5 @@ vTrue = vBool(True)
 def vChar(c):
     return ll.Constant(tChar, ord(c))
 
-def vNull(type):
+def vNull(type=tNullable(tUnknown)):
     return ll.Constant(type, 'null')

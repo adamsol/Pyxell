@@ -19,7 +19,6 @@ class PyxellError(Exception):
     IllegalLambda = lambda: "Lambda expression cannot be used in this context"
     IllegalRange = lambda: "Range expression cannot be used in this context"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
-    InvalidExpression = lambda e: f"Could not parse expression `{e}`"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
     InvalidModule = lambda id: f"Could not find module `{id}`"
     MissingDefault = lambda id: f"Missing default value for argument `{id}`"
