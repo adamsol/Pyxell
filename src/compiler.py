@@ -945,9 +945,20 @@ class PyxellCompiler:
 
     def compileStmtAssgExpr(self, node):
         exprs = node['exprs']
+        op = node['op']
         ptr = self.lvalue(node, exprs[0])
-        value = self.binaryop(node, node['op'], self.builder.load(ptr), self.compile(exprs[1]))
-        self.builder.store(value, ptr)
+        left = self.builder.load(ptr)
+
+        if op == '??':
+            with self.builder.if_then(self.builder.icmp_unsigned('==', left, vNull())):
+                right = self.compile(exprs[1])
+                if not left.type.isNullable() or not can_cast(left.type.subtype, right.type):
+                    self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.builder.store(self.nullable(right), ptr)
+        else:
+            right = self.compile(exprs[1])
+            value = self.binaryop(node, op, left, right)
+            self.builder.store(value, ptr)
 
     def compileStmtAppend(self, node):
         # Special instruction for array comprehension.
@@ -1460,7 +1471,21 @@ class PyxellCompiler:
         return self.unaryop(node, node['op'], self.compile(node['expr']))
 
     def compileExprBinaryOp(self, node):
-        return self.binaryop(node, node['op'], *map(self.compile, node['exprs']))
+        op = node['op']
+        exprs = node['exprs']
+
+        if op == '??':
+            left = self.compile(exprs[0])
+
+            def callback():
+                right = self.compile(exprs[1])
+                if not can_cast(left.type.subtype, right.type):
+                    self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                return right
+
+            return self.safe(node, left, lambda: self.extract(left), callback)
+
+        return self.binaryop(node, op, *map(self.compile, exprs))
 
     def compileExprRange(self, node):
         self.throw(node, err.IllegalRange())

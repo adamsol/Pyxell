@@ -15,7 +15,7 @@ simple_stmt
   | 'print' tuple_expr? # StmtPrint
   | typ ID ('=' tuple_expr)? # StmtDecl
   | (lvalue '=')* tuple_expr # StmtAssg
-  | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|') '=' expr # StmtAssgExpr
+  | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|' | '??') '=' expr # StmtAssgExpr
   | s=('break' | 'continue') # StmtLoopControl
   | 'return' tuple_expr? # StmtReturn
   ;
@@ -65,6 +65,7 @@ expr
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp
   | <assoc=right> expr op='or' expr # ExprLogicalOp
+  | <assoc=right> expr op='??' expr # ExprBinaryOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
   | 'lambda' (ID ',')* ID? '->' expr # ExprLambda
   ;
