@@ -29,6 +29,7 @@ class PyxellCompiler:
     def __init__(self):
         self.units = {}
         self._unit = None
+        self._keep_env = False
         self.builder = CustomIRBuilder()
         self.module = ll.Module()
         self.builtins = {
@@ -86,7 +87,7 @@ class PyxellCompiler:
 
     @contextmanager
     def local(self):
-        if getattr(self, 'prevent_local', False):
+        if self._keep_env:
             yield
             return
         env = self.env.copy()
@@ -103,9 +104,10 @@ class PyxellCompiler:
         self._unit = _unit
 
     @contextmanager
-    def no_output(self, prevent_local=False):
-        if prevent_local:
-            self.prevent_local = True
+    def no_output(self, keep_env=False):
+        prev_keep_env = self._keep_env
+        if keep_env:
+            self._keep_env = True
         dummy_module = ll.Module()
         dummy_func = ll.Function(dummy_module, tFunc([]).pointee, 'dummy')
         dummy_label = dummy_func.append_basic_block('dummy')
@@ -113,8 +115,8 @@ class PyxellCompiler:
         self.builder.position_at_end(dummy_label)
         yield
         self.builder.position_at_end(prev_label)
-        if prevent_local:
-            self.prevent_local = False
+        if keep_env:
+            self._keep_env = prev_keep_env
 
     @contextmanager
     def block(self):
@@ -1285,7 +1287,7 @@ class PyxellCompiler:
 
         # A small hack to obtain type of the expression.
         with self.local():
-            with self.no_output(prevent_local=True):
+            with self.no_output(keep_env=True):
                 self.compile(stmt)
                 type = self.compile(value).type
 
@@ -1323,14 +1325,13 @@ class PyxellCompiler:
         } for name in ['array', 'length', 'start', 'end', 'step', 'index']]
 
         with self.local():
-            self.assign(node, array, self.compile(node['expr']))
-
-            with self.no_output():
-                type = self.compile(array).type
+            collection = self.compile(node['expr'])
+            type = collection.type
 
             if not type.isCollection():
                 self.throw(node, err.NotIndexable(type))
 
+            self.assign(node, array, collection)
             self.assign(node, length, self.expr('{t}.length', t=array['id']))
 
             if slice[2] is None:
