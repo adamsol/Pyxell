@@ -45,7 +45,7 @@ expr
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
   | '[' expr comprehension+ ']' # ExprArrayComprehension
-  | expr '[' tuple_expr ']' # ExprIndex
+  | expr safe='?'? '[' tuple_expr ']' # ExprIndex
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice
   | expr safe='?'? '.' ID # ExprAttr
   | expr '(' (call_arg ',')* call_arg? ')' # ExprCall

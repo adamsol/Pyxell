@@ -41,6 +41,22 @@ class CustomStructType(ll.LiteralStructType):
         return hash(CustomStructType)
 
 
+class NullableType(ll.PointerType):
+
+    def __init__(self, subtype):
+        super().__init__(subtype)
+        self.subtype = subtype
+        self.kind = 'nullable'
+
+    def __eq__(self, other):
+        if not super().__eq__(other):
+            return False
+        return self.kind == other.kind
+
+    def __hash__(self):
+        return hash(NullableType)
+
+
 tVoid = ll.VoidType()
 tInt = ll.IntType(64)
 tFloat = ll.DoubleType()
@@ -73,10 +89,7 @@ def isArray(type):
 
 
 def tNullable(subtype):
-    type = tPtr(subtype)
-    type.subtype = subtype
-    type.kind = 'nullable'
-    return type
+    return NullableType(subtype)
 
 @extend_class(ll.Type)
 def isNullable(type):

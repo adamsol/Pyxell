@@ -198,6 +198,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ExprIndex'),
             'exprs': [self.visit(ctx.expr()), self.visit(ctx.tuple_expr())],
+            'safe': bool(ctx.safe),
         }
 
     def visitExprSlice(self, ctx):

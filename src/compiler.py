@@ -140,14 +140,12 @@ class PyxellCompiler:
     def insert(self, value, ptr, *indices):
         return self.builder.store(value, self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
 
-    def index(self, node, *exprs, lvalue=False):
-        collection, index = [self.compile(expr) for expr in exprs]
-
+    def index(self, node, collection, index, lvalue=False):
         if collection.type.isCollection():
             if lvalue and not collection.type.isArray():
-                self.throw(exprs[0], err.NotLvalue())
+                self.throw(node, err.NotLvalue())
 
-            index = self.cast(exprs[1], index, tInt)
+            index = self.cast(node, index, tInt)
             length = self.extract(collection, 1)
             cmp = self.builder.icmp_signed('>=', index, vInt(0))
             index = self.builder.select(cmp, index, self.builder.add(index, length))
@@ -310,8 +308,8 @@ class PyxellCompiler:
 
             return self.env[id]
 
-        elif expr['node'] == 'ExprIndex':
-            return self.index(node, *expr['exprs'], lvalue=True)
+        elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
+            return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
 
         self.throw(node, err.NotLvalue())
 
@@ -1308,7 +1306,13 @@ class PyxellCompiler:
         return result
 
     def compileExprIndex(self, node):
-        return self.builder.load(self.index(node, *node['exprs']))
+        exprs = node['exprs']
+
+        if node.get('safe'):
+            collection = self.compile(exprs[0])
+            return self.safe(node, collection, lambda: self.nullable(self.builder.load(self.index(node, self.extract(collection), self.compile(exprs[1])))), vNull)
+
+        return self.builder.load(self.index(node, *map(self.compile, exprs)))
 
     def compileExprSlice(self, node):
         slice = node['slice']
