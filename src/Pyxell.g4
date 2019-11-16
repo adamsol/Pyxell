@@ -102,7 +102,7 @@ id_list
   ;
 
 typ
-  : ('Void' | 'Int' | 'Float' | 'Bool' | 'Char' | 'String') # TypePrimitive
+  : ID # TypeName
   | '(' typ ')' # TypeParentheses
   | '[' typ ']' # TypeArray
   | typ '?' # TypeNullable
@@ -119,7 +119,7 @@ ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;
 fragment ID_START : [a-zA-Z_] ;
-fragment ID_CONT : ID_START | DIGIT | [_'] ;
+fragment ID_CONT : ID_START | DIGIT | ['] ;
 
 COMMENT : '--' ~[\r\n\f]* -> skip ;
 WS : [ \n\r\t]+ -> skip ;

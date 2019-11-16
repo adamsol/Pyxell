@@ -254,6 +254,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#TypeName.
+    def visitTypeName(self, ctx:PyxellParser.TypeNameContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#TypeTuple.
     def visitTypeTuple(self, ctx:PyxellParser.TypeTupleContext):
         return self.visitChildren(ctx)
@@ -271,11 +276,6 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#TypeFunc.
     def visitTypeFunc(self, ctx:PyxellParser.TypeFuncContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#TypePrimitive.
-    def visitTypePrimitive(self, ctx:PyxellParser.TypePrimitiveContext):
         return self.visitChildren(ctx)
 
 

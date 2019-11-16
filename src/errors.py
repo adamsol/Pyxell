@@ -34,6 +34,7 @@ class PyxellError(Exception):
     NotFunction = lambda t: f"Type `{t.show()}` is not a function"
     NotNullable = lambda t: f"Type `{t.show()}` is not nullable"
     NotPrintable = lambda t: f"Variable of type `{t.show()}` cannot be printed"
+    NotType = lambda id: f"Identifier `{id}` does not represent a type"
     RedeclaredIdentifier = lambda id: f"Identifier `{id}` is already declared"
     RepeatedArgument = lambda id: f"Repeated argument `{id}`"
     TooFewArguments = lambda t: f"Too few arguments for function `{t.show()}`"

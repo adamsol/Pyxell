@@ -54,6 +54,8 @@ class PyxellCompiler:
         self.builder.ret(ll.Constant(tInt, 0))
 
     def compile(self, node):
+        if not isinstance(node, dict):
+            return node
         return getattr(self, 'compile'+node['node'])(node)
 
     def expr(self, code, **params):
@@ -915,7 +917,7 @@ class PyxellCompiler:
         self.write('\n')
 
     def compileStmtDecl(self, node):
-        type = node['type']
+        type = self.compile(node['type'])
         id = node['id']
         expr = node['expr']
         ptr = self.declare(node, type, id, initialize=bool(expr))
@@ -1169,7 +1171,7 @@ class PyxellCompiler:
         args = []
         expect_default = False
         for arg in node['args']:
-            type = arg['type']
+            type = self.compile(arg['type'])
             name = arg['name']
             default = arg.get('default')
             if default:
@@ -1180,7 +1182,7 @@ class PyxellCompiler:
                 self.throw(arg, err.MissingDefault(name))
             args.append(Arg(type, name, default))
 
-        ret_type = node['ret']
+        ret_type = self.compile(node['ret']) or tVoid
 
         func_type = tFunc(args, ret_type)
         func_def = node['block']
@@ -1612,3 +1614,35 @@ class PyxellCompiler:
 
     def compileAtomStub(self, node):
         self.throw(node, err.IllegalLambda())
+
+
+    ### Types ###
+
+    def compileTypeName(self, node):
+        name = node['name']
+
+        type = {
+            'Void': tVoid,
+            'Int': tInt,
+            'Float': tFloat,
+            'Bool': tBool,
+            'Char': tChar,
+            'String': tString,
+        }.get(name)
+
+        if type is None:
+            self.throw(node, err.NotType(name))
+
+        return type
+
+    def compileTypeArray(self, node):
+        return tArray(self.compile(node['subtype']))
+
+    def compileTypeNullable(self, node):
+        return tNullable(self.compile(node['subtype']))
+
+    def compileTypeTuple(self, node):
+        return tTuple(lmap(self.compile, node['elements']))
+
+    def compileTypeFunc(self, node):
+        return tFunc(lmap(self.compile, node['args']), self.compile(node['ret']) or tVoid)
