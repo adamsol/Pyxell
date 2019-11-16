@@ -161,8 +161,6 @@ def can_cast(type1, type2):
 def unify_types(type1, type2):
     if type1 == type2:
         return type1
-    if type1 == tFloat and type2 == tInt or type1 == tInt and type2 == tFloat:
-        return tFloat
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
         return tArray(subtype) if subtype else None

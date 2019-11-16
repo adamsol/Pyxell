@@ -267,13 +267,7 @@ class PyxellCompiler:
             if type is None:
                 self.throw(node, err.UnknownType())
 
-        for i, value in enumerate(values):
-            if value.type == tInt and type == tFloat:
-                values[i] = self.builder.sitofp(value, type)
-            else:
-                values[i] = self.cast(node, value, type)
-
-        return values
+        return [self.cast(node, value, type) for value in values]
 
     def declare(self, node, type, id, redeclare=False, initialize=False):
         if type == tVoid:
@@ -377,8 +371,11 @@ class PyxellCompiler:
             return self.builder.not_(value)
 
     def binaryop(self, node, op, left, right):
-        if left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
-            left, right = self.unify(node, left, right)
+        if left.type != right.type and left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+            if left.type == tInt:
+                left = self.builder.sitofp(left, tFloat)
+            else:
+                right = self.builder.sitofp(right, tFloat)
 
         if op == '^':
             if left.type == right.type == tInt:
@@ -517,10 +514,16 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
     def cmp(self, node, op, left, right):
-        try:
-            left, right = self.unify(node, left, right)
-        except err:
-            self.throw(node, err.NotComparable(left.type, right.type))
+        if left.type != right.type and left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+            if left.type == tInt:
+                left = self.builder.sitofp(left, tFloat)
+            else:
+                right = self.builder.sitofp(right, tFloat)
+        else:
+            try:
+                left, right = self.unify(node, left, right)
+            except err:
+                self.throw(node, err.NotComparable(left.type, right.type))
 
         if left.type in (tInt, tChar):
             return self.builder.icmp_signed(op, left, right)
