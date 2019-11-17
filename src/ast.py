@@ -48,9 +48,9 @@ class PyxellASTVisitor(PyxellVisitor):
 
     def visitStmtUse(self, ctx):
         if ctx.only:
-            detail = ['only', *map(str, ctx.only.ID())]
+            detail = ['only', *self.visit(ctx.only)]
         elif ctx.hiding:
-            detail = ['hiding', *map(str, ctx.hiding.ID())]
+            detail = ['hiding', *self.visit(ctx.hiding)]
         elif ctx.as_:
             detail = ['as', ctx.as_.text]
         else:
@@ -141,6 +141,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'StmtFunc'),
             'id': self.visit(ctx.ID()),
+            'typevars': self.visit(ctx.typevars) or [],
             'args': self.visit(ctx.func_arg()),
             'ret': self.visit(ctx.ret),
             'block': self.visit(ctx.block()),
@@ -352,6 +353,9 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'AtomId'),
             'id': id,
         }
+
+    def visitIdList(self, ctx):
+        return self.visit(ctx.ID())
 
 
     ### Types ###

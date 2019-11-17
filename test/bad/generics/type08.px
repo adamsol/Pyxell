@@ -1,5 +1,5 @@
 
-func f<Any A, Any B, Any C>([A*B*C] p) def
+func f<A,B,C>([A*B*C] p) def
     return
 
 f([(1, 2)])

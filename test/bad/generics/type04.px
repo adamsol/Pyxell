@@ -1,3 +1,5 @@
 
-func f<Num A, Num B>(A x, B y) def
-    print x - y
+func f<A,B>(A x, B y) A def
+    return x * y
+
+f(4, [4.2])

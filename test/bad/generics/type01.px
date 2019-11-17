@@ -1,3 +1,5 @@
 
-func f<Num T>(T x) Int def
+func f<T>(T x) Int def
     return x
+
+f("0")

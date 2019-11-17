@@ -1,5 +1,6 @@
 
 import re
+from collections import defaultdict
 from contextlib import contextmanager
 
 import llvmlite.ir as ll
@@ -130,13 +131,33 @@ class PyxellCompiler:
         self.builder.function.blocks.append(label_end)
         self.builder.position_at_end(label_end)
 
+    def resolve_type(self, type):
+        if type.isVar():
+            return self.env[type.name]
+        if type.isArray():
+            return tArray(self.resolve_type(type.subtype))
+        if type.isNullable():
+            return tNullable(self.resolve_type(type.subtype))
+        if type.isTuple():
+            return tTuple([self.resolve_type(type) for type in type.elements])
+        if type.isFunc():
+            return tFunc([Arg(self.resolve_type(arg.type), arg.name, arg.default) for arg in type.args], self.resolve_type(type.ret))
+        return type
+
+
+    ### Code generation ###
+
     def get(self, node, id, load=True):
         if id not in self.env:
             self.throw(node, err.UndeclaredIdentifier(id))
+        result = self.env[id]
+        if not isinstance(result, Value):
+            self.throw(node, err.NotVariable(id))
         if id not in self.initialized:
             self.throw(node, err.UninitializedIdentifier(id))
-        result = self.env[id]
         if result.isTemplate():
+            if result.typevars:
+                return result
             result = self.function(node, result)
         return self.builder.load(result) if load else result
 
@@ -260,13 +281,10 @@ class PyxellCompiler:
     def unify(self, node, *values):
         if not values:
             return []
-        values = list(values)
 
-        type = values[0].type
-        for value in values[1:]:
-            type = unify_types(value.type, type)
-            if type is None:
-                self.throw(node, err.UnknownType())
+        type = unify_types(*[value.type for value in values])
+        if type is None:
+            self.throw(node, err.UnknownType())
 
         return [self.cast(node, value, type) for value in values]
 
@@ -876,54 +894,85 @@ class PyxellCompiler:
         return expr
 
     def function(self, node, template):
-        if template.compiled:
-            return template.compiled
+        real_types = tuple(self.env.get(name) for name in template.typevars)
+
+        if real_types in template.compiled:
+            return template.compiled[real_types]
 
         id = template.id
-        type = template.type
         body = template.body
 
         if not body:  # `extern`
-            template.compiled = ll.GlobalVariable(self.module, type, self.module.get_unique_name('f.'+id))
-            return template.compiled
+            func_ptr = ll.GlobalVariable(self.module, template.type, self.module.get_unique_name('f.'+id))
+            template.compiled[real_types] = func_ptr
 
-        args = type.args
-        ret = type.ret
+        else:
+            unknown_ret_type_variables = {name: tVar(name) for name in get_type_variables(template.type.ret) if name not in self.env}
 
-        func = ll.Function(self.module, type.pointee, self.module.get_unique_name('def.'+id))
+            # Try to resolve any unresolved type variables in the return type by fake-compiling the function.
+            if unknown_ret_type_variables:
+                for name in unknown_ret_type_variables:
+                    self.env[name] = tVar(name)
 
-        func_ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
-        func_ptr.initializer = func
-        template.compiled = func_ptr
+                func_type = self.resolve_type(template.type)
 
-        prev_label = self.builder.basic_block
-        entry = func.append_basic_block('entry')
-        self.builder.position_at_end(entry)
+                with self.local():
+                    with self.no_output():
+                        self.env = template.env.copy()
 
-        with self.local():
-            self.env = template.env
-            
-            self.env['#return'] = ret
-            self.env.pop('#continue', None)
-            self.env.pop('#break', None)
+                        self.env['#return'] = func_type.ret
 
-            for arg, value in zip(args, func.args):
-                ptr = self.declare(node, arg.type, arg.name, redeclare=True, initialize=True)
-                self.env[arg.name] = ptr
-                self.builder.store(value, ptr)
+                        for arg in func_type.args:
+                            ptr = self.declare(node, arg.type, arg.name, redeclare=True, initialize=True)
+                            self.env[arg.name] = ptr
 
-            self.compile(body)
+                        self.compile(body)
 
-            if ret == tVoid:
-                self.builder.ret_void()
-            else:
-                if '#return' not in self.initialized:
-                    self.throw(node, err.MissingReturn(id))
-                self.builder.ret(ret.default())
+                    ret = self.env['#return']
 
-        self.builder.position_at_end(prev_label)
+                # This is safe, since any type assignment errors have been found during the compilation.
+                self.env.update(type_variables_assignment(ret, func_type.ret))
 
-        return template.compiled
+            real_types = tuple(self.env[name] for name in template.typevars)
+            func_type = self.resolve_type(template.type)
+
+            func = ll.Function(self.module, func_type.pointee, self.module.get_unique_name('def.'+id))
+
+            func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name(id))
+            func_ptr.initializer = func
+            template.compiled[real_types] = func_ptr
+
+            prev_label = self.builder.basic_block
+            entry = func.append_basic_block('entry')
+            self.builder.position_at_end(entry)
+
+            with self.local():
+                self.env = template.env.copy()
+
+                for name, type in zip(template.typevars, real_types):
+                    self.env[name] = type
+
+                self.env['#return'] = func_type.ret
+                self.env.pop('#continue', None)
+                self.env.pop('#break', None)
+
+                for arg, value in zip(func_type.args, func.args):
+                    ptr = self.declare(node, arg.type, arg.name, redeclare=True, initialize=True)
+                    self.env[arg.name] = ptr
+                    self.builder.store(value, ptr)
+
+                self.compile(body)
+
+                if func_type.ret == tVoid:
+                    self.builder.ret_void()
+                else:
+                    if '#return' not in self.initialized:
+                        self.throw(node, err.MissingReturn(id))
+                    self.builder.ret(func_type.ret.default())
+
+            self.builder.position_at_end(prev_label)
+
+        return func_ptr
 
 
     ### Statements ###
@@ -971,7 +1020,7 @@ class PyxellCompiler:
         self.write('\n')
 
     def compileStmtDecl(self, node):
-        type = self.compile(node['type'])
+        type = self.resolve_type(self.compile(node['type']))
         id = node['id']
         expr = node['expr']
         ptr = self.declare(node, type, id, initialize=bool(expr))
@@ -1223,26 +1272,32 @@ class PyxellCompiler:
         id = node['id']
         self.initialized.add(id)
 
-        args = []
-        expect_default = False
-        for arg in node['args']:
-            type = self.compile(arg['type'])
-            name = arg['name']
-            default = arg.get('default')
-            if default:
-                with self.no_output():
-                    self.cast(default, self.compile(default), type)
-                expect_default = True
-            elif expect_default:
-                self.throw(arg, err.MissingDefault(name))
-            args.append(Arg(type, name, default))
+        with self.local():
+            typevars = node.get('typevars', [])
+            for name in typevars:
+                self.env[name] = tVar(name)
 
-        ret_type = self.compile(node['ret']) or tVoid
-        func_type = tFunc(args, ret_type)
+            args = []
+            expect_default = False
+            for arg in node['args']:
+                type = self.compile(arg['type'])
+                name = arg['name']
+                default = arg.get('default')
+                if default:
+                    with self.no_output():
+                        self.cast(default, self.compile(default), type)
+                    expect_default = True
+                elif expect_default:
+                    self.throw(arg, err.MissingDefault(name))
+                args.append(Arg(type, name, default))
 
-        func = FunctionTemplate(id, func_type, node['block'])
-        self.env[id] = func
-        func.env = self.env.copy()
+            ret_type = self.compile(node['ret']) or tVoid
+            func_type = tFunc(args, ret_type)
+
+            env = self.env.copy()
+            func = FunctionTemplate(id, typevars, func_type, node['block'], env)
+
+        self.env[id] = env[id] = func
 
     def compileStmtReturn(self, node):
         try:
@@ -1254,7 +1309,18 @@ class PyxellCompiler:
 
         expr = node['expr']
         if expr:
-            value = self.cast(node, self.compile(expr), type)
+            value = self.compile(expr)
+
+            # Update unresolved type variables in the return type.
+            d = type_variables_assignment(value.type, type)
+            if d is None:
+                self.throw(node, err.IllegalAssignment(value.type, type))
+            if d:
+                self.env.update(d)
+                type = self.env['#return'] = self.resolve_type(type)
+
+            value = self.cast(node, value, type)
+
         elif type != tVoid:
             self.throw(node, err.IllegalAssignment(tVoid, type))
 
@@ -1277,7 +1343,7 @@ class PyxellCompiler:
 
         value, array, index = [{
             'node': 'AtomId',
-            'id': f'__cpr_{name}{len(self.env)}',
+            'id': f'__cpr_{len(self.env)}_{name}',
         } for name in ['value', 'array', 'index']]
 
         stmt = inner_stmt = {
@@ -1343,7 +1409,7 @@ class PyxellCompiler:
 
         array, length, start, end, step, index = [{
             'node': 'AtomId',
-            'id': f'__slice_{name}{len(self.env)}',
+            'id': f'__slice_{len(self.env)}_{name}',
         } for name in ['array', 'length', 'start', 'end', 'step', 'index']]
 
         with self.local():
@@ -1417,60 +1483,87 @@ class PyxellCompiler:
                         self.throw(node, err.ExpectedNamedArgument())
                     pos_args[i] = expr
 
-            func_args = func.type.args[1:] if obj else func.type.args
-            for i, func_arg in enumerate(func_args):
-                name = func_arg.name
-                if name in named_args:
-                    if i in pos_args:
-                        self.throw(node, err.RepeatedArgument(name))
-                    expr = named_args.pop(name)
-                elif i in pos_args:
-                    expr = pos_args.pop(i)
-                elif func_arg.default:
-                    expr = func_arg.default
-                else:
-                    self.throw(node, err.TooFewArguments(func.type))
+            with self.local():
+                func_args = func.type.args[1:] if obj else func.type.args
 
-                expr = self.convert_lambda(expr)
-                if expr['node'] == 'ExprLambda':
-                    ids = expr['ids']
-                    type = func_arg.type
-                    if not type.isFunc():
-                        self.throw(node, err.IllegalLambda())
-                    if len(ids) < len(type.args):
-                        self.throw(node, err.TooFewArguments(type))
-                    if len(ids) > len(type.args):
-                        self.throw(node, err.TooManyArguments(type))
-                    id = self.module.get_unique_name('lambda')
-                    self.compile({
-                        **expr,
-                        'node': 'StmtFunc',
-                        'id': id,
-                        'args': [{
-                            'type': arg.type,
-                            'name': name,
-                        } for arg, name in zip(type.args, ids)],
-                        'ret': type.ret,
-                        'block': {
+                type_variables = defaultdict(list)
+
+                for i, func_arg in enumerate(func_args):
+                    name = func_arg.name
+                    if name in named_args:
+                        if i in pos_args:
+                            self.throw(node, err.RepeatedArgument(name))
+                        expr = named_args.pop(name)
+                    elif i in pos_args:
+                        expr = pos_args.pop(i)
+                    elif func_arg.default:
+                        expr = func_arg.default
+                    else:
+                        self.throw(node, err.TooFewArguments(func.type))
+
+                    expr = self.convert_lambda(expr)
+                    if expr['node'] == 'ExprLambda':
+                        ids = expr['ids']
+                        type = func_arg.type
+                        if not type.isFunc():
+                            self.throw(node, err.IllegalLambda())
+                        if len(ids) < len(type.args):
+                            self.throw(node, err.TooFewArguments(type))
+                        if len(ids) > len(type.args):
+                            self.throw(node, err.TooManyArguments(type))
+                        id = f'__lambda_{len(self.env)}'
+                        self.compile({
                             **expr,
-                            'node': 'StmtReturn',
-                            'expr': expr['expr'],
-                        },
-                    })
-                    value = self.get(expr, id)
-                else:
-                    value = self.compile(expr)
+                            'node': 'StmtFunc',
+                            'id': id,
+                            'args': [{
+                                'type': arg.type,
+                                'name': name,
+                            } for arg, name in zip(type.args, ids)],
+                            'ret': type.ret,
+                            'block': {
+                                **expr,
+                                'node': 'StmtReturn',
+                                'expr': expr['expr'],
+                            },
+                        })
+                        expr = {
+                            'node': 'AtomId',
+                            'id': id,
+                        }
+                        args.append(expr)
 
-                value = self.cast(expr, value, func_arg.type)
-                args.append(value)
+                    else:
+                        value = self.compile(expr)
 
-            if named_args:
-                self.throw(node, err.UnexpectedArgument(next(iter(named_args))))
-            if pos_args:
-                self.throw(node, err.TooManyArguments(func.type))
+                        d = type_variables_assignment(value.type, func_arg.type)
+                        if d is None:
+                            self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
 
-            if obj:
-                args.insert(0, obj)
+                        for name, type in d.items():
+                            type_variables[name].append(type)
+
+                        args.append(value)
+
+                for name, types in type_variables.items():
+                    type = unify_types(*types)
+                    if type is None:
+                        self.throw(node, err.InvalidArgumentTypes(tVar(name)))
+
+                    self.env[name] = type
+
+                if named_args:
+                    self.throw(node, err.UnexpectedArgument(next(iter(named_args))))
+                if pos_args:
+                    self.throw(node, err.TooManyArguments(func.type))
+
+                args = [self.cast(node, self.compile(arg), self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
+
+                if obj:
+                    args.insert(0, obj)
+
+                if func.isTemplate():
+                    func = self.builder.load(self.function(node, func))
 
             return self.builder.call(func, args)
 
@@ -1488,6 +1581,7 @@ class PyxellCompiler:
                 return self.safe(node, obj, callback, vNull)
             else:
                 obj, func = self.attribute(expr, expr['expr'], attr)
+
         else:
             obj = None
             func = self.compile(expr)
@@ -1651,7 +1745,10 @@ class PyxellCompiler:
         }.get(name)
 
         if type is None:
-            self.throw(node, err.NotType(name))
+            type = self.env.get(name)
+            if not isinstance(type, Type):
+                self.throw(node, err.NotType(name))
+            return type
 
         return type
 

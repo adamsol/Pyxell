@@ -1,3 +1,5 @@
 
-func f<Any T>(T x, Bool b) T def
+func f<T>(T x, Bool b) T def
     return b
+
+f("false", false)

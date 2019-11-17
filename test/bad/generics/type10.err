@@ -1,1 +1,1 @@
-Illegal assignment from `Bool` to `A`.
+Illegal assignment from `Int->Bool` to `A->A`.

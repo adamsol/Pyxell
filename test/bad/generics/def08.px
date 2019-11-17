@@ -1,0 +1,5 @@
+
+func f<A,B>(A x) B def
+    return f(x)
+
+print f(false)

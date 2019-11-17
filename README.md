@@ -40,12 +40,12 @@ for x, i in a, 0... do
 ```
 
 ```
-func fold<Any T>(T,T->T f, T a, [T] t) T def
-    for x in t do
-        a = f(a, x)
-    return a
+func reduce'<A,B>(A->B->A f, A r, [B] b) A def
+    for x in b do
+        r = f(r, x)
+    return r
 
-print fold(_*_, 1, [2, 3, 4])  -- factorial
+print reduce'(_*_, 1, [2, 3, 4])  -- 24
 ```
 
 ```

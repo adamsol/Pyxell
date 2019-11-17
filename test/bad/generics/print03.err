@@ -1,1 +1,1 @@
-Variable of type `Int->Char*Int` cannot be printed.
+Variable of type `Int->Char` cannot be printed.

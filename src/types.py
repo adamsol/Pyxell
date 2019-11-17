@@ -1,5 +1,5 @@
 
-from collections import namedtuple
+from collections import defaultdict, namedtuple
 
 import llvmlite.ir as ll
 
@@ -7,15 +7,17 @@ from .utils import *
 
 
 __all__ = [
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tUnknown',
+    'Type', 'Value',
+    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tVar', 'tUnknown',
     'Arg',
-    'can_cast', 'unify_types',
+    'unify_types', 'type_variables_assignment', 'get_type_variables', 'can_cast',
     'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull',
     'FunctionTemplate',
 ]
 
 
 Type = ll.Type
+Value = ll.Value
 
 
 class CustomStructType(ll.LiteralStructType):
@@ -47,6 +49,20 @@ class NullableType(ll.PointerType):
 
     def __hash__(self):
         return hash(NullableType)
+
+
+class VariableType(Type):
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+        self.kind = 'variable'
+
+    def __eq__(self, other):
+        return isinstance(other, VariableType) and self.name == other.name
+
+    def __hash__(self):
+        return hash(VariableType)
 
 
 class UnknownType(Type):
@@ -125,6 +141,14 @@ def isFunc(type):
     return getattr(type, 'kind', None) == 'function'
 
 
+def tVar(name):
+    return VariableType(name)
+
+@extend_class(Type)
+def isVar(type):
+    return getattr(type, 'kind', None) == 'variable'
+
+
 @extend_class(Type)
 def isCollection(type):
     return type == tString or type.isArray()
@@ -145,40 +169,92 @@ def isUnknown(type):
     return False
 
 
-def can_cast(type1, type2):
-    if type1 == type2:
-        return True
-    if type1.isArray() and type2.isArray():
-        return can_cast(type1.subtype, type2.subtype)
-    if type1.isNullable() and type2.isNullable():
-        return can_cast(type1.subtype, type2.subtype)
-    if type2.isNullable():
-        return can_cast(type1, type2.subtype)
-    if type1.isTuple() and type2.isTuple():
-        return len(type1.elements) == len(type2.elements) and \
-               all(can_cast(t1, t2) for t1, t2 in zip(type1.elements, type2.elements))
-    if type1 == tUnknown or type2 == tUnknown:
-        return True
-    return False
+def unify_types(type1, *types):
+    if not types:
+        return type1
 
+    type2, *types = types
+    if types:
+        return unify_types(unify_types(type1, type2), *types)
 
-def unify_types(type1, type2):
+    if type1 is None or type2 is None:
+        return None
+
     if type1 == type2:
         return type1
+
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
         return tArray(subtype) if subtype else None
+
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
         return tNullable(subtype) if subtype else None
+
     if type1.isTuple() and type2.isTuple():
         elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
         return tTuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
+
     if type1 == tUnknown:
         return type2
     if type2 == tUnknown:
         return type1
+
     return None
+
+
+def type_variables_assignment(type1, type2):
+
+    if type1.isArray() and type2.isArray():
+        return type_variables_assignment(type1.subtype, type2.subtype)
+
+    if type1.isNullable() and type2.isNullable():
+        return type_variables_assignment(type1.subtype, type2.subtype)
+
+    if type2.isNullable():
+        return type_variables_assignment(type1, type2.subtype)
+
+    if type1.isTuple() and type2.isTuple():
+        if len(type1.elements) != len(type2.elements):
+            return None
+        result = defaultdict(list)
+        for e1, e2 in zip(type1.elements, type2.elements):
+            d = type_variables_assignment(e1, e2)
+            if d is None:
+                return None
+            for name, type in d.items():
+                result[name].append(type)
+        for name, types in result.items():
+            type = unify_types(*types)
+            if type is None:
+                return None
+            result[name] = type
+        return result
+
+    if type1.isFunc() and type2.isFunc():
+        return type_variables_assignment(
+            tTuple([arg.type for arg in type1.args] + [type1.ret]),
+            tTuple([arg.type for arg in type2.args] + [type2.ret]))
+
+    if type2.isVar():
+        return {type2.name: type1}
+
+    if type1 == tUnknown or type2 == tUnknown:
+        return {}
+
+    if type1 == type2:
+        return {}
+
+    return None
+
+
+def get_type_variables(type):
+    # For this to work properly, the condition `type1 == type2` in `type_variables_assignment` must be at the bottom.
+    return type_variables_assignment(type, type).keys()
+
+
+def can_cast(type1, type2):
+    return type_variables_assignment(type1, type2) == {}
 
 
 @extend_class(Type)
@@ -203,6 +279,8 @@ def show(type):
         return '*'.join(t.show() for t in type.elements)
     if type.isFunc():
         return '->'.join(arg.type.show() for arg in type.args) + '->' + type.ret.show()
+    if type.isVar():
+        return type.name
     if type == tUnknown:
         return '<Unknown>'
     return str(type)
@@ -232,18 +310,19 @@ def vNull(type=tNullable(tUnknown)):
     return ll.Constant(type, 'null')
 
 
-@extend_class(ll.Value)
+@extend_class(Value)
 def isTemplate(value):
     return False
 
-class FunctionTemplate:
+class FunctionTemplate(Value):
 
-    def __init__(self, id, type, body):
+    def __init__(self, id, typevars, type, body, env):
         self.id = id
+        self.typevars = typevars
         self.type = type
         self.body = body
-        self.env = None
-        self.compiled = None
+        self.env = env
+        self.compiled = {}
 
     def isTemplate(self):
         return True

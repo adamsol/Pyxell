@@ -1,0 +1,6 @@
+
+func f<T>(T x) T def
+    y = x
+    return y
+
+print f('t') + f("est")

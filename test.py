@@ -5,6 +5,7 @@ import colorama
 import glob
 import os
 import subprocess
+import traceback
 from timeit import default_timer as timer
 from pathlib import Path
 
@@ -66,6 +67,9 @@ for i, path in enumerate(tests, 1):
             continue
         except subprocess.CalledProcessError as e:
             print(f"{R}{e.output.decode()}{E}")
+            continue
+        except Exception:
+            print(f"{R}{traceback.format_exc()}{E}")
             continue
 
         if error_expected:

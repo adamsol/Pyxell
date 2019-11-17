@@ -1,3 +1,5 @@
 
-func f<Num T>(T x) def
+func f<T>(T x) def
     x = 3
+
+f(0.0)

@@ -1,5 +1,5 @@
 
-func id<Any T>(T x) T def
+func id<T>(T x) T def
     return x
 
 print id(6) - id(2.53) + id(1)

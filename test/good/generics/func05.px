@@ -1,5 +1,5 @@
 
-func apply<Any A, Any B>(A->B f, A x) B def
+func apply<A,B>(A->B f, A x) B def
     return f(x)
 
 x = apply(_+1, 2)

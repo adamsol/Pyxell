@@ -1,5 +1,5 @@
 
-func f<Any A, Num B, Any C>(A*[B*C] p) B*A def
+func f<A,B,C>(A*[B*C] p) B*A def
     return p.b[0].a, p.a
 
 print f(('$', [(5, 'x')]))

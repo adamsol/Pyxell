@@ -1,0 +1,12 @@
+
+func f<A,B>(A*B p) B*A def
+    func g1(A x) A def
+        return x
+    func g2(B x) B def
+        return x*3
+    func h<C>(C x) C def
+        return x
+    return h(g2(p.b)), h(g1(p.a))
+
+print f(('$', 5))
+print f((false, -1.11))

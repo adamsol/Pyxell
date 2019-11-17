@@ -15,6 +15,46 @@ func readInt() Int extern
 func readChar() Char extern
 
 
+func min<T>(T a, T b) T def
+    return a < b ? a : b
+
+func max<T>(T a, T b) T def
+    return b < a ? a : b
+
+func clamp<T>(T x, T a, T b) T def
+    return min(max(x, a), b)
+
+func abs<T>(T x) T def
+    return x >= 0 ? x : -x
+
+func sign<T>(T x) Int def
+    return x > 0 ? 1 : x < 0 ? -1 : 0
+
+
+func all<A>(A->Bool f, [A] a) Bool def
+    for x in a do
+        if not f(x) do
+            return false
+    return true
+
+func any<A>(A->Bool f, [A] a) Bool def
+    for x in a do
+        if f(x) do
+            return true
+    return false
+
+func filter<A>(A->Bool f, [A] a) [A] def
+    return [x for x in a if f(x)]
+
+func map<A,B>(A->B f, [A] a) [B] def
+    return [f(x) for x in a]
+
+func reduce<A,B>(A->B->A f, A r, [B] b) A def
+    for x in b do
+        r = f(r, x)
+    return r
+
+
 func Int_pow(Int b, Int e) Int def
     if e < 0 do
         return 0

@@ -1,16 +1,7 @@
 
-func call<Any A, Num B>(A->B f, A x) def
-    print f(x)
+func f<T>(T? x) T? def
+    if x is null do
+        return null
+    return x!
 
-func f(Char c) Int def
-    return ord(c)
-
-func g(Int n) Float def
-    return n + 0.5
-
-func h(String s) Int def
-    return s.length
-
-call(f, 'a')
-call(g, -3)
-call(h, "____")
+print f(3), f(x=-7.89), f(null)

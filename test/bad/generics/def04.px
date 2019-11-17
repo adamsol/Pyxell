@@ -1,3 +1,5 @@
 
-func f<Num N>(N x) def
+func f<N>(N x) def
     y = N
+
+f(4)

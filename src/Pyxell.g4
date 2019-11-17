@@ -29,7 +29,7 @@ compound_stmt
   | 'while' expr 'do' block # StmtWhile
   | 'until' expr 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? 'do' block # StmtFor
-  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
+  | 'func' ID ('<' typevars=id_list '>')? '(' (func_arg ',')* func_arg? ')' (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
   ;
 
 func_arg
@@ -98,7 +98,7 @@ atom
   ;
 
 id_list
-  : (ID ',')* ID
+  : (ID ',')* ID # IdList
   ;
 
 typ

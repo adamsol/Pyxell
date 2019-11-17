@@ -239,8 +239,8 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#id_list.
-    def visitId_list(self, ctx:PyxellParser.Id_listContext):
+    # Visit a parse tree produced by PyxellParser#IdList.
+    def visitIdList(self, ctx:PyxellParser.IdListContext):
         return self.visitChildren(ctx)
 
 

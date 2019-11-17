@@ -1,3 +1,5 @@
 
-func f<Any T>(T x, T y) T def
+func f<A,B,C>(A x, B y) C def
     return x + y
+
+f(0, "")

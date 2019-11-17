@@ -1,5 +1,5 @@
 
-func tuple<Any T1, Any T2>(Int a, T1 b, String c, T2 d) Int*T1*String*T2 def
+func tuple<T1,T2>(Int a, T1 b, String c, T2 d) Int*T1*String*T2 def
     return a, b, c, d
 
 print tuple(3, 5, "7", 0.12)

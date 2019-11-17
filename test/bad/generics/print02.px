@@ -1,3 +1,5 @@
 
-func f<Any T>(T x) def
+func f<T>(T x) def
     print 'x', x
+
+f(ord)
