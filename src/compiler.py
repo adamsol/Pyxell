@@ -135,8 +135,10 @@ class PyxellCompiler:
             self.throw(node, err.UndeclaredIdentifier(id))
         if id not in self.initialized:
             self.throw(node, err.UninitializedIdentifier(id))
-        ptr = self.env[id]
-        return self.builder.load(ptr) if load else ptr
+        result = self.env[id]
+        if result.isTemplate():
+            result = self.function(node, result)
+        return self.builder.load(result) if load else result
 
     def extract(self, ptr, *indices):
         return self.builder.load(self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
@@ -245,9 +247,8 @@ class PyxellCompiler:
 
         return value
 
-    def call(self, name, *values):
-        func = self.builder.load(self.env[name])
-        return self.builder.call(func, values)
+    def call(self, node, name, *values):
+        return self.builder.call(self.get(node, name), values)
 
     def cast(self, node, value, type):
         if not can_cast(value.type, type):
@@ -379,10 +380,10 @@ class PyxellCompiler:
 
         if op == '^':
             if left.type == right.type == tInt:
-                return self.call('Int_pow', left, right)
+                return self.call(node, 'Int_pow', left, right)
 
             elif left.type == right.type == tFloat:
-                return self.call('Float_pow', left, right)
+                return self.call(node, 'Float_pow', left, right)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
@@ -482,10 +483,10 @@ class PyxellCompiler:
                 return result
 
             elif left.type == tString and right.type == tChar:
-                return self.binaryop(node, op, left, self.call('Char_toString', right))
+                return self.binaryop(node, op, left, self.call(node, 'Char_toString', right))
 
             elif left.type == tChar and right.type == tString:
-                return self.binaryop(node, op, self.call('Char_toString', left), right)
+                return self.binaryop(node, op, self.call(node, 'Char_toString', left), right)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
@@ -653,19 +654,19 @@ class PyxellCompiler:
         type = value.type
         
         if type == tInt:
-            self.call('writeInt', value)
+            self.call(node, 'writeInt', value)
 
         elif type == tFloat:
-            self.call('writeFloat', value)
+            self.call(node, 'writeFloat', value)
 
         elif type == tBool:
-            self.call('writeBool', value)
+            self.call(node, 'writeBool', value)
 
         elif type == tChar:
-            self.call('writeChar', value)
+            self.call(node, 'writeChar', value)
 
         elif type.isString():
-            self.call('write', value)
+            self.call(node, 'write', value)
 
         elif type.isArray():
             self.write('[')
@@ -873,6 +874,56 @@ class PyxellCompiler:
                 'expr': expr,
             }
         return expr
+
+    def function(self, node, template):
+        if template.compiled:
+            return template.compiled
+
+        id = template.id
+        type = template.type
+        body = template.body
+
+        if not body:  # `extern`
+            template.compiled = ll.GlobalVariable(self.module, type, self.module.get_unique_name('f.'+id))
+            return template.compiled
+
+        args = type.args
+        ret = type.ret
+
+        func = ll.Function(self.module, type.pointee, self.module.get_unique_name('def.'+id))
+
+        func_ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
+        func_ptr.initializer = func
+        template.compiled = func_ptr
+
+        prev_label = self.builder.basic_block
+        entry = func.append_basic_block('entry')
+        self.builder.position_at_end(entry)
+
+        with self.local():
+            self.env = template.env
+            
+            self.env['#return'] = ret
+            self.env.pop('#continue', None)
+            self.env.pop('#break', None)
+
+            for arg, value in zip(args, func.args):
+                ptr = self.declare(node, arg.type, arg.name, redeclare=True, initialize=True)
+                self.env[arg.name] = ptr
+                self.builder.store(value, ptr)
+
+            self.compile(body)
+
+            if ret == tVoid:
+                self.builder.ret_void()
+            else:
+                if '#return' not in self.initialized:
+                    self.throw(node, err.MissingReturn(id))
+                self.builder.ret(ret.default())
+
+        self.builder.position_at_end(prev_label)
+
+        return template.compiled
 
 
     ### Statements ###
@@ -1170,6 +1221,7 @@ class PyxellCompiler:
 
     def compileStmtFunc(self, node):
         id = node['id']
+        self.initialized.add(id)
 
         args = []
         expect_default = False
@@ -1186,46 +1238,11 @@ class PyxellCompiler:
             args.append(Arg(type, name, default))
 
         ret_type = self.compile(node['ret']) or tVoid
-
         func_type = tFunc(args, ret_type)
-        func_def = node['block']
 
-        if not func_def:  # `extern`
-            func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name('f.'+id))
-            self.env[id] = func_ptr
-            self.initialized.add(id)
-            return
-
-        func = ll.Function(self.module, func_type.pointee, self.module.get_unique_name('def.'+id))
-        func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name(id))
-        func_ptr.initializer = func
-        self.env[id] = func_ptr
-        self.initialized.add(id)
-
-        prev_label = self.builder.basic_block
-        entry = func.append_basic_block('entry')
-        self.builder.position_at_end(entry)
-
-        with self.local():
-            self.env['#return'] = ret_type
-            self.env.pop('#continue', None)
-            self.env.pop('#break', None)
-
-            for (type, id, default), value in zip(args, func.args):
-                ptr = self.declare(node, type, id, redeclare=True, initialize=True)
-                self.env[id] = ptr
-                self.builder.store(value, ptr)
-
-            self.compile(func_def)
-
-            if ret_type == tVoid:
-                self.builder.ret_void()
-            else:
-                if '#return' not in self.initialized:
-                    self.throw(node, err.MissingReturn(id))
-                self.builder.ret(ret_type.default())
-
-        self.builder.position_at_end(prev_label)
+        func = FunctionTemplate(id, func_type, node['block'])
+        self.env[id] = func
+        func.env = self.env.copy()
 
     def compileStmtReturn(self, node):
         try:
@@ -1380,7 +1397,7 @@ class PyxellCompiler:
     def compileExprCall(self, node):
         expr = node['expr']
 
-        def call(obj, func):
+        def _call(obj, func):
             if not func.type.isFunc():
                 self.throw(node, err.NotFunction(func.type))
 
@@ -1466,7 +1483,7 @@ class PyxellCompiler:
                 def callback():
                     value = self.extract(obj)
                     func = self.attr(node, value, attr)
-                    return self.nullable(call(value, func))
+                    return self.nullable(_call(value, func))
 
                 return self.safe(node, obj, callback, vNull)
             else:
@@ -1475,7 +1492,7 @@ class PyxellCompiler:
             obj = None
             func = self.compile(expr)
 
-        return call(obj, func)
+        return _call(obj, func)
 
     def compileExprUnaryOp(self, node):
         return self.unaryop(node, node['op'], self.compile(node['expr']))

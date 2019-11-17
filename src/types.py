@@ -11,19 +11,11 @@ __all__ = [
     'Arg',
     'can_cast', 'unify_types',
     'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull',
+    'FunctionTemplate',
 ]
 
 
-class UnknownType(ll.Type):
-
-    def _to_string(self):
-        return 'i8*'
-
-    def __eq__(self, other):
-        return isinstance(other, UnknownType)
-
-    def __hash__(self):
-        return hash(UnknownType)
+Type = ll.Type
 
 
 class CustomStructType(ll.LiteralStructType):
@@ -35,7 +27,7 @@ class CustomStructType(ll.LiteralStructType):
     def __eq__(self, other):
         if not super().__eq__(other):
             return False
-        return self.kind == other.kind
+        return self.kind == getattr(other, 'kind', None)
 
     def __hash__(self):
         return hash(CustomStructType)
@@ -51,10 +43,22 @@ class NullableType(ll.PointerType):
     def __eq__(self, other):
         if not super().__eq__(other):
             return False
-        return self.kind == other.kind
+        return self.kind == getattr(other, 'kind', None)
 
     def __hash__(self):
         return hash(NullableType)
+
+
+class UnknownType(Type):
+
+    def _to_string(self):
+        return 'i8*'
+
+    def __eq__(self, other):
+        return isinstance(other, UnknownType)
+
+    def __hash__(self):
+        return hash(UnknownType)
 
 
 tVoid = ll.VoidType()
@@ -73,7 +77,7 @@ def tPtr(type=tChar):
 tString = tPtr(CustomStructType([tPtr(), tInt], 'string'))
 tString.subtype = tChar
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isString(type):
     return getattr(type, 'kind', None) == 'string'
 
@@ -83,7 +87,7 @@ def tArray(subtype):
     type.subtype = subtype
     return type
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isArray(type):
     return getattr(type, 'kind', None) == 'array'
 
@@ -91,7 +95,7 @@ def isArray(type):
 def tNullable(subtype):
     return NullableType(subtype)
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isNullable(type):
     return getattr(type, 'kind', None) == 'nullable'
 
@@ -101,7 +105,7 @@ def tTuple(elements):
     type.elements = elements
     return type
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
 
@@ -116,19 +120,19 @@ def tFunc(args, ret=tVoid):
     type.kind = 'function'
     return type
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isFunc(type):
     return getattr(type, 'kind', None) == 'function'
 
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isCollection(type):
     return type == tString or type.isArray()
 
 
 tUnknown = UnknownType()
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def isUnknown(type):
     if type == tUnknown:
         return True
@@ -177,7 +181,7 @@ def unify_types(type1, type2):
     return None
 
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def show(type):
     if type == tVoid:
         return 'Void'
@@ -204,7 +208,7 @@ def show(type):
     return str(type)
 
 
-@extend_class(ll.Type)
+@extend_class(Type)
 def default(type):
     return ll.Constant(type, 0 if type in (tInt, tFloat, tBool, tChar) else 'null')
 
@@ -226,3 +230,20 @@ def vChar(c):
 
 def vNull(type=tNullable(tUnknown)):
     return ll.Constant(type, 'null')
+
+
+@extend_class(ll.Value)
+def isTemplate(value):
+    return False
+
+class FunctionTemplate:
+
+    def __init__(self, id, type, body):
+        self.id = id
+        self.type = type
+        self.body = body
+        self.env = None
+        self.compiled = None
+
+    def isTemplate(self):
+        return True

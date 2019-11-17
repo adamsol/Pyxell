@@ -4,4 +4,7 @@ func f() def
     func g() def
         print x
         return
+    g()
     return
+
+f()

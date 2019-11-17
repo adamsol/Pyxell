@@ -1,3 +1,5 @@
 
 func f(Int x, Char y) Bool def
     return x == y
+
+f()

@@ -1,3 +1,5 @@
 
 func f() def
     return 'r'
+
+f()
