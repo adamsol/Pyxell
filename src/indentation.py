@@ -19,15 +19,15 @@ def transform_indented_code(code):
             # Skip line with comment or whitespace only.
             continue
         indent = match.group(1)
-        prev_indent = indents[-1]
 
         if new_block:
-            if not (indent.startswith(prev_indent) and len(indent) > len(indents[-1])):
+            if not (indent.startswith(indents[-1]) and len(indent) > len(indents[-1])):
                 # New block must be indented more than the previous one.
                 raise PyxellError(PyxellError.InvalidIndentation(), i+1)
             indents.append(indent)
             new_block = False
-        else:
+        elif indents[-1].startswith(indent):
+            # If the line is indented less than the current block, close the previous blocks.
             while indents:
                 if indent == indents[-1]:
                     break
@@ -35,12 +35,16 @@ def transform_indented_code(code):
                     lines[i-1] += '}'
                     indents.pop()
                 else:
+                    # Indentation must match one of the previous blocks.
                     raise PyxellError(PyxellError.InvalidIndentation(), i+1)
 
-        if re.search(r'\W(do|def)\s*(--.*)?$', line):
+        if re.search(r'[^\w\'](do|def)\s*(--.*)?$', line):
+            # If the line ends with a `do` or `def` keyword, start a new block.
             lines[i] += '\r{'
             new_block = True
-        else:
+        elif len(lines) == i+1 or not re.match(fr'{indents[-1]}\s', lines[i+1]):
+            # If the next line has a bigger indentation than the current block, assume it is a continuation of the expression.
+            # Otherwise, put a semicolon at the end of this line.
             lines[i] += '\r;'
 
     indents.pop()
