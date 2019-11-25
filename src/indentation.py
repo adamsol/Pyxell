@@ -9,6 +9,7 @@ def transform_indented_code(code):
     Adds braces and semicolons to the code with indents.
     """
     lines = code.split('\n')
+    j = None
     indents = ['']
     new_block = False
 
@@ -32,7 +33,8 @@ def transform_indented_code(code):
                 if indent == indents[-1]:
                     break
                 elif indents[-1].startswith(indent):
-                    lines[i-1] += '}'
+                    # Add a closing bracket to the last non-empty line.
+                    lines[j] += '}'
                     indents.pop()
                 else:
                     # Indentation must match one of the previous blocks.
@@ -46,6 +48,8 @@ def transform_indented_code(code):
             # If the next line has a bigger indentation than the current block, assume it is a continuation of the expression.
             # Otherwise, put a semicolon at the end of this line.
             lines[i] += '\r;'
+
+        j = i
 
     indents.pop()
     lines[-1] += '}' * len(indents)

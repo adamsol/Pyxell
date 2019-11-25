@@ -10,4 +10,8 @@ if true do---; print false
     print x  ----- 2
 
 else do --
+
     print false
+
+----------
+print true
