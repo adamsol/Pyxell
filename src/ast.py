@@ -161,6 +161,21 @@ class PyxellASTVisitor(PyxellVisitor):
             'expr': self.visit(ctx.tuple_expr()),
         }
 
+    def visitStmtClass(self, ctx):
+        return {
+            **_node(ctx, 'StmtClass'),
+            'id': self.visit(ctx.ID()),
+            'members': self.visit(ctx.class_member()),
+        }
+
+    def visitClassField(self, ctx):
+        return {
+            **_node(ctx, 'ClassField'),
+            'type': self.visit(ctx.typ()),
+            'name': self.visit(ctx.ID()),
+            'default': self.visit(ctx.tuple_expr()),
+        }
+
 
     ### Expressions ###
 

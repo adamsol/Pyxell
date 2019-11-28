@@ -39,6 +39,7 @@ class PyxellError(Exception):
     NotVariable = lambda id: f"Identifier `{id}` does not represent a variable"
     RedeclaredIdentifier = lambda id: f"Identifier `{id}` is already declared"
     RepeatedArgument = lambda id: f"Repeated argument `{id}`"
+    RepeatedMember = lambda id: f"Repeated member `{id}` in class definition"
     TooFewArguments = lambda t: f"Too few arguments for function `{t.show()}`"
     TooManyArguments = lambda t: f"Too many arguments for function `{t.show()}`"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"

@@ -8,7 +8,7 @@ from .utils import *
 
 __all__ = [
     'Type', 'Value',
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tVar', 'tUnknown',
+    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tClass', 'tVar', 'tUnknown',
     'Arg',
     'unify_types', 'type_variables_assignment', 'get_type_variables', 'can_cast',
     'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull',
@@ -139,6 +139,19 @@ def tFunc(args, ret=tVoid):
 @extend_class(Type)
 def isFunc(type):
     return getattr(type, 'kind', None) == 'function'
+
+
+def tClass(context, name, members):
+    type = tPtr(context.get_identified_type(name))
+    type.kind = 'class'
+    type.name = name
+    type.members = members
+    type.constructor = None
+    return type
+
+@extend_class(Type)
+def isClass(type):
+    return getattr(type, 'kind', None) == 'class'
 
 
 def tVar(name):
@@ -279,7 +292,7 @@ def show(type):
         return '*'.join(t.show() for t in type.elements)
     if type.isFunc():
         return '->'.join(arg.type.show() for arg in type.args) + '->' + type.ret.show()
-    if type.isVar():
+    if type.isClass() or type.isVar():
         return type.name
     if type == tUnknown:
         return '<Unknown>'

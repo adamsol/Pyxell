@@ -89,8 +89,18 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#StmtClass.
+    def visitStmtClass(self, ctx:PyxellParser.StmtClassContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#FuncArg.
     def visitFuncArg(self, ctx:PyxellParser.FuncArgContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ClassField.
+    def visitClassField(self, ctx:PyxellParser.ClassFieldContext):
         return self.visitChildren(ctx)
 
 

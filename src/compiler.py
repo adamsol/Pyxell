@@ -32,7 +32,7 @@ class PyxellCompiler:
         self._unit = None
         self._keep_env = False
         self.builder = CustomIRBuilder()
-        self.module = ll.Module()
+        self.module = ll.Module(context=ll.Context())
         self.builtins = {
             'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
             'realloc': ll.Function(self.module, tFunc([tPtr(), tInt], tPtr()).pointee, 'realloc'),
@@ -151,6 +151,8 @@ class PyxellCompiler:
         if id not in self.env:
             self.throw(node, err.UndeclaredIdentifier(id))
         result = self.env[id]
+        if isinstance(result, Type) and result.isClass():
+            result = result.constructor
         if not isinstance(result, Value):
             self.throw(node, err.NotVariable(id))
         if id not in self.initialized:
@@ -161,8 +163,9 @@ class PyxellCompiler:
             result = self.function(node, result)
         return self.builder.load(result) if load else result
 
-    def extract(self, ptr, *indices):
-        return self.builder.load(self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
+    def extract(self, ptr, *indices, load=True):
+        ptr = self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]])
+        return self.builder.load(ptr) if load else ptr
 
     def insert(self, value, ptr, *indices):
         return self.builder.store(value, self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
@@ -176,7 +179,8 @@ class PyxellCompiler:
             length = self.extract(collection, 1)
             cmp = self.builder.icmp_signed('>=', index, vInt(0))
             index = self.builder.select(cmp, index, self.builder.add(index, length))
-            return self.builder.gep(self.extract(collection, 0), [index])
+            ptr = self.builder.gep(self.extract(collection, 0), [index])
+            return ptr if lvalue else self.builder.load(ptr)
 
         self.throw(node, err.NotIndexable(collection.type))
 
@@ -263,10 +267,25 @@ class PyxellCompiler:
             if 0 <= index < len(type.elements):
                 value = self.extract(obj, index)
 
+        elif type.isClass():
+            value = self.member(node, obj, attr)
+
         if value is None:
             self.throw(node, err.NoAttribute(type, attr))
 
         return value
+
+    def member(self, node, obj, attr, lvalue=False):
+        if lvalue and not obj.type.isClass():
+            self.throw(node, err.NotLvalue())
+
+        try:
+            index = list(obj.type.members.keys()).index(attr)
+        except ValueError:
+            self.throw(node, err.NoAttribute(obj.type, attr))
+
+        ptr = self.extract(obj, index, load=False)
+        return ptr if lvalue else self.builder.load(ptr)
 
     def call(self, node, name, *values):
         return self.builder.call(self.get(node, name), values)
@@ -327,6 +346,9 @@ class PyxellCompiler:
 
         elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
             return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
+
+        elif expr['node'] == 'ExprAttr' and not expr.get('safe'):
+            return self.member(node, self.compile(expr['expr']), expr['attr'], lvalue=True)
 
         self.throw(node, err.NotLvalue())
 
@@ -657,6 +679,12 @@ class PyxellCompiler:
             phi.add_incoming(vFalse, label_false)
             phi.add_incoming(vBool(op not in ('!=', '<', '>')), label_cont)
             return phi
+
+        elif left.type.isClass():
+            if op not in ('==', '!='):
+                self.throw(node, err.NotComparable(left.type, right.type))
+
+            return self.builder.icmp_unsigned(op, left, right)
 
         elif left.type == tUnknown:
             return vTrue
@@ -1329,6 +1357,47 @@ class PyxellCompiler:
         else:
             self.builder.ret(value)
 
+    def compileStmtClass(self, node):
+        id = node['id']
+        if id in self.env:
+            self.throw(node, err.RedeclaredIdentifier(id))
+        self.initialized.add(id)
+
+        members = {}
+        type = tClass(self.module.context, id, members)
+        self.env[id] = type
+
+        for member in node['members']:
+            name = member['name']
+            if name in members:
+                self.throw(member, err.RepeatedMember(name))
+            members[name] = self.compile(member['type'])
+
+        type.pointee.set_body(*members.values())
+
+        constructor_type = tFunc([], type)
+        constructor = ll.Function(self.module, constructor_type.pointee, self.module.get_unique_name('def.'+id+'.init'))
+
+        constructor_ptr = ll.GlobalVariable(self.module, constructor_type, self.module.get_unique_name(id+'.init'))
+        constructor_ptr.initializer = constructor
+        type.constructor = constructor_ptr
+
+        prev_label = self.builder.basic_block
+        entry = constructor.append_basic_block('entry')
+        self.builder.position_at_end(entry)
+
+        obj = self.malloc(type)
+
+        for i, member in enumerate(node['members']):
+            default = member.get('default')
+            if default:
+                value = self.cast(member, self.compile(default), self.compile(member['type']))
+                self.insert(value, obj, i)
+
+        self.builder.ret(obj)
+
+        self.builder.position_at_end(prev_label)
+
 
     ### Expressions ###
 
@@ -1400,9 +1469,9 @@ class PyxellCompiler:
 
         if node.get('safe'):
             collection = self.compile(exprs[0])
-            return self.safe(node, collection, lambda: self.nullable(self.builder.load(self.index(node, self.extract(collection), self.compile(exprs[1])))), vNull)
+            return self.safe(node, collection, lambda: self.nullable(self.index(node, self.extract(collection), self.compile(exprs[1]))), vNull)
 
-        return self.builder.load(self.index(node, *map(self.compile, exprs)))
+        return self.index(node, *map(self.compile, exprs))
 
     def compileExprSlice(self, node):
         slice = node['slice']
