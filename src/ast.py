@@ -172,8 +172,17 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ClassField'),
             'type': self.visit(ctx.typ()),
-            'name': self.visit(ctx.ID()),
+            'id': self.visit(ctx.ID()),
             'default': self.visit(ctx.tuple_expr()),
+        }
+
+    def visitClassMethod(self, ctx):
+        return {
+            **_node(ctx, 'ClassMethod'),
+            'id': self.visit(ctx.ID()),
+            'args': self.visit(ctx.func_arg()),
+            'ret': self.visit(ctx.ret),
+            'block': self.visit(ctx.block()),
         }
 
 

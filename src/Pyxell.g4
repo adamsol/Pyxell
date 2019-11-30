@@ -38,7 +38,8 @@ func_arg
   ;
 
 class_member
-  : typ ID (':' tuple_expr) ? ';' # ClassField
+  : typ ID (':' tuple_expr)? ';' # ClassField
+  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? 'def' block # ClassMethod
   ;
 
 block

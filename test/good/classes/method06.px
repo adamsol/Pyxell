@@ -1,0 +1,15 @@
+
+func f() def
+    print "f"
+
+class A def
+    func f() def
+        print "A.f"
+
+class B def
+    func f() def
+        print "B.f"
+
+f()
+A().f()
+B().f()

@@ -1296,16 +1296,18 @@ class PyxellCompiler:
 
         self.builder.branch(label)
 
-    def compileStmtFunc(self, node):
+    def compileStmtFunc(self, node, class_type=None):
         id = node['id']
-        self.initialized.add(id)
+
+        if class_type is None:
+            self.initialized.add(id)
 
         with self.local():
             typevars = node.get('typevars', [])
             for name in typevars:
                 self.env[name] = tVar(name)
 
-            args = []
+            args = [] if class_type is None else [Arg(class_type, 'self')]
             expect_default = False
             for arg in node['args']:
                 type = self.compile(arg['type'])
@@ -1325,7 +1327,10 @@ class PyxellCompiler:
             env = self.env.copy()
             func = FunctionTemplate(id, typevars, func_type, node['block'], env)
 
-        self.env[id] = env[id] = func
+        if class_type is None:
+            self.env[id] = env[id] = func
+
+        return func
 
     def compileStmtReturn(self, node):
         try:
@@ -1363,22 +1368,28 @@ class PyxellCompiler:
             self.throw(node, err.RedeclaredIdentifier(id))
         self.initialized.add(id)
 
-        members = {}
-        type = tClass(self.module.context, id, members)
+        member_types = {}
+        methods = {}
+        type = tClass(self.module.context, id, member_types)
         self.env[id] = type
 
         for member in node['members']:
-            name = member['name']
-            if name in members:
+            name = member['id']
+            if name in member_types:
                 self.throw(member, err.RepeatedMember(name))
-            members[name] = self.compile(member['type'])
+            if member['node'] == 'ClassField':
+                member_types[name] = self.compile(member['type'])
+            elif member['node'] == 'ClassMethod':
+                func = self.compileStmtFunc(member, class_type=type)
+                member_types[name] = func.type
+                methods[name] = func
 
-        type.pointee.set_body(*members.values())
+        type.pointee.set_body(*member_types.values())
 
         constructor_type = tFunc([], type)
-        constructor = ll.Function(self.module, constructor_type.pointee, self.module.get_unique_name('def.'+id+'.init'))
+        constructor = ll.Function(self.module, constructor_type.pointee, self.module.get_unique_name('def.'+id))
 
-        constructor_ptr = ll.GlobalVariable(self.module, constructor_type, self.module.get_unique_name(id+'.init'))
+        constructor_ptr = ll.GlobalVariable(self.module, constructor_type, self.module.get_unique_name(id))
         constructor_ptr.initializer = constructor
         type.constructor = constructor_ptr
 
@@ -1389,10 +1400,14 @@ class PyxellCompiler:
         obj = self.malloc(type)
 
         for i, member in enumerate(node['members']):
-            default = member.get('default')
-            if default:
-                value = self.cast(member, self.compile(default), self.compile(member['type']))
-                self.insert(value, obj, i)
+            name = member['id']
+            if member['node'] == 'ClassField':
+                default = member.get('default')
+                if default:
+                    value = self.cast(member, self.compile(default), member_types[name])
+                    self.insert(value, obj, i)
+            elif member['node'] == 'ClassMethod':
+                self.insert(self.builder.load(self.function(member, methods[name])), obj, i)
 
         self.builder.ret(obj)
 
