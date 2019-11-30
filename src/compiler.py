@@ -1332,7 +1332,7 @@ class PyxellCompiler:
                     self.throw(arg, err.MissingDefault(name))
                 args.append(Arg(type, name, default))
 
-            ret_type = self.compile(node['ret']) or tVoid
+            ret_type = self.compile(node.get('ret')) or tVoid
             func_type = tFunc(args, ret_type)
 
             env = self.env.copy()
@@ -1381,6 +1381,7 @@ class PyxellCompiler:
 
         member_types = {}
         methods = {}
+
         type = tClass(self.module.context, id, member_types)
         self.env[id] = type
 
@@ -1390,14 +1391,15 @@ class PyxellCompiler:
                 self.throw(member, err.RepeatedMember(name))
             if member['node'] == 'ClassField':
                 member_types[name] = self.compile(member['type'])
-            elif member['node'] == 'ClassMethod':
+            elif member['node'] in ('ClassMethod', 'ClassConstructor'):
                 func = self.compileStmtFunc(member, class_type=type)
                 member_types[name] = func.type
                 methods[name] = func
 
         type.pointee.set_body(*member_types.values())
 
-        constructor_type = tFunc([], type)
+        constructor_method = methods.get('<constructor>')
+        constructor_type = tFunc(constructor_method.type.args[1:] if constructor_method else [], type)
         constructor = ll.Function(self.module, constructor_type.pointee, self.module.get_unique_name('def.'+id))
 
         constructor_ptr = ll.GlobalVariable(self.module, constructor_type, self.module.get_unique_name(id))
@@ -1419,6 +1421,9 @@ class PyxellCompiler:
                     self.insert(value, obj, i)
             elif member['node'] == 'ClassMethod':
                 self.insert(self.builder.load(self.function(member, methods[name])), obj, i)
+
+        if constructor_method:
+            self.builder.call(self.builder.load(self.function(node, constructor_method)), [obj, *constructor.args])
 
         self.builder.ret(obj)
 

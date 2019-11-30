@@ -29,7 +29,7 @@ compound_stmt
   | 'while' expr 'do' block # StmtWhile
   | 'until' expr 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? 'do' block # StmtFor
-  | 'func' ID ('<' typevars=id_list '>')? '(' (func_arg ',')* func_arg? ')' (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
+  | 'func' ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
   | 'class' ID 'def' '{' class_member+ '}' # StmtClass
   ;
 
@@ -37,9 +37,14 @@ func_arg
   : typ ID (':' expr)? # FuncArg
   ;
 
+func_args
+  : '(' (func_arg ',')* func_arg? ')'
+  ;
+
 class_member
   : typ ID (':' tuple_expr)? ';' # ClassField
-  | 'func' ID '(' (func_arg ',')* func_arg? ')' (ret=typ)? 'def' block # ClassMethod
+  | 'func' ID args=func_args (ret=typ)? 'def' block # ClassMethod
+  | 'constructor' args=func_args 'def' block # ClassConstructor
   ;
 
 block

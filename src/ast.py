@@ -142,7 +142,7 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'StmtFunc'),
             'id': self.visit(ctx.ID()),
             'typevars': self.visit(ctx.typevars) or [],
-            'args': self.visit(ctx.func_arg()),
+            'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
             'block': self.visit(ctx.block()),
         }
@@ -180,8 +180,16 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ClassMethod'),
             'id': self.visit(ctx.ID()),
-            'args': self.visit(ctx.func_arg()),
+            'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
+            'block': self.visit(ctx.block()),
+        }
+
+    def visitClassConstructor(self, ctx):
+        return {
+            **_node(ctx, 'ClassConstructor'),
+            'id': '<constructor>',
+            'args': self.visit(ctx.args.func_arg()),
             'block': self.visit(ctx.block()),
         }
 
