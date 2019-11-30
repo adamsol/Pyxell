@@ -752,6 +752,17 @@ class PyxellCompiler:
                     self.write(' ')
                 self.print(node, self.extract(value, i))
 
+        elif value.type.isClass():
+            try:
+                method = self.attr(node, value, "toString")
+            except err:
+                method = None
+
+            if not (method and method.type.isFunc() and len(method.type.args) == 1 and method.type.ret == tString):
+                self.throw(node, err.NotPrintable(value.type))
+
+            self.print(node, self.builder.call(method, [value]))
+
         elif value.type == tUnknown:
             pass
 
