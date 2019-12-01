@@ -4,7 +4,7 @@ pyxell
 *.jar
 .idea/
 *.iml
-tmp.*
 _*
+*.tmp
 *.bc
 *.ll
