@@ -160,7 +160,7 @@ class PyxellCompiler:
         if result.isTemplate():
             if result.typevars:
                 return result
-            result = self.function(node, result)
+            result = self.function(result)
         return self.builder.load(result) if load else result
 
     def extract(self, ptr, *indices, load=True):
@@ -307,14 +307,15 @@ class PyxellCompiler:
 
         return [self.cast(node, value, type) for value in values]
 
-    def declare(self, node, type, id, redeclare=False, initialize=False):
+    def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
         if type == tVoid:
             self.throw(node, err.InvalidDeclaration(type))
         if type.isUnknown():
             self.throw(node, err.UnknownType())
-
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
+        if check_only:
+            return
 
         if self.builder.function._name == 'main':
             ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
@@ -932,7 +933,7 @@ class PyxellCompiler:
             }
         return expr
 
-    def function(self, node, template):
+    def function(self, template):
         real_types = tuple(self.env.get(name) for name in template.typevars)
 
         if real_types in template.compiled:
@@ -962,7 +963,7 @@ class PyxellCompiler:
                         self.env['#return'] = func_type.ret
 
                         for arg in func_type.args:
-                            ptr = self.declare(node, arg.type, arg.name, redeclare=True, initialize=True)
+                            ptr = self.declare(body, arg.type, arg.name, redeclare=True, initialize=True)
                             self.env[arg.name] = ptr
 
                         self.compile(body)
@@ -996,7 +997,7 @@ class PyxellCompiler:
                 self.env.pop('#break', None)
 
                 for arg, value in zip(func_type.args, func.args):
-                    ptr = self.declare(node, arg.type, arg.name, redeclare=True, initialize=True)
+                    ptr = self.declare(body, arg.type, arg.name, redeclare=True, initialize=True)
                     self.env[arg.name] = ptr
                     self.builder.store(value, ptr)
 
@@ -1006,7 +1007,7 @@ class PyxellCompiler:
                     self.builder.ret_void()
                 else:
                     if '#return' not in self.initialized:
-                        self.throw(node, err.MissingReturn(id))
+                        self.throw(body, err.MissingReturn(id))
                     self.builder.ret(func_type.ret.default())
 
             self.builder.position_at_end(prev_label)
@@ -1322,6 +1323,7 @@ class PyxellCompiler:
             expect_default = False
             for arg in node['args']:
                 type = self.compile(arg['type'])
+                self.declare(arg, type, "", check_only=True)
                 name = arg['name']
                 default = arg.get('default')
                 if default:
@@ -1420,10 +1422,10 @@ class PyxellCompiler:
                     value = self.cast(member, self.compile(default), member_types[name])
                     self.insert(value, obj, i)
             elif member['node'] == 'ClassMethod':
-                self.insert(self.builder.load(self.function(member, methods[name])), obj, i)
+                self.insert(self.builder.load(self.function(methods[name])), obj, i)
 
         if constructor_method:
-            self.builder.call(self.builder.load(self.function(node, constructor_method)), [obj, *constructor.args])
+            self.builder.call(self.builder.load(self.function(constructor_method)), [obj, *constructor.args])
 
         self.builder.ret(obj)
 
@@ -1663,7 +1665,7 @@ class PyxellCompiler:
                     args.insert(0, obj)
 
                 if func.isTemplate():
-                    func = self.builder.load(self.function(node, func))
+                    func = self.builder.load(self.function(func))
 
             return self.builder.call(func, args)
 
