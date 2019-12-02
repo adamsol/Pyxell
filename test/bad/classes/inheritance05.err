@@ -1,1 +1,1 @@
-Illegal assignment from `Float` to `Int`.
+Cannot override member of type `Int` with type `Float`.

@@ -1381,22 +1381,42 @@ class PyxellCompiler:
             self.throw(node, err.RedeclaredIdentifier(id))
         self.initialized.add(id)
 
+        base = self.compile(node['base'])
+        if base and not base.isClass():
+            self.throw(node, err.NotClass(base))
+
+        declared_members = set()
+        for member in node['members']:
+            name = member['id']
+            if name in declared_members:
+                self.throw(member, err.RepeatedMember(name))
+            declared_members.add(name)
+
+        members = base.members.copy() if base else {}
+        for member in node['members']:
+            members[member['id']] = member
+
+        type = tClass(self.module.context, id, base, members)
+        self.env[id] = type
+
         member_types = {}
         methods = {}
 
-        type = tClass(self.module.context, id, member_types)
-        self.env[id] = type
-
-        for member in node['members']:
-            name = member['id']
-            if name in member_types:
-                self.throw(member, err.RepeatedMember(name))
+        for name, member in members.items():
             if member['node'] == 'ClassField':
                 member_types[name] = self.compile(member['type'])
             elif member['node'] in ('ClassMethod', 'ClassConstructor'):
                 func = self.compileStmtFunc(member, class_type=type)
                 member_types[name] = func.type
                 methods[name] = func
+
+            if base:
+                original_field = base.members.get(name)
+                if original_field and original_field['node'] == 'ClassField':
+                    original_type = self.compile(original_field['type'])
+                    new_type = member_types[name]
+                    if not can_cast(new_type, original_type):
+                        self.throw(member, err.IllegalOverride(original_type, new_type))
 
         type.pointee.set_body(*member_types.values())
 
@@ -1414,8 +1434,7 @@ class PyxellCompiler:
 
         obj = self.malloc(type)
 
-        for i, member in enumerate(node['members']):
-            name = member['id']
+        for i, (name, member) in enumerate(members.items()):
             if member['node'] == 'ClassField':
                 default = member.get('default')
                 if default:

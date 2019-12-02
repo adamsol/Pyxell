@@ -1,0 +1,21 @@
+
+class A def
+    func x() Char def
+        return 'A'
+
+class B(A) def
+    func x() Char def
+        return 'B'
+
+class C(A) def
+    func x() Char def
+        return 'C'
+
+
+func f([A] a) def
+    print a[0].x()
+    a[0] = C()
+
+b = [B()]
+f(b)
+print b[0].x()

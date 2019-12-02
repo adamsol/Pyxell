@@ -141,10 +141,11 @@ def isFunc(type):
     return getattr(type, 'kind', None) == 'function'
 
 
-def tClass(context, name, members):
+def tClass(context, name, base, members):
     type = tPtr(context.get_identified_type(name))
     type.kind = 'class'
     type.name = name
+    type.base = base
     type.members = members
     type.constructor = None
     return type
@@ -208,12 +209,36 @@ def unify_types(type1, *types):
         elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
         return tTuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
 
+    if type1.isClass() and type2.isClass():
+        return common_superclass(type1, type2)
+
     if type1 == tUnknown:
         return type2
     if type2 == tUnknown:
         return type1
 
     return None
+
+
+def common_superclass(type1, type2):
+    t1 = type1
+    t2 = type2
+
+    while True:
+        if t1 == t2:
+            return t1
+
+        if t1.base and t2.base:
+            t1 = t1.base
+            t2 = t2.base
+        elif t1.base:
+            t1 = t1.base
+            t2 = type2
+        elif t2.base:
+            t1 = type1
+            t2 = t2.base
+        else:
+            return None
 
 
 def type_variables_assignment(type1, type2):
@@ -248,6 +273,9 @@ def type_variables_assignment(type1, type2):
         return type_variables_assignment(
             tTuple([arg.type for arg in type1.args] + [type1.ret]),
             tTuple([arg.type for arg in type2.args] + [type2.ret]))
+
+    if type1.isClass() and type2.isClass():
+        return {} if common_superclass(type1, type2) == type2 else None
 
     if type2.isVar():
         return {type2.name: type1}

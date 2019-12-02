@@ -165,6 +165,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'StmtClass'),
             'id': self.visit(ctx.ID()),
+            'base': self.visit(ctx.typ()),
             'members': self.visit(ctx.class_member()),
         }
 

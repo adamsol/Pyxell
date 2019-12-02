@@ -1,0 +1,10 @@
+
+class A def
+    Int x: 1
+
+class B(A) def
+    Int x: 2
+
+a = [A()]
+a = [B()]
+print a[0].x

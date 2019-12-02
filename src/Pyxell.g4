@@ -30,7 +30,7 @@ compound_stmt
   | 'until' expr 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? 'do' block # StmtFor
   | 'func' ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
-  | 'class' ID 'def' '{' class_member+ '}' # StmtClass
+  | 'class' ID ('(' typ ')')? 'def' '{' class_member+ '}' # StmtClass
   ;
 
 func_arg
