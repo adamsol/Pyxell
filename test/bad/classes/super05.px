@@ -1,3 +1,5 @@
 
 func f() def
     super()
+
+f()

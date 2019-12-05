@@ -147,6 +147,7 @@ def tClass(context, name, base, members):
     type.name = name
     type.base = base
     type.members = members
+    type.methods = None
     type.constructor = None
     return type
 

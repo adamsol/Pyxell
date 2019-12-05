@@ -1406,7 +1406,10 @@ class PyxellCompiler:
             if member['node'] == 'ClassField':
                 member_types[name] = self.compile(member['type'])
             elif member['node'] in ('ClassMethod', 'ClassConstructor'):
-                func = self.compileStmtFunc(member, class_type=type)
+                with self.local():
+                    if base:
+                        self.env['#super'] = base.methods.get(name)
+                    func = self.compileStmtFunc(member, class_type=type)
                 member_types[name] = func.type
                 methods[name] = func
 
@@ -1418,6 +1421,7 @@ class PyxellCompiler:
                     if not can_cast(new_type, original_type):
                         self.throw(member, err.IllegalOverride(original_type, new_type))
 
+        type.methods = methods
         type.pointee.set_body(*member_types.values())
 
         constructor_method = methods.get('<constructor>')
@@ -1704,8 +1708,12 @@ class PyxellCompiler:
                 obj, func = self.attribute(expr, expr['expr'], attr)
 
         else:
-            obj = None
             func = self.compile(expr)
+
+            if expr['node'] == 'AtomSuper':
+                obj = self.builder.bitcast(self.get(expr, 'self'), func.type.args[0].type)
+            else:
+                obj = None
 
         return _call(obj, func)
 
@@ -1843,6 +1851,12 @@ class PyxellCompiler:
 
     def compileAtomNull(self, node):
         return vNull()
+
+    def compileAtomSuper(self, node):
+        func = self.env.get('#super')
+        if func is None:
+            self.throw(node, err.IllegalSuper())
+        return self.builder.load(self.function(func))
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])

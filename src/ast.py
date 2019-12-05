@@ -378,6 +378,11 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'AtomNull'),
         }
 
+    def visitAtomSuper(self, ctx):
+        return {
+            **_node(ctx, 'AtomSuper'),
+        }
+
     def visitAtomId(self, ctx):
         id = ctx.getText()
         if id == '_':

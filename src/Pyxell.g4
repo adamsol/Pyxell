@@ -105,6 +105,7 @@ atom
   | CHAR # AtomChar
   | STRING # AtomString
   | 'null' # AtomNull
+  | 'super' # AtomSuper
   | ID # AtomId
   ;
 

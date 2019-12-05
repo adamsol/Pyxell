@@ -16,6 +16,7 @@ class C(B) def
         super()
 
     func f() def
+        print 'C'
         super()
 
 C().f()
