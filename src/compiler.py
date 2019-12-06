@@ -152,6 +152,8 @@ class PyxellCompiler:
             self.throw(node, err.UndeclaredIdentifier(id))
         result = self.env[id]
         if isinstance(result, Type) and result.isClass():
+            if not result.constructor:
+                self.throw(node, err.AbstractClass(result))
             result = result.constructor
         if not isinstance(result, Value):
             self.throw(node, err.NotVariable(id))
@@ -1406,12 +1408,15 @@ class PyxellCompiler:
             if member['node'] == 'ClassField':
                 member_types[name] = self.compile(member['type'])
             elif member['node'] in ('ClassMethod', 'ClassConstructor'):
-                with self.local():
-                    if base:
-                        self.env['#super'] = base.methods.get(name)
-                    func = self.compileStmtFunc(member, class_type=type)
-                member_types[name] = func.type
-                methods[name] = func
+                if member['block']:
+                    with self.local():
+                        if base:
+                            self.env['#super'] = base.methods.get(name)
+                        func = self.compileStmtFunc(member, class_type=type)
+                    member_types[name] = func.type
+                    methods[name] = func
+                else:
+                    methods[name] = None
 
             if base:
                 original_field = base.members.get(name)
@@ -1423,6 +1428,9 @@ class PyxellCompiler:
 
         type.methods = methods
         type.pointee.set_body(*member_types.values())
+
+        if None in methods.values():  # abstract class
+            return
 
         constructor_method = methods.get('<constructor>')
         constructor_type = tFunc(constructor_method.type.args[1:] if constructor_method else [], type)

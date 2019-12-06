@@ -43,8 +43,8 @@ func_args
 
 class_member
   : typ ID (':' tuple_expr)? ';' # ClassField
-  | 'func' ID args=func_args (ret=typ)? 'def' block # ClassMethod
-  | 'constructor' args=func_args 'def' block # ClassConstructor
+  | 'func' ID args=func_args (ret=typ)? ('def' block | 'abstract' ';') # ClassMethod
+  | 'constructor' args=func_args ('def' block | 'abstract' ';') # ClassConstructor
   ;
 
 block

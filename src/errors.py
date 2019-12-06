@@ -13,6 +13,7 @@ class PyxellError(Exception):
     InvalidIndentation = lambda: f"Indentation error"
     InvalidSyntax = lambda: f"Syntax error"
 
+    AbstractClass = lambda t: f"Cannot instantiate an abstract class `{t.show()}`"
     CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
