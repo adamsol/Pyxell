@@ -125,7 +125,7 @@ typ
 
 INT : DIGIT+ ;
 FLOAT : DIGIT+ '.' DIGIT+ ('e' '-'? DIGIT+)? ;
-CHAR : '\'' (~[\\'] | ('\\' ['\\nt]))* '\'' ;
+CHAR : '\'' (~[\\'] | ('\\' ['\\nt])) '\'' ;
 STRING : '"' (~[\\"] | ('\\' ["\\nt]))* '"' ;
 ID : ID_START ID_CONT* ;
 
