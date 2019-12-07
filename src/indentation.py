@@ -40,7 +40,7 @@ def transform_indented_code(code):
         if new_block:
             if not (indent.startswith(indents[-1]) and len(indent) > len(indents[-1])):
                 # New block must be indented more than the previous one.
-                raise PyxellError(PyxellError.InvalidIndentation(), i+1)
+                raise PyxellError(PyxellError.InvalidSyntax(), i+1, len(indent)+1)
             indents.append(indent)
             new_block = False
 
@@ -61,7 +61,7 @@ def transform_indented_code(code):
                     indents.pop()
                 else:
                     # Indentation must match one of the previous blocks.
-                    raise PyxellError(PyxellError.InvalidIndentation(), i+1)
+                    raise PyxellError(PyxellError.InvalidSyntax(), i+1, len(indent)+1)
 
         if re.search(r'[^\w\'](do|def)\s*$', line):
             # If the line ends with a `do` or `def` keyword, start a new block.

@@ -10,7 +10,6 @@ class PyxellErrorListener(ErrorListener):
 
 class PyxellError(Exception):
 
-    InvalidIndentation = lambda: f"Indentation error"
     InvalidSyntax = lambda: f"Syntax error"
 
     AbstractClass = lambda t: f"Cannot instantiate an abstract class `{t.show()}`"
