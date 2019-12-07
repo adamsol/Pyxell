@@ -1,0 +1,11 @@
+
+func f(
+    Int x,
+    String s,
+) def
+    print x, s
+
+f(
+    3,
+    "abc",
+)

@@ -45,9 +45,10 @@ def transform_indented_code(code):
             new_block = False
 
         elif indents[-1].startswith(indent):
-            # If the line isn't indented more than the current block, put a semicolon at the end of the previous line.
+            # If the line isn't indented more than the current block and doesn't start with a closing parenthesis or bracket,
+            # put a semicolon at the end of the previous line.
             # Otherwise, assume it is continuation of the previous expression.
-            if j is not None:
+            if j is not None and not re.match(r'\s*[)\]]', line):
                 lines[j] += ';'
 
             # If the line is indented less than the current block, close the previous blocks.
@@ -55,7 +56,7 @@ def transform_indented_code(code):
                 if indent == indents[-1]:
                     break
                 elif indents[-1].startswith(indent):
-                    # Add a closing bracket to the last non-empty line.
+                    # Add a closing brace to the last non-empty line.
                     lines[j] += '}'
                     indents.pop()
                 else:
