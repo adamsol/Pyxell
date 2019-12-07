@@ -4,20 +4,36 @@ import re
 from .errors import PyxellError
 
 
+def remove_comments(code):
+    # https://stackoverflow.com/a/241506
+
+    def replacer(match):
+        s = match.group(0)
+        if s[:2] in ('{-', '--'):
+            return re.sub('[^\n]', ' ', s)  # to preserve error line and column indices
+        else:
+            return s
+
+    pattern = re.compile(r'--.*?$|{-.*?-}|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"', re.DOTALL | re.MULTILINE)
+    return re.sub(pattern, replacer, code)
+
+
 def transform_indented_code(code):
     """
     Adds braces and semicolons to the code with indents.
     """
+    code = remove_comments(code)
     lines = code.split('\n')
-    j = None
+
+    j = None  # index of the previous non-empty line
     indents = ['']
     new_block = False
 
     for i in range(len(lines)):
         line = lines[i]
         match = re.match(r'(\s*)(\S+)', line)
-        if not match or match.group(2).startswith('--'):
-            # Skip line with comment or whitespace only.
+        if not match:
+            # Skip line with whitespace only.
             continue
         indent = match.group(1)
 
@@ -27,7 +43,13 @@ def transform_indented_code(code):
                 raise PyxellError(PyxellError.InvalidIndentation(), i+1)
             indents.append(indent)
             new_block = False
+
         elif indents[-1].startswith(indent):
+            # If the line isn't indented more than the current block, put a semicolon at the end of the previous line.
+            # Otherwise, assume it is continuation of the previous expression.
+            if j is not None:
+                lines[j] += ';'
+
             # If the line is indented less than the current block, close the previous blocks.
             while indents:
                 if indent == indents[-1]:
@@ -40,18 +62,15 @@ def transform_indented_code(code):
                     # Indentation must match one of the previous blocks.
                     raise PyxellError(PyxellError.InvalidIndentation(), i+1)
 
-        if re.search(r'[^\w\'](do|def)\s*(--.*)?$', line):
+        if re.search(r'[^\w\'](do|def)\s*$', line):
             # If the line ends with a `do` or `def` keyword, start a new block.
-            lines[i] += '\r{'
+            lines[i] += '{'
             new_block = True
-        elif len(lines) == i+1 or not re.match(fr'{indents[-1]}\s', lines[i+1]):
-            # If the next line has a bigger indentation than the current block, assume it is a continuation of the expression.
-            # Otherwise, put a semicolon at the end of this line.
-            lines[i] += '\r;'
 
         j = i
 
     indents.pop()
-    lines[-1] += '}' * len(indents)
+    if j is not None:
+        lines[-1] += ';' + '}' * len(indents)
 
     return '\n'.join(lines)
