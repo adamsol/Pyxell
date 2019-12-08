@@ -28,10 +28,12 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='',
                     help="file path pattern (relative to test folder)")
-parser.add_argument('-c', '--thread-count', dest='thread_count', type=int, default=8,
+parser.add_argument('-c', '--thread-count', dest='thread_count', type=int, default=16,
                     help="number of threads to use")
 parser.add_argument('-t', '--target-windows-gnu', action='store_true',
                     help="run compiler with -target x86_64-pc-windows-gnu")
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
+                    help="display all tests (only failed tests are displayed by default)")
 args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
@@ -59,14 +61,15 @@ def test(i, path):
     global ok
     global output_index
 
+    passed = False
     output = []
     output.append(f"{B}> TEST {i}/{n}:{E} {path}")
 
     with open(path.replace(".px", ".tmp"), 'w') as tmpfile:
         try:
-            error_expected = Path(path.replace(".px", ".err")).read_text()
+            expected_error = Path(path.replace(".px", ".err")).read_text()
         except FileNotFoundError:
-            error_expected = None
+            expected_error = None
 
         error = False
 
@@ -75,12 +78,12 @@ def test(i, path):
             compile(path, params)
         except PyxellError as e:
             error_message = str(e)
-            if error_expected:
-                if error_message.strip().endswith(error_expected):
+            if expected_error:
+                if error_message.strip().endswith(expected_error):
                     output.append(f"{G}{error_message}{E}")
-                    ok += 1
+                    passed = True
                 else:
-                    output.append(f"{R}{error_message}\n---\n> {error_expected}{E}")
+                    output.append(f"{R}{error_message}\n---\n> {expected_error}{E}")
             else:
                 output.append(f"{R}{error_message}{E}")
             error = True
@@ -92,8 +95,8 @@ def test(i, path):
             error = True
 
         if not error:
-            if error_expected:
-                output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {error_expected}{E}")
+            if expected_error:
+                output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
             else:
                 t1 = timer()
                 try:
@@ -112,16 +115,18 @@ def test(i, path):
                         output.append(f"{R}WA: {e.output.decode()}{E}")
                 else:
                     output.append(f"{G}OK{E} ({t2-t1:.3f}s)")
-                    ok += 1
+                    passed = True
 
         # Print the output of tests in the right order.
-        output_dict[i] = output
+        output_dict[i] = '\n'.join(output) if not passed or args.verbose else ''
         with lock:
             while output_index in output_dict:
-                print('\n'.join(output_dict[output_index]))
+                if output_dict[output_index]:
+                    print(output_dict[output_index])
                 output_index += 1
 
-    if not error or error_expected:
+    if passed:
+        ok += 1
         os.remove(path.replace(".px", ".tmp"))
 
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
