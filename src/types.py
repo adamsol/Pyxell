@@ -360,6 +360,7 @@ class FunctionTemplate(Value):
 
     def __init__(self, id, typevars, type, body, env):
         self.id = id
+        self.final = True  # identifier cannot be redefined
         self.typevars = typevars
         self.type = type
         self.body = body

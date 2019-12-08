@@ -1,0 +1,5 @@
+
+func f(String x) def
+    skip
+
+f, f = f, f

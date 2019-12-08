@@ -1,0 +1,7 @@
+
+class Test def
+    func f(Int x) def
+        skip
+
+test = Test()
+test.f = test.f

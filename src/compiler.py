@@ -286,6 +286,9 @@ class PyxellCompiler:
         except ValueError:
             self.throw(node, err.NoAttribute(obj.type, attr))
 
+        if lvalue and attr in obj.type.methods:
+            self.throw(node, err.NotLvalue())
+
         ptr = self.extract(obj, index, load=False)
         return ptr if lvalue else self.builder.load(ptr)
 
@@ -341,6 +344,8 @@ class PyxellCompiler:
                 self.declare(node, declare, id)
             elif override:
                 self.declare(node, declare, id, redeclare=True)
+            elif not isinstance(self.env[id], Value) or getattr(self.env[id], 'final', False):
+                self.throw(node, err.IllegalRedefinition(id))
 
             if initialize:
                 self.initialized.add(id)
@@ -356,7 +361,10 @@ class PyxellCompiler:
         self.throw(node, err.NotLvalue())
 
     def assign(self, node, expr, value):
-        ptr = self.lvalue(node, expr, declare=value.type, override=expr.get('override', False), initialize=True)
+        type = value.type
+        if type.isFunc():
+            type = tFunc([arg.type for arg in type.args], type.ret)
+        ptr = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
         value = self.cast(node, value, ptr.type.pointee)
         self.builder.store(value, ptr)
 
@@ -1600,6 +1608,9 @@ class PyxellCompiler:
             if not func.type.isFunc():
                 self.throw(node, err.NotFunction(func.type))
 
+            func_args = func.type.args[1:] if obj else func.type.args
+            func_named_args = {func_arg.name for func_arg in func_args}
+
             args = []
             pos_args = {}
             named_args = {}
@@ -1610,6 +1621,8 @@ class PyxellCompiler:
                 if name:
                     if name in named_args:
                         self.throw(node, err.RepeatedArgument(name))
+                    if name not in func_named_args:
+                        self.throw(node, err.UnexpectedArgument(name))
                     named_args[name] = expr
                 else:
                     if named_args:
@@ -1617,8 +1630,6 @@ class PyxellCompiler:
                     pos_args[i] = expr
 
             with self.local():
-                func_args = func.type.args[1:] if obj else func.type.args
-
                 type_variables = defaultdict(list)
 
                 for i, func_arg in enumerate(func_args):
@@ -1685,8 +1696,6 @@ class PyxellCompiler:
 
                     self.env[name] = type
 
-                if named_args:
-                    self.throw(node, err.UnexpectedArgument(next(iter(named_args))))
                 if pos_args:
                     self.throw(node, err.TooManyArguments(func.type))
 

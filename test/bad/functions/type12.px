@@ -1,6 +1,0 @@
-
-func f(Int x: 0) def
-    print x
-
-g = f
-g()
