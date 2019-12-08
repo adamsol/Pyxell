@@ -30,7 +30,6 @@ class PyxellCompiler:
     def __init__(self):
         self.units = {}
         self._unit = None
-        self._keep_env = False
         self.builder = CustomIRBuilder()
         self.module = ll.Module(context=ll.Context())
         self.builtins = {
@@ -57,7 +56,10 @@ class PyxellCompiler:
     def compile(self, node):
         if not isinstance(node, dict):
             return node
-        return getattr(self, 'compile'+node['node'])(node)
+        result = getattr(self, 'compile'+node['node'])(node)
+        if '_eval' in node:
+            node['_eval'] = node['_eval']()
+        return result
 
     def expr(self, code, **params):
         return self.compile(parse_expr(code.format(**params)))
@@ -90,9 +92,6 @@ class PyxellCompiler:
 
     @contextmanager
     def local(self):
-        if self._keep_env:
-            yield
-            return
         env = self.env.copy()
         initialized = self.initialized.copy()
         yield
@@ -107,10 +106,7 @@ class PyxellCompiler:
         self._unit = _unit
 
     @contextmanager
-    def no_output(self, keep_env=False):
-        prev_keep_env = self._keep_env
-        if keep_env:
-            self._keep_env = True
+    def no_output(self):
         dummy_module = ll.Module()
         dummy_func = ll.Function(dummy_module, tFunc([]).pointee, 'dummy')
         dummy_label = dummy_func.append_basic_block('dummy')
@@ -118,8 +114,6 @@ class PyxellCompiler:
         self.builder.position_at_end(dummy_label)
         yield
         self.builder.position_at_end(prev_label)
-        if keep_env:
-            self._keep_env = prev_keep_env
 
     @contextmanager
     def block(self):
@@ -1516,9 +1510,10 @@ class PyxellCompiler:
 
         # A small hack to obtain type of the expression.
         with self.local():
-            with self.no_output(keep_env=True):
+            with self.no_output():
+                inner_stmt['_eval'] = lambda: self.compile(value).type
                 self.compile(stmt)
-                type = self.compile(value).type
+                type = inner_stmt.pop('_eval')
 
         with self.local():
             self.assign(node, array, self.array(type, [], length=vInt(4)))
