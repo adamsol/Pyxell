@@ -20,9 +20,10 @@ class CustomIRBuilder(ll.IRBuilder):
 
 class Unit:
 
-    def __init__(self, env, initialized):
-        self.env = env
-        self.initialized = initialized
+    def __init__(self):
+        self.env = {}
+        self.initialized = set()
+        self.levels = {}
 
 
 class PyxellCompiler:
@@ -30,6 +31,7 @@ class PyxellCompiler:
     def __init__(self):
         self.units = {}
         self._unit = None
+        self.level = 0
         self.builder = CustomIRBuilder()
         self.module = ll.Module(context=ll.Context())
         self.builtins = {
@@ -42,11 +44,12 @@ class PyxellCompiler:
         self.builder.position_at_end(self.main.append_basic_block('entry'))
 
     def run(self, ast, unit):
-        self.units[unit] = Unit({}, set())
+        self.units[unit] = Unit()
         with self.unit(unit):
             if unit != 'std':
                 self.env = self.units['std'].env.copy()
                 self.initialized = self.units['std'].initialized.copy()
+                self.levels = self.units['std'].levels.copy()
             self.compile(ast)
 
     def run_main(self, ast):
@@ -90,13 +93,27 @@ class PyxellCompiler:
     def initialized(self, initialized):
         self._unit.initialized = initialized
 
+    @property
+    def levels(self):
+        return self._unit.levels
+
+    @levels.setter
+    def levels(self, levels):
+        self._unit.levels = levels
+
     @contextmanager
-    def local(self):
+    def local(self, next_level=False):
         env = self.env.copy()
         initialized = self.initialized.copy()
+        levels = self.levels.copy()
+        if next_level:
+            self.level += 1
         yield
         self.env = env
         self.initialized = initialized
+        self.levels = levels
+        if next_level:
+            self.level -= 1
 
     @contextmanager
     def unit(self, name):
@@ -144,19 +161,28 @@ class PyxellCompiler:
     def get(self, node, id, load=True):
         if id not in self.env:
             self.throw(node, err.UndeclaredIdentifier(id))
+
+        if id in self.levels and self.levels[id] != 0 and self.levels[id] < self.level:
+            self.throw(node, err.ClosureRequired(id))
+
         result = self.env[id]
+
         if isinstance(result, Type) and result.isClass():
             if not result.constructor:
                 self.throw(node, err.AbstractClass(result))
             result = result.constructor
+
         if not isinstance(result, Value):
             self.throw(node, err.NotVariable(id))
+
         if id not in self.initialized:
             self.throw(node, err.UninitializedIdentifier(id))
+
         if result.isTemplate():
             if result.typevars:
                 return result
             result = self.function(result)
+
         return self.builder.load(result) if load else result
 
     def extract(self, ptr, *indices, load=True):
@@ -325,6 +351,7 @@ class PyxellCompiler:
         self.env[id] = ptr
         if initialize:
             self.initialized.add(id)
+        self.levels[id] = self.level
 
         return ptr
 
@@ -990,7 +1017,7 @@ class PyxellCompiler:
             entry = func.append_basic_block('entry')
             self.builder.position_at_end(entry)
 
-            with self.local():
+            with self.local(next_level=True):
                 self.env = template.env.copy()
 
                 for name, type in zip(template.typevars, real_types):
@@ -1346,6 +1373,7 @@ class PyxellCompiler:
 
         if class_type is None:
             self.env[id] = env[id] = func
+            self.levels[id] = self.level
 
         return func
 

@@ -1,10 +1,10 @@
 
 func f() def
     x = 5
+
     func g() def
         print x
-        return
+
     g()
-    return
 
 f()
