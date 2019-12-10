@@ -2,6 +2,9 @@
 func ord(Char c) Int extern
 func chr(Int c) Char extern
 
+func CharArray_asString([Char] a) String extern
+func String_toArray(String s) [Char] extern
+
 func write(String s) extern
 func writeLine(String s) extern
 func writeInt(Int s) extern
@@ -31,27 +34,51 @@ func sign<T>(T x) Int def
     return x > 0 ? 1 : x < 0 ? -1 : 0
 
 
-func all<A>(A->Bool f, [A] a) Bool def
+func Array_all<A>([A] a, A->Bool f) Bool def
     for x in a do
         if not f(x) do
             return false
     return true
 
-func any<A>(A->Bool f, [A] a) Bool def
+func Array_any<A>([A] a, A->Bool f) Bool def
     for x in a do
         if f(x) do
             return true
     return false
 
-func filter<A>(A->Bool f, [A] a) [A] def
+func Array_filter<A>([A] a, A->Bool f) [A] def
     return [x for x in a if f(x)]
 
-func map<A,B>(A->B f, [A] a) [B] def
+func Array_map<A,B>([A] a, A->B f) [B] def
     return [f(x) for x in a]
 
-func reduce<A,B>(A->B->A f, A r, [B] b) A def
-    for x in b do
-        r = f(r, x)
+func Array_reduce<A,B>([A] a, A->B->B f, B r) B def
+    for x in a do
+        r = f(x, r)
+    return r
+
+
+func String_all(String s, Char->Bool f) Bool def
+    for c in s do
+        if not f(c) do
+            return false
+    return true
+
+func String_all(String s, Char->Bool f) Bool def
+    for c in s do
+        if f(c) do
+            return true
+    return false
+
+func String_filter(String s, Char->Bool f) String def
+    return CharArray_asString([c for c in s if f(c)])
+
+func String_map(String s, Char->Char f) String def
+    return CharArray_asString([f(c) for c in s])
+
+func String_reduce<B>(String s, Char->B->B f, B r) B def
+    for c in s do
+        r = f(c, r)
     return r
 
 
@@ -68,9 +95,6 @@ func Int_pow(Int b, Int e) Int def
 
 func Float_pow(Float b, Float e) Float extern
 
-
-func CharArray_asString([Char] a) String extern
-func String_toArray(String s) [Char] extern
 
 func CharArray_join([Char] array, String sep: "") String def
     if sep.length == 0 do

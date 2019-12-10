@@ -40,12 +40,12 @@ for x, i in a, 0... do
 ```
 
 ```
-func reduce'<A,B>(A->B->A f, A r, [B] b) A def
-    for x in b do
-        r = f(r, x)
+func reduce<A,B>([A] a, A->B->B f, B r) B def
+    for x in a do
+        r = f(x, r)
     return r
 
-print reduce'(_*_, 1, [2, 3, 4])  -- 24
+print reduce(_*_, 1, [2, 3, 4])  -- 24
 ```
 
 ```

@@ -239,50 +239,70 @@ class PyxellCompiler:
 
         if type == tInt:
             if attr == 'toString':
-                value = self.get(node, 'Int_toString')
+                value = self.env['Int_toString']
             elif attr == 'toFloat':
-                value = self.get(node, 'Int_toFloat')
+                value = self.env['Int_toFloat']
 
         elif type == tFloat:
             if attr == 'toString':
-                value = self.get(node, 'Float_toString')
+                value = self.env['Float_toString']
             elif attr == 'toInt':
-                value = self.get(node, 'Float_toInt')
+                value = self.env['Float_toInt']
 
         elif type == tBool:
             if attr == 'toString':
-                value = self.get(node, 'Bool_toString')
+                value = self.env['Bool_toString']
             elif attr == 'toInt':
-                value = self.get(node, 'Bool_toInt')
+                value = self.env['Bool_toInt']
             elif attr == 'toFloat':
-                value = self.get(node, 'Bool_toFloat')
+                value = self.env['Bool_toFloat']
 
         elif type == tChar:
             if attr == 'toString':
-                value = self.get(node, 'Char_toString')
+                value = self.env['Char_toString']
             elif attr == 'toInt':
-                value = self.get(node, 'Char_toInt')
+                value = self.env['Char_toInt']
             elif attr == 'toFloat':
-                value = self.get(node, 'Char_toFloat')
+                value = self.env['Char_toFloat']
 
         elif type.isCollection():
             if attr == 'length':
                 value = self.extract(obj, 1)
             elif type == tString:
                 if attr == 'toString':
-                    value = self.get(node, 'String_toString')
+                    value = self.env['String_toString']
                 elif attr == 'toArray':
-                    value = self.get(node, 'String_toArray')
+                    value = self.env['String_toArray']
                 elif attr == 'toInt':
-                    value = self.get(node, 'String_toInt')
+                    value = self.env['String_toInt']
                 elif attr == 'toFloat':
-                    value = self.get(node, 'String_toFloat')
+                    value = self.env['String_toFloat']
+                elif attr == 'all':
+                    value = self.env['String_all']
+                elif attr == 'any':
+                    value = self.env['String_any']
+                elif attr == 'filter':
+                    value = self.env['String_filter']
+                elif attr == 'map':
+                    value = self.env['String_map']
+                elif attr == 'reduce':
+                    value = self.env['String_reduce']
             elif type.isArray():
                 if attr == 'join':
                     if type.subtype == tChar:
-                        value = self.get(node, 'CharArray_join')
+                        value = self.env['CharArray_join']
                     elif type.subtype == tString:
-                        value = self.get(node, 'StringArray_join')
+                        value = self.env['StringArray_join']
+                elif attr == 'all':
+                    value = self.env['Array_all']
+                elif attr == 'any':
+                    value = self.env['Array_any']
+                elif attr == 'filter':
+                    value = self.env['Array_filter']
+                elif attr == 'map':
+                    value = self.env['Array_map']
+                elif attr == 'reduce':
+                    value = self.env['Array_reduce']
 
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')
@@ -1711,6 +1731,10 @@ class PyxellCompiler:
                             type_variables[name].append(type)
 
                         args.append(value)
+
+                if obj:
+                    for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
+                        type_variables[name].append(type)
 
                 for name, types in type_variables.items():
                     type = unify_types(*types)

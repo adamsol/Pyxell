@@ -1,4 +1,4 @@
 
-print filter(_<'c', "abcadeab".toArray()).join()
-print map(chr(ord(_)+5), "1420".toArray()).join()
-print reduce(_+ord(_), 0, "XYZ".toArray())
+print "abcadeab".filter(_<'c')
+print "1420".map(chr(ord(_)+5))
+print "XYZ".reduce(ord(_)+_, 0)
