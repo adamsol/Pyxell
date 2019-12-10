@@ -1,1 +1,1 @@
-Not all code paths return a value in function `f`.
+Not all code paths return a value.

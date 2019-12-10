@@ -1058,7 +1058,7 @@ class PyxellCompiler:
                     self.builder.ret_void()
                 else:
                     if '#return' not in self.initialized:
-                        self.throw(body, err.MissingReturn(id))
+                        self.throw(body, err.MissingReturn())
                     self.builder.ret(func_type.ret.default())
 
             self.builder.position_at_end(prev_label)
@@ -1736,12 +1736,14 @@ class PyxellCompiler:
                     for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
                         type_variables[name].append(type)
 
+                assigned_types = {}
+
                 for name, types in type_variables.items():
                     type = unify_types(*types)
                     if type is None:
                         self.throw(node, err.InvalidArgumentTypes(tVar(name)))
 
-                    self.env[name] = type
+                    self.env[name] = assigned_types[name] = type
 
                 if pos_args:
                     self.throw(node, err.TooManyArguments(func.type))
@@ -1752,7 +1754,10 @@ class PyxellCompiler:
                     args.insert(0, obj)
 
                 if func.isTemplate():
-                    func = self.builder.load(self.function(func))
+                    try:
+                        func = self.builder.load(self.function(func))
+                    except err as e:
+                        self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
             return self.builder.call(func, args)
 
