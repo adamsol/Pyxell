@@ -33,7 +33,7 @@ parser.add_argument('-c', '--thread-count', dest='thread_count', type=int, defau
 parser.add_argument('-t', '--target-windows-gnu', action='store_true',
                     help="run compiler with -target x86_64-pc-windows-gnu")
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
-                    help="display all tests (only failed tests are displayed by default)")
+                    help="display all tests and don't remove generated files")
 args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
@@ -127,7 +127,11 @@ def test(i, path):
 
     if passed:
         ok += 1
-        os.remove(path.replace(".px", ".tmp"))
+        if not args.verbose:
+            os.remove(path.replace(".px", ".tmp"))
+            if not error:
+                os.remove(path.replace(".px", ".ll"))
+                os.remove(path.replace(".px", ".exe"))
 
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for i, path in enumerate(tests, 1):
