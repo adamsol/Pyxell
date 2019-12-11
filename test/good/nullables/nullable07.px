@@ -1,0 +1,9 @@
+
+[Int?] a = [null]
+print a
+
+[Bool?] b = [null, true, false]
+print b
+
+[Char?] c = ['a', null]
+print c

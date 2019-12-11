@@ -18,3 +18,4 @@ func get<T>(T*A a) A def
 
 get((4, B())).f()
 get(("$$$", A())).f()
+get((-3.75, B())).f()
