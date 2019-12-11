@@ -330,7 +330,7 @@ def show(type):
 
 @extend_class(Type)
 def default(type):
-    return ll.Constant(type, 0 if type in (tInt, tFloat, tBool, tChar) else 'null')
+    return ll.Constant(type, 0 if type in {tInt, tFloat, tBool, tChar} else 'null')
 
 
 def vInt(n):

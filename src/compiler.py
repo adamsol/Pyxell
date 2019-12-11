@@ -441,7 +441,7 @@ class PyxellCompiler:
             if not value.type.isNullable():
                 self.throw(node, err.NotNullable(value.type))
         else:
-            if op in ('+', '-'):
+            if op in {'+', '-'}:
                 types = [tInt, tFloat]
             elif op == '~':
                 types = [tInt]
@@ -460,11 +460,11 @@ class PyxellCompiler:
                 return self.builder.sub(vInt(0), value)
             elif value.type == tFloat:
                 return self.builder.fsub(vFloat(0), value)
-        elif op in ('~', 'not'):
+        elif op in {'~', 'not'}:
             return self.builder.not_(value)
 
     def binaryop(self, node, op, left, right):
-        if left.type != right.type and left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+        if left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
             if left.type == tInt:
                 left = self.builder.sitofp(left, tFloat)
             else:
@@ -607,7 +607,7 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
     def cmp(self, node, op, left, right):
-        if left.type != right.type and left.type in (tInt, tFloat) and right.type in (tInt, tFloat):
+        if left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
             if left.type == tInt:
                 left = self.builder.sitofp(left, tFloat)
             else:
@@ -618,7 +618,7 @@ class PyxellCompiler:
             except err:
                 self.throw(node, err.NotComparable(left.type, right.type))
 
-        if left.type in (tInt, tChar):
+        if left.type in {tInt, tChar}:
             return self.builder.icmp_signed(op, left, right)
 
         elif left.type == tFloat:
@@ -651,7 +651,7 @@ class PyxellCompiler:
                     self.builder.position_at_end(label)
 
                 values = [self.builder.load(self.builder.gep(array, [i])) for array in [array1, array2]]
-                cond = self.cmp(node, op + '=' if op in ('<', '>') else op, *values)
+                cond = self.cmp(node, op + '=' if op in {'<', '>'} else op, *values)
 
                 if op == '!=':
                     self.builder.cbranch(cond, label_true, label_cont)
@@ -661,7 +661,7 @@ class PyxellCompiler:
                 self.builder.function.blocks.append(label_cont)
                 self.builder.position_at_end(label_cont)
 
-                if op in ('<=', '>=', '<', '>'):
+                if op in {'<=', '>=', '<', '>'}:
                     label_cont = ll.Block(self.builder.function)
 
                     cond2 = self.cmp(node, '!=', *values)
@@ -700,7 +700,7 @@ class PyxellCompiler:
                     label_cont = ll.Block(self.builder.function)
 
                     values = [self.extract(tuple, i) for tuple in [left, right]]
-                    cond = self.cmp(node, op + '=' if op in ('<', '>') else op, *values)
+                    cond = self.cmp(node, op + '=' if op in {'<', '>'} else op, *values)
 
                     if op == '!=':
                         self.builder.cbranch(cond, label_true, label_cont)
@@ -710,7 +710,7 @@ class PyxellCompiler:
                     self.builder.function.blocks.append(label_cont)
                     self.builder.position_at_end(label_cont)
 
-                    if op in ('<=', '>=', '<', '>'):
+                    if op in {'<=', '>=', '<', '>'}:
                         label_cont = ll.Block(self.builder.function)
 
                         cond2 = self.cmp(node, '!=', *values)
@@ -729,11 +729,11 @@ class PyxellCompiler:
             phi = self.builder.phi(tBool)
             phi.add_incoming(vTrue, label_true)
             phi.add_incoming(vFalse, label_false)
-            phi.add_incoming(vBool(op not in ('!=', '<', '>')), label_cont)
+            phi.add_incoming(vBool(op not in {'!=', '<', '>'}), label_cont)
             return phi
 
         elif left.type.isClass():
-            if op not in ('==', '!='):
+            if op not in {'==', '!='}:
                 self.throw(node, err.NotComparable(left.type, right.type))
 
             return self.builder.icmp_unsigned(op, left, right)
@@ -925,7 +925,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in ['ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIs', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple']:
+            if node in {'ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIs', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -954,7 +954,7 @@ class PyxellCompiler:
                     'expr': convert_expr(expr['expr']),
                     'args': lmap(convert_expr, expr['args']),
                 }
-            if node in ['ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp']:
+            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -1253,7 +1253,7 @@ class PyxellCompiler:
                 values = lmap(self.compile, iterable['exprs'])
                 type = values[0].type
                 types.append(type)
-                if type not in (tInt, tFloat, tChar):
+                if type not in {tInt, tFloat, tChar}:
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
@@ -1457,7 +1457,7 @@ class PyxellCompiler:
         for name, member in members.items():
             if member['node'] == 'ClassField':
                 member_types[name] = self.compile(member['type'])
-            elif member['node'] in ('ClassMethod', 'ClassConstructor'):
+            elif member['node'] in {'ClassMethod', 'ClassConstructor'}:
                 if member['block']:
                     with self.local():
                         if base:

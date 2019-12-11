@@ -9,7 +9,7 @@ def remove_comments(code):
 
     def replacer(match):
         s = match.group(0)
-        if s[:2] in ('{-', '--'):
+        if s[:2] in {'{-', '--'}:
             return re.sub('[^\n]', ' ', s)  # to preserve error line and column indices
         else:
             return s
