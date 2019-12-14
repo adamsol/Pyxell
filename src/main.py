@@ -7,9 +7,16 @@ from pathlib import Path
 
 from .compiler import PyxellCompiler
 from .indentation import transform_indented_code
+from .library import BaseLibraryGenerator
 from .parsing import parse_program
 
 abspath = Path(__file__).parents[1]
+
+
+with open(abspath/'lib/base.ll', 'w') as file:
+    file.write(BaseLibraryGenerator().llvm_ir())
+
+subprocess.check_output(['clang', abspath/'lib/io.c', '-S', '-emit-llvm', '-o', abspath/'lib/io.ll'], stderr=subprocess.STDOUT)
 
 
 def build_ast(path):
