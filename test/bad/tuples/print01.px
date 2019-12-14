@@ -1,2 +1,2 @@
 
-print 2, ord
+print 2, write

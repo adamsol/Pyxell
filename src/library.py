@@ -66,11 +66,6 @@ class BaseLibraryGenerator(PyxellCompiler):
             ]
         }
 
-        with self.define(tFunc([tInt], tChar), 'chr') as func:
-            self.builder.ret(self.builder.trunc(func.args[0], tChar))
-        with self.define(tFunc([tChar], tInt), 'ord') as func:
-            self.builder.ret(self.builder.zext(func.args[0], tInt))
-
         with self.define(tFunc([tArray(tChar)], tString), 'CharArray_asString') as func:
             self.builder.ret(func.args[0])
         with self.define(tFunc([tString], tArray(tChar)), 'String_toArray') as func:

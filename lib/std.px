@@ -1,7 +1,4 @@
 
-func ord(Char c) Int extern
-func chr(Int c) Char extern
-
 func CharArray_asString([Char] a) String extern
 func String_toArray(String s) [Char] extern
 
@@ -149,7 +146,6 @@ func String_toFloat(String s) Float extern
 
 
 func Int_toFloat(Int n) Float extern
-
 func Float_toInt(Float f) Int extern
 
 
@@ -160,7 +156,7 @@ func Bool_toFloat(Bool b) Float def
     return b ? 1.0 : 0.0
 
 func Char_toInt(Char c) Int def
-    return ord(c) - 48
+    return c.code - 48
 
 func Char_toFloat(Char c) Float def
-    return ord(c) - 48.0
+    return c.code - 48.0

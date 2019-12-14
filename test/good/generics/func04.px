@@ -3,7 +3,7 @@ func call<A,B>(A->B f, A x) def
     print f(x)
 
 func f(Char c) Int def
-    return ord(c)
+    return c.code
 
 func g(Int n) Float def
     return n + 0.5

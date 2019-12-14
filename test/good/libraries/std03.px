@@ -1,4 +1,4 @@
 
 print "abcadeab".filter(_<'c')
-print "1420".map(chr(ord(_)+5))
-print "XYZ".reduce(ord(_)+_, 0)
+print "1420".map((_.code+5).char)
+print "XYZ".reduce(_.code+_, 0)

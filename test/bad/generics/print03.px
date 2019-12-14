@@ -2,4 +2,4 @@
 func f<T>(T x) T def
     return x
 
-print [(f(chr), f(2))]
+print [(f(write), f(2))]

@@ -1,5 +1,5 @@
 
-print readInt() * 5, chr(ord(readChar()) + 1), readInt() / 10
+print readInt() * 5, (readChar().code + 1).char, readInt() / 10
 
 x, s, y = readInt() % 17, read() + "-", 42 - readInt()
 print x, '-' + s, 2 ^ -y

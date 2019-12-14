@@ -2,4 +2,4 @@
 func f<T>(T x) def
     print 'x', x
 
-f(ord)
+f(write)

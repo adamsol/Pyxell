@@ -242,6 +242,8 @@ class PyxellCompiler:
                 value = self.env['Int_toString']
             elif attr == 'toFloat':
                 value = self.env['Int_toFloat']
+            elif attr == 'char':
+                value = self.builder.trunc(obj, tChar)
 
         elif type == tFloat:
             if attr == 'toString':
@@ -264,6 +266,8 @@ class PyxellCompiler:
                 value = self.env['Char_toInt']
             elif attr == 'toFloat':
                 value = self.env['Char_toFloat']
+            elif attr == 'code':
+                value = self.builder.zext(obj, tInt)
 
         elif type.isCollection():
             if attr == 'length':
