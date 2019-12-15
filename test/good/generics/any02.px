@@ -1,6 +1,0 @@
-
-func id<Any T>(T x) T def
-    return x
-
-print id(6) - id(2.53) + id(1)
-print id("abc") + id([(false, 'D')])[0].b

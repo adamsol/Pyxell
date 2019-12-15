@@ -1,3 +1,5 @@
 
-func f<Num T>(T x) T def
+func f<T>(T x) T def
     return T
+
+f(true)

@@ -1,3 +1,5 @@
 
-func f<>() T def
+func f() T def
     return
+
+f()

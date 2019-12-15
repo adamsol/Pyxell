@@ -1,21 +1,21 @@
 Pyxell
 ======
 
-### Clear and easy to use multi-paradigm compiled programming language with static typing. ###
+### Clear and easy-to-use multi-paradigm compiled programming language with static typing. ###
 
-*Note: due to limitations of BNFC and Haskell, the project will be rewritten to ANTLR and Python.*
+*Note: Up to version 0.6.0 the project had been developed in Haskell with BNFC. Now it has been rewritten to Python and ANTLR.*
 
 
 Motivation
 ----------
 
-Do you like Python for its expressive and intuitive syntax, but miss static type checking and runtime speed of compiled languages?
+The project aims to combine the best features of different programming languages,
+pack them into a clean syntax with significant indentation,
+and provide the execution speed of native machine code.
 
-Do you enjoy functional programming in Haskell, yet find it overly complicated and not exactly suitable for everyday use?
-
-Do you keep looking back at C++ for its speed and power, though can't stand its verbosity and ugliness in comparison to modern languages?
-
-That's why I started creating Pyxell -- to bring together the best features of different programming languages.
+It draws mainly from Python, Haskell, C#, and C++,
+and tries to avoid common design flaws that have been nicely described
+[in this blog post](https://eev.ee/blog/2016/12/01/lets-stop-copying-c/).
 
 
 Examples
@@ -40,12 +40,12 @@ for x, i in a, 0... do
 ```
 
 ```
-func fold<Any T>(T,T->T f, T a, [T] t) T def
-    for x in t do
-        a = f(a, x)
-    return a
+func reduce<A,B>([A] a, A->B->B f, B r) B def
+    for x in a do
+        r = f(x, r)
+    return r
 
-print fold(_*_, 1, [2, 3, 4])  -- factorial
+print reduce(_*_, 1, [2, 3, 4])  -- 24
 ```
 
 ```
@@ -78,10 +78,13 @@ Features
 * First-class functions (+)
 * Default and named arguments (+)
 * Lambda expressions (+)
-* Generic functions (+/-)
+* Generic functions (+)
 * Module system (+/-)
 * Classes with safe references (+)
 * Separate nullable types (+)
+
+To do:
+
 * Generic types
 * Containers library
 * Operator overloading
@@ -97,77 +100,72 @@ Features
 Details
 -------
 
-* Type checker and LLVM compiler written in Haskell with BNFC.
+* LLVM IR generator and type checker written in Python with ANTLR and llvmlite.
 * Compilation to machine code (and optimizations) with Clang.
 
 
 Requirements
 ------------
 
-These are the software versions that I use. Pyxell may work with others versions, but it is not guaranteed.
+* Python 3.8 with packages from `requirements.txt`.
 
-* GHC 8.6.5 with `regex-compat` package
-* Clang 6.0.0 with C++ standard library
-* BNFC 2.8.2 with `176-source-position` branch (to recompile grammar)
-* Python 3.7.4 with packages from `requirements.txt` installed (to run tests)
+Sometimes installation of `llvmlite` [fails](https://github.com/numba/llvmlite/issues/527)).
+If such a problem occurs, try using `easy_install` instead of `pip install`.
 
-For BNFC to store source code position, install it from source:
+* Clang 6 with C++ standard library.
 
-```
-git clone https://github.com/BNFC/bnfc.git
-cd bnfc/source
-git checkout 27079ebf057cce51e33afa619036cbaf6fb78398
-git cherry-pick 90e28a4cbecd8cfd4a154f2009d9c5dd4a2dbc78
-cabal install
-```
-
-To compile and link a Pyxell program correctly, a C++ standard library is required for Clang.
-This shouldn't be a problem on Linux, but on Windows this may not work out of the box.
+The library shouldn't be a problem on Linux, but on Windows this may not work out of the box.
 In some cases Windows SDK installation may be required
 or it may be necessary to run `pyxell` with `-target x86_64-pc-windows-gnu`
 (run `test.py` with `-t` argument to use this).
+
+* ANTLR 4.7.2 (to build the parser).
+
+Put `antlr-4.7.2-complete.jar` file into `src` folder.
 
 
 Usage
 -----
 
 ```
-make bin libs
-./pyxell code.px
+./pyxell.sh program.px
 ```
 
-If the program is correct, `code.ll` file and an executable should be created in the same folder.
+If the program is correct, `program.ll` file and an executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
 
-Run `make grammar` to run BNFC after changing the grammar (`src/Pyxell.cf`).
-Run `make libs` to recompile only runtime libraries (`lib/`).
+Run `make` after changing the grammar (`src/Pyxell.g4`) to rebuild the parser with ANTLR.
 
 
 Tests
 -----
 
+```
+./test.py -v
+```
+
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
-There is a Python script `test.py`.
-You can pass a path pattern to run only selected tests (e.g. `python test.py good`).
+The script is multi-threaded.
+Total execution time may vary from something like 10 seconds to 2 minutes,
+depending on the number of processors in your machine and other factors.
+
+You can pass a path pattern to run only selected tests (e.g. `./test.py good`).
 To see all options, run it with `-h`.
 
 Tests serve currently also as a documentation of the language.
 You can browse them to learn the syntax and semantics.
 
 
-Final thoughts
---------------
+Alternatives
+------------
 
-The goal of this project is to create a language that would be simple, consistent, and powerful enough to be useful
-for some basic tasks, where other languages are too verbose, unintuitive, error-prone, or not fast enough.
-One example of a use-case could be solving algorithmic problems,
-without constantly looking into C++ STL documentation or defining tons of macros.
-
-I do know that there exist many interesting modern programming languages apart from those widely-known,
-and most of them provide majority of features from my list. Even though I haven't used them,
-I tried my best to learn about their details and discovered that none of them fully meets my expectations.
-From what I've found, only Boo has an indentation-based syntax without braces, but is built on top of
-C# and .NET platform. Other compiled languages with static typing and type inference are D, Go, Rust, Scala, and Kotlin,
-but their syntax is uglier and they are either concentrated on some specific aspect like concurrency (the first 3),
-or built on top of Java (the other 2).
+There are only a few languages with indentation-based syntax.
+The ones that I've found worth mentioning are, in alphabetical order:
+* [Boo](https://boo-language.github.io/) (based on .NET),
+* [CoffeeScript](https://coffeescript.org/) (transpiled to JS),
+* [F#](https://fsharp.org/) (functional, based on .NET),
+* [Genie](https://wiki.gnome.org/Projects/Genie) (compiled via C),
+* [Haskell](https://www.haskell.org/) (functional, compiled),
+* [Nim](https://nim-lang.org/) (compiled via C/C++ or transpiled to JS),
+* [Python](https://www.python.org/) (dynamically typed).

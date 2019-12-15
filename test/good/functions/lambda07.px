@@ -1,5 +1,5 @@
 
-func tuple(Int,Char->Int*Char f, Int n, Char c) def
+func tuple(Int->Char->Int*Char f, Int n, Char c) def
     print f(n, c)
 
 tuple(lambda a, b -> (a, b), 2, 'x')

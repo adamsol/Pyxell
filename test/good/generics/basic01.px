@@ -1,0 +1,6 @@
+
+func f<T>(T x) Int def
+    return 42
+
+print f(5)
+print f('S')

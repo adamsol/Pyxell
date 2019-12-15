@@ -1,0 +1,8 @@
+
+func f<T>(T x) T def
+    if x > 0 do
+        return x * f(x-1)
+    return 1 + x - x
+
+print f(5)
+print f(2.5)

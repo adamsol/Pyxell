@@ -1,10 +1,8 @@
 
-func apply<Any A, Any B>(A->B f, A x) B def
-    return f(x)
+func length<T>([T] a) Int def
+    if a.length == 0 do
+        return 0
+    return length(a[1:]) + 1
 
-x = apply(_+1, 2)
-x += 4
-print x
-
-s = apply(_[1:], "abc")
-print -apply(_.length, s)
+print length([])
+print length([1, 2] * 3)

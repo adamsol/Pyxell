@@ -1,0 +1,15 @@
+
+_do = def'def = 1
+def'def += 1
+x = _do
+y = def'def
+
+if x +
+   y
+  > 0 do
+    print _do,
+          def'def
+    print
+        true
+else do
+    skip

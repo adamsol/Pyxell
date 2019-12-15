@@ -1,0 +1,10 @@
+
+[Char?] a = [null]
+
+func f() [Char?] def
+    print a
+    return a
+
+f()[0] ??= 'a'
+f()[0] ??= 'b'
+print a[0]

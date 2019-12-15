@@ -1,0 +1,9 @@
+
+func diff<A>(A x, A y) A def
+    if x >= y do
+        return x-y
+    else do
+        return -(x-y)
+
+print diff(3, 10) / 2
+print diff(8.0, 3.0) / 2

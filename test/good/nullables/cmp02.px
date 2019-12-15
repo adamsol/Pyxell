@@ -1,4 +1,4 @@
 
 Int? x = null
-print x == null, x != null
-print x != x, x == x
+print x is null, x isn't null
+print x isn't x, x is x

@@ -1,4 +1,5 @@
 
+a = 0
 for a in 1...2 do
     print a
 for b in a*4...0 step -2 do

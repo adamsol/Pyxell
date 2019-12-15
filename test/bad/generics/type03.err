@@ -1,1 +1,1 @@
-No binary operator `+` defined for `T` and `T`.
+No binary operator `+` defined for `Int` and `String`.

@@ -1,5 +1,5 @@
 
-func f<Any A>(A->A p) def
+func f<A>(A->A p) def
     return
 
 func g(Int x) Bool def

@@ -1,5 +1,5 @@
 
-func fold(Bool,Bool->Bool f, Bool a, [Bool] t) Bool def
+func fold(Bool->Bool->Bool f, Bool a, [Bool] t) Bool def
     for x in t do
         a = f(a, x)
     return a

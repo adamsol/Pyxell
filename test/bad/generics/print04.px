@@ -1,5 +1,5 @@
 
-func f<Any A>(A x, A->B f) B def
+func f<A,B>(A x, A->B f) B def
     return f(x)
 
-print f([1], _)
+print f(write, _)

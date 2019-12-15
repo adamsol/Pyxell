@@ -1,6 +1,8 @@
 
-func call<Num A, Num B>(A x, A->B f) def
-    print f(x)
+func g<A,C>(A x, C y) A*C def
+    return x, y
 
-call(10.01, lambda x -> 2*x)
-call(-5, lambda x -> x/5)
+func f<A,B>(A x, B y) A*B def
+    return g(x, y)
+
+print f(3, 6)

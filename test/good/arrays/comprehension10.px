@@ -1,0 +1,2 @@
+
+print [[[z for z in y..y] for y in 1..x] for x in 5...1 step -1 if x < 4]

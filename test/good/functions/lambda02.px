@@ -1,6 +1,6 @@
 
-func f(Int,Int->Int g, String,Char,Int->Char h) Int def
+func f(Int->Int->Int g, String->Char->Int->Char h) Int def
     c = h("ABC", 'Z', 2)
-    return g(ord(c), 42)
+    return g(c.code, 42)
 
 print f(lambda x, y -> x + y, lambda a, b, i -> (a + b)[-i])

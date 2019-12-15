@@ -5,3 +5,5 @@ func f(Int? x) Int? def
 
 Int x = f(null) ?? f(0) ?? f(null)!
 print x
+
+print (f(5) ?? f(3)!) + 1

@@ -1,0 +1,10 @@
+
+func f(Int i) Int def
+    print i
+    return i
+
+[Int]? a = [3, 5]
+print a?[f(0)], a![f(1)]
+
+a = null
+print a?[f(0)]

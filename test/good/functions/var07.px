@@ -2,11 +2,11 @@
 func div(Int x, Int y) Int def
     return x / y
 
-func get(String s) Int,Int->Int def
+func get(String s) Int->Int->Int def
     print s
     return div
 
-func f(String->Int,Int->Int g, String s, Int b) Int def
+func f(String->(Int->Int->Int) g, String s, Int b) Int def
     h = g(s)
     print h(b, 1)
     return h(b, 4)

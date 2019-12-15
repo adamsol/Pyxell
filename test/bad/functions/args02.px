@@ -2,3 +2,5 @@
 func f(String s) def
     s = 5
     return
+
+f()

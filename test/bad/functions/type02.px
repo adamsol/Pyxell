@@ -5,4 +5,5 @@ func f(String x) def
 func g(String x) Char def
     return 'g'
 
-g = f
+h = g
+h = f

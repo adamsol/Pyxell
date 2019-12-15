@@ -1,0 +1,8 @@
+
+func fold<T>(T->T->T f, T a, [T] t) T def
+    for x in t do
+        a = f(a, x)
+    return a
+
+print fold(_*_, 1, [2, 3, 4])
+print fold(_+_, "", ["T", "est"])

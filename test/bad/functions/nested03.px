@@ -4,3 +4,6 @@ func f() def
         return 1
     func g2() Int def
         return g1() + 1
+    g2()
+
+f()

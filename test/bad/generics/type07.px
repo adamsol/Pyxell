@@ -1,5 +1,5 @@
 
-func f<Any A, Num B, Any C>(A*B*C p) def
+func f<A,B>(A*B*A p) def
     return
 
-f(('$', '$', '$'))
+f(('$', 7, "$"))

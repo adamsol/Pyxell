@@ -1,0 +1,5 @@
+
+func f<V>() V def
+    skip
+
+f()

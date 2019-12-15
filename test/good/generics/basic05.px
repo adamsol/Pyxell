@@ -1,0 +1,6 @@
+
+func array<T>(T a, T b) [T] def
+    return [a, b]
+
+print array(false, true)[1]
+print array("a", "b")[0]

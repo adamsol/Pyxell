@@ -1,0 +1,5 @@
+
+i = 0
+c = false
+print ["{i}{c}" for i in ["I"] for i, c in 1..2, 'a'..'b']
+print i, c

@@ -1,5 +1,8 @@
 
-func f<Num T>(T x, T y) def
-    return
+func f(Int x) Int def
+    return x
 
-f(0, 0.0)
+func g<T>(T x) def
+    print f(x)
+
+g('0')

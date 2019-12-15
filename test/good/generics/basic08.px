@@ -1,0 +1,7 @@
+
+func print'<A>(A x) A def
+    print x
+    return x
+
+print'(4)
+print'(9.3)

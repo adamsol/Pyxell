@@ -1,8 +1,8 @@
 
-func fold<Any T>(T,T->T f, T a, [T] t) T def
-    for x in t do
-        a = f(a, x)
+func f<T>(T x) [T] def
+    T y = x*2
+    [T] a
+    a = [x, y]
     return a
 
-print fold(_*_, 1, [2, 3, 4])
-print fold(_+_, "", ["T", "est"])
+print f(1)[0] + f(2.3)[1]

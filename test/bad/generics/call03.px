@@ -1,6 +1,8 @@
 
-func f(Int x) Int def
-    return x
+func f<T>(T x, T y) def
+    return
 
-func g<Num T>(T x) def
-    print f(x)
+func g<A,B>(A x, B y) def
+    f(x, y)
+
+g('x', false)

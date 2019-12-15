@@ -1,1 +1,1 @@
-Illegal assignment from `A` to `A'`.
+Cannot override member of type `A'` with type `A`.

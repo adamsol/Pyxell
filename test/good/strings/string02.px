@@ -1,3 +1,3 @@
 
-s = "escape\n\ttest"
+s = "escape\"\\\n\ttest"
 print s

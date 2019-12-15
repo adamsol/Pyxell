@@ -2,7 +2,7 @@
 class A def
     func f() abstract
 
-class B def
+class B(A) def
     func f() def
         skip
 

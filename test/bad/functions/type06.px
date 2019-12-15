@@ -1,9 +1,6 @@
 
-func f(Int x) def
+func f(Int y: 0) def
     return
 
-func f'(Int y: 0) def
-    return
-
-f = f'
-f()
+g = f
+g()

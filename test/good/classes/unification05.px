@@ -1,0 +1,23 @@
+
+class A def
+    Char x: 'A'
+
+    func f() def
+        print self.x
+
+class B(A) def
+    Char x: 'B'
+
+class C(A) def
+    Char x: 'C'
+
+    func f() def
+        print "{self.x}" * 3
+
+
+func get<T>(T*T a) T def
+    return a.a
+
+get((C(), B())).f()
+get((B(), A())).f()
+get((A(), C())).f()

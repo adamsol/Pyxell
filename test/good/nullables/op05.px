@@ -1,4 +1,3 @@
 
-String? s = null
-s ??= "?"
-print s ?? ""
+[Char]? a = ['X', 'Y']
+print a?.join(a!.length > 2 or a!.length < 2 ? "" : "_")

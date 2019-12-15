@@ -1,3 +1,5 @@
 
 func f(Int x) Bool def
     return x
+
+f()

@@ -1,3 +1,3 @@
 
-func f<Type T>() def
+func f<>() def
     return

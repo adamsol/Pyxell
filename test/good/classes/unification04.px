@@ -12,8 +12,10 @@ class B(A) def
         print "{self.x} B"
 
 
-func get<Num T>(T*A a) A def
+func get<T>(T*A a) A def
     print a.a
     return a.b
 
 get((4, B())).f()
+get(("$$$", A())).f()
+get((-3.75, B())).f()

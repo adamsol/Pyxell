@@ -1,3 +1,5 @@
 
 func id(Int->String f) Int->String def
     return id
+
+id()
