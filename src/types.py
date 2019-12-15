@@ -177,6 +177,8 @@ def isUnknown(type):
         return True
     if type.isArray():
         return type.subtype.isUnknown()
+    if type.isNullable():
+        return type.subtype.isUnknown()
     if type.isTuple():
         return any(elem.isUnknown() for elem in type.elements)
     if type.isFunc():
@@ -296,6 +298,10 @@ def get_type_variables(type):
 
 
 def can_cast(type1, type2):
+    if type1.isArray() and type2.isArray():
+        return type1.subtype == type2.subtype or type1.subtype.isUnknown()
+    if not type1.isNullable() and type2.isNullable():
+        return can_cast(type1, type2.subtype)
     return type_variables_assignment(type1, type2) == {}
 
 
