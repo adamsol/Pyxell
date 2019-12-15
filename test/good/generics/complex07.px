@@ -1,0 +1,8 @@
+
+func length<T>([T] a) Int def
+    if a.length == 0 do
+        return 0
+    return length(a[1:]) + 1
+
+print length([])
+print length([1, 2] * 3)

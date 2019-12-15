@@ -359,8 +359,6 @@ class PyxellCompiler:
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
         if type == tVoid:
             self.throw(node, err.InvalidDeclaration(type))
-        if type.isUnknown():
-            self.throw(node, err.UnknownType())
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
         if check_only:
