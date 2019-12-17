@@ -1694,12 +1694,15 @@ class PyxellCompiler:
                     if expr['node'] == 'ExprLambda':
                         ids = expr['ids']
                         type = func_arg.type
+
                         if not type.isFunc():
                             self.throw(node, err.IllegalLambda())
+
                         if len(ids) < len(type.args):
                             self.throw(node, err.TooFewArguments(type))
                         if len(ids) > len(type.args):
                             self.throw(node, err.TooManyArguments(type))
+
                         id = f'__lambda_{len(self.env)}'
                         self.compile({
                             **expr,
@@ -1725,14 +1728,42 @@ class PyxellCompiler:
                     else:
                         value = self.compile(expr)
 
-                        d = type_variables_assignment(value.type, func_arg.type)
-                        if d is None:
-                            self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
+                        if value.isTemplate():
+                            if not func_arg.type.isFunc():
+                                self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
 
-                        for name, type in d.items():
-                            type_variables[name].append(type)
+                            if len(value.type.args) < len(func_arg.type.args):
+                                self.throw(node, err.TooFewArguments(func_arg.type))
+                            if len(value.type.args) > len(func_arg.type.args):
+                                self.throw(node, err.TooManyArguments(func_arg.type))
 
-                        args.append(value)
+                            id = f'__lambda_generic_{len(self.env)}'
+                            self.compile({
+                                **expr,
+                                'node': 'StmtFunc',
+                                'id': id,
+                                'args': [{
+                                    'type': arg1.type,
+                                    'name': arg2.name,
+                                } for arg1, arg2 in zip(func_arg.type.args, value.type.args)],
+                                'ret': func_arg.type.ret,
+                                'block': value.body,
+                            })
+                            expr = {
+                                'node': 'AtomId',
+                                'id': id,
+                            }
+                            args.append(expr)
+
+                        else:
+                            d = type_variables_assignment(value.type, func_arg.type)
+                            if d is None:
+                                self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
+
+                            for name, type in d.items():
+                                type_variables[name].append(type)
+
+                            args.append(value)
 
                 if obj:
                     for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
@@ -1750,7 +1781,15 @@ class PyxellCompiler:
                 if pos_args:
                     self.throw(node, err.TooManyArguments(func.type))
 
-                args = [self.cast(node, self.compile(arg), self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
+                try:
+                    args = [self.cast(node, self.compile(arg), self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
+                except KeyError:
+                    # Not all type variables have been resolved.
+                    self.throw(node, err.UnknownType())
+                except err as e:
+                    if not func.isTemplate():
+                        raise
+                    self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
                 if obj:
                     args.insert(0, obj)

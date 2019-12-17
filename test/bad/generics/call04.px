@@ -1,0 +1,5 @@
+
+func f<T>(T->T g) def
+    return
+
+f(min)

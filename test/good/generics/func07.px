@@ -1,0 +1,10 @@
+
+func call<A,B>(A x, A->B f) def
+    print f(x)
+
+func f<T>(T x) T def
+    return x + x
+
+call(1, f)
+call(44, f)
+call("abc", f)
