@@ -1380,10 +1380,6 @@ class PyxellCompiler:
                 name = arg['name']
                 default = arg.get('default')
                 if default:
-                    with self.no_output():
-                        value = self.compile(default)
-                        if type_variables_assignment(value.type, type) is None:
-                            self.throw(node, err.IllegalAssignment(value.type, type))
                     expect_default = True
                 elif expect_default:
                     self.throw(arg, err.MissingDefault(name))

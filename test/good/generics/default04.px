@@ -1,0 +1,8 @@
+
+func apply<A,B>(A x: 0, A->B f: _+1) B def
+    return f(x)
+
+print apply()
+print apply(x=1)
+print apply(f=_)
+print apply("test", f=_.length)

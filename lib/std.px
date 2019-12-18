@@ -31,13 +31,13 @@ func sign<T>(T x) Int def
     return x > 0 ? 1 : x < 0 ? -1 : 0
 
 
-func Array_all<A>([A] a, A->Bool f) Bool def
+func Array_all<A>([A] a, A->Bool f: _) Bool def
     for x in a do
         if not f(x) do
             return false
     return true
 
-func Array_any<A>([A] a, A->Bool f) Bool def
+func Array_any<A>([A] a, A->Bool f: _) Bool def
     for x in a do
         if f(x) do
             return true

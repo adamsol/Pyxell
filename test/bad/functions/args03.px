@@ -1,3 +1,5 @@
 
 func f(Int x: true) def
     return
+
+f()

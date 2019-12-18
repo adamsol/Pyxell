@@ -1,0 +1,3 @@
+
+print [true].all(), [true, false].all()
+print [false].any(), [false, true].any()
