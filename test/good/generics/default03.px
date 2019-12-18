@@ -1,0 +1,5 @@
+
+func f<T>(T x: 0, T y: 1.0) T def
+    return x + y
+
+print f(3.5)

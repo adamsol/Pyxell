@@ -1,0 +1,5 @@
+
+func f<T>(T? x: null) T? def
+    return x
+
+print f(3), f()

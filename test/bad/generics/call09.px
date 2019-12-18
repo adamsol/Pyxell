@@ -1,0 +1,5 @@
+
+func f<A>(A x: "", A y: "") def
+    return
+
+f('x')
