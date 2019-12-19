@@ -110,6 +110,10 @@ class BaseLibraryGenerator(PyxellCompiler):
             result = self.builder.alloca(tInt)
             self.call_builtin('scanf', self.get_format('int'), self.builder.bitcast(result, tPtr()))
             self.builder.ret(self.builder.load(result))
+        with self.define(tFunc([], tFloat), 'readFloat') as func:
+            result = self.builder.alloca(tFloat)
+            self.call_builtin('scanf', self.get_format('float_read'), self.builder.bitcast(result, tPtr()))
+            self.builder.ret(self.builder.load(result))
         with self.define(tFunc([], tChar), 'readChar') as func:
             result = self.builder.alloca(tChar)
             self.call_builtin('scanf', self.get_format('char'), self.builder.bitcast(result, tPtr()))

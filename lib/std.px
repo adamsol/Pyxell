@@ -12,6 +12,7 @@ func writeChar(Char s) extern
 func read() String extern
 func readLine() String extern
 func readInt() Int extern
+func readFloat() Float extern
 func readChar() Char extern
 
 

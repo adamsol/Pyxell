@@ -1,0 +1,4 @@
+
+print readFloat() + readFloat()
+Float x = readFloat()
+print x
