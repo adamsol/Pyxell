@@ -1,0 +1,8 @@
+
+func tuple(Int a, Bool b) Int*Bool def
+    print a, b
+    return a, b
+
+a, (b, c), ((d, e), f) = 5, ('b', "c"), (tuple(4, true), [])
+print a, d, b, c, f
+print e

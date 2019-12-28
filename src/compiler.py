@@ -405,8 +405,25 @@ class PyxellCompiler:
 
     def assign(self, node, expr, value):
         type = value.type
+
         if type.isFunc():
             type = tFunc([arg.type for arg in type.args], type.ret)
+
+        exprs = expr['exprs'] if expr['node'] == 'ExprTuple' else [expr]
+        len1 = len(exprs)
+
+        if type.isTuple():
+            len2 = len(type.elements)
+            if len1 > 1 and len1 != len2:
+                self.throw(node, err.CannotUnpack(type, len1))
+        elif len1 > 1:
+            self.throw(node, err.CannotUnpack(type, len1))
+
+        if len1 > 1:
+            for i, expr in enumerate(exprs):
+                self.assign(node, expr, self.extract(value, i))
+            return
+
         ptr = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
         value = self.cast(node, value, ptr.type.pointee)
         self.builder.store(value, ptr)
@@ -1125,21 +1142,7 @@ class PyxellCompiler:
         value = self.compile(node['expr'])
 
         for lvalue in node['lvalues']:
-            exprs = lvalue['exprs']
-            len1 = len(exprs)
-
-            if value.type.isTuple():
-                len2 = len(value.type.elements)
-                if len1 > 1 and len1 != len2:
-                    self.throw(node, err.CannotUnpack(value.type, len1))
-            elif len1 > 1:
-                self.throw(node, err.CannotUnpack(value.type, len1))
-
-            if len1 == 1:
-                self.assign(lvalue, exprs[0], value)
-            else:
-                for i, expr in enumerate(exprs):
-                    self.assign(lvalue, expr, self.extract(value, i))
+            self.assign(lvalue, lvalue, value)
 
     def compileStmtAssgExpr(self, node):
         exprs = node['exprs']
@@ -1531,10 +1534,7 @@ class PyxellCompiler:
 
         stmt = inner_stmt = {
             'node': 'StmtAssg',
-            'lvalues': [{
-                'node': 'Lvalue',
-                'exprs': [value],
-            }],
+            'lvalues': [value],
             'expr': expr,
         }
 

@@ -109,7 +109,7 @@ Requirements
 
 * Python 3.8 with packages from `requirements.txt`.
 
-Sometimes installation of `llvmlite` [fails](https://github.com/numba/llvmlite/issues/527)).
+Sometimes installation of `llvmlite` [fails](https://github.com/numba/llvmlite/issues/527).
 If such a problem occurs, try using `easy_install` instead of `pip install`.
 
 * Clang 6 with C++ standard library.
@@ -161,7 +161,7 @@ Alternatives
 ------------
 
 There are only a few languages with indentation-based syntax.
-The ones that I've found worth mentioning are, in alphabetical order:
+Some more or less similar to Pyxell are, in alphabetical order:
 * [Boo](https://boo-language.github.io/) (based on .NET),
 * [CoffeeScript](https://coffeescript.org/) (transpiled to JS),
 * [F#](https://fsharp.org/) (functional, based on .NET),

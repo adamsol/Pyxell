@@ -14,14 +14,10 @@ simple_stmt
   | 'skip' # StmtSkip
   | 'print' tuple_expr? # StmtPrint
   | typ ID ('=' tuple_expr)? # StmtDecl
-  | (lvalue '=')* tuple_expr # StmtAssg
+  | (tuple_expr '=')* tuple_expr # StmtAssg
   | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|' | '??') '=' expr # StmtAssgExpr
   | s=('break' | 'continue') # StmtLoopControl
   | 'return' tuple_expr? # StmtReturn
-  ;
-
-lvalue
-  : expr (',' expr)*
   ;
 
 compound_stmt

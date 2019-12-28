@@ -83,14 +83,8 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitStmtAssg(self, ctx):
         return {
             **_node(ctx, 'StmtAssg'),
-            'lvalues': self.visit(ctx.lvalue()),
-            'expr': self.visit(ctx.tuple_expr()),
-        }
-
-    def visitLvalue(self, ctx):
-        return {
-            **_node(ctx, 'Lvalue'),
-            'exprs': self.visit(ctx.expr()),
+            'lvalues': self.visit(ctx.tuple_expr()[:-1]),
+            'expr': self.visit(ctx.tuple_expr()[-1]),
         }
 
     def visitStmtAssgExpr(self, ctx):
