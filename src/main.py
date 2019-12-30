@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import platform
 import subprocess
 from pathlib import Path
 
@@ -44,7 +45,11 @@ def compile(filepath, clangargs):
     with open(f'{filename}.ll', 'w') as file:
         file.write(compiler.llvm_ir())
 
-    subprocess.check_output(['clang', f'{filename}.ll', abspath/'lib/io.ll', abspath/'lib/base.ll', '-o', f'{filename}.exe', '-O2', *clangargs], stderr=subprocess.STDOUT)
+    clang_command = ['clang', f'{filename}.ll', abspath/'lib/io.ll', abspath/'lib/base.ll', '-o', f'{filename}.exe', '-O2', *clangargs]
+    if platform.system() != 'Windows':
+        clang_command.append('-lm')
+
+    subprocess.check_output(clang_command, stderr=subprocess.STDOUT)
 
 
 if __name__ == '__main__':

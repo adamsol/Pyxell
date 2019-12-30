@@ -128,7 +128,7 @@ Usage
 -----
 
 ```
-./pyxell.sh program.px
+. pyxell.sh program.px
 ```
 
 If the program is correct, `program.ll` file and an executable should be created in the same folder.
@@ -141,7 +141,7 @@ Tests
 -----
 
 ```
-./test.py -v
+python test.py -v
 ```
 
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
@@ -150,7 +150,7 @@ The script is multi-threaded.
 Total execution time may vary from something like 10 seconds to 2 minutes,
 depending on the number of processors in your machine and other factors.
 
-You can pass a path pattern to run only selected tests (e.g. `./test.py good`).
+You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
 To see all options, run it with `-h`.
 
 Tests serve currently also as a documentation of the language.

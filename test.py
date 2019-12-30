@@ -107,7 +107,7 @@ def test(i, path):
                 t2 = timer()
 
                 try:
-                    subprocess.check_output(f'diff --strip-trailing-cr {path.replace(".px", ".tmp")} {path.replace(".px", ".out")}', stderr=subprocess.STDOUT)
+                    subprocess.check_output(['diff', '--strip-trailing-cr', path.replace(".px", ".tmp"), path.replace(".px", ".out")], stderr=subprocess.STDOUT)
                 except subprocess.CalledProcessError as e:
                     if e.returncode == 2:
                         output.append(f"{Y}{e.output.decode()}{E}")
