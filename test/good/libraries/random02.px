@@ -1,3 +1,6 @@
 
 random.seed(42)
-print random.randInt(5), random.randInt(17)
+print [5, 17, 3364].map(random.randInt)
+
+random.seed(382692935147053)
+print random.randInt(8093240213836)

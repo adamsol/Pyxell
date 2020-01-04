@@ -60,9 +60,6 @@ class BaseLibraryGenerator(PyxellCompiler):
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'trunc'),
 
                 ll.Function(self.module, ll.FunctionType(tInt, [tPtr(tInt)]), 'time'),
-
-                ll.Function(self.module, ll.FunctionType(tInt, []), 'rand'),
-                ll.Function(self.module, ll.FunctionType(tVoid, [tInt]), 'srand'),
             ]
         }
 
@@ -138,7 +135,7 @@ class BaseLibraryGenerator(PyxellCompiler):
             self.builder.ret(result)
 
         with self.define(tFunc([tString], tInt), 'String_toInt') as func:
-            # sscanf needs a null-terminated string, so we need to copy it and append \0
+            # `sscanf` needs a null-terminated string, so we need to copy it and append '\0'.
             length = self.extract(func.args[0], 1)
             ptr = self.call_builtin('malloc', self.builder.add(length, vInt(1)))
             self.call_builtin('strncpy', ptr, self.extract(func.args[0], 0), length)
@@ -148,7 +145,7 @@ class BaseLibraryGenerator(PyxellCompiler):
             self.call_builtin('free', ptr)
             self.builder.ret(self.builder.load(result))
         with self.define(tFunc([tString], tFloat), 'String_toFloat') as func:
-            # sscanf needs a null-terminated string, so we need to copy it and append \0
+            # `sscanf` needs a null-terminated string, so we need to copy it and append '\0'.
             length = self.extract(func.args[0], 1)
             ptr = self.call_builtin('malloc', self.builder.add(length, vInt(1)))
             self.call_builtin('strncpy', ptr, self.extract(func.args[0], 0), length)
@@ -167,8 +164,18 @@ class BaseLibraryGenerator(PyxellCompiler):
         with self.define(tFunc([tFloat], tInt), 'time') as func:
             self.builder.ret(self.call_builtin('time', vNull(tPtr(tInt))))
 
-        ll.GlobalVariable(self.module, tFunc([], tInt), 'f.rand').initializer = self.builtins['rand']
-        ll.GlobalVariable(self.module, tFunc([tInt]), 'f.seed').initializer = self.builtins['srand']
+        # https://en.wikipedia.org/wiki/Linear_congruential_generator
+        # https://stackoverflow.com/a/3958859/12643160
+        rand_state = ll.GlobalVariable(self.module, tInt, 'rand_state')
+        rand_state.initializer = tInt(0)
+        with self.define(tFunc([tInt]), 'seed') as func:
+            self.builder.store(func.args[0], rand_state)
+            self.builder.ret_void()
+        with self.define(tFunc([], tInt), 'rand') as func:
+            state = self.builder.load(rand_state)
+            state = self.builder.srem(self.builder.add(self.builder.mul(tInt(1103515245), state), tInt(12345)), tInt(2**31))
+            self.builder.store(state, rand_state)
+            self.builder.ret(self.builder.and_(self.builder.ashr(state, tInt(16)), tInt(0x7FFF)))
 
     def declare_format(self, string):
         const = ll.Constant.literal_array([vChar(c) for c in string + '\0'])
