@@ -109,8 +109,9 @@ Requirements
 
 * Python 3.8 with packages from `requirements.txt`.
 
-Sometimes installation of `llvmlite` [fails](https://github.com/numba/llvmlite/issues/527).
-If such a problem occurs, try using `easy_install` instead of `pip install`.
+```
+python -m pip install -r requirements.txt
+```
 
 * Clang 6 with C++ standard library.
 
