@@ -51,6 +51,7 @@ expr
   : atom # ExprAtom
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
+  | '[' expr 'step' expr ']' # ExprArrayRangeStep
   | '[' expr comprehension+ ']' # ExprArrayComprehension
   | expr safe='?'? '[' tuple_expr ']' # ExprIndex
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice

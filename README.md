@@ -34,7 +34,7 @@ print fib(10)
 ```
 
 ```
-a = [c for c in 'A'..'Z']
+a = ['A'..'Z']
 for x, i in a, 0... do
     print "a[{i}] = {x}" 
 ```

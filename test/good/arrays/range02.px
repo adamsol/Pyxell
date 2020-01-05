@@ -1,0 +1,3 @@
+
+print [false..true] * 2
+print ['A'...'Z'][::-5]

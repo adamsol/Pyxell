@@ -1520,6 +1520,25 @@ class PyxellCompiler:
 
     def compileExprArray(self, node):
         exprs = node['exprs']
+
+        if len(exprs) == 1 and exprs[0]['node'] == 'ExprRange':
+            var = {
+                'node': 'AtomId',
+                'id': f'__range_{len(self.env)}',
+            }
+            return self.compile({
+                'node': 'ExprArrayComprehension',
+                'expr': var,
+                'comprehensions': [{
+                    'node': 'ComprehensionGenerator',
+                    'vars': [var],
+                    'iterables': [exprs[0]],
+                    'steps': [node['step']] if node.get('step') else [],
+                }],
+            })
+        elif node.get('step'):
+            self.throw(node, err.InvalidSyntax())
+
         values = self.unify(node, *map(self.compile, exprs))
         subtype = values[0].type if values else tUnknown
         return self.array(subtype, values)

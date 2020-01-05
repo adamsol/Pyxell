@@ -200,6 +200,13 @@ class PyxellASTVisitor(PyxellVisitor):
             'exprs': self.visit(ctx.expr()),
         }
 
+    def visitExprArrayRangeStep(self, ctx):
+        return {
+            **_node(ctx, 'ExprArray'),
+            'exprs': [self.visit(ctx.expr(0))],
+            'step': self.visit(ctx.expr(1)),
+        }
+
     def visitExprArrayComprehension(self, ctx):
         return {
             **_node(ctx, 'ExprArrayComprehension'),
