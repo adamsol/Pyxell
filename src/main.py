@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 
 from .compiler import PyxellCompiler
+from .errors import PyxellError
 from .indentation import transform_indented_code
 from .library import BaseLibraryGenerator
 from .parsing import parse_program
@@ -60,6 +61,6 @@ if __name__ == '__main__':
 
     try:
         compile(args.filepath, args.clangargs)
-    except Exception as e:
+    except PyxellError as e:
         print(str(e))
         exit(1)
