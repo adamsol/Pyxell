@@ -107,22 +107,18 @@ Details
 Requirements
 ------------
 
-* Python 3.8 with packages from `requirements.txt`.
+* Python 3.6+ with packages from `requirements.txt`.
 
 ```
 python -m pip install -r requirements.txt
 ```
 
-* Clang 6 with C++ standard library.
+* Clang 6+ with C++ standard library.
 
 The library shouldn't be a problem on Linux, but on Windows this may not work out of the box.
 In some cases Windows SDK installation may be required
 or it may be necessary to run `pyxell` with `-target x86_64-pc-windows-gnu`
 (run `test.py` with `-t` argument to use this).
-
-* ANTLR 4.7.2 (to build the parser).
-
-Put `antlr-4.7.2-complete.jar` file into `src` folder.
 
 
 Usage
@@ -132,10 +128,17 @@ Usage
 . pyxell.sh program.px
 ```
 
-If the program is correct, `program.ll` file and an executable should be created in the same folder.
+If the program is correct, `program.ll` file and `program.exe` executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
 
-Run `make` after changing the grammar (`src/Pyxell.g4`) to rebuild the parser with ANTLR.
+
+Development
+-----------
+
+In order to rebuild the parser from the grammar (`src/Pyxell.g4`),
+first [download ANTLR](https://www.antlr.org/download/antlr-4.7.2-complete.jar)
+and put the `antlr-4.7.2-complete.jar` file into `src` folder,
+then run `make`.
 
 
 Tests

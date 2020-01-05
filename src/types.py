@@ -126,7 +126,8 @@ def isTuple(type):
     return getattr(type, 'kind', None) == 'tuple'
 
 
-Arg = namedtuple('Arg', ['type', 'name', 'default'], defaults=[None]*3)
+Arg = namedtuple('Arg', ['type', 'name', 'default'])
+Arg.__new__.__defaults__ = (None,) * 3
 
 def tFunc(args, ret=tVoid):
     args = [arg if isinstance(arg, Arg) else Arg(arg) for arg in args]

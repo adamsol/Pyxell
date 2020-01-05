@@ -17,7 +17,7 @@ abspath = Path(__file__).parents[1]
 with open(abspath/'lib/base.ll', 'w') as file:
     file.write(BaseLibraryGenerator().llvm_ir())
 
-subprocess.check_output(['clang', abspath/'lib/io.c', '-S', '-emit-llvm', '-o', abspath/'lib/io.ll'], stderr=subprocess.STDOUT)
+subprocess.check_output(['clang', str(abspath/'lib/io.c'), '-S', '-emit-llvm', '-o', str(abspath/'lib/io.ll')], stderr=subprocess.STDOUT)
 
 
 def build_ast(path):
@@ -45,7 +45,7 @@ def compile(filepath, clangargs):
     with open(f'{filename}.ll', 'w') as file:
         file.write(compiler.llvm_ir())
 
-    clang_command = ['clang', f'{filename}.ll', abspath/'lib/io.ll', abspath/'lib/base.ll', '-o', f'{filename}.exe', '-O2', *clangargs]
+    clang_command = ['clang', f'{filename}.ll', str(abspath/'lib/io.ll'), str(abspath/'lib/base.ll'), '-o', f'{filename}.exe', '-O2', *clangargs]
     if platform.system() != 'Windows':
         clang_command.append('-lm')
 
