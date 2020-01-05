@@ -14,7 +14,7 @@ def remove_comments(code):
         else:
             return s
 
-    pattern = re.compile(r'--.*?$|{-.*?-}|\'(?:\\.|[^\\\'])*\'|"(?:\\.|[^\\"])*"', re.DOTALL | re.MULTILINE)
+    pattern = re.compile(r'--.*?$|{-.*?-}|"(?:\\.|[^\\"])*"', re.DOTALL | re.MULTILINE)
     return re.sub(pattern, replacer, code)
 
 
