@@ -1,0 +1,3 @@
+
+for x in 0...10, 'a'..'z' step 5, '5' do
+    skip

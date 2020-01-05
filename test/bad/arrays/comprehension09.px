@@ -1,0 +1,3 @@
+
+print [not x for x in false..true]
+print [x for x in true...false step -2]

@@ -1258,24 +1258,24 @@ class PyxellCompiler:
                 values = lmap(self.compile, iterable['exprs'])
                 type = values[0].type
                 types.append(type)
-                if type not in {tInt, tFloat, tChar}:
+                if type not in {tInt, tFloat, tBool, tChar}:
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
-                if step.type != type:
-                    if type == tFloat:
-                        step = self.builder.sitofp(step, type)
-                    else:
-                        self.cast(iterable, step, tInt)
-                        if type == tChar:
-                            step = self.builder.trunc(step, type)
                 if type == tFloat:
+                    if step.type not in {tFloat, tInt}:
+                        self.throw(node, err.IllegalAssignment(step.type, tFloat))
+                    if step.type == tInt:
+                        step = self.builder.sitofp(step, type)
                     cmp = self.builder.fcmp_ordered
                     desc = cmp('<', step, vFloat(0))
                 else:
+                    if step.type != tInt:
+                        self.throw(node, err.IllegalAssignment(step.type, tInt))
+                    values = [self.builder.zext(v, tInt) for v in values]
                     cmp = self.builder.icmp_signed
                     desc = cmp('<', step, vInt(0))
-                index = self.builder.alloca(type)
+                index = self.builder.alloca(type if type == tFloat else tInt)
                 start = values[0]
                 if len(values) == 1:
                     cond = lambda v: vTrue
@@ -1283,7 +1283,7 @@ class PyxellCompiler:
                     cond = lambda v: self.builder.select(desc, cmp('>=', v, values[1]), cmp('<=', v, values[1]))
                 else:
                     cond = lambda v: self.builder.select(desc, cmp('>', v, values[1]), cmp('<', v, values[1]))
-                getter = lambda v: v
+                getter = lambda v: v if type in {tInt, tFloat} else self.builder.trunc(v, type)
             else:
                 value = self.compile(iterable)
                 if value.type.isString():
