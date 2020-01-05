@@ -1,0 +1,7 @@
+
+A = 'A'
+
+func f<A>(A x) A def
+    return x
+
+print f(A)

@@ -1017,7 +1017,7 @@ class PyxellCompiler:
             template.compiled[real_types] = func_ptr
 
         else:
-            unknown_ret_type_variables = {name: tVar(name) for name in get_type_variables(template.type.ret) if name not in self.env}
+            unknown_ret_type_variables = {name: tVar(name) for name in get_type_variables(template.type.ret) if not isinstance(self.env.get(name), Type)}
 
             # Try to resolve any unresolved type variables in the return type by fake-compiling the function.
             if unknown_ret_type_variables:

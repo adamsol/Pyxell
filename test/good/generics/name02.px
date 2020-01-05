@@ -1,0 +1,7 @@
+
+func f<B>(Int->B g) B def
+    return g(2)
+
+B = 3
+
+print f(_+B)
