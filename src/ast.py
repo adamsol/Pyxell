@@ -347,13 +347,13 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitAtomInt(self, ctx):
         return {
             **_node(ctx, 'AtomInt'),
-            'int': int(ctx.getText()),
+            'int': int(ctx.getText().replace('_', '')),
         }
 
     def visitAtomFloat(self, ctx):
         return {
             **_node(ctx, 'AtomFloat'),
-            'float': float(ctx.getText()),
+            'float': float(ctx.getText().replace('_', '')),
         }
 
     def visitAtomBool(self, ctx):

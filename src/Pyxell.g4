@@ -120,13 +120,14 @@ typ
   | '->' typ # TypeFunc0
   ;
 
-INT : DIGIT+ ;
-FLOAT : DIGIT+ '.' DIGIT+ ('e' '-'? DIGIT+)? ;
+INT : DIGIT NUMBER_CONT* ;
+FLOAT : DIGIT NUMBER_CONT* '.' NUMBER_CONT+ ('e' '-'? NUMBER_CONT+)? ;
 CHAR : '\'' (~[\\'] | ('\\' ['\\nt])) '\'' ;
 STRING : '"' (~[\\"] | ('\\' ["\\nt]))* '"' ;
 ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;
+fragment NUMBER_CONT : DIGIT | [_] ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | ['] ;
 
