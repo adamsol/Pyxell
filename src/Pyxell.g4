@@ -96,7 +96,7 @@ call_arg
   ;
 
 atom
-  : INT # AtomInt
+  : (INT_DEC | INT_BIN | INT_OCT | INT_HEX) # AtomInt
   | FLOAT # AtomFloat
   | ('true' | 'false') # AtomBool
   | CHAR # AtomChar
@@ -120,14 +120,20 @@ typ
   | '->' typ # TypeFunc0
   ;
 
-INT : DIGIT NUMBER_CONT* ;
-FLOAT : DIGIT NUMBER_CONT* '.' NUMBER_CONT+ ('e' '-'? NUMBER_CONT+)? ;
+INT_DEC : DIGIT NUMBER_DEC_CONT* ;
+INT_BIN : '0b' NUMBER_BIN_CONT+ ;
+INT_OCT : '0o' NUMBER_OCT_CONT+ ;
+INT_HEX : '0x' NUMBER_HEX_CONT+ ;
+FLOAT : DIGIT NUMBER_DEC_CONT* '.' NUMBER_DEC_CONT+ ('e' '-'? NUMBER_DEC_CONT+)? ;
 CHAR : '\'' (~[\\'] | ('\\' ['\\nt])) '\'' ;
 STRING : '"' (~[\\"] | ('\\' ["\\nt]))* '"' ;
 ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;
-fragment NUMBER_CONT : DIGIT | [_] ;
+fragment NUMBER_DEC_CONT : DIGIT | [_] ;
+fragment NUMBER_BIN_CONT : [01_] ;
+fragment NUMBER_OCT_CONT : [0-7_] ;
+fragment NUMBER_HEX_CONT : [0-9a-fA-F_] ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | ['] ;
 

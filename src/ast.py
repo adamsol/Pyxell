@@ -345,9 +345,11 @@ class PyxellASTVisitor(PyxellVisitor):
     ### Atoms ###
 
     def visitAtomInt(self, ctx):
+        number = ctx.getText().replace('_', '')
+        base = 2 if number.startswith('0b') else 8 if number.startswith('0o') else 16 if number.startswith('0x') else 10
         return {
             **_node(ctx, 'AtomInt'),
-            'int': int(ctx.getText().replace('_', '')),
+            'int': int(number, base),
         }
 
     def visitAtomFloat(self, ctx):
