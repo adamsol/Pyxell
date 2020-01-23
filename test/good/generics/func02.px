@@ -2,5 +2,5 @@
 func call<A,B>(A x, A->B f) def
     print f(x)
 
-call(10.01, lambda x -> 2*x)
-call(-5, lambda x -> x/5)
+call(10.01, lambda x: 2*x)
+call(-5, lambda x: x/5)

@@ -1,2 +1,2 @@
 
-f = lambda x -> x
+f = lambda x: x

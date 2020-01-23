@@ -75,7 +75,7 @@ expr
   | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr op='??' expr # ExprBinaryOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
-  | 'lambda' (ID ',')* ID? '->' expr # ExprLambda
+  | 'lambda' (ID ',')* ID? ':' expr # ExprLambda
   ;
 
 tuple_expr

@@ -2,4 +2,4 @@
 func f(Int g) Int def
     return 0
 
-f(lambda -> 0)
+f(lambda: 0)

@@ -2,4 +2,4 @@
 func f(Int->String g, Int n) String def
     return g(n) * 2
 
-print f(lambda x -> x.toString(), 7)
+print f(lambda x: x.toString(), 7)

@@ -39,8 +39,8 @@ def serializedATN():
         buf.write("\65\3\65\3\66\3\66\3\66\3\67\3\67\3\67\3\67\38\38\38\3")
         buf.write("9\39\39\39\39\39\3:\3:\3:\3;\3;\3;\3<\3<\3<\3=\3=\3=\3")
         buf.write(">\3>\3>\3>\3?\3?\3?\3?\3@\3@\3@\3A\3A\3A\3A\3A\3A\3A\3")
-        buf.write("B\3B\3B\3C\3C\3C\3C\3C\3D\3D\3D\3D\3D\3D\3E\3E\3E\3E\3")
-        buf.write("E\3F\3F\3F\3F\3F\3F\3G\3G\7G\u01bb\nG\fG\16G\u01be\13")
+        buf.write("B\3B\3B\3B\3B\3C\3C\3C\3C\3C\3C\3D\3D\3D\3D\3D\3E\3E\3")
+        buf.write("E\3E\3E\3E\3F\3F\3F\3G\3G\7G\u01bb\nG\fG\16G\u01be\13")
         buf.write("G\3H\3H\3H\3H\6H\u01c4\nH\rH\16H\u01c5\3I\3I\3I\3I\6I")
         buf.write("\u01cc\nI\rI\16I\u01cd\3J\3J\3J\3J\6J\u01d4\nJ\rJ\16J")
         buf.write("\u01d5\3K\3K\7K\u01da\nK\fK\16K\u01dd\13K\3K\3K\6K\u01e1")
@@ -96,8 +96,8 @@ def serializedATN():
         buf.write("\3\2\2\2o\u0178\3\2\2\2q\u017b\3\2\2\2s\u0181\3\2\2\2")
         buf.write("u\u0184\3\2\2\2w\u0187\3\2\2\2y\u018a\3\2\2\2{\u018d\3")
         buf.write("\2\2\2}\u0191\3\2\2\2\177\u0195\3\2\2\2\u0081\u0198\3")
-        buf.write("\2\2\2\u0083\u019f\3\2\2\2\u0085\u01a2\3\2\2\2\u0087\u01a7")
-        buf.write("\3\2\2\2\u0089\u01ad\3\2\2\2\u008b\u01b2\3\2\2\2\u008d")
+        buf.write("\2\2\2\u0083\u019f\3\2\2\2\u0085\u01a4\3\2\2\2\u0087\u01aa")
+        buf.write("\3\2\2\2\u0089\u01af\3\2\2\2\u008b\u01b5\3\2\2\2\u008d")
         buf.write("\u01b8\3\2\2\2\u008f\u01bf\3\2\2\2\u0091\u01c7\3\2\2\2")
         buf.write("\u0093\u01cf\3\2\2\2\u0095\u01d7\3\2\2\2\u0097\u01ef\3")
         buf.write("\2\2\2\u0099\u01f7\3\2\2\2\u009b\u0202\3\2\2\2\u009d\u0209")
@@ -184,15 +184,15 @@ def serializedATN():
         buf.write("\u0196\7q\2\2\u0196\u0197\7t\2\2\u0197\u0080\3\2\2\2\u0198")
         buf.write("\u0199\7n\2\2\u0199\u019a\7c\2\2\u019a\u019b\7o\2\2\u019b")
         buf.write("\u019c\7d\2\2\u019c\u019d\7f\2\2\u019d\u019e\7c\2\2\u019e")
-        buf.write("\u0082\3\2\2\2\u019f\u01a0\7/\2\2\u01a0\u01a1\7@\2\2\u01a1")
-        buf.write("\u0084\3\2\2\2\u01a2\u01a3\7v\2\2\u01a3\u01a4\7t\2\2\u01a4")
-        buf.write("\u01a5\7w\2\2\u01a5\u01a6\7g\2\2\u01a6\u0086\3\2\2\2\u01a7")
-        buf.write("\u01a8\7h\2\2\u01a8\u01a9\7c\2\2\u01a9\u01aa\7n\2\2\u01aa")
-        buf.write("\u01ab\7u\2\2\u01ab\u01ac\7g\2\2\u01ac\u0088\3\2\2\2\u01ad")
-        buf.write("\u01ae\7p\2\2\u01ae\u01af\7w\2\2\u01af\u01b0\7n\2\2\u01b0")
-        buf.write("\u01b1\7n\2\2\u01b1\u008a\3\2\2\2\u01b2\u01b3\7u\2\2\u01b3")
-        buf.write("\u01b4\7w\2\2\u01b4\u01b5\7r\2\2\u01b5\u01b6\7g\2\2\u01b6")
-        buf.write("\u01b7\7t\2\2\u01b7\u008c\3\2\2\2\u01b8\u01bc\5\u009d")
+        buf.write("\u0082\3\2\2\2\u019f\u01a0\7v\2\2\u01a0\u01a1\7t\2\2\u01a1")
+        buf.write("\u01a2\7w\2\2\u01a2\u01a3\7g\2\2\u01a3\u0084\3\2\2\2\u01a4")
+        buf.write("\u01a5\7h\2\2\u01a5\u01a6\7c\2\2\u01a6\u01a7\7n\2\2\u01a7")
+        buf.write("\u01a8\7u\2\2\u01a8\u01a9\7g\2\2\u01a9\u0086\3\2\2\2\u01aa")
+        buf.write("\u01ab\7p\2\2\u01ab\u01ac\7w\2\2\u01ac\u01ad\7n\2\2\u01ad")
+        buf.write("\u01ae\7n\2\2\u01ae\u0088\3\2\2\2\u01af\u01b0\7u\2\2\u01b0")
+        buf.write("\u01b1\7w\2\2\u01b1\u01b2\7r\2\2\u01b2\u01b3\7g\2\2\u01b3")
+        buf.write("\u01b4\7t\2\2\u01b4\u008a\3\2\2\2\u01b5\u01b6\7/\2\2\u01b6")
+        buf.write("\u01b7\7@\2\2\u01b7\u008c\3\2\2\2\u01b8\u01bc\5\u009d")
         buf.write("O\2\u01b9\u01bb\5\u009fP\2\u01ba\u01b9\3\2\2\2\u01bb\u01be")
         buf.write("\3\2\2\2\u01bc\u01ba\3\2\2\2\u01bc\u01bd\3\2\2\2\u01bd")
         buf.write("\u008e\3\2\2\2\u01be\u01bc\3\2\2\2\u01bf\u01c0\7\62\2")
@@ -344,8 +344,8 @@ class PyxellLexer(Lexer):
             "'class'", "'('", "')'", "'{'", "'}'", "':'", "','", "'abstract'", 
             "'constructor'", "'['", "']'", "'?'", "'.'", "'!'", "'~'", "'..'", 
             "'...'", "'is'", "'isn't'", "'=='", "'!='", "'<='", "'>='", 
-            "'not'", "'and'", "'or'", "'lambda'", "'->'", "'true'", "'false'", 
-            "'null'", "'super'" ]
+            "'not'", "'and'", "'or'", "'lambda'", "'true'", "'false'", "'null'", 
+            "'super'", "'->'" ]
 
     symbolicNames = [ "<INVALID>",
             "INT_DEC", "INT_BIN", "INT_OCT", "INT_HEX", "FLOAT", "CHAR", 

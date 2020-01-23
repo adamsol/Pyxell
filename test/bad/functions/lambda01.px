@@ -2,4 +2,4 @@
 func f(Int->String g) Int->String def
     return g
 
-f(lambda x -> x)
+f(lambda x: x)
