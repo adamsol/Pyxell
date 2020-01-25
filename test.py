@@ -6,6 +6,7 @@ import concurrent.futures
 import glob
 import os
 import subprocess
+import sys
 import traceback
 import threading
 from pathlib import Path
@@ -47,7 +48,7 @@ n = len(tests)
 
 if n == 0:
     print("No tests to run.")
-    exit(0)
+    sys.exit(0)
 
 print(f"Running {n} tests using {args.thread_count} thread{'s' if args.thread_count > 1 else ''}.")
 

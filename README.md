@@ -125,11 +125,18 @@ Usage
 -----
 
 ```
-. pyxell.sh program.px
+python pyxell.py program.px
 ```
 
 If the program is correct, `program.ll` file and `program.exe` executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
+
+
+Executable
+----------
+
+You can build a standalone application using `pyinstaller`. Install it using `pip`, then run `make exe`.
+An executable (not requiring Python to run) will be created in the `dist/pyxell` folder.
 
 
 Development
@@ -138,7 +145,7 @@ Development
 In order to rebuild the parser from the grammar (`src/Pyxell.g4`),
 first [download ANTLR](https://www.antlr.org/download/antlr-4.7.2-complete.jar)
 and put the `antlr-4.7.2-complete.jar` file into `src` folder,
-then run `make`.
+then run `make parser`.
 
 
 Tests

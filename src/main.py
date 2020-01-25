@@ -4,6 +4,7 @@ import argparse
 import os
 import platform
 import subprocess
+import sys
 from pathlib import Path
 
 from .compiler import PyxellCompiler
@@ -53,7 +54,7 @@ def compile(filepath, clangargs):
     subprocess.check_output(clang_command, stderr=subprocess.STDOUT)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
     parser.add_argument('filepath', help="source file path")
     parser.add_argument('clangargs', nargs=argparse.REMAINDER, help="other arguments that will be passed to clang")
@@ -63,7 +64,7 @@ if __name__ == '__main__':
         compile(args.filepath, args.clangargs)
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
-        exit(1)
+        sys.exit(1)
     except PyxellError as e:
         print(str(e))
-        exit(1)
+        sys.exit(1)
