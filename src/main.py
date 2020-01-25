@@ -61,6 +61,9 @@ if __name__ == '__main__':
 
     try:
         compile(args.filepath, args.clangargs)
+    except FileNotFoundError:
+        print(f"file not found: {args.filepath}")
+        exit(1)
     except PyxellError as e:
         print(str(e))
         exit(1)
