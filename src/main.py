@@ -45,6 +45,7 @@ def build_libs():
 def compile(filepath, clangargs):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
+    exename = f'{filename}.exe'
 
     compiler = PyxellCompiler()
 
@@ -56,11 +57,13 @@ def compile(filepath, clangargs):
     with open(f'{filename}.ll', 'w') as file:
         file.write(compiler.llvm_ir())
 
-    clang_command = ['clang', f'{filename}.ll', str(abspath/'lib/io.ll'), str(abspath/'lib/base.ll'), '-o', f'{filename}.exe', '-O2', *clangargs]
+    clang_command = ['clang', f'{filename}.ll', str(abspath/'lib/io.ll'), str(abspath/'lib/base.ll'), '-o', exename, '-O2', *clangargs]
     if platform.system() != 'Windows':
         clang_command.append('-lm')
 
     subprocess.check_output(clang_command, stderr=subprocess.STDOUT)
+
+    return exename
 
 
 def main():
@@ -68,6 +71,7 @@ def main():
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
     parser.add_argument('clangargs', nargs=argparse.REMAINDER, help="other arguments that will be passed to clang")
     parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
+    parser.add_argument('-r', '--run', action='store_true', help="run the program after compilation")
     args = parser.parse_args()
 
     if not (args.filepath or args.libs):
@@ -81,10 +85,13 @@ def main():
         build_libs()
 
     try:
-        compile(args.filepath, args.clangargs)
+        exename = compile(args.filepath, args.clangargs)
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)
     except PyxellError as e:
         print(str(e))
         sys.exit(1)
+
+    if args.run:
+        subprocess.call(exename)

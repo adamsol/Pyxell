@@ -125,11 +125,13 @@ Usage
 -----
 
 ```
-python pyxell.py program.px
+python pyxell.py [-r] program.px
 ```
 
 If the program is correct, `program.ll` file and `program.exe` executable should be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
+
+If `-r` option is given, the compiled program will be run immediately after compilation.
 
 
 Executable
