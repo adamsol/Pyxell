@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import json
 import platform
 import subprocess
 import sys
@@ -15,11 +16,13 @@ from .parsing import parse_program
 
 abspath = Path(__file__).parents[1]
 
-
-with open(abspath/'lib/base.ll', 'w') as file:
-    file.write(BaseLibraryGenerator().llvm_ir())
-
-subprocess.check_output(['clang', str(abspath/'lib/io.c'), '-S', '-emit-llvm', '-o', str(abspath/'lib/io.ll')], stderr=subprocess.STDOUT)
+units = {}
+for name in ['std', 'math', 'time', 'random']:
+    try:
+        unit = json.load(open(abspath/f'lib/{name}.json'))
+    except FileNotFoundError:
+        unit = None
+    units[name] = unit
 
 
 def build_ast(path):
@@ -27,10 +30,16 @@ def build_ast(path):
     return parse_program(code)
 
 
-units = {}
-for name in ['std', 'math', 'time', 'random']:
-    path = abspath/f'lib/{name}.px'
-    units[name] = build_ast(path)
+def build_libs():
+    with open(abspath/'lib/base.ll', 'w') as file:
+        file.write(BaseLibraryGenerator().llvm_ir())
+
+    subprocess.check_output(['clang', str(abspath/'lib/io.c'), '-S', '-emit-llvm', '-o', str(abspath/'lib/io.ll')], stderr=subprocess.STDOUT)
+
+    for name in units:
+        path = abspath/f'lib/{name}.px'
+        units[name] = build_ast(path)
+        json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'))
 
 
 def compile(filepath, clangargs):
@@ -56,9 +65,20 @@ def compile(filepath, clangargs):
 
 def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
-    parser.add_argument('filepath', help="source file path")
+    parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
     parser.add_argument('clangargs', nargs=argparse.REMAINDER, help="other arguments that will be passed to clang")
+    parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
     args = parser.parse_args()
+
+    if not (args.filepath or args.libs):
+        parser.error('either filepath or -l option is required')
+
+    if args.libs:
+        build_libs()
+        sys.exit(0)
+
+    if not os.path.exists(abspath/'lib/base.ll'):
+        build_libs()
 
     try:
         compile(args.filepath, args.clangargs)

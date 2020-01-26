@@ -147,6 +147,11 @@ first [download ANTLR](https://www.antlr.org/download/antlr-4.7.2-complete.jar)
 and put the `antlr-4.7.2-complete.jar` file into `src` folder,
 then run `make parser`.
 
+Pyxell libraries (`.ll` and `.json` files in the `lib` folder)
+are built the first time the compiler is run,
+but after changing the code of libraries (`.px` or `.c` files in the `lib` folder or `src/library.py` file)
+you need to run `make libs`.
+
 
 Tests
 -----
