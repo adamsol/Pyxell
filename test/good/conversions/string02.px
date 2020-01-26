@@ -2,4 +2,4 @@
 n = -8251035946488047
 print 0.toString() + n.toString()
 
-print (-2)^63, 2^63 - 1
+print (-2)^^63, 2^^63 - 1

@@ -1,5 +1,5 @@
 
 a = [x for x in 1..10] + [x for x in 1..1000] + [x for x in 1..100000]
-a += [x for x in 0...10^7]
+a += [x for x in 0...10^^7]
 print a.length
 print a[1009], a[-1]

@@ -483,19 +483,21 @@ class PyxellCompiler:
             return self.builder.not_(value)
 
     def binaryop(self, node, op, left, right):
-        if op == '/' or left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
+        if op in {'^', '/'} or left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
             if left.type == tInt:
                 left = self.builder.sitofp(left, tFloat)
             if right.type == tInt:
                 right = self.builder.sitofp(right, tFloat)
 
         if op == '^':
+            if left.type == right.type == tFloat:
+                return self.call(node, 'Float_pow', left, right)
+            else:
+                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+
+        elif op == '^^':
             if left.type == right.type == tInt:
                 return self.call(node, 'Int_pow', left, right)
-
-            elif left.type == right.type == tFloat:
-                return self.call(node, 'Float_pow', left, right)
-
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 

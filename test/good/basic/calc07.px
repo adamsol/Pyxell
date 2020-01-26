@@ -3,7 +3,7 @@ print 4.0 - 0.4 + 3267.5
 print 2.5 * 3.5
 
 x = 0.0
-for i in 1..10^8 do
+for i in 1..10^^8 do
     x += 1.125
 print x
 

@@ -1,6 +1,6 @@
 
 Int? x = 0
 i = 0
-for i in 1..10^9 do
+for i in 1..10^^9 do
     x = null
 print i, x

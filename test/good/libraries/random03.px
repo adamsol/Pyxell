@@ -2,7 +2,7 @@
 use random
 
 a = b = false
-r = 2^60
+r = 2^^60
 for i in 1..100 do
     if randInt(1) != 0 do
         print 0
