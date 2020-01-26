@@ -22,6 +22,7 @@ class BaseLibraryGenerator(PyxellCompiler):
             'int': self.declare_format('%lld'),
             'float_read': self.declare_format('%lg'),
             'float_write': self.declare_format('%.15g'),
+            'float_write_int_dot_zero': self.declare_format('%.0f.0'),
             'bool_true': self.declare_format('true'),
             'bool_false': self.declare_format('false'),
             'char': self.declare_format('%c'),
@@ -55,6 +56,7 @@ class BaseLibraryGenerator(PyxellCompiler):
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'asin'),
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'atan'),
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat, tFloat]), 'atan2'),
+                ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'fabs'),
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'ceil'),
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'floor'),
                 ll.Function(self.module, ll.FunctionType(tFloat, [tFloat]), 'trunc'),
@@ -82,7 +84,11 @@ class BaseLibraryGenerator(PyxellCompiler):
             self.call_builtin('printf', self.get_format('int'), func.args[0])
             self.builder.ret_void()
         with self.define(tFunc([tFloat]), 'writeFloat') as func:
-            self.call_builtin('printf', self.get_format('float_write'), func.args[0])
+            with self.builder.if_else(self.should_float_be_displayed_as_integer_dot_zero(func.args[0])) as (int, notint):
+                with int:
+                    self.call_builtin('printf', self.get_format('float_write_int_dot_zero'), func.args[0])
+                with notint:
+                    self.call_builtin('printf', self.get_format('float_write'), func.args[0])
             self.builder.ret_void()
         with self.define(tFunc([tBool]), 'writeBool') as func:
             self.call_builtin('printf', self.builder.select(func.args[0], self.get_format('bool_true'), self.get_format('bool_false')))
@@ -130,7 +136,11 @@ class BaseLibraryGenerator(PyxellCompiler):
         with self.define(tFunc([tFloat], tString), 'Float_toString') as func:
             result = self.array(tChar, [], vInt(25))
             ptr = self.extract(result, 0)
-            self.call_builtin('sprintf', ptr, self.get_format('float_write'), func.args[0])
+            with self.builder.if_else(self.should_float_be_displayed_as_integer_dot_zero(func.args[0])) as (int, notint):
+                with int:
+                    self.call_builtin('sprintf', ptr, self.get_format('float_write_int_dot_zero'), func.args[0])
+                with notint:
+                    self.call_builtin('sprintf', ptr, self.get_format('float_write'), func.args[0])
             self.insert(self.call_builtin('strlen', ptr), result, 1)
             self.builder.ret(result)
 
@@ -198,3 +208,8 @@ class BaseLibraryGenerator(PyxellCompiler):
 
     def call_builtin(self, name, *args):
         return self.builder.call(self.builtins[name], args)
+
+    def should_float_be_displayed_as_integer_dot_zero(self, value):
+        return self.builder.and_(
+            self.builder.fcmp_ordered('<', self.call_builtin('fabs', value), vFloat(1e15)),
+            self.builder.fcmp_ordered('==', value, self.call_builtin('floor', value)))

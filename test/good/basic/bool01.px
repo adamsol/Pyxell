@@ -9,6 +9,6 @@ else do
     a = false
 
 if true and a and (false or not false) do
-    print c / 1 - 0
+    print c // 1 - 0
 elif true do
     skip
