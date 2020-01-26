@@ -483,10 +483,10 @@ class PyxellCompiler:
             return self.builder.not_(value)
 
     def binaryop(self, node, op, left, right):
-        if left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
+        if op == '/' or left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
             if left.type == tInt:
                 left = self.builder.sitofp(left, tFloat)
-            else:
+            if right.type == tInt:
                 right = self.builder.sitofp(right, tFloat)
 
         if op == '^':
@@ -538,6 +538,12 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '/':
+            if left.type == right.type == tFloat:
+                return self.builder.fdiv(left, right)
+            else:
+                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+
+        elif op == '//':
             if left.type == right.type == tInt:
                 v1 = self.builder.sdiv(left, right)
                 v2 = self.builder.sub(v1, vInt(1))
@@ -547,10 +553,6 @@ class PyxellCompiler:
                 v6 = self.builder.mul(v1, right)
                 v7 = self.builder.icmp_signed('!=', v6, left)
                 return self.builder.select(v7, v5, v1)
-
-            elif left.type == right.type == tFloat:
-                return self.builder.fdiv(left, right)
-
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -1159,6 +1161,8 @@ class PyxellCompiler:
         else:
             right = self.compile(exprs[1])
             value = self.binaryop(node, op, left, right)
+            if value.type != left.type:
+                self.throw(node, err.IllegalAssignment(value.type, left.type))
             self.builder.store(value, ptr)
 
     def compileStmtAppend(self, node):

@@ -1,7 +1,7 @@
 
 func palindrome(Int n) Bool def
     s = n.toString()
-    for i in 0..s.length/2 do
+    for i in 0..s.length//2 do
         if s[i] != s[-i-1] do
             return false
     return true

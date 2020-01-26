@@ -11,7 +11,7 @@ for i in 0...n do
         if a[j] > a[j+1] do
             a[j], a[j+1] = a[j+1], a[j]
 
-print a[n*3/10]
+print a[n*3//10]
 for i in 0...n-1 do
     if not a[i] <= a[i+1] do
         print i

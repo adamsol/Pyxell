@@ -15,7 +15,7 @@ simple_stmt
   | 'print' tuple_expr? # StmtPrint
   | typ ID ('=' tuple_expr)? # StmtDecl
   | (tuple_expr '=')* tuple_expr # StmtAssg
-  | expr op=('^' | '*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|' | '??') '=' expr # StmtAssgExpr
+  | expr op=('^' | '*' | '/' | '//' | '%' | '+' | '-' | '<<' | '>>' | '&' | '$' | '|' | '??') '=' expr # StmtAssgExpr
   | s=('break' | 'continue') # StmtLoopControl
   | 'return' tuple_expr? # StmtReturn
   ;
@@ -60,7 +60,7 @@ expr
   | expr op='!' # ExprUnaryOp
   | <assoc=right> expr op='^' expr # ExprBinaryOp
   | op=('+' | '-' | '~') expr # ExprUnaryOp
-  | expr op=('*' | '/' | '%') expr # ExprBinaryOp
+  | expr op=('*' | '/' | '//' | '%') expr # ExprBinaryOp
   | expr op=('+' | '-') expr # ExprBinaryOp
   | expr op=('<<' | '>>') expr # ExprBinaryOp
   | expr op='&' expr # ExprBinaryOp

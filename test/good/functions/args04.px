@@ -1,6 +1,6 @@
 
 func div(Int a, Int b) Int def
-    return a / b
+    return a // b
 
 print div(a=18, b=3)
 print div(-50, b=10)

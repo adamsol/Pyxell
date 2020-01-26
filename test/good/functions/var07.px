@@ -1,6 +1,6 @@
 
 func div(Int x, Int y) Int def
-    return x / y
+    return x // y
 
 func get(String s) Int->Int->Int def
     print s

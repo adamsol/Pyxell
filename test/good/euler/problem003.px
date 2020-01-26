@@ -4,7 +4,7 @@ p = r = 2
 while n > 1 do
     if n % p == 0 do
         r = p
-        n /= p
+        n //= p
     else do
         p += 1
 print r
