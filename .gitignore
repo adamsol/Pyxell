@@ -8,7 +8,6 @@ _*
 *.tmp
 *.bc
 *.ll
-*.json
 *.spec
 build/
 dist/

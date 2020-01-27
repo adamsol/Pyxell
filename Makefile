@@ -6,7 +6,7 @@ parser:
 libs:
 	python pyxell.py --libs
 
-exe: libs
+exe:
 	python -m PyInstaller --add-data "lib/;lib/" pyxell.py --noconfirm
 
 clean:

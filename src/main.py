@@ -34,12 +34,10 @@ def build_libs():
     with open(abspath/'lib/base.ll', 'w') as file:
         file.write(BaseLibraryGenerator().llvm_ir())
 
-    subprocess.check_output(['clang', str(abspath/'lib/io.c'), '-S', '-emit-llvm', '-o', str(abspath/'lib/io.ll')], stderr=subprocess.STDOUT)
-
     for name in units:
         path = abspath/f'lib/{name}.px'
         units[name] = build_ast(path)
-        json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'))
+        json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
 def compile(filepath, clangargs):
@@ -57,7 +55,7 @@ def compile(filepath, clangargs):
     with open(f'{filename}.ll', 'w') as file:
         file.write(compiler.llvm_ir())
 
-    clang_command = ['clang', f'{filename}.ll', str(abspath/'lib/io.ll'), str(abspath/'lib/base.ll'), '-o', exename, '-O2', *clangargs]
+    clang_command = ['clang', f'{filename}.ll', str(abspath/'lib/io.c'), str(abspath/'lib/base.ll'), '-o', exename, '-O2', *clangargs]
     if platform.system() != 'Windows':
         clang_command.append('-lm')
 
@@ -80,9 +78,6 @@ def main():
     if args.libs:
         build_libs()
         sys.exit(0)
-
-    if not os.path.exists(abspath/'lib/base.ll'):
-        build_libs()
 
     try:
         exename = compile(args.filepath, args.clangargs)

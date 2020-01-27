@@ -1,0 +1,28 @@
+{
+	"node": "Block",
+	"position": [
+		2,
+		1
+	],
+	"stmts": [
+		{
+			"node": "StmtFunc",
+			"position": [
+				2,
+				1
+			],
+			"id": "time",
+			"typevars": [],
+			"args": [],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					2,
+					13
+				],
+				"name": "Int"
+			},
+			"block": null
+		}
+	]
+}
