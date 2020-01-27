@@ -2,7 +2,7 @@
 s = 0
 f1, f2 = 1, 2
 while f1 <= 4000000 do
-    if f1 % 2 == 0 do
+    if 2 | f1 do
         s += f1
     f1, f2 = f2, f1 + f2
 print s

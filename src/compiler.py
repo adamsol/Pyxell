@@ -616,6 +616,12 @@ class PyxellCompiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
+        elif op == '|':
+            if left.type == right.type == tInt:
+                return self.builder.icmp_signed('==', self.builder.srem(right, left), vInt(0))
+            else:
+                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+
         else:
             if left.type == right.type == tInt:
                 instruction = {

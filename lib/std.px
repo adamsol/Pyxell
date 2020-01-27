@@ -85,7 +85,7 @@ func Int_pow(Int b, Int e) Int def
         return 0
     r = 1
     while e > 0 do
-        if e % 2 > 0 do
+        if not 2|e do
             r *= b
         b *= b
         e >>= 1

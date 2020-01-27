@@ -5,7 +5,7 @@ for n in 1...1000000 do
     i = n
     l = 0
     while i > 1 do
-        if i % 2 == 0 do
+        if 2|i do
             i //= 2
         else do
             i *= 3

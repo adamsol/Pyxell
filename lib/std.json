@@ -3300,50 +3300,38 @@
 									],
 									"exprs": [
 										{
-											"node": "ExprCmp",
+											"node": "ExprUnaryOp",
 											"position": [
 												88,
 												12
 											],
-											"exprs": [
-												{
-													"node": "ExprBinaryOp",
-													"position": [
-														88,
-														12
-													],
-													"exprs": [
-														{
-															"node": "AtomId",
-															"position": [
-																88,
-																12
-															],
-															"id": "e"
-														},
-														{
-															"node": "AtomInt",
-															"position": [
-																88,
-																16
-															],
-															"int": 2
-														}
-													],
-													"op": "%"
-												},
-												{
-													"node": "AtomInt",
-													"position": [
-														88,
-														20
-													],
-													"int": 0
-												}
-											],
-											"ops": [
-												">"
-											]
+											"expr": {
+												"node": "ExprBinaryOp",
+												"position": [
+													88,
+													16
+												],
+												"exprs": [
+													{
+														"node": "AtomInt",
+														"position": [
+															88,
+															16
+														],
+														"int": 2
+													},
+													{
+														"node": "AtomId",
+														"position": [
+															88,
+															18
+														],
+														"id": "e"
+													}
+												],
+												"op": "|"
+											},
+											"op": "not"
 										}
 									],
 									"blocks": [
@@ -3351,7 +3339,7 @@
 											"node": "Block",
 											"position": [
 												88,
-												24
+												22
 											],
 											"stmts": [
 												{
