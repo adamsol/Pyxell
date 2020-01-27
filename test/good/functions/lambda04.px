@@ -13,9 +13,9 @@ print fold(_//-_, 360, t)
 
 print fold(_<<_, 1, t)
 print fold(_>>_, 1<<16, t)
-print fold(_&_, -1, t)
-print fold(_|_, 8, t)
-print fold(_$_, 0, t)
+print fold(_&&_, -1, t)
+print fold(_||_, 8, t)
+print fold(_##_, 0, t)
 print fold(_+~+_, 0, t)
 
 

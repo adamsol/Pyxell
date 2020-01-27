@@ -621,9 +621,9 @@ class PyxellCompiler:
                 instruction = {
                     '<<': self.builder.shl,
                     '>>': self.builder.ashr,
-                    '&': self.builder.and_,
-                    '$': self.builder.xor,
-                    '|': self.builder.or_,
+                    '&&': self.builder.and_,
+                    '##': self.builder.xor,
+                    '||': self.builder.or_,
                 }[op]
                 return instruction(left, right)
             else:
