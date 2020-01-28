@@ -201,6 +201,9 @@ def unify_types(type1, *types):
     if type1 == type2:
         return type1
 
+    if type1 in {tInt, tFloat} and type2 in {tInt, tFloat}:
+        return tFloat
+
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
         return tArray(subtype) if subtype else None
@@ -286,7 +289,8 @@ def type_variables_assignment(type1, type2):
 
     if type1 == tUnknown or type2 == tUnknown:
         return {}
-
+    if type1 == tInt and type2 == tFloat:
+        return {}
     if type1 == type2:
         return {}
 

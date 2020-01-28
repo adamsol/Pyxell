@@ -218,9 +218,13 @@ class PyxellCompiler:
                 value_null = callback_null()
                 label_null = self.builder.basic_block
 
-        phi = self.builder.phi(value_notnull.type)
-        phi.add_incoming(value_notnull, label_notnull)
-        phi.add_incoming(value_null, label_null)
+        type = unify_types(value_notnull.type, value_null.type)
+        if type is None:
+            self.throw(node, err.UnknownType())
+
+        phi = self.builder.phi(type)
+        phi.add_incoming(self.cast(node, value_notnull, type), label_notnull)
+        phi.add_incoming(self.cast(node, value_null, type), label_null)
         return phi
 
     def attribute(self, node, expr, attr):
@@ -344,7 +348,13 @@ class PyxellCompiler:
             self.throw(node, err.IllegalAssignment(value.type, type))
         if not value.type.isNullable() and type.isNullable():
             return self.cast(node, self.nullable(value), type)
-        return value if value.type == type else self.builder.bitcast(value, type)
+
+        if value.type == type:
+            return value
+        elif type == tFloat:
+            return self.builder.sitofp(value, type)
+        else:
+            return self.builder.bitcast(value, type)
 
     def unify(self, node, *values):
         if not values:
@@ -636,16 +646,10 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
     def cmp(self, node, op, left, right):
-        if left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
-            if left.type == tInt:
-                left = self.builder.sitofp(left, tFloat)
-            else:
-                right = self.builder.sitofp(right, tFloat)
-        else:
-            try:
-                left, right = self.unify(node, left, right)
-            except err:
-                self.throw(node, err.NotComparable(left.type, right.type))
+        try:
+            left, right = self.unify(node, left, right)
+        except err:
+            self.throw(node, err.NotComparable(left.type, right.type))
 
         if left.type in {tInt, tChar}:
             return self.builder.icmp_signed(op, left, right)
@@ -1163,9 +1167,9 @@ class PyxellCompiler:
         if op == '??':
             with self.builder.if_then(self.builder.icmp_unsigned('==', left, vNull())):
                 right = self.compile(exprs[1])
-                if not left.type.isNullable() or not can_cast(left.type.subtype, right.type):
+                if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
                     self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
-                self.builder.store(self.nullable(right), ptr)
+                self.builder.store(self.nullable(self.cast(node, right, left.type.subtype)), ptr)
         else:
             right = self.compile(exprs[1])
             value = self.binaryop(node, op, left, right)
@@ -1865,14 +1869,10 @@ class PyxellCompiler:
 
         if op == '??':
             left = self.compile(exprs[0])
-
-            def callback():
-                right = self.compile(exprs[1])
-                if not can_cast(left.type.subtype, right.type):
-                    self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
-                return right
-
-            return self.safe(node, left, lambda: self.extract(left), callback)
+            try:
+                return self.safe(node, left, lambda: self.extract(left), lambda: self.compile(exprs[1]))
+            except err:
+                self.throw(node, err.NoBinaryOperator(op, left.type, self.compile(exprs[1]).type))
 
         return self.binaryop(node, op, *map(self.compile, exprs))
 

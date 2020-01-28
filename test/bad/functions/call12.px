@@ -1,5 +1,0 @@
-
-func f(Float x) def
-    return
-
-f(0)

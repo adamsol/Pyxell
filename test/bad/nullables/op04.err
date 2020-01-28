@@ -1,1 +1,1 @@
-Type `Bool` is not nullable.
+ No binary operator `??` defined for `Bool` and `Bool`.

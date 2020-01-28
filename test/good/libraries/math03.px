@@ -1,6 +1,6 @@
 
 use math
 
-print cos(PI/3), sin(-PI/3), tan(rad(60.0))
-print asin(0.0), deg(acos(0.0))
-print atan(0.0), deg(atan2(-1.0, -1.0))
+print cos(PI/3), sin(-PI/3), tan(rad(60))
+print asin(0), deg(acos(0))
+print atan(0), deg(atan2(-1, -1))

@@ -1,5 +1,7 @@
 
-func f<T>(T x: 0, T y: 1.0) T def
-    return x + y
+func f<T>(T x: 0, T y: 1.0) def
+    print x, y
 
-print f(3.5)
+f(3.5)
+f()
+f(y=-2)

@@ -2,4 +2,4 @@
 func f<T>(T x) def
     x = 3
 
-f(0.0)
+f("")

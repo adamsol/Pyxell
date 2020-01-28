@@ -1,0 +1,5 @@
+
+func f(Int x) Float def
+    return x
+
+print f(2)

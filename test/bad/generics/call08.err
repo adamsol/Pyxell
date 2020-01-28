@@ -1,1 +1,1 @@
-Illegal assignment from `Int` to `Float`.
+Illegal assignment from `Float` to `Int`.
