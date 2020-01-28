@@ -28,7 +28,7 @@ func clamp<T>(T x, T a, T b) T def
 func abs<T>(T x) T def
     return x >= 0 ? x : -x
 
-func sign<T>(T x) Int def
+func sign<T>(T x) T def
     return x > 0 ? 1 : x < 0 ? -1 : 0
 
 
