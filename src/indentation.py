@@ -37,6 +37,10 @@ def transform_indented_code(code):
             continue
         indent = match.group(1)
 
+        if len(set(indent)) > 1:
+            # Mixing different whitespace characters is not allowed.
+            raise PyxellError(PyxellError.InvalidSyntax(), i+1, 1)
+
         if new_block:
             if not (indent.startswith(indents[-1]) and len(indent) > len(indents[-1])):
                 # New block must be indented more than the previous one.
