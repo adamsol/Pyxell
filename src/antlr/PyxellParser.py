@@ -37,14 +37,14 @@ def serializedATN():
         buf.write("\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3")
         buf.write("\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n")
         buf.write("\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3")
-        buf.write("\n\5\n\u0149\n\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\5\n\u0152")
-        buf.write("\n\n\3\n\3\n\5\n\u0156\n\n\3\n\3\n\5\n\u015a\n\n\5\n\u015c")
-        buf.write("\n\n\3\n\3\n\3\n\5\n\u0161\n\n\3\n\3\n\3\n\3\n\3\n\3\n")
-        buf.write("\3\n\7\n\u016a\n\n\f\n\16\n\u016d\13\n\3\n\5\n\u0170\n")
-        buf.write("\n\3\n\3\n\3\n\3\n\3\n\7\n\u0177\n\n\f\n\16\n\u017a\13")
-        buf.write("\n\3\13\3\13\3\13\7\13\u017f\n\13\f\13\16\13\u0182\13")
-        buf.write("\13\3\13\3\13\3\f\3\f\3\f\3\r\3\r\3\r\3\r\3\r\3\r\5\r")
-        buf.write("\u018f\n\r\3\r\3\r\5\r\u0193\n\r\3\16\3\16\5\16\u0197")
+        buf.write("\n\5\n\u0149\n\n\3\n\3\n\3\n\3\n\5\n\u014f\n\n\3\n\3\n")
+        buf.write("\3\n\3\n\3\n\3\n\3\n\5\n\u0158\n\n\3\n\3\n\5\n\u015c\n")
+        buf.write("\n\3\n\3\n\5\n\u0160\n\n\5\n\u0162\n\n\3\n\3\n\3\n\3\n")
+        buf.write("\3\n\3\n\7\n\u016a\n\n\f\n\16\n\u016d\13\n\3\n\5\n\u0170")
+        buf.write("\n\n\3\n\3\n\3\n\3\n\3\n\7\n\u0177\n\n\f\n\16\n\u017a")
+        buf.write("\13\n\3\13\3\13\3\13\7\13\u017f\n\13\f\13\16\13\u0182")
+        buf.write("\13\13\3\13\3\13\3\f\3\f\3\f\3\r\3\r\3\r\3\r\3\r\3\r\5")
+        buf.write("\r\u018f\n\r\3\r\3\r\5\r\u0193\n\r\3\16\3\16\5\16\u0197")
         buf.write("\n\16\3\16\3\16\3\17\3\17\3\17\3\17\3\17\3\17\3\17\3\17")
         buf.write("\5\17\u01a3\n\17\3\20\3\20\7\20\u01a7\n\20\f\20\16\20")
         buf.write("\u01aa\13\20\3\20\3\20\3\21\3\21\3\21\3\21\3\21\3\21\3")
@@ -167,54 +167,54 @@ def serializedATN():
         buf.write("\u0143\5\22\n\2\u0143\u0144\7/\2\2\u0144\u0145\5\22\n")
         buf.write("\4\u0145\u0177\3\2\2\2\u0146\u0148\f\32\2\2\u0147\u0149")
         buf.write("\7\65\2\2\u0148\u0147\3\2\2\2\u0148\u0149\3\2\2\2\u0149")
-        buf.write("\u014a\3\2\2\2\u014a\u014b\7\63\2\2\u014b\u014c\5\24\13")
-        buf.write("\2\u014c\u014d\7\64\2\2\u014d\u0177\3\2\2\2\u014e\u014f")
-        buf.write("\f\31\2\2\u014f\u0151\7\63\2\2\u0150\u0152\5\22\n\2\u0151")
-        buf.write("\u0150\3\2\2\2\u0151\u0152\3\2\2\2\u0152\u0153\3\2\2\2")
-        buf.write("\u0153\u0155\7/\2\2\u0154\u0156\5\22\n\2\u0155\u0154\3")
-        buf.write("\2\2\2\u0155\u0156\3\2\2\2\u0156\u015b\3\2\2\2\u0157\u0159")
-        buf.write("\7/\2\2\u0158\u015a\5\22\n\2\u0159\u0158\3\2\2\2\u0159")
-        buf.write("\u015a\3\2\2\2\u015a\u015c\3\2\2\2\u015b\u0157\3\2\2\2")
-        buf.write("\u015b\u015c\3\2\2\2\u015c\u015d\3\2\2\2\u015d\u0177\7")
-        buf.write("\64\2\2\u015e\u0160\f\30\2\2\u015f\u0161\7\65\2\2\u0160")
-        buf.write("\u015f\3\2\2\2\u0160\u0161\3\2\2\2\u0161\u0162\3\2\2\2")
-        buf.write("\u0162\u0163\7\66\2\2\u0163\u0177\7R\2\2\u0164\u0165\f")
-        buf.write("\27\2\2\u0165\u016b\7+\2\2\u0166\u0167\5\32\16\2\u0167")
-        buf.write("\u0168\7\60\2\2\u0168\u016a\3\2\2\2\u0169\u0166\3\2\2")
-        buf.write("\2\u016a\u016d\3\2\2\2\u016b\u0169\3\2\2\2\u016b\u016c")
-        buf.write("\3\2\2\2\u016c\u016f\3\2\2\2\u016d\u016b\3\2\2\2\u016e")
-        buf.write("\u0170\5\32\16\2\u016f\u016e\3\2\2\2\u016f\u0170\3\2\2")
-        buf.write("\2\u0170\u0171\3\2\2\2\u0171\u0177\7,\2\2\u0172\u0173")
-        buf.write("\f\26\2\2\u0173\u0177\7\67\2\2\u0174\u0175\f\f\2\2\u0175")
-        buf.write("\u0177\7:\2\2\u0176\u0116\3\2\2\2\u0176\u0119\3\2\2\2")
-        buf.write("\u0176\u011c\3\2\2\2\u0176\u011f\3\2\2\2\u0176\u0122\3")
-        buf.write("\2\2\2\u0176\u0125\3\2\2\2\u0176\u0128\3\2\2\2\u0176\u012b")
-        buf.write("\3\2\2\2\u0176\u012e\3\2\2\2\u0176\u0131\3\2\2\2\u0176")
-        buf.write("\u0134\3\2\2\2\u0176\u0137\3\2\2\2\u0176\u013a\3\2\2\2")
-        buf.write("\u0176\u013d\3\2\2\2\u0176\u0140\3\2\2\2\u0176\u0146\3")
-        buf.write("\2\2\2\u0176\u014e\3\2\2\2\u0176\u015e\3\2\2\2\u0176\u0164")
-        buf.write("\3\2\2\2\u0176\u0172\3\2\2\2\u0176\u0174\3\2\2\2\u0177")
-        buf.write("\u017a\3\2\2\2\u0178\u0176\3\2\2\2\u0178\u0179\3\2\2\2")
-        buf.write("\u0179\23\3\2\2\2\u017a\u0178\3\2\2\2\u017b\u017c\5\22")
-        buf.write("\n\2\u017c\u017d\7\60\2\2\u017d\u017f\3\2\2\2\u017e\u017b")
-        buf.write("\3\2\2\2\u017f\u0182\3\2\2\2\u0180\u017e\3\2\2\2\u0180")
-        buf.write("\u0181\3\2\2\2\u0181\u0183\3\2\2\2\u0182\u0180\3\2\2\2")
-        buf.write("\u0183\u0184\5\22\n\2\u0184\25\3\2\2\2\u0185\u0186\5\24")
-        buf.write("\13\2\u0186\u0187\7\2\2\3\u0187\27\3\2\2\2\u0188\u0189")
-        buf.write("\7\"\2\2\u0189\u018a\5\24\13\2\u018a\u018b\7#\2\2\u018b")
-        buf.write("\u018e\5\24\13\2\u018c\u018d\7$\2\2\u018d\u018f\5\24\13")
-        buf.write("\2\u018e\u018c\3\2\2\2\u018e\u018f\3\2\2\2\u018f\u0193")
-        buf.write("\3\2\2\2\u0190\u0191\7\34\2\2\u0191\u0193\5\22\n\2\u0192")
-        buf.write("\u0188\3\2\2\2\u0192\u0190\3\2\2\2\u0193\31\3\2\2\2\u0194")
-        buf.write("\u0195\7R\2\2\u0195\u0197\7\n\2\2\u0196\u0194\3\2\2\2")
-        buf.write("\u0196\u0197\3\2\2\2\u0197\u0198\3\2\2\2\u0198\u0199\5")
-        buf.write("\22\n\2\u0199\33\3\2\2\2\u019a\u01a3\t\f\2\2\u019b\u01a3")
-        buf.write("\7O\2\2\u019c\u01a3\t\r\2\2\u019d\u01a3\7P\2\2\u019e\u01a3")
-        buf.write("\7Q\2\2\u019f\u01a3\7H\2\2\u01a0\u01a3\7I\2\2\u01a1\u01a3")
-        buf.write("\7R\2\2\u01a2\u019a\3\2\2\2\u01a2\u019b\3\2\2\2\u01a2")
-        buf.write("\u019c\3\2\2\2\u01a2\u019d\3\2\2\2\u01a2\u019e\3\2\2\2")
-        buf.write("\u01a2\u019f\3\2\2\2\u01a2\u01a0\3\2\2\2\u01a2\u01a1\3")
-        buf.write("\2\2\2\u01a3\35\3\2\2\2\u01a4\u01a5\7R\2\2\u01a5\u01a7")
+        buf.write("\u014a\3\2\2\2\u014a\u014b\7\66\2\2\u014b\u0177\7R\2\2")
+        buf.write("\u014c\u014e\f\31\2\2\u014d\u014f\7\65\2\2\u014e\u014d")
+        buf.write("\3\2\2\2\u014e\u014f\3\2\2\2\u014f\u0150\3\2\2\2\u0150")
+        buf.write("\u0151\7\63\2\2\u0151\u0152\5\24\13\2\u0152\u0153\7\64")
+        buf.write("\2\2\u0153\u0177\3\2\2\2\u0154\u0155\f\30\2\2\u0155\u0157")
+        buf.write("\7\63\2\2\u0156\u0158\5\22\n\2\u0157\u0156\3\2\2\2\u0157")
+        buf.write("\u0158\3\2\2\2\u0158\u0159\3\2\2\2\u0159\u015b\7/\2\2")
+        buf.write("\u015a\u015c\5\22\n\2\u015b\u015a\3\2\2\2\u015b\u015c")
+        buf.write("\3\2\2\2\u015c\u0161\3\2\2\2\u015d\u015f\7/\2\2\u015e")
+        buf.write("\u0160\5\22\n\2\u015f\u015e\3\2\2\2\u015f\u0160\3\2\2")
+        buf.write("\2\u0160\u0162\3\2\2\2\u0161\u015d\3\2\2\2\u0161\u0162")
+        buf.write("\3\2\2\2\u0162\u0163\3\2\2\2\u0163\u0177\7\64\2\2\u0164")
+        buf.write("\u0165\f\27\2\2\u0165\u016b\7+\2\2\u0166\u0167\5\32\16")
+        buf.write("\2\u0167\u0168\7\60\2\2\u0168\u016a\3\2\2\2\u0169\u0166")
+        buf.write("\3\2\2\2\u016a\u016d\3\2\2\2\u016b\u0169\3\2\2\2\u016b")
+        buf.write("\u016c\3\2\2\2\u016c\u016f\3\2\2\2\u016d\u016b\3\2\2\2")
+        buf.write("\u016e\u0170\5\32\16\2\u016f\u016e\3\2\2\2\u016f\u0170")
+        buf.write("\3\2\2\2\u0170\u0171\3\2\2\2\u0171\u0177\7,\2\2\u0172")
+        buf.write("\u0173\f\26\2\2\u0173\u0177\7\67\2\2\u0174\u0175\f\f\2")
+        buf.write("\2\u0175\u0177\7:\2\2\u0176\u0116\3\2\2\2\u0176\u0119")
+        buf.write("\3\2\2\2\u0176\u011c\3\2\2\2\u0176\u011f\3\2\2\2\u0176")
+        buf.write("\u0122\3\2\2\2\u0176\u0125\3\2\2\2\u0176\u0128\3\2\2\2")
+        buf.write("\u0176\u012b\3\2\2\2\u0176\u012e\3\2\2\2\u0176\u0131\3")
+        buf.write("\2\2\2\u0176\u0134\3\2\2\2\u0176\u0137\3\2\2\2\u0176\u013a")
+        buf.write("\3\2\2\2\u0176\u013d\3\2\2\2\u0176\u0140\3\2\2\2\u0176")
+        buf.write("\u0146\3\2\2\2\u0176\u014c\3\2\2\2\u0176\u0154\3\2\2\2")
+        buf.write("\u0176\u0164\3\2\2\2\u0176\u0172\3\2\2\2\u0176\u0174\3")
+        buf.write("\2\2\2\u0177\u017a\3\2\2\2\u0178\u0176\3\2\2\2\u0178\u0179")
+        buf.write("\3\2\2\2\u0179\23\3\2\2\2\u017a\u0178\3\2\2\2\u017b\u017c")
+        buf.write("\5\22\n\2\u017c\u017d\7\60\2\2\u017d\u017f\3\2\2\2\u017e")
+        buf.write("\u017b\3\2\2\2\u017f\u0182\3\2\2\2\u0180\u017e\3\2\2\2")
+        buf.write("\u0180\u0181\3\2\2\2\u0181\u0183\3\2\2\2\u0182\u0180\3")
+        buf.write("\2\2\2\u0183\u0184\5\22\n\2\u0184\25\3\2\2\2\u0185\u0186")
+        buf.write("\5\24\13\2\u0186\u0187\7\2\2\3\u0187\27\3\2\2\2\u0188")
+        buf.write("\u0189\7\"\2\2\u0189\u018a\5\24\13\2\u018a\u018b\7#\2")
+        buf.write("\2\u018b\u018e\5\24\13\2\u018c\u018d\7$\2\2\u018d\u018f")
+        buf.write("\5\24\13\2\u018e\u018c\3\2\2\2\u018e\u018f\3\2\2\2\u018f")
+        buf.write("\u0193\3\2\2\2\u0190\u0191\7\34\2\2\u0191\u0193\5\22\n")
+        buf.write("\2\u0192\u0188\3\2\2\2\u0192\u0190\3\2\2\2\u0193\31\3")
+        buf.write("\2\2\2\u0194\u0195\7R\2\2\u0195\u0197\7\n\2\2\u0196\u0194")
+        buf.write("\3\2\2\2\u0196\u0197\3\2\2\2\u0197\u0198\3\2\2\2\u0198")
+        buf.write("\u0199\5\22\n\2\u0199\33\3\2\2\2\u019a\u01a3\t\f\2\2\u019b")
+        buf.write("\u01a3\7O\2\2\u019c\u01a3\t\r\2\2\u019d\u01a3\7P\2\2\u019e")
+        buf.write("\u01a3\7Q\2\2\u019f\u01a3\7H\2\2\u01a0\u01a3\7I\2\2\u01a1")
+        buf.write("\u01a3\7R\2\2\u01a2\u019a\3\2\2\2\u01a2\u019b\3\2\2\2")
+        buf.write("\u01a2\u019c\3\2\2\2\u01a2\u019d\3\2\2\2\u01a2\u019e\3")
+        buf.write("\2\2\2\u01a2\u019f\3\2\2\2\u01a2\u01a0\3\2\2\2\u01a2\u01a1")
+        buf.write("\3\2\2\2\u01a3\35\3\2\2\2\u01a4\u01a5\7R\2\2\u01a5\u01a7")
         buf.write("\7\60\2\2\u01a6\u01a4\3\2\2\2\u01a7\u01aa\3\2\2\2\u01a8")
         buf.write("\u01a6\3\2\2\2\u01a8\u01a9\3\2\2\2\u01a9\u01ab\3\2\2\2")
         buf.write("\u01aa\u01a8\3\2\2\2\u01ab\u01ac\7R\2\2\u01ac\37\3\2\2")
@@ -232,8 +232,8 @@ def serializedATN():
         buf.write("\u01c5\u01c6\3\2\2\2\u01c6!\3\2\2\2\u01c7\u01c5\3\2\2")
         buf.write("\2\65%.8=CJVXek}\u0088\u008c\u0092\u009a\u00a1\u00a5\u00ab")
         buf.write("\u00b3\u00b7\u00bf\u00c7\u00cd\u00d5\u00d7\u00dd\u00ed")
-        buf.write("\u00f1\u00ff\u010c\u0110\u0114\u0148\u0151\u0155\u0159")
-        buf.write("\u015b\u0160\u016b\u016f\u0176\u0178\u0180\u018e\u0192")
+        buf.write("\u00f1\u00ff\u010c\u0110\u0114\u0148\u014e\u0157\u015b")
+        buf.write("\u015f\u0161\u016b\u016f\u0176\u0178\u0180\u018e\u0192")
         buf.write("\u0196\u01a2\u01a8\u01b9\u01c3\u01c5")
         return buf.getvalue()
 
@@ -2367,7 +2367,7 @@ class PyxellParser ( Parser ):
                         pass
 
                     elif la_ == 16:
-                        localctx = PyxellParser.ExprIndexContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprAttrContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 324
                         if not self.precpred(self._ctx, 24):
@@ -2382,79 +2382,79 @@ class PyxellParser ( Parser ):
 
 
                         self.state = 328
-                        self.match(PyxellParser.T__48)
+                        self.match(PyxellParser.T__51)
                         self.state = 329
-                        self.tuple_expr()
-                        self.state = 330
-                        self.match(PyxellParser.T__49)
+                        self.match(PyxellParser.ID)
                         pass
 
                     elif la_ == 17:
-                        localctx = PyxellParser.ExprSliceContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprIndexContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 332
+                        self.state = 330
                         if not self.precpred(self._ctx, 23):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 23)")
-                        self.state = 333
+                        self.state = 332
+                        self._errHandler.sync(self)
+                        _la = self._input.LA(1)
+                        if _la==PyxellParser.T__50:
+                            self.state = 331
+                            localctx.safe = self.match(PyxellParser.T__50)
+
+
+                        self.state = 334
                         self.match(PyxellParser.T__48)
                         self.state = 335
+                        self.tuple_expr()
+                        self.state = 336
+                        self.match(PyxellParser.T__49)
+                        pass
+
+                    elif la_ == 18:
+                        localctx = PyxellParser.ExprSliceContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
+                        self.state = 338
+                        if not self.precpred(self._ctx, 22):
+                            from antlr4.error.Errors import FailedPredicateException
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 22)")
+                        self.state = 339
+                        self.match(PyxellParser.T__48)
+                        self.state = 341
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
                         if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__14) | (1 << PyxellParser.T__15) | (1 << PyxellParser.T__40) | (1 << PyxellParser.T__48) | (1 << PyxellParser.T__53))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__66 - 64)) | (1 << (PyxellParser.T__67 - 64)) | (1 << (PyxellParser.T__68 - 64)) | (1 << (PyxellParser.T__69 - 64)) | (1 << (PyxellParser.T__70 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
-                            self.state = 334
+                            self.state = 340
                             localctx.e1 = self.expr(0)
 
 
-                        self.state = 337
+                        self.state = 343
                         self.match(PyxellParser.T__44)
-                        self.state = 339
-                        self._errHandler.sync(self)
-                        _la = self._input.LA(1)
-                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__14) | (1 << PyxellParser.T__15) | (1 << PyxellParser.T__40) | (1 << PyxellParser.T__48) | (1 << PyxellParser.T__53))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__66 - 64)) | (1 << (PyxellParser.T__67 - 64)) | (1 << (PyxellParser.T__68 - 64)) | (1 << (PyxellParser.T__69 - 64)) | (1 << (PyxellParser.T__70 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
-                            self.state = 338
-                            localctx.e2 = self.expr(0)
-
-
                         self.state = 345
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
+                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__14) | (1 << PyxellParser.T__15) | (1 << PyxellParser.T__40) | (1 << PyxellParser.T__48) | (1 << PyxellParser.T__53))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__66 - 64)) | (1 << (PyxellParser.T__67 - 64)) | (1 << (PyxellParser.T__68 - 64)) | (1 << (PyxellParser.T__69 - 64)) | (1 << (PyxellParser.T__70 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
+                            self.state = 344
+                            localctx.e2 = self.expr(0)
+
+
+                        self.state = 351
+                        self._errHandler.sync(self)
+                        _la = self._input.LA(1)
                         if _la==PyxellParser.T__44:
-                            self.state = 341
+                            self.state = 347
                             self.match(PyxellParser.T__44)
-                            self.state = 343
+                            self.state = 349
                             self._errHandler.sync(self)
                             _la = self._input.LA(1)
                             if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__14) | (1 << PyxellParser.T__15) | (1 << PyxellParser.T__40) | (1 << PyxellParser.T__48) | (1 << PyxellParser.T__53))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__66 - 64)) | (1 << (PyxellParser.T__67 - 64)) | (1 << (PyxellParser.T__68 - 64)) | (1 << (PyxellParser.T__69 - 64)) | (1 << (PyxellParser.T__70 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
-                                self.state = 342
+                                self.state = 348
                                 localctx.e3 = self.expr(0)
 
 
 
 
-                        self.state = 347
-                        self.match(PyxellParser.T__49)
-                        pass
-
-                    elif la_ == 18:
-                        localctx = PyxellParser.ExprAttrContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
-                        self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 348
-                        if not self.precpred(self._ctx, 22):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 22)")
-                        self.state = 350
-                        self._errHandler.sync(self)
-                        _la = self._input.LA(1)
-                        if _la==PyxellParser.T__50:
-                            self.state = 349
-                            localctx.safe = self.match(PyxellParser.T__50)
-
-
-                        self.state = 352
-                        self.match(PyxellParser.T__51)
                         self.state = 353
-                        self.match(PyxellParser.ID)
+                        self.match(PyxellParser.T__49)
                         pass
 
                     elif la_ == 19:

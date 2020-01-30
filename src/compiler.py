@@ -405,11 +405,11 @@ class PyxellCompiler:
 
             return self.env[id]
 
-        elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
-            return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
-
         elif expr['node'] == 'ExprAttr' and not expr.get('safe'):
             return self.member(node, self.compile(expr['expr']), expr['attr'], lvalue=True)
+
+        elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
+            return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
 
         self.throw(node, err.NotLvalue())
 
@@ -963,12 +963,6 @@ class PyxellCompiler:
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
                 }
-            if node == 'ExprSlice':
-                return {
-                    **expr,
-                    'expr': convert_expr(expr['expr']),
-                    'slice': lmap(convert_expr, expr['slice']),
-                }
             if node == 'ExprArrayComprehension':
                 return {
                     **expr,
@@ -981,16 +975,22 @@ class PyxellCompiler:
                     'iterables': lmap(convert_expr, expr['iterables']),
                     'steps': lmap(convert_expr, expr['steps']),
                 }
+            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp'}:
+                return {
+                    **expr,
+                    'expr': convert_expr(expr['expr']),
+                }
+            if node == 'ExprSlice':
+                return {
+                    **expr,
+                    'expr': convert_expr(expr['expr']),
+                    'slice': lmap(convert_expr, expr['slice']),
+                }
             if node == 'ExprCall':
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
                     'args': lmap(convert_expr, expr['args']),
-                }
-            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp'}:
-                return {
-                    **expr,
-                    'expr': convert_expr(expr['expr']),
                 }
             if node == 'AtomString':
                 expr = self.convert_string(expr, expr['string'])
@@ -1614,6 +1614,17 @@ class PyxellCompiler:
 
         return result
 
+    def compileExprAttr(self, node):
+        expr = node['expr']
+        attr = node['attr']
+
+        if node.get('safe'):
+            obj = self.compile(expr)
+            return self.safe(node, obj, lambda: self.nullable(self.attr(node, self.extract(obj), attr)), vNull)
+
+        obj, value = self.attribute(node, expr, attr)
+        return value
+
     def compileExprIndex(self, node):
         exprs = node['exprs']
 
@@ -1667,17 +1678,6 @@ class PyxellCompiler:
 
         # `CharArray_asString` is used directly, because `.join` would copy the array redundantly.
         return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == tString else result
-
-    def compileExprAttr(self, node):
-        expr = node['expr']
-        attr = node['attr']
-
-        if node.get('safe'):
-            obj = self.compile(expr)
-            return self.safe(node, obj, lambda: self.nullable(self.attr(node, self.extract(obj), attr)), vNull)
-
-        obj, value = self.attribute(node, expr, attr)
-        return value
 
     def compileExprCall(self, node):
         expr = node['expr']
