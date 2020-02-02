@@ -11,7 +11,6 @@ from pathlib import Path
 from .compiler import PyxellCompiler
 from .errors import PyxellError
 from .indentation import transform_indented_code
-from .library import BaseLibraryGenerator
 from .parsing import parse_program
 
 abspath = Path(__file__).parents[1]
@@ -31,46 +30,59 @@ def build_ast(path):
 
 
 def build_libs():
-    with open(abspath/'lib/base.ll', 'w') as file:
-        file.write(BaseLibraryGenerator().llvm_ir())
-
     for name in units:
         path = abspath/f'lib/{name}.px'
         units[name] = build_ast(path)
         json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
-def compile(filepath, clangargs):
+def compile(filepath, cpp_compiler, verbose=False, *other_args):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
-    exename = f'{filename}.exe'
+    cpp_filename = f'{filename}.cpp'
+    exe_filename = f'{filename}.exe'
+
+    if verbose:
+        print(f'transpiling {filepath} to {cpp_filename}')
 
     compiler = PyxellCompiler()
 
-    for name, ast in units.items():
-        compiler.run(ast, name)
+    # for name, ast in units.items():
+    #     compiler.run(ast, name)
 
-    compiler.run_main(build_ast(filepath))
+    with open(cpp_filename, 'w') as file:
+        ast = build_ast(filepath)
+        code = compiler.run_main(ast)
+        file.write(code)
 
-    with open(f'{filename}.ll', 'w') as file:
-        file.write(compiler.llvm_ir())
+    if cpp_compiler.lower() not in {'', 'no', 'none'}:
+        command = [cpp_compiler, cpp_filename, '-o', exe_filename, '-std=c++17', '-O2', *other_args]
+        if platform.system() != 'Windows':
+            command.append('-lm')
 
-    clang_command = ['clang', f'{filename}.ll', str(abspath/'lib/io.c'), str(abspath/'lib/base.ll'), '-o', exename, '-O2', *clangargs]
-    if platform.system() != 'Windows':
-        clang_command.append('-lm')
+        if verbose:
+            print(f'running {" ".join(command)}')
 
-    subprocess.check_output(clang_command, stderr=subprocess.STDOUT)
+        try:
+            if verbose:
+                subprocess.call(command, stderr=subprocess.STDOUT)
+            else:
+                subprocess.check_output(command, stderr=subprocess.STDOUT)
+        except FileNotFoundError:
+            print(f"command not found: {cpp_compiler}")
 
-    return exename
+
+    return exe_filename
 
 
 def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
-    parser.add_argument('clangargs', nargs=argparse.REMAINDER, help="other arguments that will be passed to clang")
+    parser.add_argument('-c', '--cpp-compiler', default='g++', help="C++ compiler command (default: g++)")
     parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
     parser.add_argument('-r', '--run', action='store_true', help="run the program after compilation")
-    args = parser.parse_args()
+    parser.add_argument('-v', '--verbose', action='store_true', help="output diagnostic information")
+    args, other_args = parser.parse_known_args()
 
     if not (args.filepath or args.libs):
         parser.error('either filepath or -l option is required')
@@ -80,7 +92,7 @@ def main():
         sys.exit(0)
 
     try:
-        exename = compile(args.filepath, args.clangargs)
+        exe_filename = compile(args.filepath, args.cpp_compiler, args.verbose, *other_args)
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)
@@ -89,4 +101,7 @@ def main():
         sys.exit(1)
 
     if args.run:
-        subprocess.call(exename)
+        if args.verbose:
+            print(f'executing {exe_filename}')
+
+        subprocess.call(exe_filename)

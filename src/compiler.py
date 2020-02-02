@@ -3,19 +3,14 @@ import re
 from collections import defaultdict
 from contextlib import contextmanager
 
-import llvmlite.ir as ll
+import cgen as c
 
 from .errors import PyxellError as err
+from .operations import *
 from .parsing import parse_expr
 from .types import *
 from .utils import *
-
-
-class CustomIRBuilder(ll.IRBuilder):
-
-    def _set_terminator(self, term):
-        self.basic_block.terminator = None  # to prevent llvmlite's AssertionError
-        super()._set_terminator(term)
+from .values import *
 
 
 class Unit:
@@ -32,29 +27,30 @@ class PyxellCompiler:
         self.units = {}
         self._unit = None
         self.level = 0
-        self.builder = CustomIRBuilder()
-        self.module = ll.Module(context=ll.Context())
-        self.builtins = {
-            'malloc': ll.Function(self.module, tFunc([tInt], tPtr()).pointee, 'malloc'),
-            'realloc': ll.Function(self.module, tFunc([tPtr(), tInt], tPtr()).pointee, 'realloc'),
-            'memcpy': ll.Function(self.module, tFunc([tPtr(), tPtr(), tInt]).pointee, 'memcpy'),
-            'putchar': ll.Function(self.module, tFunc([tChar]).pointee, 'putchar'),
-        }
-        self.main = ll.Function(self.module, tFunc([], tInt).pointee, 'main')
-        self.builder.position_at_end(self.main.append_basic_block('entry'))
+
+        self.block = c.Block()
+        self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self.block)
+
+        self.module = c.Module([
+            c.Line(),
+            c.Include('cstdio'),
+            c.Line(),
+            self.main,
+            c.Line()
+        ])
 
     def run(self, ast, unit):
         self.units[unit] = Unit()
         with self.unit(unit):
-            if unit != 'std':
-                self.env = self.units['std'].env.copy()
-                self.initialized = self.units['std'].initialized.copy()
-                self.levels = self.units['std'].levels.copy()
+            # if unit != 'std':
+            #     self.env = self.units['std'].env.copy()
+            #     self.initialized = self.units['std'].initialized.copy()
+            #     self.levels = self.units['std'].levels.copy()
             self.compile(ast)
 
     def run_main(self, ast):
         self.run(ast, 'main')
-        self.builder.ret(ll.Constant(tInt, 0))
+        return str(self.module)
 
     def compile(self, node):
         if not isinstance(node, dict):
@@ -70,9 +66,6 @@ class PyxellCompiler:
     def throw(self, node, msg):
         line, column = node.get('position', (1, 1))
         raise err(msg, line, column)
-
-    def llvm_ir(self):
-        return str(self.module)
 
 
     ### Helpers ###
@@ -124,23 +117,13 @@ class PyxellCompiler:
 
     @contextmanager
     def no_output(self):
-        dummy_module = ll.Module()
-        dummy_func = ll.Function(dummy_module, tFunc([]).pointee, 'dummy')
-        dummy_label = dummy_func.append_basic_block('dummy')
-        prev_label = self.builder.basic_block
-        self.builder.position_at_end(dummy_label)
+        block = self.block
+        self.block = c.Block()
         yield
-        self.builder.position_at_end(prev_label)
+        self.block = block
 
-    @contextmanager
-    def block(self):
-        label_start = self.builder.append_basic_block()
-        self.builder.branch(label_start)
-        self.builder.position_at_end(label_start)
-        label_end = ll.Block(self.builder.function)
-        yield label_start, label_end
-        self.builder.function.blocks.append(label_end)
-        self.builder.position_at_end(label_end)
+    def output(self, line):
+        self.block.append(c.Statement(line))
 
     def resolve_type(self, type):
         if type.isVar():
@@ -158,7 +141,7 @@ class PyxellCompiler:
 
     ### Code generation ###
 
-    def get(self, node, id, load=True):
+    def get(self, node, id):
         if id not in self.env:
             self.throw(node, err.UndeclaredIdentifier(id))
 
@@ -178,12 +161,7 @@ class PyxellCompiler:
         if id not in self.initialized:
             self.throw(node, err.UninitializedIdentifier(id))
 
-        if result.isTemplate():
-            if result.typevars:
-                return result
-            result = self.function(result)
-
-        return self.builder.load(result) if load else result
+        return result
 
     def extract(self, ptr, *indices, load=True):
         ptr = self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]])
@@ -374,18 +352,14 @@ class PyxellCompiler:
         if check_only:
             return
 
-        if self.builder.function._name == 'main':
-            ptr = ll.GlobalVariable(self.module, type, self.module.get_unique_name(id))
-            ptr.initializer = type.default()
-        else:
-            ptr = self.builder.alloca(type)
+        self.output(f'{type} {id}')
+        self.env[id] = Variable(type, id)
 
-        self.env[id] = ptr
         if initialize:
             self.initialized.add(id)
         self.levels[id] = self.level
 
-        return ptr
+        return self.env[id]
 
     def lvalue(self, node, expr, declare=None, override=False, initialize=False):
         if expr['node'] == 'AtomId':
@@ -411,10 +385,15 @@ class PyxellCompiler:
         elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
             return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
 
-        self.throw(node, err.NotLvalue())
+        else:
+            self.throw(node, err.NotLvalue())
 
     def assign(self, node, expr, value):
         type = value.type
+
+        var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
+        self.output(f'{var} = {value}')
+        return
 
         if type.isFunc():
             type = tFunc([arg.type for arg in type.args], type.ret)
@@ -466,6 +445,8 @@ class PyxellCompiler:
         return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
     def unaryop(self, node, op, value):
+        return UnaryOperation(op, value, type=value.type)
+
         if op == '!':
             if not value.type.isNullable():
                 self.throw(node, err.NotNullable(value.type))
@@ -493,6 +474,8 @@ class PyxellCompiler:
             return self.builder.not_(value)
 
     def binaryop(self, node, op, left, right):
+        return BinaryOperation(left, op, right, type=left.type)
+
         if op in {'^', '/'} or left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
             if left.type == tInt:
                 left = self.builder.sitofp(left, tFloat)
@@ -684,7 +667,7 @@ class PyxellCompiler:
                     self.builder.position_at_end(label)
 
                 values = [self.builder.load(self.builder.gep(array, [i])) for array in [array1, array2]]
-                cond = self.cmp(node, op + '=' if op in {'<', '>'} else op, *values)
+                cond = self.cmp(node, op+'=' if op in {'<', '>'} else op, *values)
 
                 if op == '!=':
                     self.builder.cbranch(cond, label_true, label_cont)
@@ -733,7 +716,7 @@ class PyxellCompiler:
                     label_cont = ll.Block(self.builder.function)
 
                     values = [self.extract(tuple, i) for tuple in [left, right]]
-                    cond = self.cmp(node, op + '=' if op in {'<', '>'} else op, *values)
+                    cond = self.cmp(node, op+'=' if op in {'<', '>'} else op, *values)
 
                     if op == '!=':
                         self.builder.cbranch(cond, label_true, label_cont)
@@ -777,24 +760,24 @@ class PyxellCompiler:
         else:
             self.throw(node, err.NotComparable(left.type, right.type))
 
-    def write(self, str):
-        for char in str:
-            self.builder.call(self.builtins['putchar'], [vChar(char)])
+    def write(self, format, *values):
+        args = ''.join(f', {value}' for value in values)
+        self.output(f'printf("{format}"{args})')
 
     def print(self, node, value):
         type = value.type
-        
+
         if type == tInt:
-            self.call(node, 'writeInt', value)
+            self.write('%lld', value)
 
         elif type == tFloat:
-            self.call(node, 'writeFloat', value)
+            self.write('%.15g', value)
 
         elif type == tBool:
-            self.call(node, 'writeBool', value)
+            self.write(f'{value} ? "true" : "false"')
 
         elif type == tChar:
-            self.call(node, 'writeChar', value)
+            self.write('%c', value)
 
         elif type.isString():
             self.call(node, 'write', value)
@@ -831,28 +814,25 @@ class PyxellCompiler:
                 with label_else:
                     self.write('null')
 
-        elif value.type.isTuple():
-            for i in range(len(value.type.elements)):
+        elif type.isTuple():
+            for i in range(len(type.elements)):
                 if i > 0:
                     self.write(' ')
                 self.print(node, self.extract(value, i))
 
-        elif value.type.isClass():
+        elif type.isClass():
             try:
                 method = self.attr(node, value, "toString")
             except err:
                 method = None
 
             if not (method and method.type.isFunc() and len(method.type.args) == 1 and method.type.ret == tString):
-                self.throw(node, err.NotPrintable(value.type))
+                self.throw(node, err.NotPrintable(type))
 
             self.print(node, self.builder.call(method, [value]))
 
-        elif value.type == tUnknown:
-            pass
-
-        else:
-            self.throw(node, err.NotPrintable(value.type))
+        elif type != tUnknown:
+            self.throw(node, err.NotPrintable(type))
 
     def string(self, lit):
         const = ll.Constant(ll.ArrayType(tChar, len(lit)), [vChar(c) for c in lit])
@@ -1141,7 +1121,7 @@ class PyxellCompiler:
         if expr:
             value = self.compile(expr)
             self.print(expr, value)
-        self.write('\n')
+        self.write('\\n')
 
     def compileStmtDecl(self, node):
         type = self.resolve_type(self.compile(node['type']))

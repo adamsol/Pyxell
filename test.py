@@ -29,10 +29,9 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='',
                     help="file path pattern (relative to test folder)")
-parser.add_argument('-c', '--thread-count', dest='thread_count', type=int, default=16,
+parser.add_argument('-c', '--cpp-compiler', default='g++', help="C++ compiler command (default: g++)")
+parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16,
                     help="number of threads to use")
-parser.add_argument('-t', '--target-windows-gnu', action='store_true',
-                    help="run compiler with -target x86_64-pc-windows-gnu")
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
                     help="display all tests and don't remove generated files")
 args = parser.parse_args()
@@ -75,8 +74,7 @@ def test(i, path):
         error = False
 
         try:
-            params = ['-target', 'x86_64-pc-windows-gnu'] if args.target_windows_gnu else []
-            compile(path, params)
+            compile(path, args.cpp_compiler)
         except PyxellError as e:
             error_message = str(e)
             if expected_error:
@@ -131,7 +129,7 @@ def test(i, path):
         if not args.verbose:
             os.remove(path.replace(".px", ".tmp"))
             if not error:
-                os.remove(path.replace(".px", ".ll"))
+                os.remove(path.replace(".px", ".cpp"))
                 os.remove(path.replace(".px", ".exe"))
 
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:

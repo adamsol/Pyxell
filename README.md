@@ -1,16 +1,14 @@
 Pyxell
 ======
 
-### Clear and easy-to-use multi-paradigm compiled programming language with static typing. ###
-
-*Note: Up to version 0.6.0 the project had been developed in Haskell with BNFC. Now it has been rewritten to Python and ANTLR.*
+### Clean and easy-to-use multi-paradigm programming language with static typing, compiled to C++. ###
 
 
 Motivation
 ----------
 
 The project aims to combine the best features of different programming languages,
-pack them into a clean syntax with significant indentation,
+pack them into a clean and consistent syntax,
 and provide the execution speed of native machine code.
 
 It draws mainly from Python, Haskell, C#, and C++,
@@ -64,9 +62,9 @@ print c.s ?? "---"
 Features
 --------
 
+* Compilation to machine code via C++ (+)
 * Python-like syntax with semantic indentation (+)
 * Strongly static typing with partial type inference (+)
-* Full compilation to machine code (+)
 * 64-bit integers and double-precision floating-point numbers (+)
 * Native tuples (+)
 * Immutable strings (+)
@@ -97,13 +95,6 @@ To do:
 * Concurrency
 
 
-Details
--------
-
-* LLVM IR generator and type checker written in Python with ANTLR and llvmlite.
-* Compilation to machine code (and optimizations) with Clang.
-
-
 Requirements
 ------------
 
@@ -113,12 +104,7 @@ Requirements
 python -m pip install -r requirements.txt
 ```
 
-* Clang 6+ with C++ standard library.
-
-The library shouldn't be a problem on Linux, but on Windows this may not work out of the box.
-In some cases Windows SDK installation may be required
-or it may be necessary to run `pyxell` with `-target x86_64-pc-windows-gnu`
-(run `test.py` with `-t` argument to use this).
+* C++17 compiler (e.g. GCC 7+ or Clang 5+) to build executables.
 
 
 Usage
@@ -128,17 +114,21 @@ Usage
 python pyxell.py [-r] program.px
 ```
 
-If the program is correct, `program.ll` file and `program.exe` executable should be created in the same folder.
+If the program is correct, `program.cpp` file and `program.exe` executable will be created in the same folder.
 If not, errors will be displayed, pointing to the erroneous code location.
 
 If `-r` option is given, the compiled program will be run immediately after compilation.
+
+By default, `g++` command is used to compile the code.
+You can pick a different command using `-c` option.
+Write `-c=none` to skip the compilation step (only C++ code will be created).
 
 
 Executable
 ----------
 
 You can build a standalone application using `pyinstaller`. Install it using `pip`, then run `make exe`.
-An executable (not requiring Python to run) will be created in the `dist/pyxell` folder.
+An executable `pyxell.exe` (not requiring Python to run) will be created in the `dist/pyxell` folder.
 
 
 Development
@@ -149,7 +139,7 @@ first [download ANTLR](https://www.antlr.org/download/antlr-4.7.2-complete.jar)
 and put the `antlr-4.7.2-complete.jar` file into `src` folder,
 then run `make parser`.
 
-After changing the code of Pyxell libraries (`lib/*.px` or `src/library.py` files),
+After changing the code of Pyxell libraries (`lib/*.px` files),
 run `make libs` to rebuild them.
 
 
@@ -185,3 +175,11 @@ Some more or less similar to Pyxell are, in alphabetical order:
 * [Haskell](https://www.haskell.org/) (functional, compiled),
 * [Nim](https://nim-lang.org/) (compiled via C/C++ or transpiled to JS),
 * [Python](https://www.python.org/) (dynamically typed).
+
+
+History
+-------
+
+* The project was originaly written in Haskell, with BNFC as the parser generator, and used LLVM as the target language.
+* In version 0.7.0 the code was rewritten to Python and used ANTLR as the parser generator.
+* In version 0.9.0 the project was refactored to use C++ as the target language.

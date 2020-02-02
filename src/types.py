@@ -1,54 +1,37 @@
 
 from collections import defaultdict, namedtuple
 
-import llvmlite.ir as ll
-
 from .utils import *
 
 
 __all__ = [
-    'Type', 'Value',
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tClass', 'tVar', 'tUnknown',
-    'Arg',
+    'Type',
+    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar',
     'unify_types', 'type_variables_assignment', 'get_type_variables', 'can_cast',
-    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull',
-    'FunctionTemplate',
 ]
 
 
-Type = ll.Type
-Value = ll.Value
+class Type:
+    pass
 
 
-class CustomStructType(ll.LiteralStructType):
+class PrimitiveType(Type):
 
-    def __init__(self, elements, kind):
-        super().__init__(elements)
-        self.kind = kind
-
-    def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
-        return self.kind == getattr(other, 'kind', None)
-
-    def __hash__(self):
-        return hash(CustomStructType)
-
-
-class NullableType(ll.PointerType):
-
-    def __init__(self, subtype):
-        super().__init__(subtype)
-        self.subtype = subtype
-        self.kind = 'nullable'
+    def __init__(self, pyxell_name, c_name):
+        self.pyxell_name = pyxell_name
+        self.c_name = c_name
 
     def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
-        return self.kind == getattr(other, 'kind', None)
+        return self.pyxell_name == other.pyxell_name
 
     def __hash__(self):
-        return hash(NullableType)
+        return hash(self.pyxell_name)
+
+    def __str__(self):
+        return self.c_name
+
+    def show(self):
+        return self.pyxell_name
 
 
 class VariableType(Type):
@@ -77,11 +60,11 @@ class UnknownType(Type):
         return hash(UnknownType)
 
 
-tVoid = ll.VoidType()
-tInt = ll.IntType(64)
-tFloat = ll.DoubleType()
-tBool = ll.IntType(1)
-tChar = ll.IntType(8)
+tVoid = PrimitiveType('Void', 'void')
+tInt = PrimitiveType('Int', 'long long')
+tFloat = PrimitiveType('Float', 'double')
+tBool = PrimitiveType('Bool', 'bool')
+tChar = PrimitiveType('Char', 'char')
 
 
 def tPtr(type=tChar):
@@ -90,8 +73,8 @@ def tPtr(type=tChar):
     return ptr_type
 
 
-tString = tPtr(CustomStructType([tPtr(), tInt], 'string'))
-tString.subtype = tChar
+# tString = tPtr(CustomStructType([tPtr(), tInt], 'string'))
+# tString.subtype = tChar
 
 @extend_class(Type)
 def isString(type):
@@ -308,75 +291,3 @@ def can_cast(type1, type2):
     if not type1.isNullable() and type2.isNullable():
         return can_cast(type1, type2.subtype)
     return type_variables_assignment(type1, type2) == {}
-
-
-@extend_class(Type)
-def show(type):
-    if type == tVoid:
-        return 'Void'
-    if type == tInt:
-        return 'Int'
-    if type == tFloat:
-        return 'Float'
-    if type == tBool:
-        return 'Bool'
-    if type == tChar:
-        return 'Char'
-    if type.isString():
-        return 'String'
-    if type.isArray():
-        return f'[{type.subtype.show()}]'
-    if type.isNullable():
-        return f'{type.subtype.show()}?'
-    if type.isTuple():
-        return '*'.join(t.show() for t in type.elements)
-    if type.isFunc():
-        return '->'.join(arg.type.show() for arg in type.args) + '->' + type.ret.show()
-    if type.isClass() or type.isVar():
-        return type.name
-    if type == tUnknown:
-        return '<Unknown>'
-    return str(type)
-
-
-@extend_class(Type)
-def default(type):
-    return ll.Constant(type, 0 if type in {tInt, tFloat, tBool, tChar} else 'null')
-
-
-def vInt(n):
-    return ll.Constant(tInt, n)
-
-def vFloat(f):
-    return ll.Constant(tFloat, f)
-
-def vBool(b):
-    return ll.Constant(tBool, b)
-
-vFalse = vBool(False)
-vTrue = vBool(True)
-
-def vChar(c):
-    return ll.Constant(tChar, ord(c))
-
-def vNull(type=tNullable(tUnknown)):
-    return ll.Constant(type, 'null')
-
-
-@extend_class(Value)
-def isTemplate(value):
-    return False
-
-class FunctionTemplate(Value):
-
-    def __init__(self, id, typevars, type, body, env):
-        self.id = id
-        self.final = True  # identifier cannot be redefined
-        self.typevars = typevars
-        self.type = type
-        self.body = body
-        self.env = env
-        self.compiled = {}
-
-    def isTemplate(self):
-        return True
