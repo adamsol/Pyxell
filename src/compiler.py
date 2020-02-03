@@ -2,6 +2,7 @@
 import re
 from collections import defaultdict
 from contextlib import contextmanager
+from itertools import zip_longest
 
 import cgen as c
 
@@ -28,8 +29,8 @@ class PyxellCompiler:
         self._unit = None
         self.level = 0
 
-        self.block = c.Block()
-        self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self.block)
+        self._block = c.Block()
+        self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
 
         self.module = c.Module([
             c.Line(),
@@ -116,14 +117,21 @@ class PyxellCompiler:
         self._unit = _unit
 
     @contextmanager
-    def no_output(self):
-        block = self.block
-        self.block = c.Block()
+    def block(self, block):
+        _block = self._block
+        self._block = block
         yield
-        self.block = block
+        self._block = _block
+
+    @contextmanager
+    def no_output(self):
+        with self.block(c.Block()):
+            yield
 
     def output(self, line):
-        self.block.append(c.Statement(line))
+        if isinstance(line, str):
+            line = c.Statement(line)
+        self._block.append(line)
 
     def resolve_type(self, type):
         if type.isVar():
@@ -445,8 +453,6 @@ class PyxellCompiler:
         return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
     def unaryop(self, node, op, value):
-        return UnaryOperation(op, value, type=value.type)
-
         if op == '!':
             if not value.type.isNullable():
                 self.throw(node, err.NotNullable(value.type))
@@ -461,17 +467,11 @@ class PyxellCompiler:
             if value.type not in types:
                 self.throw(node, err.NoUnaryOperator(op, value.type))
 
-        if op == '!':
-            return self.extract(value)
-        elif op == '+':
-            return value
-        elif op == '-':
-            if value.type == tInt:
-                return self.builder.sub(vInt(0), value)
-            elif value.type == tFloat:
-                return self.builder.fsub(vFloat(0), value)
-        elif op in {'~', 'not'}:
-            return self.builder.not_(value)
+        op = {
+            'not': '!',
+        }.get(op, op)
+
+        return UnaryOperation(op, value, type=value.type)
 
     def binaryop(self, node, op, left, right):
         return BinaryOperation(left, op, right, type=left.type)
@@ -634,6 +634,8 @@ class PyxellCompiler:
         except err:
             self.throw(node, err.NotComparable(left.type, right.type))
 
+        return BinaryOperation(left, op, right, type=tBool)
+
         if left.type in {tInt, tChar}:
             return self.builder.icmp_signed(op, left, right)
 
@@ -774,7 +776,7 @@ class PyxellCompiler:
             self.write('%.15g', value)
 
         elif type == tBool:
-            self.write(f'{value} ? "true" : "false"')
+            self.write('%s', f'{value} ? "true" : "false"')
 
         elif type == tChar:
             self.write('%c', value)
@@ -1178,35 +1180,28 @@ class PyxellCompiler:
         exprs = node['exprs']
         blocks = node['blocks']
 
-        with self.block() as (label_start, label_end):
-            initialized_vars = []
+        initialized_vars = []
+        else_ = None
 
-            def emitIfElse(index):
-                if len(exprs) == index:
-                    if len(blocks) > index:
-                        with self.local():
-                            self.compile(blocks[index])
-                    return
-
-                expr = exprs[index]
+        for expr, block in reversed(list(zip_longest(exprs, blocks))):
+            if expr:
                 cond = self.cast(expr, self.compile(expr), tBool)
 
-                label_if = self.builder.append_basic_block()
-                label_else = self.builder.append_basic_block()
-                self.builder.cbranch(cond, label_if, label_else)
+            then_ = c.Block()
+            with self.block(then_):
+                with self.local():
+                    self.compile(block)
+                    initialized_vars.append(self.initialized)
 
-                with self.builder._branch_helper(label_if, label_end):
-                    with self.local():
-                        self.compile(blocks[index])
-                        initialized_vars.append(self.initialized)
+            if expr:
+                else_ = c.If(cond, then_, else_)
+            else:
+                else_ = then_
 
-                with self.builder._branch_helper(label_else, label_end):
-                    emitIfElse(index+1)
+        self.output(else_)
 
-            emitIfElse(0)
-
-            if len(blocks) > len(exprs):  # there is an `else` statement
-                self.initialized.update(set.intersection(*initialized_vars))
+        if len(blocks) > len(exprs):  # there is an `else` statement
+            self.initialized.update(set.intersection(*initialized_vars))
 
     def compileStmtWhile(self, node):
         with self.block() as (label_start, label_end):
@@ -1315,7 +1310,7 @@ class PyxellCompiler:
 
         with self.block() as (label_start, label_end):
             label_cont = ll.Block(self.builder.function)
-            
+
             for index, cond in zip(indices, conditions):
                 label = ll.Block(self.builder.function)
                 self.builder.cbranch(cond(self.builder.load(index)), label, label_end)
@@ -1352,7 +1347,7 @@ class PyxellCompiler:
 
     def compileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`
-        
+
         try:
             label = self.env[f'#{stmt}']
         except KeyError:
@@ -1871,9 +1866,9 @@ class PyxellCompiler:
         exprs = node['exprs']
         ops = node['ops']
 
-        values = [self.compile(exprs[0])]
+        return self.cmp(node, ops[0], *map(self.compile, exprs))
 
-        with self.block() as (label_start, label_end):            
+        with self.block() as (label_start, label_end):
             self.builder.position_at_end(label_end)
             phi = self.builder.phi(tBool)
             self.builder.position_at_end(label_start)
@@ -1900,25 +1895,30 @@ class PyxellCompiler:
 
     def compileExprLogicalOp(self, node):
         exprs = node['exprs']
-        op = node['op']
+        op = {
+            'and': '&&',
+            'or': '||',
+        }[node['op']]
+
+        return self.binaryop(node, op, *map(self.compile, exprs))
 
         cond1 = self.compile(exprs[0])
-        
+
         with self.block() as (label_start, label_end):
             label_if = self.builder.function.append_basic_block()
-    
+
             if op == 'and':
                 self.builder.cbranch(cond1, label_if, label_end)
             elif op == 'or':
                 self.builder.cbranch(cond1, label_end, label_if)
-    
+
             self.builder.position_at_end(label_end)
             phi = self.builder.phi(tBool)
             if op == 'and':
                 phi.add_incoming(vFalse, label_start)
             elif op == 'or':
                 phi.add_incoming(vTrue, label_start)
-    
+
             with self.builder._branch_helper(label_if, label_end):
                 cond2 = self.compile(exprs[1])
                 if not cond1.type == cond2.type == tBool:
@@ -1932,7 +1932,7 @@ class PyxellCompiler:
         cond, *values = map(self.compile, exprs)
         cond = self.cast(exprs[0], cond, tBool)
         values = self.unify(node, *values)
-        return self.builder.select(cond, *values)
+        return TernaryOperation(cond, '?', values[0], ':', values[1], type=values[0].type)
 
     def compileExprLambda(self, node):
         self.throw(node, err.IllegalLambda())

@@ -22,6 +22,8 @@ class PrimitiveType(Type):
         self.c_name = c_name
 
     def __eq__(self, other):
+        if not isinstance(other, PrimitiveType):
+            return False
         return self.pyxell_name == other.pyxell_name
 
     def __hash__(self):
