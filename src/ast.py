@@ -1,6 +1,4 @@
 
-import ast
-
 from antlr4.tree import Tree
 
 from .antlr.PyxellParser import PyxellParser
@@ -367,13 +365,13 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitAtomChar(self, ctx):
         return {
             **_node(ctx, 'AtomChar'),
-            'char': ast.literal_eval(ctx.getText()),
+            'char': ctx.getText()[1:-1],
         }
 
     def visitAtomString(self, ctx):
         return {
             **_node(ctx, 'AtomString'),
-            'string': ast.literal_eval(ctx.getText()),
+            'string': ctx.getText()[1:-1],
         }
 
     def visitAtomNull(self, ctx):

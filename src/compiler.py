@@ -35,6 +35,8 @@ class PyxellCompiler:
         self.module = c.Module([
             c.Line(),
             c.Include('cstdio'),
+            c.Include('string'),
+            c.Statement('using namespace std::string_literals'),
             c.Line(),
             self.main,
             c.Line()
@@ -781,8 +783,8 @@ class PyxellCompiler:
         elif type == tChar:
             self.write('%c', value)
 
-        elif type.isString():
-            self.call(node, 'write', value)
+        elif type == tString:
+            self.write('%s', f'{value}.c_str()')
 
         elif type.isArray():
             self.write('[')
@@ -835,21 +837,6 @@ class PyxellCompiler:
 
         elif type != tUnknown:
             self.throw(node, err.NotPrintable(type))
-
-    def string(self, lit):
-        const = ll.Constant(ll.ArrayType(tChar, len(lit)), [vChar(c) for c in lit])
-
-        array = ll.GlobalVariable(self.module, const.type, self.module.get_unique_name('str'))
-        array.global_constant = True
-        array.initializer = const
-
-        memory = self.builder.gep(array, [vInt(0), vInt(0)])
-        length = vInt(const.type.count)
-
-        result = self.malloc(tString)
-        self.insert(memory, result, 0)
-        self.insert(length, result, 1)
-        return result
 
     def convert_string(self, node, lit):
         parts = re.split(r'{([^}]+)}', lit)
@@ -1277,7 +1264,7 @@ class PyxellCompiler:
                 getter = lambda v: v if type in {tInt, tFloat} else self.builder.trunc(v, type)
             else:
                 value = self.compile(iterable)
-                if value.type.isString():
+                if value.type == tString:
                     types.append(tChar)
                 elif value.type.isArray():
                     types.append(value.type.subtype)
@@ -1957,6 +1944,8 @@ class PyxellCompiler:
         return vChar(node['char'])
 
     def compileAtomString(self, node):
+        return vString(node['string'])
+
         expr = self.convert_string(node, node['string'])
         if expr['node'] == 'AtomString':
             return self.string(expr['string'])

@@ -6,7 +6,7 @@ from .utils import *
 
 __all__ = [
     'Type',
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar',
+    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tString',
     'unify_types', 'type_variables_assignment', 'get_type_variables', 'can_cast',
 ]
 
@@ -67,20 +67,7 @@ tInt = PrimitiveType('Int', 'long long')
 tFloat = PrimitiveType('Float', 'double')
 tBool = PrimitiveType('Bool', 'bool')
 tChar = PrimitiveType('Char', 'char')
-
-
-def tPtr(type=tChar):
-    ptr_type = type.as_pointer()
-    ptr_type.kind = getattr(type, 'kind', None)
-    return ptr_type
-
-
-# tString = tPtr(CustomStructType([tPtr(), tInt], 'string'))
-# tString.subtype = tChar
-
-@extend_class(Type)
-def isString(type):
-    return getattr(type, 'kind', None) == 'string'
+tString = PrimitiveType('String', 'std::string')
 
 
 def tArray(subtype):

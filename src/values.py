@@ -3,7 +3,7 @@ from .types import *
 
 __all__ = [
     'Value',
-    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar',
+    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vString',
     'Variable',
 ]
 
@@ -23,20 +23,23 @@ class Value:
         return str(self.value)
 
 
-def vInt(n):
-    return Value(tInt, n, '{}LL')
+def vInt(x):
+    return Value(tInt, x, '{}LL')
 
-def vFloat(f):
-    return Value(tFloat, f)
+def vFloat(x):
+    return Value(tFloat, x)
 
-def vBool(b):
-    return Value(tBool, b, lambda value: str(value).lower())
+def vBool(x):
+    return Value(tBool, x, lambda value: str(value).lower())
 
 vFalse = vBool(False)
 vTrue = vBool(True)
 
-def vChar(c):
-    return Value(tChar, ord(c), "'{}'")
+def vChar(x):
+    return Value(tChar, x, "'{}'")
+
+def vString(x):
+    return Value(tString, x, '"{}"s')
 
 
 class Variable(Value):
