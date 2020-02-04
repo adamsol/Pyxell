@@ -185,12 +185,12 @@ class PyxellCompiler:
             if lvalue and not collection.type.isArray():
                 self.throw(node, err.NotLvalue())
 
-            index = self.cast(node, index, t.Int)
-            length = self.extract(collection, 1)
-            cmp = self.builder.icmp_signed('>=', index, v.Int(0))
-            index = self.builder.select(cmp, index, self.builder.add(index, length))
-            ptr = self.builder.gep(self.extract(collection, 0), [index])
-            return ptr if lvalue else self.builder.load(ptr)
+            if collection.type == t.String:
+                subtype = t.Char
+            elif collection.type.isArray():
+                subtype = collection.type.subtype
+
+            return v.Index(collection, index, type=subtype)
 
         self.throw(node, err.NotIndexable(collection.type))
 
@@ -263,7 +263,7 @@ class PyxellCompiler:
 
         elif type.isCollection():
             if attr == 'length':
-                value = self.extract(obj, 1)
+                value = v.Call(v.Attribute(obj, 'size'), type=t.Int)
             elif type == t.String:
                 if attr == 'toString':
                     value = self.env['String_toString']

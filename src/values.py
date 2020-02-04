@@ -52,6 +52,40 @@ class Variable(Value):
         return self.name
 
 
+class Attribute(Value):
+
+    def __init__(self, value, attr, **kwargs):
+        super().__init__(**kwargs)
+        self.value = value
+        self.attr = attr
+
+    def __str__(self):
+        return f'{self.value}.{self.attr}'
+
+
+class Index(Value):
+
+    def __init__(self, collection, index, **kwargs):
+        super().__init__(**kwargs)
+        self.collection = collection
+        self.index = index
+
+    def __str__(self):
+        return f'{self.collection}[{self.index}]'
+
+
+class Call(Value):
+
+    def __init__(self, func, *args, **kwargs):
+        super().__init__(**kwargs)
+        self.func = func
+        self.args = args
+
+    def __str__(self):
+        args = ', '.join(map(str, self.args))
+        return f'{self.func}({args})'
+
+
 class UnaryOperation(Value):
 
     def __init__(self, op, value, **kwargs):
