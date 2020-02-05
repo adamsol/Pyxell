@@ -342,10 +342,8 @@ class PyxellCompiler:
 
         if value.type == type:
             return value
-        elif type == t.Float:
-            return self.builder.sitofp(value, type)
         else:
-            return self.builder.bitcast(value, type)
+            return v.Cast(value, type)
 
     def unify(self, node, *values):
         if not values:
@@ -431,7 +429,7 @@ class PyxellCompiler:
                 self.assign(node, expr, v.Get(value, i))
         else:
             var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
-            #value = self.cast(node, value, ptr.type.pointee)
+            value = self.cast(node, value, var.type)
             self.output(f'{var} = {value}')
 
     def inc(self, ptr, step=v.Int(1)):
@@ -1071,10 +1069,11 @@ class PyxellCompiler:
         type = self.resolve_type(self.compile(node['type']))
         id = node['id']
         expr = node['expr']
-        ptr = self.declare(node, type, id, initialize=bool(expr))
+        var = self.declare(node, type, id, initialize=bool(expr))
+
         if expr:
             value = self.cast(node, self.compile(expr), type)
-            self.builder.store(value, ptr)
+            self.output(f'{var} = {value}')
 
     def compileStmtAssg(self, node):
         value = self.compile(node['expr'])

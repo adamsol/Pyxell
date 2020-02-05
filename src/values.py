@@ -98,6 +98,10 @@ class Call(Value):
         return f'{self.func}({args})'
 
 
+def Cast(value, type):
+    return Call(f'static_cast<{type}>', value, type=type)
+
+
 def Get(tuple, index):
     return Call(f'std::get<{index}>', tuple, type=tuple.type.elements[index])
 
