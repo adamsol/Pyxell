@@ -1,17 +1,17 @@
 
-from .types import *
-
-__all__ = [
-    'Value',
-    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vString',
-    'Variable',
-]
+from . import types as t
 
 
 class Value:
 
-    def __init__(self, type, value, formatter=None):
+    def __init__(self, type=None):
         self.type = type
+
+
+class Literal(Value):
+
+    def __init__(self, value, formatter=None, **kwargs):
+        super().__init__(**kwargs)
         self.value = value
         self.formatter = formatter
 
@@ -23,30 +23,67 @@ class Value:
         return str(self.value)
 
 
-def vInt(x):
-    return Value(tInt, x, '{}LL')
+def Int(x):
+    return Literal(x, '{}LL', type=t.Int)
 
-def vFloat(x):
-    return Value(tFloat, x)
+def Float(x):
+    return Literal(x, type=t.Float)
 
-def vBool(x):
-    return Value(tBool, x, lambda value: str(value).lower())
+def Bool(x):
+    return Literal(x, lambda value: str(value).lower(), type=t.Bool)
 
-vFalse = vBool(False)
-vTrue = vBool(True)
+false = Bool(False)
+true = Bool(True)
 
-def vChar(x):
-    return Value(tChar, x, "'{}'")
+def Char(x):
+    return Literal(x, "'{}'", type=t.Char)
 
-def vString(x):
-    return Value(tString, x, '"{}"s')
+def String(x):
+    return Literal(x, '"{}"s', type=t.String)
 
 
 class Variable(Value):
 
     def __init__(self, type, name):
-        self.type = type
+        super().__init__(type)
         self.name = name
 
     def __str__(self):
         return self.name
+
+
+class UnaryOperation(Value):
+
+    def __init__(self, op, value, **kwargs):
+        super().__init__(**kwargs)
+        self.op = op
+        self.value = value
+
+    def __str__(self):
+        return f'({self.op}{self.value})'
+
+
+class BinaryOperation(Value):
+
+    def __init__(self, value1, op, value2, **kwargs):
+        super().__init__(**kwargs)
+        self.value1 = value1
+        self.op = op
+        self.value2 = value2
+
+    def __str__(self):
+        return f'({self.value1} {self.op} {self.value2})'
+
+
+class TernaryOperation(Value):
+
+    def __init__(self, value1, op1, value2, op2, value3, **kwargs):
+        super().__init__(**kwargs)
+        self.value1 = value1
+        self.op1 = op1
+        self.value2 = value2
+        self.op2 = op2
+        self.value3 = value3
+
+    def __str__(self):
+        return f'({self.value1} {self.op1} {self.value2} {self.op2} {self.value3})'

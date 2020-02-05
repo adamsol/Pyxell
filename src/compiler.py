@@ -6,12 +6,12 @@ from itertools import zip_longest
 
 import cgen as c
 
+from . import values as v
+from . import types as t
 from .errors import PyxellError as err
-from .operations import *
 from .parsing import parse_expr
-from .types import *
+from .types import can_cast, get_type_variables, type_variables_assignment, unify_types
 from .utils import *
-from .values import *
 
 
 class Unit:
@@ -139,13 +139,13 @@ class PyxellCompiler:
         if type.isVar():
             return self.env[type.name]
         if type.isArray():
-            return tArray(self.resolve_type(type.subtype))
+            return t.Array(self.resolve_type(type.subtype))
         if type.isNullable():
-            return tNullable(self.resolve_type(type.subtype))
+            return t.Nullable(self.resolve_type(type.subtype))
         if type.isTuple():
-            return tTuple([self.resolve_type(type) for type in type.elements])
+            return t.Tuple([self.resolve_type(type) for type in type.elements])
         if type.isFunc():
-            return tFunc([Arg(self.resolve_type(arg.type), arg.name, arg.default) for arg in type.args], self.resolve_type(type.ret))
+            return t.Func([Arg(self.resolve_type(arg.type), arg.name, arg.default) for arg in type.args], self.resolve_type(type.ret))
         return type
 
 
@@ -160,12 +160,12 @@ class PyxellCompiler:
 
         result = self.env[id]
 
-        if isinstance(result, Type) and result.isClass():
+        if isinstance(result, t.Type) and result.isClass():
             if not result.constructor:
                 self.throw(node, err.AbstractClass(result))
             result = result.constructor
 
-        if not isinstance(result, Value):
+        if not isinstance(result, v.Value):
             self.throw(node, err.NotVariable(id))
 
         if id not in self.initialized:
@@ -174,20 +174,20 @@ class PyxellCompiler:
         return result
 
     def extract(self, ptr, *indices, load=True):
-        ptr = self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]])
+        ptr = self.builder.gep(ptr, [v.Int(0), *[ll.Constant(ll.IntType(32), i) for i in indices]])
         return self.builder.load(ptr) if load else ptr
 
     def insert(self, value, ptr, *indices):
-        return self.builder.store(value, self.builder.gep(ptr, [vInt(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
+        return self.builder.store(value, self.builder.gep(ptr, [v.Int(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
 
     def index(self, node, collection, index, lvalue=False):
         if collection.type.isCollection():
             if lvalue and not collection.type.isArray():
                 self.throw(node, err.NotLvalue())
 
-            index = self.cast(node, index, tInt)
+            index = self.cast(node, index, t.Int)
             length = self.extract(collection, 1)
-            cmp = self.builder.icmp_signed('>=', index, vInt(0))
+            cmp = self.builder.icmp_signed('>=', index, v.Int(0))
             index = self.builder.select(cmp, index, self.builder.add(index, length))
             ptr = self.builder.gep(self.extract(collection, 0), [index])
             return ptr if lvalue else self.builder.load(ptr)
@@ -198,7 +198,7 @@ class PyxellCompiler:
         if not value.type.isNullable():
             self.throw(node, err.NotNullable(value.type))
 
-        with self.builder.if_else(self.builder.icmp_unsigned('!=', value, vNull())) as (label_notnull, label_null):
+        with self.builder.if_else(self.builder.icmp_unsigned('!=', value, v.Null())) as (label_notnull, label_null):
             with label_notnull:
                 value_notnull = callback_notnull()
                 label_notnull = self.builder.basic_block
@@ -229,21 +229,21 @@ class PyxellCompiler:
         type = obj.type
         value = None
 
-        if type == tInt:
+        if type == t.Int:
             if attr == 'toString':
                 value = self.env['Int_toString']
             elif attr == 'toFloat':
                 value = self.env['Int_toFloat']
             elif attr == 'char':
-                value = self.builder.trunc(obj, tChar)
+                value = self.builder.trunc(obj, t.Char)
 
-        elif type == tFloat:
+        elif type == t.Float:
             if attr == 'toString':
                 value = self.env['Float_toString']
             elif attr == 'toInt':
                 value = self.env['Float_toInt']
 
-        elif type == tBool:
+        elif type == t.Bool:
             if attr == 'toString':
                 value = self.env['Bool_toString']
             elif attr == 'toInt':
@@ -251,7 +251,7 @@ class PyxellCompiler:
             elif attr == 'toFloat':
                 value = self.env['Bool_toFloat']
 
-        elif type == tChar:
+        elif type == t.Char:
             if attr == 'toString':
                 value = self.env['Char_toString']
             elif attr == 'toInt':
@@ -259,12 +259,12 @@ class PyxellCompiler:
             elif attr == 'toFloat':
                 value = self.env['Char_toFloat']
             elif attr == 'code':
-                value = self.builder.zext(obj, tInt)
+                value = self.builder.zext(obj, t.Int)
 
         elif type.isCollection():
             if attr == 'length':
                 value = self.extract(obj, 1)
-            elif type == tString:
+            elif type == t.String:
                 if attr == 'toString':
                     value = self.env['String_toString']
                 elif attr == 'toArray':
@@ -285,9 +285,9 @@ class PyxellCompiler:
                     value = self.env['String_reduce']
             elif type.isArray():
                 if attr == 'join':
-                    if type.subtype == tChar:
+                    if type.subtype == t.Char:
                         value = self.env['CharArray_join']
-                    elif type.subtype == tString:
+                    elif type.subtype == t.String:
                         value = self.env['StringArray_join']
                 elif attr == 'all':
                     value = self.env['Array_all']
@@ -339,7 +339,7 @@ class PyxellCompiler:
 
         if value.type == type:
             return value
-        elif type == tFloat:
+        elif type == t.Float:
             return self.builder.sitofp(value, type)
         else:
             return self.builder.bitcast(value, type)
@@ -355,7 +355,7 @@ class PyxellCompiler:
         return [self.cast(node, value, type) for value in values]
 
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
-        if type == tVoid:
+        if type == t.Void:
             self.throw(node, err.InvalidDeclaration(type))
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
@@ -363,7 +363,7 @@ class PyxellCompiler:
             return
 
         self.output(f'{type} {id}')
-        self.env[id] = Variable(type, id)
+        self.env[id] = v.Variable(type, id)
 
         if initialize:
             self.initialized.add(id)
@@ -381,7 +381,7 @@ class PyxellCompiler:
                 self.declare(node, declare, id)
             elif override:
                 self.declare(node, declare, id, redeclare=True)
-            elif not isinstance(self.env[id], Value) or getattr(self.env[id], 'final', False):
+            elif not isinstance(self.env[id], v.Value) or getattr(self.env[id], 'final', False):
                 self.throw(node, err.IllegalRedefinition(id))
 
             if initialize:
@@ -406,7 +406,7 @@ class PyxellCompiler:
         return
 
         if type.isFunc():
-            type = tFunc([arg.type for arg in type.args], type.ret)
+            type = t.Func([arg.type for arg in type.args], type.ret)
 
         exprs = expr['exprs'] if expr['node'] == 'ExprTuple' else [expr]
         len1 = len(exprs)
@@ -427,30 +427,30 @@ class PyxellCompiler:
         value = self.cast(node, value, ptr.type.pointee)
         self.builder.store(value, ptr)
 
-    def inc(self, ptr, step=vInt(1)):
-        add = self.builder.fadd if ptr.type.pointee == tFloat else self.builder.add
+    def inc(self, ptr, step=v.Int(1)):
+        add = self.builder.fadd if ptr.type.pointee == t.Float else self.builder.add
         self.builder.store(add(self.builder.load(ptr), step), ptr)
 
-    def sizeof(self, type, length=vInt(1)):
-        return self.builder.ptrtoint(self.builder.gep(vNull(tPtr(type)), [length]), tInt)
+    def sizeof(self, type, length=v.Int(1)):
+        return self.builder.ptrtoint(self.builder.gep(v.Null(t.Ptr(type)), [length]), t.Int)
 
-    def malloc(self, type, length=vInt(1)):
+    def malloc(self, type, length=v.Int(1)):
         size = self.sizeof(type.pointee, length)
         ptr = self.builder.call(self.builtins['malloc'], [size])
         return self.builder.bitcast(ptr, type)
 
-    def realloc(self, ptr, length=vInt(1)):
+    def realloc(self, ptr, length=v.Int(1)):
         type = ptr.type
         size = self.sizeof(type.pointee, length)
-        ptr = self.builder.bitcast(ptr, tPtr())
-        ptr = self.builder.bitcast(ptr, tPtr())
+        ptr = self.builder.bitcast(ptr, t.Ptr())
+        ptr = self.builder.bitcast(ptr, t.Ptr())
         ptr = self.builder.call(self.builtins['realloc'], [ptr, size])
         return self.builder.bitcast(ptr, type)
 
     def memcpy(self, dest, src, length):
         type = dest.type
-        dest = self.builder.bitcast(dest, tPtr())
-        src = self.builder.bitcast(src, tPtr())
+        dest = self.builder.bitcast(dest, t.Ptr())
+        src = self.builder.bitcast(src, t.Ptr())
         size = self.sizeof(type.pointee, length)
         return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
@@ -460,11 +460,11 @@ class PyxellCompiler:
                 self.throw(node, err.NotNullable(value.type))
         else:
             if op in {'+', '-'}:
-                types = [tInt, tFloat]
+                types = [t.Int, t.Float]
             elif op == '~':
-                types = [tInt]
+                types = [t.Int]
             elif op == 'not':
-                types = [tBool]
+                types = [t.Bool]
 
             if value.type not in types:
                 self.throw(node, err.NoUnaryOperator(op, value.type))
@@ -473,47 +473,47 @@ class PyxellCompiler:
             'not': '!',
         }.get(op, op)
 
-        return UnaryOperation(op, value, type=value.type)
+        return v.UnaryOperation(op, value, type=value.type)
 
     def binaryop(self, node, op, left, right):
-        return BinaryOperation(left, op, right, type=left.type)
+        return v.BinaryOperation(left, op, right, type=left.type)
 
-        if op in {'^', '/'} or left.type != right.type and left.type in {tInt, tFloat} and right.type in {tInt, tFloat}:
-            if left.type == tInt:
-                left = self.builder.sitofp(left, tFloat)
-            if right.type == tInt:
-                right = self.builder.sitofp(right, tFloat)
+        if op in {'^', '/'} or left.type != right.type and left.type in {t.Int, t.Float} and right.type in {t.Int, t.Float}:
+            if left.type == t.Int:
+                left = self.builder.sitofp(left, t.Float)
+            if right.type == t.Int:
+                right = self.builder.sitofp(right, t.Float)
 
         if op == '^':
-            if left.type == right.type == tFloat:
+            if left.type == right.type == t.Float:
                 return self.call(node, 'Float_pow', left, right)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '^^':
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 return self.call(node, 'Int_pow', left, right)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '*':
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 return self.builder.mul(left, right)
 
-            elif left.type == right.type == tFloat:
+            elif left.type == right.type == t.Float:
                 return self.builder.fmul(left, right)
 
-            elif left.type.isCollection() and right.type == tInt:
+            elif left.type.isCollection() and right.type == t.Int:
                 type = left.type
                 subtype = type.subtype
 
                 src = self.extract(left, 0)
                 src_length = self.extract(left, 1)
                 length = self.builder.mul(src_length, right)
-                dest = self.malloc(tPtr(subtype), length)
+                dest = self.malloc(t.Ptr(subtype), length)
 
-                index = self.builder.alloca(tInt)
-                self.builder.store(vInt(0), index)
+                index = self.builder.alloca(t.Int)
+                self.builder.store(v.Int(0), index)
 
                 with self.block() as (label_start, label_end):
                     i = self.builder.load(index)
@@ -528,24 +528,24 @@ class PyxellCompiler:
                 self.insert(length, result, 1)
                 return result
 
-            elif left.type == tInt and right.type.isCollection():
+            elif left.type == t.Int and right.type.isCollection():
                 return self.binaryop(node, op, right, left)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '/':
-            if left.type == right.type == tFloat:
+            if left.type == right.type == t.Float:
                 return self.builder.fdiv(left, right)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '//':
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 v1 = self.builder.sdiv(left, right)
-                v2 = self.builder.sub(v1, vInt(1))
+                v2 = self.builder.sub(v1, v.Int(1))
                 v3 = self.builder.xor(left, right)
-                v4 = self.builder.icmp_signed('<', v3, vInt(0))
+                v4 = self.builder.icmp_signed('<', v3, v.Int(0))
                 v5 = self.builder.select(v4, v2, v1)
                 v6 = self.builder.mul(v1, right)
                 v7 = self.builder.icmp_signed('!=', v6, left)
@@ -554,22 +554,22 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '%':
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 v1 = self.builder.srem(left, right)
                 v2 = self.builder.add(v1, right)
                 v3 = self.builder.xor(left, right)
-                v4 = self.builder.icmp_signed('<', v3, vInt(0))
+                v4 = self.builder.icmp_signed('<', v3, v.Int(0))
                 v5 = self.builder.select(v4, v2, v1)
-                v6 = self.builder.icmp_signed('==', v1, vInt(0))
+                v6 = self.builder.icmp_signed('==', v1, v.Int(0))
                 return self.builder.select(v6, v1, v5)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '+':
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 return self.builder.add(left, right)
 
-            elif left.type == right.type == tFloat:
+            elif left.type == right.type == t.Float:
                 return self.builder.fadd(left, right)
 
             elif left.type == right.type and left.type.isCollection():
@@ -582,7 +582,7 @@ class PyxellCompiler:
 
                 array1 = self.extract(left, 0)
                 array2 = self.extract(right, 0)
-                array = self.malloc(tPtr(subtype), length)
+                array = self.malloc(t.Ptr(subtype), length)
 
                 self.memcpy(array, array1, length1)
                 self.memcpy(self.builder.gep(array, [length1]), array2, length2)
@@ -592,33 +592,33 @@ class PyxellCompiler:
                 self.insert(length, result, 1)
                 return result
 
-            elif left.type == tString and right.type == tChar:
+            elif left.type == t.String and right.type == t.Char:
                 return self.binaryop(node, op, left, self.call(node, 'Char_toString', right))
 
-            elif left.type == tChar and right.type == tString:
+            elif left.type == t.Char and right.type == t.String:
                 return self.binaryop(node, op, self.call(node, 'Char_toString', left), right)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '-':
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 return self.builder.sub(left, right)
 
-            elif left.type == right.type == tFloat:
+            elif left.type == right.type == t.Float:
                 return self.builder.fsub(left, right)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '|':
-            if left.type == right.type == tInt:
-                return self.builder.icmp_signed('==', self.builder.srem(right, left), vInt(0))
+            if left.type == right.type == t.Int:
+                return self.builder.icmp_signed('==', self.builder.srem(right, left), v.Int(0))
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         else:
-            if left.type == right.type == tInt:
+            if left.type == right.type == t.Int:
                 instruction = {
                     '<<': self.builder.shl,
                     '>>': self.builder.ashr,
@@ -636,15 +636,15 @@ class PyxellCompiler:
         except err:
             self.throw(node, err.NotComparable(left.type, right.type))
 
-        return BinaryOperation(left, op, right, type=tBool)
+        return v.BinaryOperation(left, op, right, type=t.Bool)
 
-        if left.type in {tInt, tChar}:
+        if left.type in {t.Int, t.Char}:
             return self.builder.icmp_signed(op, left, right)
 
-        elif left.type == tFloat:
+        elif left.type == t.Float:
             return self.builder.fcmp_ordered(op, left, right)
 
-        elif left.type == tBool:
+        elif left.type == t.Bool:
             return self.builder.icmp_unsigned(op, left, right)
 
         elif left.type.isCollection():
@@ -653,8 +653,8 @@ class PyxellCompiler:
             length1 = self.extract(left, 1)
             length2 = self.extract(right, 1)
 
-            index = self.builder.alloca(tInt)
-            self.builder.store(vInt(0), index)
+            index = self.builder.alloca(t.Int)
+            self.builder.store(v.Int(0), index)
 
             with self.block() as (label_start, label_end):
                 label_true = ll.Block(self.builder.function)
@@ -705,9 +705,9 @@ class PyxellCompiler:
                 length_cond = self.builder.icmp_signed(op, length1, length2)
                 self.builder.branch(label_end)
 
-            phi = self.builder.phi(tBool)
-            phi.add_incoming(vTrue, label_true)
-            phi.add_incoming(vFalse, label_false)
+            phi = self.builder.phi(t.Bool)
+            phi.add_incoming(v.true, label_true)
+            phi.add_incoming(v.false, label_false)
             phi.add_incoming(length_cond, label_length)
             return phi
 
@@ -746,10 +746,10 @@ class PyxellCompiler:
                     self.builder.position_at_end(label)
                     self.builder.branch(label_end)
 
-            phi = self.builder.phi(tBool)
-            phi.add_incoming(vTrue, label_true)
-            phi.add_incoming(vFalse, label_false)
-            phi.add_incoming(vBool(op not in {'!=', '<', '>'}), label_cont)
+            phi = self.builder.phi(t.Bool)
+            phi.add_incoming(v.true, label_true)
+            phi.add_incoming(v.false, label_false)
+            phi.add_incoming(v.Bool(op not in {'!=', '<', '>'}), label_cont)
             return phi
 
         elif left.type.isClass():
@@ -758,8 +758,8 @@ class PyxellCompiler:
 
             return self.builder.icmp_unsigned(op, left, right)
 
-        elif left.type == tUnknown:
-            return vTrue
+        elif left.type == t.Unknown:
+            return v.true
 
         else:
             self.throw(node, err.NotComparable(left.type, right.type))
@@ -771,27 +771,27 @@ class PyxellCompiler:
     def print(self, node, value):
         type = value.type
 
-        if type == tInt:
+        if type == t.Int:
             self.write('%lld', value)
 
-        elif type == tFloat:
+        elif type == t.Float:
             self.write('%.15g', value)
 
-        elif type == tBool:
+        elif type == t.Bool:
             self.write('%s', f'{value} ? "true" : "false"')
 
-        elif type == tChar:
+        elif type == t.Char:
             self.write('%c', value)
 
-        elif type == tString:
+        elif type == t.String:
             self.write('%s', f'{value}.c_str()')
 
         elif type.isArray():
             self.write('[')
 
             length = self.extract(value, 1)
-            index = self.builder.alloca(tInt)
-            self.builder.store(vInt(0), index)
+            index = self.builder.alloca(t.Int)
+            self.builder.store(v.Int(0), index)
 
             with self.block() as (label_start, label_end):
                 i = self.builder.load(index)
@@ -799,7 +799,7 @@ class PyxellCompiler:
                 with self.builder.if_then(self.builder.icmp_signed('>=', i, length)):
                     self.builder.branch(label_end)
 
-                with self.builder.if_then(self.builder.icmp_signed('>', i, vInt(0))):
+                with self.builder.if_then(self.builder.icmp_signed('>', i, v.Int(0))):
                     self.write(', ')
 
                 elem = self.builder.gep(self.extract(value, 0), [i])
@@ -812,7 +812,7 @@ class PyxellCompiler:
             self.write(']')
 
         elif type.isNullable():
-            with self.builder.if_else(self.builder.icmp_signed('!=', value, vNull(type))) as (label_if, label_else):
+            with self.builder.if_else(self.builder.icmp_signed('!=', value, v.Null(type))) as (label_if, label_else):
                 with label_if:
                     self.print(node, self.extract(value))
                 with label_else:
@@ -830,12 +830,12 @@ class PyxellCompiler:
             except err:
                 method = None
 
-            if not (method and method.type.isFunc() and len(method.type.args) == 1 and method.type.ret == tString):
+            if not (method and method.type.isFunc() and len(method.type.args) == 1 and method.type.ret == t.String):
                 self.throw(node, err.NotPrintable(type))
 
             self.print(node, self.builder.call(method, [value]))
 
-        elif type != tUnknown:
+        elif type != t.Unknown:
             self.throw(node, err.NotPrintable(type))
 
     def convert_string(self, node, lit):
@@ -886,14 +886,14 @@ class PyxellCompiler:
         }
 
     def array(self, subtype, values, length=None):
-        type = tArray(subtype)
+        type = t.Array(subtype)
 
         if length is None:
-            length = vInt(len(values))
+            length = v.Int(len(values))
 
-        memory = self.malloc(tPtr(subtype), length)
+        memory = self.malloc(t.Ptr(subtype), length)
         for i, value in enumerate(values):
-            self.builder.store(value, self.builder.gep(memory, [vInt(i)]))
+            self.builder.store(value, self.builder.gep(memory, [v.Int(i)]))
 
         result = self.malloc(type)
         self.insert(memory, result, 0)
@@ -901,7 +901,7 @@ class PyxellCompiler:
         return result
 
     def nullable(self, value):
-        result = self.malloc(tNullable(value.type))
+        result = self.malloc(t.Nullable(value.type))
         self.insert(value, result)
         return result
 
@@ -909,7 +909,7 @@ class PyxellCompiler:
         if len(values) == 1:
             return values[0]
 
-        type = tTuple([value.type for value in values])
+        type = t.Tuple([value.type for value in values])
         result = self.malloc(type)
 
         for i, value in enumerate(values):
@@ -1000,12 +1000,12 @@ class PyxellCompiler:
             template.compiled[real_types] = func_ptr
 
         else:
-            unknown_ret_type_variables = {name: tVar(name) for name in get_type_variables(template.type.ret) if not isinstance(self.env.get(name), Type)}
+            unknown_ret_type_variables = {name: t.Var(name) for name in get_type_variables(template.type.ret) if not isinstance(self.env.get(name), t.Type)}
 
             # Try to resolve any unresolved type variables in the return type by fake-compiling the function.
             if unknown_ret_type_variables:
                 for name in unknown_ret_type_variables:
-                    self.env[name] = tVar(name)
+                    self.env[name] = t.Var(name)
 
                 func_type = self.resolve_type(template.type)
 
@@ -1056,7 +1056,7 @@ class PyxellCompiler:
 
                 self.compile(body)
 
-                if func_type.ret == tVoid:
+                if func_type.ret == t.Void:
                     self.builder.ret_void()
                 else:
                     if '#return' not in self.initialized:
@@ -1134,7 +1134,7 @@ class PyxellCompiler:
         left = self.builder.load(ptr)
 
         if op == '??':
-            with self.builder.if_then(self.builder.icmp_unsigned('==', left, vNull())):
+            with self.builder.if_then(self.builder.icmp_unsigned('==', left, v.Null())):
                 right = self.compile(exprs[1])
                 if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
                     self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
@@ -1153,7 +1153,7 @@ class PyxellCompiler:
         index = self.compile(node['index'])
 
         with self.builder.if_then(self.builder.icmp_signed('==', index, length)):
-            length = self.builder.shl(length, vInt(1))
+            length = self.builder.shl(length, v.Int(1))
             memory = self.realloc(self.extract(array, 0), length)
             self.insert(memory, array, 0)
             self.insert(length, array, 1)
@@ -1172,7 +1172,7 @@ class PyxellCompiler:
 
         for expr, block in reversed(list(zip_longest(exprs, blocks))):
             if expr:
-                cond = self.cast(expr, self.compile(expr), tBool)
+                cond = self.cast(expr, self.compile(expr), t.Bool)
 
             then_ = c.Block()
             with self.block(then_):
@@ -1193,7 +1193,7 @@ class PyxellCompiler:
     def compileStmtWhile(self, node):
         with self.block() as (label_start, label_end):
             expr = node['expr']
-            cond = self.cast(expr, self.compile(expr), tBool)
+            cond = self.cast(expr, self.compile(expr), t.Bool)
 
             label_while = self.builder.append_basic_block()
             self.builder.cbranch(cond, label_while, label_end)
@@ -1216,7 +1216,7 @@ class PyxellCompiler:
                 self.compile(node['block'])
 
             expr = node['expr']
-            cond = self.cast(expr, self.compile(expr), tBool)
+            cond = self.cast(expr, self.compile(expr), t.Bool)
 
             self.builder.cbranch(cond, label_end, label_start)
 
@@ -1236,46 +1236,46 @@ class PyxellCompiler:
                 values = lmap(self.compile, iterable['exprs'])
                 type = values[0].type
                 types.append(type)
-                if type not in {tInt, tFloat, tBool, tChar}:
+                if type not in {t.Int, t.Float, t.Bool, t.Char}:
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
-                if type == tFloat:
-                    if step.type not in {tFloat, tInt}:
-                        self.throw(node, err.IllegalAssignment(step.type, tFloat))
-                    if step.type == tInt:
+                if type == t.Float:
+                    if step.type not in {t.Float, t.Int}:
+                        self.throw(node, err.IllegalAssignment(step.type, t.Float))
+                    if step.type == t.Int:
                         step = self.builder.sitofp(step, type)
                     cmp = self.builder.fcmp_ordered
-                    desc = cmp('<', step, vFloat(0))
+                    desc = cmp('<', step, v.Float(0))
                 else:
-                    if step.type != tInt:
-                        self.throw(node, err.IllegalAssignment(step.type, tInt))
-                    values = [self.builder.zext(v, tInt) for v in values]
+                    if step.type != t.Int:
+                        self.throw(node, err.IllegalAssignment(step.type, t.Int))
+                    values = [self.builder.zext(v, t.Int) for v in values]
                     cmp = self.builder.icmp_signed
-                    desc = cmp('<', step, vInt(0))
-                index = self.builder.alloca(type if type == tFloat else tInt)
+                    desc = cmp('<', step, v.Int(0))
+                index = self.builder.alloca(type if type == t.Float else t.Int)
                 start = values[0]
                 if len(values) == 1:
-                    cond = lambda v: vTrue
+                    cond = lambda v: v.true
                 elif iterable['inclusive']:
                     cond = lambda v: self.builder.select(desc, cmp('>=', v, values[1]), cmp('<=', v, values[1]))
                 else:
                     cond = lambda v: self.builder.select(desc, cmp('>', v, values[1]), cmp('<', v, values[1]))
-                getter = lambda v: v if type in {tInt, tFloat} else self.builder.trunc(v, type)
+                getter = lambda v: v if type in {t.Int, t.Float} else self.builder.trunc(v, type)
             else:
                 value = self.compile(iterable)
-                if value.type == tString:
-                    types.append(tChar)
+                if value.type == t.String:
+                    types.append(t.Char)
                 elif value.type.isArray():
                     types.append(value.type.subtype)
                 else:
                     self.throw(node, err.NotIterable(value.type))
-                desc = self.builder.icmp_signed('<', step, vInt(0))
-                index = self.builder.alloca(tInt)
+                desc = self.builder.icmp_signed('<', step, v.Int(0))
+                index = self.builder.alloca(t.Int)
                 array = self.extract(value, 0)
                 length = self.extract(value, 1)
-                end1 = self.builder.sub(length, vInt(1))
-                end2 = vInt(0)
+                end1 = self.builder.sub(length, v.Int(1))
+                end2 = v.Int(0)
                 start = self.builder.select(desc, end1, end2)
                 cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>=', v, end2), self.builder.icmp_signed('<=', v, end1))
                 getter = lambda v: self.builder.load(self.builder.gep(array, [v]))
@@ -1286,7 +1286,7 @@ class PyxellCompiler:
             conditions.append(cond)
             getters.append(getter)
 
-        _steps = lmap(self.compile, node.get('steps', [])) or [vInt(1)]
+        _steps = lmap(self.compile, node.get('steps', [])) or [v.Int(1)]
         if len(_steps) == 1:
             _steps *= len(iterables)
         elif len(_steps) != len(iterables):
@@ -1319,7 +1319,7 @@ class PyxellCompiler:
                     for var, index, getter in zip(vars, indices, getters):
                         self.assign(node, var, getter(self.builder.load(index)))
                 else:
-                    self.throw(node, err.CannotUnpack(tTuple(types), len(vars)))
+                    self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
 
                 self.compile(node['block'])
 
@@ -1351,7 +1351,7 @@ class PyxellCompiler:
         with self.local():
             typevars = node.get('typevars', [])
             for name in typevars:
-                self.env[name] = tVar(name)
+                self.env[name] = t.Var(name)
 
             args = [] if class_type is None else [Arg(class_type, 'self')]
             expect_default = False
@@ -1366,8 +1366,8 @@ class PyxellCompiler:
                     self.throw(arg, err.MissingDefault(name))
                 args.append(Arg(type, name, default))
 
-            ret_type = self.compile(node.get('ret')) or tVoid
-            func_type = tFunc(args, ret_type)
+            ret_type = self.compile(node.get('ret')) or t.Void
+            func_type = t.Func(args, ret_type)
 
             env = self.env.copy()
             func = FunctionTemplate(id, typevars, func_type, node['block'], env)
@@ -1400,10 +1400,10 @@ class PyxellCompiler:
 
             value = self.cast(node, value, type)
 
-        elif type != tVoid:
-            self.throw(node, err.IllegalAssignment(tVoid, type))
+        elif type != t.Void:
+            self.throw(node, err.IllegalAssignment(t.Void, type))
 
-        if type == tVoid:
+        if type == t.Void:
             self.builder.ret_void()
         else:
             self.builder.ret(value)
@@ -1429,7 +1429,7 @@ class PyxellCompiler:
         for member in node['members']:
             members[member['id']] = member
 
-        type = tClass(self.module.context, id, base, members)
+        type = t.Class(self.module.context, id, base, members)
         self.env[id] = type
 
         member_types = {}
@@ -1464,7 +1464,7 @@ class PyxellCompiler:
             return
 
         constructor_method = methods.get('<constructor>')
-        constructor_type = tFunc(constructor_method.type.args[1:] if constructor_method else [], type)
+        constructor_type = t.Func(constructor_method.type.args[1:] if constructor_method else [], type)
         constructor = ll.Function(self.module, constructor_type.pointee, self.module.get_unique_name('def.'+id))
 
         constructor_ptr = ll.GlobalVariable(self.module, constructor_type, self.module.get_unique_name(id))
@@ -1518,7 +1518,7 @@ class PyxellCompiler:
             self.throw(node, err.InvalidSyntax())
 
         values = self.unify(node, *map(self.compile, exprs))
-        subtype = values[0].type if values else tUnknown
+        subtype = values[0].type if values else t.Unknown
         return self.array(subtype, values)
 
     def compileExprArrayComprehension(self, node):
@@ -1561,8 +1561,8 @@ class PyxellCompiler:
                 type = inner_stmt.pop('_eval')
 
         with self.local():
-            self.assign(node, array, self.array(type, [], length=vInt(4)))
-            self.assign(node, index, vInt(0))
+            self.assign(node, array, self.array(type, [], length=v.Int(4)))
+            self.assign(node, index, v.Int(0))
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['array'] = array
@@ -1582,7 +1582,7 @@ class PyxellCompiler:
 
         if node.get('safe'):
             obj = self.compile(expr)
-            return self.safe(node, obj, lambda: self.nullable(self.attr(node, self.extract(obj), attr)), vNull)
+            return self.safe(node, obj, lambda: self.nullable(self.attr(node, self.extract(obj), attr)), v.Null)
 
         obj, value = self.attribute(node, expr, attr)
         return value
@@ -1592,7 +1592,7 @@ class PyxellCompiler:
 
         if node.get('safe'):
             collection = self.compile(exprs[0])
-            return self.safe(node, collection, lambda: self.nullable(self.index(node, self.extract(collection), self.compile(exprs[1]))), vNull)
+            return self.safe(node, collection, lambda: self.nullable(self.index(node, self.extract(collection), self.compile(exprs[1]))), v.Null)
 
         return self.index(node, *map(self.compile, exprs))
 
@@ -1615,21 +1615,21 @@ class PyxellCompiler:
             self.assign(node, length, self.expr('{t}.length', t=array['id']))
 
             if slice[2] is None:
-                self.assign(node, step, vInt(1))
+                self.assign(node, step, v.Int(1))
             else:
-                self.assign(node, step, self.cast(slice[2], self.compile(slice[2]), tInt))
+                self.assign(node, step, self.cast(slice[2], self.compile(slice[2]), t.Int))
 
             if slice[0] is None:
                 self.assign(node, start, self.expr('{c} > 0 ? 0 : {l}', c=step['id'], l=length['id']))
             else:
-                self.assign(node, start, self.cast(slice[0], self.compile(slice[0]), tInt))
+                self.assign(node, start, self.cast(slice[0], self.compile(slice[0]), t.Int))
                 self.assign(node, start, self.expr('{a} < 0 ? {a} + {l} : {a}', a=start['id'], l=length['id']))
             self.assign(node, start, self.expr('{a} < 0 ? 0 : {a} > {l} ? {l} : {a}', a=start['id'], l=length['id']))
 
             if slice[1] is None:
                 self.assign(node, end, self.expr('{c} > 0 ? {l} : 0', c=step['id'], l=length['id']))
             else:
-                self.assign(node, end, self.cast(slice[1], self.compile(slice[1]), tInt))
+                self.assign(node, end, self.cast(slice[1], self.compile(slice[1]), t.Int))
                 self.assign(node, end, self.expr('{b} < 0 ? {b} + {l} : {b}', b=end['id'], l=length['id']))
             self.assign(node, end, self.expr('{b} < 0 ? 0 : {b} > {l} ? {l} : {b}', b=end['id'], l=length['id']))
 
@@ -1639,7 +1639,7 @@ class PyxellCompiler:
             result = self.expr('[{t}[{i}] for {i} in {a}...{b} step {c}]', t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])
 
         # `CharArray_asString` is used directly, because `.join` would copy the array redundantly.
-        return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == tString else result
+        return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == t.String else result
 
     def compileExprCall(self, node):
         expr = node['expr']
@@ -1769,7 +1769,7 @@ class PyxellCompiler:
                 for name, types in type_variables.items():
                     type = unify_types(*types)
                     if type is None:
-                        self.throw(node, err.InvalidArgumentTypes(tVar(name)))
+                        self.throw(node, err.InvalidArgumentTypes(t.Var(name)))
 
                     self.env[name] = assigned_types[name] = type
 
@@ -1808,7 +1808,7 @@ class PyxellCompiler:
                     func = self.attr(node, value, attr)
                     return self.nullable(_call(value, func))
 
-                return self.safe(node, obj, callback, vNull)
+                return self.safe(node, obj, callback, v.Null)
             else:
                 obj, func = self.attribute(expr, expr['expr'], attr)
 
@@ -1857,7 +1857,7 @@ class PyxellCompiler:
 
         with self.block() as (label_start, label_end):
             self.builder.position_at_end(label_end)
-            phi = self.builder.phi(tBool)
+            phi = self.builder.phi(t.Bool)
             self.builder.position_at_end(label_start)
 
             def emitIf(index):
@@ -1869,7 +1869,7 @@ class PyxellCompiler:
                     self.builder.branch(label_end)
                     return
 
-                phi.add_incoming(vFalse, self.builder.basic_block)
+                phi.add_incoming(v.false, self.builder.basic_block)
                 label_if = self.builder.function.append_basic_block()
                 self.builder.cbranch(cond, label_if, label_end)
 
@@ -1900,15 +1900,15 @@ class PyxellCompiler:
                 self.builder.cbranch(cond1, label_end, label_if)
 
             self.builder.position_at_end(label_end)
-            phi = self.builder.phi(tBool)
+            phi = self.builder.phi(t.Bool)
             if op == 'and':
-                phi.add_incoming(vFalse, label_start)
+                phi.add_incoming(v.false, label_start)
             elif op == 'or':
-                phi.add_incoming(vTrue, label_start)
+                phi.add_incoming(v.true, label_start)
 
             with self.builder._branch_helper(label_if, label_end):
                 cond2 = self.compile(exprs[1])
-                if not cond1.type == cond2.type == tBool:
+                if not cond1.type == cond2.type == t.Bool:
                     self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
                 phi.add_incoming(cond2, self.builder.basic_block)
 
@@ -1917,9 +1917,9 @@ class PyxellCompiler:
     def compileExprCond(self, node):
         exprs = node['exprs']
         cond, *values = map(self.compile, exprs)
-        cond = self.cast(exprs[0], cond, tBool)
+        cond = self.cast(exprs[0], cond, t.Bool)
         values = self.unify(node, *values)
-        return TernaryOperation(cond, '?', values[0], ':', values[1], type=values[0].type)
+        return v.TernaryOperation(cond, '?', values[0], ':', values[1], type=values[0].type)
 
     def compileExprLambda(self, node):
         self.throw(node, err.IllegalLambda())
@@ -1932,19 +1932,19 @@ class PyxellCompiler:
     ### Atoms ###
 
     def compileAtomInt(self, node):
-        return vInt(node['int'])
+        return v.Int(node['int'])
 
     def compileAtomFloat(self, node):
-        return vFloat(node['float'])
+        return v.Float(node['float'])
 
     def compileAtomBool(self, node):
-        return vBool(node['bool'])
+        return v.Bool(node['bool'])
 
     def compileAtomChar(self, node):
-        return vChar(node['char'])
+        return v.Char(node['char'])
 
     def compileAtomString(self, node):
-        return vString(node['string'])
+        return v.String(node['string'])
 
         expr = self.convert_string(node, node['string'])
         if expr['node'] == 'AtomString':
@@ -1958,7 +1958,7 @@ class PyxellCompiler:
             }, str(e).partition(': ')[2][:-1])
 
     def compileAtomNull(self, node):
-        return vNull()
+        return v.Null()
 
     def compileAtomSuper(self, node):
         func = self.env.get('#super')
@@ -1979,30 +1979,30 @@ class PyxellCompiler:
         name = node['name']
 
         type = {
-            'Void': tVoid,
-            'Int': tInt,
-            'Float': tFloat,
-            'Bool': tBool,
-            'Char': tChar,
-            'String': tString,
+            'Void': t.Void,
+            'Int': t.Int,
+            'Float': t.Float,
+            'Bool': t.Bool,
+            'Char': t.Char,
+            'String': t.String,
         }.get(name)
 
         if type is None:
             type = self.env.get(name)
-            if not isinstance(type, Type):
+            if not isinstance(type, t.Type):
                 self.throw(node, err.NotType(name))
             return type
 
         return type
 
     def compileTypeArray(self, node):
-        return tArray(self.compile(node['subtype']))
+        return t.Array(self.compile(node['subtype']))
 
     def compileTypeNullable(self, node):
-        return tNullable(self.compile(node['subtype']))
+        return t.Nullable(self.compile(node['subtype']))
 
     def compileTypeTuple(self, node):
-        return tTuple(lmap(self.compile, node['elements']))
+        return t.Tuple(lmap(self.compile, node['elements']))
 
     def compileTypeFunc(self, node):
-        return tFunc(lmap(self.compile, node['args']), self.compile(node['ret']) or tVoid)
+        return t.Func(lmap(self.compile, node['args']), self.compile(node['ret']) or t.Void)

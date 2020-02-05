@@ -4,13 +4,6 @@ from collections import defaultdict, namedtuple
 from .utils import *
 
 
-__all__ = [
-    'Type',
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tString',
-    'unify_types', 'type_variables_assignment', 'get_type_variables', 'can_cast',
-]
-
-
 class Type:
     pass
 
@@ -62,16 +55,16 @@ class UnknownType(Type):
         return hash(UnknownType)
 
 
-tVoid = PrimitiveType('Void', 'void')
-tInt = PrimitiveType('Int', 'long long')
-tFloat = PrimitiveType('Float', 'double')
-tBool = PrimitiveType('Bool', 'bool')
-tChar = PrimitiveType('Char', 'char')
-tString = PrimitiveType('String', 'std::string')
+Void = PrimitiveType('Void', 'void')
+Int = PrimitiveType('Int', 'long long')
+Float = PrimitiveType('Float', 'double')
+Bool = PrimitiveType('Bool', 'bool')
+Char = PrimitiveType('Char', 'char')
+String = PrimitiveType('String', 'std::string')
 
 
-def tArray(subtype):
-    type = tPtr(CustomStructType([tPtr(subtype), tInt], 'array'))
+def Array(subtype):
+    type = tPtr(CustomStructType([tPtr(subtype), Int], 'array'))
     type.subtype = subtype
     return type
 
@@ -80,7 +73,7 @@ def isArray(type):
     return getattr(type, 'kind', None) == 'array'
 
 
-def tNullable(subtype):
+def Nullable(subtype):
     return NullableType(subtype)
 
 @extend_class(Type)
@@ -88,7 +81,7 @@ def isNullable(type):
     return getattr(type, 'kind', None) == 'nullable'
 
 
-def tTuple(elements):
+def Tuple(elements):
     type = tPtr(CustomStructType(elements, 'tuple'))
     type.elements = elements
     return type
@@ -101,7 +94,7 @@ def isTuple(type):
 Arg = namedtuple('Arg', ['type', 'name', 'default'])
 Arg.__new__.__defaults__ = (None,) * 3
 
-def tFunc(args, ret=tVoid):
+def Func(args, ret=Void):
     args = [arg if isinstance(arg, Arg) else Arg(arg) for arg in args]
     type = tPtr(ll.FunctionType(ret, [arg.type for arg in args]))
     type.args = args
@@ -114,7 +107,7 @@ def isFunc(type):
     return getattr(type, 'kind', None) == 'function'
 
 
-def tClass(context, name, base, members):
+def Class(context, name, base, members):
     type = tPtr(context.get_identified_type(name))
     type.kind = 'class'
     type.name = name
@@ -129,7 +122,7 @@ def isClass(type):
     return getattr(type, 'kind', None) == 'class'
 
 
-def tVar(name):
+def Var(name):
     return VariableType(name)
 
 @extend_class(Type)
@@ -139,14 +132,14 @@ def isVar(type):
 
 @extend_class(Type)
 def isCollection(type):
-    return type == tString or type.isArray()
+    return type == String or type.isArray()
 
 
-tUnknown = UnknownType()
+Unknown = UnknownType()
 
 @extend_class(Type)
 def isUnknown(type):
-    if type == tUnknown:
+    if type == Unknown:
         return True
     if type.isArray():
         return type.subtype.isUnknown()
@@ -173,27 +166,27 @@ def unify_types(type1, *types):
     if type1 == type2:
         return type1
 
-    if type1 in {tInt, tFloat} and type2 in {tInt, tFloat}:
-        return tFloat
+    if type1 in {Int, Float} and type2 in {Int, Float}:
+        return Float
 
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
-        return tArray(subtype) if subtype else None
+        return Array(subtype) if subtype else None
 
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
-        return tNullable(subtype) if subtype else None
+        return Nullable(subtype) if subtype else None
 
     if type1.isTuple() and type2.isTuple():
         elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
-        return tTuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
+        return Tuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
 
     if type1.isClass() and type2.isClass():
         return common_superclass(type1, type2)
 
-    if type1 == tUnknown:
+    if type1 == Unknown:
         return type2
-    if type2 == tUnknown:
+    if type2 == Unknown:
         return type1
 
     return None
@@ -250,8 +243,8 @@ def type_variables_assignment(type1, type2):
 
     if type1.isFunc() and type2.isFunc():
         return type_variables_assignment(
-            tTuple([arg.type for arg in type1.args] + [type1.ret]),
-            tTuple([arg.type for arg in type2.args] + [type2.ret]))
+            Tuple([arg.type for arg in type1.args] + [type1.ret]),
+            Tuple([arg.type for arg in type2.args] + [type2.ret]))
 
     if type1.isClass() and type2.isClass():
         return {} if common_superclass(type1, type2) == type2 else None
@@ -259,9 +252,9 @@ def type_variables_assignment(type1, type2):
     if type2.isVar():
         return {type2.name: type1}
 
-    if type1 == tUnknown or type2 == tUnknown:
+    if type1 == Unknown or type2 == Unknown:
         return {}
-    if type1 == tInt and type2 == tFloat:
+    if type1 == Int and type2 == Float:
         return {}
     if type1 == type2:
         return {}
