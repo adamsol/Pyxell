@@ -42,6 +42,18 @@ def String(x):
     return Literal(x, '"{}"s', type=t.String)
 
 
+class Tuple(Value):
+
+    def __init__(self, elements):
+        type = t.Tuple([value.type for value in elements])
+        super().__init__(type=type)
+        self.elements = elements
+
+    def __str__(self):
+        elems = ', '.join(map(str, self.elements))
+        return f'std::make_tuple({elems})'
+
+
 class Variable(Value):
 
     def __init__(self, type, name):
@@ -84,6 +96,10 @@ class Call(Value):
     def __str__(self):
         args = ', '.join(map(str, self.args))
         return f'{self.func}({args})'
+
+
+def Get(tuple, index):
+    return Call(f'std::get<{index}>', tuple, type=tuple.type.elements[index])
 
 
 class UnaryOperation(Value):

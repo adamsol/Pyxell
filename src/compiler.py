@@ -28,6 +28,7 @@ class PyxellCompiler:
         self.units = {}
         self._unit = None
         self.level = 0
+        self._tmp_index = 0
 
         self._block = c.Block()
         self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
@@ -36,6 +37,8 @@ class PyxellCompiler:
             c.Line(),
             c.Include('cstdio'),
             c.Include('string'),
+            c.Include('tuple'),
+            c.Line(),
             c.Statement('using namespace std::string_literals'),
             c.Line(),
             self.main,
@@ -303,7 +306,7 @@ class PyxellCompiler:
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')
             if 0 <= index < len(type.elements):
-                value = self.extract(obj, index)
+                value = v.Get(obj, index)
 
         elif type.isClass():
             value = self.member(node, obj, attr)
@@ -354,6 +357,14 @@ class PyxellCompiler:
 
         return [self.cast(node, value, type) for value in values]
 
+    def tmp(self, value):
+        if isinstance(value, v.Variable):
+            return value
+        tmp = v.Variable(value.type, f'tmp{self._tmp_index}')
+        self._tmp_index += 1
+        self.output(f'auto&& {tmp} = {value}')
+        return tmp
+
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
         if type == t.Void:
             self.throw(node, err.InvalidDeclaration(type))
@@ -401,10 +412,6 @@ class PyxellCompiler:
     def assign(self, node, expr, value):
         type = value.type
 
-        var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
-        self.output(f'{var} = {value}')
-        return
-
         if type.isFunc():
             type = t.Func([arg.type for arg in type.args], type.ret)
 
@@ -419,13 +426,13 @@ class PyxellCompiler:
             self.throw(node, err.CannotUnpack(type, len1))
 
         if len1 > 1:
+            value = self.tmp(value)
             for i, expr in enumerate(exprs):
-                self.assign(node, expr, self.extract(value, i))
-            return
-
-        ptr = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
-        value = self.cast(node, value, ptr.type.pointee)
-        self.builder.store(value, ptr)
+                self.assign(node, expr, v.Get(value, i))
+        else:
+            var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
+            #value = self.cast(node, value, ptr.type.pointee)
+            self.output(f'{var} = {value}')
 
     def inc(self, ptr, step=v.Int(1)):
         add = self.builder.fadd if ptr.type.pointee == t.Float else self.builder.add
@@ -711,47 +718,6 @@ class PyxellCompiler:
             phi.add_incoming(length_cond, label_length)
             return phi
 
-        elif left.type.isTuple():
-            with self.block() as (label_start, label_end):
-                label_true = ll.Block(self.builder.function)
-                label_false = ll.Block(self.builder.function)
-
-                for i in range(len(left.type.elements)):
-                    label_cont = ll.Block(self.builder.function)
-
-                    values = [self.extract(tuple, i) for tuple in [left, right]]
-                    cond = self.cmp(node, op+'=' if op in {'<', '>'} else op, *values)
-
-                    if op == '!=':
-                        self.builder.cbranch(cond, label_true, label_cont)
-                    else:
-                        self.builder.cbranch(cond, label_cont, label_false)
-
-                    self.builder.function.blocks.append(label_cont)
-                    self.builder.position_at_end(label_cont)
-
-                    if op in {'<=', '>=', '<', '>'}:
-                        label_cont = ll.Block(self.builder.function)
-
-                        cond2 = self.cmp(node, '!=', *values)
-                        self.builder.cbranch(cond2, label_true, label_cont)
-
-                        self.builder.function.blocks.append(label_cont)
-                        self.builder.position_at_end(label_cont)
-
-                self.builder.branch(label_end)
-
-                for label in [label_true, label_false]:
-                    self.builder.function.blocks.append(label)
-                    self.builder.position_at_end(label)
-                    self.builder.branch(label_end)
-
-            phi = self.builder.phi(t.Bool)
-            phi.add_incoming(v.true, label_true)
-            phi.add_incoming(v.false, label_false)
-            phi.add_incoming(v.Bool(op not in {'!=', '<', '>'}), label_cont)
-            return phi
-
         elif left.type.isClass():
             if op not in {'==', '!='}:
                 self.throw(node, err.NotComparable(left.type, right.type))
@@ -819,10 +785,11 @@ class PyxellCompiler:
                     self.write('null')
 
         elif type.isTuple():
+            value = self.tmp(value)
             for i in range(len(type.elements)):
                 if i > 0:
                     self.write(' ')
-                self.print(node, self.extract(value, i))
+                self.print(node, v.Get(value, i))
 
         elif type.isClass():
             try:
@@ -903,18 +870,6 @@ class PyxellCompiler:
     def nullable(self, value):
         result = self.malloc(t.Nullable(value.type))
         self.insert(value, result)
-        return result
-
-    def tuple(self, values):
-        if len(values) == 1:
-            return values[0]
-
-        type = t.Tuple([value.type for value in values])
-        result = self.malloc(type)
-
-        for i, value in enumerate(values):
-            self.insert(value, result, i)
-
         return result
 
     def convert_lambda(self, expr):
@@ -1925,8 +1880,8 @@ class PyxellCompiler:
         self.throw(node, err.IllegalLambda())
 
     def compileExprTuple(self, node):
-        values = lmap(self.compile, node['exprs'])
-        return self.tuple(values)
+        elements = lmap(self.compile, node['exprs'])
+        return v.Tuple(elements)
 
 
     ### Atoms ###

@@ -29,6 +29,26 @@ class PrimitiveType(Type):
         return self.pyxell_name
 
 
+class Tuple(Type):
+
+    def __init__(self, elements):
+        super().__init__()
+        self.elements = elements
+
+    def __eq__(self, other):
+        return isinstance(other, Tuple) and self.elements == other.elements
+
+    def __hash__(self):
+        return hash(Tuple)
+
+    def __str__(self):
+        elems = ', '.join(map(str, self.elements))
+        return f'std::tuple<{elems}>'
+
+    def show(self):
+        return '*'.join([t.show() for t in self.elements])
+
+
 class VariableType(Type):
 
     def __init__(self, name):
@@ -81,14 +101,9 @@ def isNullable(type):
     return getattr(type, 'kind', None) == 'nullable'
 
 
-def Tuple(elements):
-    type = tPtr(CustomStructType(elements, 'tuple'))
-    type.elements = elements
-    return type
-
 @extend_class(Type)
 def isTuple(type):
-    return getattr(type, 'kind', None) == 'tuple'
+    return isinstance(type, Tuple)
 
 
 Arg = namedtuple('Arg', ['type', 'name', 'default'])
