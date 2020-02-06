@@ -477,32 +477,27 @@ class PyxellCompiler:
         return v.UnaryOperation(op, value, type=value.type)
 
     def binaryop(self, node, op, left, right):
-        return v.BinaryOperation(left, op, right, type=left.type)
-
         if op in {'^', '/'} or left.type != right.type and left.type in {t.Int, t.Float} and right.type in {t.Int, t.Float}:
             if left.type == t.Int:
-                left = self.builder.sitofp(left, t.Float)
+                left = self.cast(node, left, t.Float)
             if right.type == t.Int:
-                right = self.builder.sitofp(right, t.Float)
+                right = self.cast(node, right, t.Float)
 
         if op == '^':
             if left.type == right.type == t.Float:
-                return self.call(node, 'Float_pow', left, right)
+                return v.Call('pow', left, right, type=t.Float)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '^^':
             if left.type == right.type == t.Int:
-                return self.call(node, 'Int_pow', left, right)
+                return v.Call('pow', left, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '*':
-            if left.type == right.type == t.Int:
-                return self.builder.mul(left, right)
-
-            elif left.type == right.type == t.Float:
-                return self.builder.fmul(left, right)
+            if left.type == right.type and left.type in {t.Int, t.Float}:
+                return v.BinaryOperation(left, op, right, type=left.type)
 
             elif left.type.isCollection() and right.type == t.Int:
                 type = left.type
@@ -537,41 +532,28 @@ class PyxellCompiler:
 
         elif op == '/':
             if left.type == right.type == t.Float:
-                return self.builder.fdiv(left, right)
+                return v.BinaryOperation(left, op, right, type=t.Float)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '//':
             if left.type == right.type == t.Int:
-                v1 = self.builder.sdiv(left, right)
-                v2 = self.builder.sub(v1, v.Int(1))
-                v3 = self.builder.xor(left, right)
-                v4 = self.builder.icmp_signed('<', v3, v.Int(0))
-                v5 = self.builder.select(v4, v2, v1)
-                v6 = self.builder.mul(v1, right)
-                v7 = self.builder.icmp_signed('!=', v6, left)
-                return self.builder.select(v7, v5, v1)
+                return v.Call('floordiv', left, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '%':
             if left.type == right.type == t.Int:
-                v1 = self.builder.srem(left, right)
-                v2 = self.builder.add(v1, right)
-                v3 = self.builder.xor(left, right)
-                v4 = self.builder.icmp_signed('<', v3, v.Int(0))
-                v5 = self.builder.select(v4, v2, v1)
-                v6 = self.builder.icmp_signed('==', v1, v.Int(0))
-                return self.builder.select(v6, v1, v5)
+                return v.Call('mod', left, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '+':
-            if left.type == right.type == t.Int:
-                return self.builder.add(left, right)
+            if left.type == right.type and left.type in {t.Int, t.Float, t.String}:
+                return v.BinaryOperation(left, op, right, type=left.type)
 
-            elif left.type == right.type == t.Float:
-                return self.builder.fadd(left, right)
+            elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
+                return v.BinaryOperation(left, op, right, type=t.String)
 
             elif left.type == right.type and left.type.isCollection():
                 type = left.type
@@ -593,41 +575,29 @@ class PyxellCompiler:
                 self.insert(length, result, 1)
                 return result
 
-            elif left.type == t.String and right.type == t.Char:
-                return self.binaryop(node, op, left, self.call(node, 'Char_toString', right))
-
-            elif left.type == t.Char and right.type == t.String:
-                return self.binaryop(node, op, self.call(node, 'Char_toString', left), right)
-
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '-':
-            if left.type == right.type == t.Int:
-                return self.builder.sub(left, right)
-
-            elif left.type == right.type == t.Float:
-                return self.builder.fsub(left, right)
-
+            if left.type == right.type and left.type in {t.Int, t.Float}:
+                return v.BinaryOperation(left, op, right, type=left.type)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '|':
             if left.type == right.type == t.Int:
-                return self.builder.icmp_signed('==', self.builder.srem(right, left), v.Int(0))
+                return v.BinaryOperation(v.BinaryOperation(right, '%', left), '==', v.Int(0), type=t.Bool)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         else:
             if left.type == right.type == t.Int:
-                instruction = {
-                    '<<': self.builder.shl,
-                    '>>': self.builder.ashr,
-                    '&&': self.builder.and_,
-                    '##': self.builder.xor,
-                    '||': self.builder.or_,
-                }[op]
-                return instruction(left, right)
+                op = {
+                    '&&': '&',
+                    '##': '^',
+                    '||': '|',
+                }.get(op, op)
+                return v.BinaryOperation(left, op, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -1818,7 +1788,8 @@ class PyxellCompiler:
             'or': '||',
         }[node['op']]
 
-        return self.binaryop(node, op, *map(self.compile, exprs))
+        values = lmap(self.compile, exprs)
+        return v.BinaryOperation(values[0], op, values[1], type=t.Bool)
 
         cond1 = self.compile(exprs[0])
 
