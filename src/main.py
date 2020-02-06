@@ -56,7 +56,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
         file.write(code)
 
     if cpp_compiler.lower() not in {'', 'no', 'none'}:
-        command = [cpp_compiler, cpp_filename, '-o', exe_filename, '-std=c++17', '-O2', *other_args]
+        command = [cpp_compiler, cpp_filename, '-I', str(abspath), '-o', exe_filename, '-std=c++17', '-O2', *other_args]
         if platform.system() != 'Windows':
             command.append('-lm')
 

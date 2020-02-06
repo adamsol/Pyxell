@@ -35,11 +35,7 @@ class PyxellCompiler:
 
         self.module = c.Module([
             c.Line(),
-            c.Include('cstdio'),
-            c.Include('string'),
-            c.Include('tuple'),
-            c.Line(),
-            c.Statement('using namespace std::string_literals'),
+            c.Include('lib/base.hpp', system=False),
             c.Line(),
             self.main,
             c.Line()
@@ -134,8 +130,8 @@ class PyxellCompiler:
             yield
 
     def output(self, line):
-        if isinstance(line, str):
-            line = c.Statement(line)
+        if isinstance(line, (str, v.Value)):
+            line = c.Statement(str(line))
         self._block.append(line)
 
     def resolve_type(self, type):
@@ -266,7 +262,7 @@ class PyxellCompiler:
 
         elif type.isCollection():
             if attr == 'length':
-                value = v.Call(v.Attribute(obj, 'size'), type=t.Int)
+                value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif type == t.String:
                 if attr == 'toString':
                     value = self.env['String_toString']
@@ -735,20 +731,8 @@ class PyxellCompiler:
     def print(self, node, value):
         type = value.type
 
-        if type == t.Int:
-            self.write('%lld', value)
-
-        elif type == t.Float:
-            self.write('%.15g', value)
-
-        elif type == t.Bool:
-            self.write('%s', f'{value} ? "true" : "false"')
-
-        elif type == t.Char:
-            self.write('%c', value)
-
-        elif type == t.String:
-            self.write('%s', f'{value}.c_str()')
+        if type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isTuple():
+            self.output(v.Call('write', value))
 
         elif type.isArray():
             self.write('[')
@@ -781,13 +765,6 @@ class PyxellCompiler:
                     self.print(node, self.extract(value))
                 with label_else:
                     self.write('null')
-
-        elif type.isTuple():
-            value = self.tmp(value)
-            for i in range(len(type.elements)):
-                if i > 0:
-                    self.write(' ')
-                self.print(node, v.Get(value, i))
 
         elif type.isClass():
             try:
