@@ -356,7 +356,7 @@ class PyxellCompiler:
             return value
         tmp = v.Variable(value.type, f'tmp{self._tmp_index}')
         self._tmp_index += 1
-        self.output(f'auto&& {tmp} = {value}')
+        self.store(tmp, value)
         return tmp
 
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
@@ -403,6 +403,10 @@ class PyxellCompiler:
         else:
             self.throw(node, err.NotLvalue())
 
+    def store(self, left, right):
+        spec = 'auto&& ' if isinstance(left, v.Variable) and left.name not in self.env else ''
+        self.output(f'{spec}{left} = {right}')
+
     def assign(self, node, expr, value):
         type = value.type
 
@@ -426,7 +430,7 @@ class PyxellCompiler:
         else:
             var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
             value = self.cast(node, value, var.type)
-            self.output(f'{var} = {value}')
+            self.store(var, value)
 
     def inc(self, ptr, step=v.Int(1)):
         add = self.builder.fadd if ptr.type.pointee == t.Float else self.builder.add
@@ -1020,7 +1024,7 @@ class PyxellCompiler:
 
         if expr:
             value = self.cast(node, self.compile(expr), type)
-            self.output(f'{var} = {value}')
+            self.store(var, value)
 
     def compileStmtAssg(self, node):
         value = self.compile(node['expr'])
@@ -1031,8 +1035,7 @@ class PyxellCompiler:
     def compileStmtAssgExpr(self, node):
         exprs = node['exprs']
         op = node['op']
-        ptr = self.lvalue(node, exprs[0])
-        left = self.builder.load(ptr)
+        left = self.lvalue(node, exprs[0])
 
         if op == '??':
             with self.builder.if_then(self.builder.icmp_unsigned('==', left, v.Null())):
@@ -1045,7 +1048,7 @@ class PyxellCompiler:
             value = self.binaryop(node, op, left, right)
             if value.type != left.type:
                 self.throw(node, err.IllegalAssignment(value.type, left.type))
-            self.builder.store(value, ptr)
+            self.store(left, value)
 
     def compileStmtAppend(self, node):
         # Special instruction for array comprehension.
