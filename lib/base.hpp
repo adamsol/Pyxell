@@ -6,6 +6,11 @@
 
 using namespace std::string_literals;
 
+// https://github.com/godotengine/godot/pull/33376
+#if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900 && defined(_TWO_DIGIT_EXPONENT)) && !defined(_UCRT)
+	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
+#endif
+
 
 /* Mathematics */
 
@@ -58,7 +63,11 @@ void write(long long x)
 
 void write(double x)
 {
-    printf("%.15g", x);
+    if (fabs(x) < 1e15 && floor(x) == x) {
+        printf("%.0f.0", x);
+    } else {
+        printf("%.15g", x);
+    }
 }
 
 void write(bool x)
