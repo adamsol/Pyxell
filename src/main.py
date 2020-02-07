@@ -56,7 +56,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
         file.write(code)
 
     if cpp_compiler.lower() not in {'', 'no', 'none'}:
-        command = [cpp_compiler, cpp_filename, '-I', str(abspath), '-o', exe_filename, '-std=c++17', '-O2', *other_args]
+        command = [cpp_compiler, cpp_filename, '-I', str(abspath), '-o', exe_filename, '-std=c++17', '-O2', *other_args, '-lstdc++']
         if platform.system() != 'Windows':
             command.append('-lm')
 
@@ -78,7 +78,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
 def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
-    parser.add_argument('-c', '--cpp-compiler', default='g++', help="C++ compiler command (default: g++)")
+    parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
     parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
     parser.add_argument('-r', '--run', action='store_true', help="run the program after compilation")
     parser.add_argument('-v', '--verbose', action='store_true', help="output diagnostic information")

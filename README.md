@@ -119,7 +119,7 @@ If not, errors will be displayed, pointing to the erroneous code location.
 
 If `-r` option is given, the compiled program will be run immediately after compilation.
 
-By default, `g++` command is used to compile the code.
+By default, `gcc` command is used to compile the code.
 You can pick a different command using `-c` option.
 Write `-c=none` to skip the compilation step (only C++ code will be created).
 
