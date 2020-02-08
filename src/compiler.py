@@ -710,33 +710,8 @@ class PyxellCompiler:
     def print(self, node, value):
         type = value.type
 
-        if type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isTuple():
+        if type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isArray() or type.isTuple():
             self.output(v.Call('write', value))
-
-        elif type.isArray():
-            self.write('[')
-
-            length = self.extract(value, 1)
-            index = self.builder.alloca(t.Int)
-            self.builder.store(v.Int(0), index)
-
-            with self.block() as (label_start, label_end):
-                i = self.builder.load(index)
-
-                with self.builder.if_then(self.builder.icmp_signed('>=', i, length)):
-                    self.builder.branch(label_end)
-
-                with self.builder.if_then(self.builder.icmp_signed('>', i, v.Int(0))):
-                    self.write(', ')
-
-                elem = self.builder.gep(self.extract(value, 0), [i])
-                self.print(node, self.builder.load(elem))
-
-                self.inc(index)
-
-                self.builder.branch(label_start)
-
-            self.write(']')
 
         elif type.isNullable():
             with self.builder.if_else(self.builder.icmp_signed('!=', value, v.Null(type))) as (label_if, label_else):
@@ -1427,8 +1402,7 @@ class PyxellCompiler:
             self.throw(node, err.InvalidSyntax())
 
         values = self.unify(node, *map(self.compile, exprs))
-        subtype = values[0].type if values else t.Unknown
-        return self.array(subtype, values)
+        return v.Array(values)
 
     def compileExprArrayComprehension(self, node):
         expr = node['expr']

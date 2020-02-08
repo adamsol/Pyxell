@@ -42,18 +42,6 @@ def String(x):
     return Literal(x, '"{}"s', type=t.String)
 
 
-class Tuple(Value):
-
-    def __init__(self, elements):
-        type = t.Tuple([value.type for value in elements])
-        super().__init__(type=type)
-        self.elements = elements
-
-    def __str__(self):
-        elems = ', '.join(map(str, self.elements))
-        return f'std::make_tuple({elems})'
-
-
 class Variable(Value):
 
     def __init__(self, type, name):
@@ -62,6 +50,35 @@ class Variable(Value):
 
     def __str__(self):
         return self.name
+
+
+class Container(Value):
+
+    def __init__(self, type, elements, formatter):
+        super().__init__(type)
+        self.elements = elements
+        self.formatter = formatter
+
+    def __str__(self):
+        return self.formatter.format(', '.join(map(str, self.elements)))
+
+
+class Array(Container):
+
+    def __init__(self, elements):
+        type = t.Array(elements[0].type if elements else t.Unknown)
+        super().__init__(type, elements, str(type) + '({{{}}})')
+
+
+class Tuple(Container):
+
+    def __init__(self, elements):
+        type = t.Tuple([value.type for value in elements])
+        super().__init__(type, elements, 'std::make_tuple({})')
+
+    def __str__(self):
+        elems = ', '.join(map(str, self.elements))
+        return f'std::make_tuple({elems})'
 
 
 class Attribute(Value):

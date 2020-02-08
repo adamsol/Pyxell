@@ -29,6 +29,33 @@ class PrimitiveType(Type):
         return self.pyxell_name
 
 
+Void = PrimitiveType('Void', 'void')
+Int = PrimitiveType('Int', 'long long')
+Float = PrimitiveType('Float', 'double')
+Bool = PrimitiveType('Bool', 'bool')
+Char = PrimitiveType('Char', 'char')
+String = PrimitiveType('String', 'std::string')
+
+
+class Array(Type):
+
+    def __init__(self, subtype):
+        super().__init__()
+        self.subtype = subtype
+
+    def __eq__(self, other):
+        return isinstance(other, Array) and self.subtype == other.subtype
+
+    def __hash__(self):
+        return hash(Array)
+
+    def __str__(self):
+        return f'std::vector<{self.subtype}>'
+
+    def show(self):
+        return f'[{self.subtype.show()}]'
+
+
 class Tuple(Type):
 
     def __init__(self, elements):
@@ -63,34 +90,12 @@ class VariableType(Type):
         return hash(VariableType)
 
 
-class UnknownType(Type):
+Unknown = PrimitiveType('<Unknown>', 'void*')
 
-    def _to_string(self):
-        return 'i8*'
-
-    def __eq__(self, other):
-        return isinstance(other, UnknownType)
-
-    def __hash__(self):
-        return hash(UnknownType)
-
-
-Void = PrimitiveType('Void', 'void')
-Int = PrimitiveType('Int', 'long long')
-Float = PrimitiveType('Float', 'double')
-Bool = PrimitiveType('Bool', 'bool')
-Char = PrimitiveType('Char', 'char')
-String = PrimitiveType('String', 'std::string')
-
-
-def Array(subtype):
-    type = tPtr(CustomStructType([tPtr(subtype), Int], 'array'))
-    type.subtype = subtype
-    return type
 
 @extend_class(Type)
 def isArray(type):
-    return getattr(type, 'kind', None) == 'array'
+    return isinstance(type, Array)
 
 
 def Nullable(subtype):
@@ -148,9 +153,6 @@ def isVar(type):
 @extend_class(Type)
 def isCollection(type):
     return type == String or type.isArray()
-
-
-Unknown = UnknownType()
 
 @extend_class(Type)
 def isUnknown(type):

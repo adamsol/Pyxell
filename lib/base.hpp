@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <string>
 #include <tuple>
+#include <vector>
 
 using namespace std::string_literals;
 
@@ -83,6 +84,19 @@ void write(char x)
 void write(const std::string& x)
 {
     printf("%s", x.c_str());
+}
+
+template <typename T>
+void write(const std::vector<T>& x)
+{
+    printf("[");
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        if (i > 0) {
+            printf(", ");
+        }
+        write(x[i]);
+    }
+    printf("]");
 }
 
 template <std::size_t I = 0, typename... T>
