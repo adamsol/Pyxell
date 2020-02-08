@@ -184,6 +184,15 @@ class PyxellCompiler:
             if lvalue and not collection.type.isArray():
                 self.throw(node, err.NotLvalue())
 
+            collection = self.tmp(collection)
+            index = self.cast(node, index, t.Int)
+            index = self.tmp(index)
+            index = v.TernaryOperation(
+                v.BinaryOperation(index, '<', v.Int(0)), '?',
+                v.BinaryOperation(self.attr(node, collection, 'length'), '+', index), ':',
+                index)
+            index = self.tmp(index)
+
             if collection.type == t.String:
                 subtype = t.Char
             elif collection.type.isArray():
