@@ -65,64 +65,68 @@ def test(i, path):
     output = []
     output.append(f"{B}> TEST {i}/{n}:{E} {path}")
 
-    with open(path.replace(".px", ".tmp"), 'w') as tmpfile:
-        try:
-            expected_error = Path(path.replace(".px", ".err")).read_text()
-        except FileNotFoundError:
-            expected_error = None
+    try:
+        with open(path.replace(".px", ".tmp"), 'w') as tmpfile:
+            try:
+                expected_error = Path(path.replace(".px", ".err")).read_text()
+            except FileNotFoundError:
+                expected_error = None
 
-        error = False
+            error = False
 
-        try:
-            compile(path, args.cpp_compiler)
-        except PyxellError as e:
-            error_message = str(e)
-            if expected_error:
-                if error_message.strip().endswith(expected_error):
-                    output.append(f"{G}{error_message}{E}")
-                    passed = True
-                else:
-                    output.append(f"{R}{error_message}\n---\n> {expected_error}{E}")
-            else:
-                output.append(f"{R}{error_message}{E}")
-            error = True
-        except subprocess.CalledProcessError as e:
-            output.append(f"{R}{e.output.decode()}{E}")
-            error = True
-        except Exception:
-            output.append(f"{R}{traceback.format_exc()}{E}")
-            error = True
-
-        if not error:
-            if expected_error:
-                output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
-            else:
-                t1 = timer()
-                try:
-                    with open(f'{path.replace(".px", ".in")}', 'r') as infile:
-                        subprocess.call(f'{path.replace(".px", ".exe")}', stdin=infile, stdout=tmpfile)
-                except FileNotFoundError:
-                    subprocess.call(f'{path.replace(".px", ".exe")}', stdout=tmpfile)
-                t2 = timer()
-
-                try:
-                    subprocess.check_output(['diff', '--strip-trailing-cr', path.replace(".px", ".tmp"), path.replace(".px", ".out")], stderr=subprocess.STDOUT)
-                except subprocess.CalledProcessError as e:
-                    if e.returncode == 2:
-                        output.append(f"{Y}{e.output.decode()}{E}")
+            try:
+                compile(path, args.cpp_compiler)
+            except PyxellError as e:
+                error_message = str(e)
+                if expected_error:
+                    if error_message.strip().endswith(expected_error):
+                        output.append(f"{G}{error_message}{E}")
+                        passed = True
                     else:
-                        output.append(f"{R}WA: {e.output.decode()}{E}")
+                        output.append(f"{R}{error_message}\n---\n> {expected_error}{E}")
                 else:
-                    output.append(f"{G}OK{E} ({t2-t1:.3f}s)")
-                    passed = True
+                    output.append(f"{R}{error_message}{E}")
+                error = True
+            except subprocess.CalledProcessError as e:
+                output.append(f"{R}{e.output.decode()}{E}")
+                error = True
+            except Exception:
+                output.append(f"{R}{traceback.format_exc()}{E}")
+                error = True
 
-        # Print the output of tests in the right order.
-        output_dict[i] = '\n'.join(output) if not passed or args.verbose else ''
-        with lock:
-            while output_index in output_dict:
-                if output_dict[output_index]:
-                    print(output_dict[output_index])
-                output_index += 1
+            if not error:
+                if expected_error:
+                    output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
+                else:
+                    t1 = timer()
+                    try:
+                        with open(f'{path.replace(".px", ".in")}', 'r') as infile:
+                            subprocess.call(f'{path.replace(".px", ".exe")}', stdin=infile, stdout=tmpfile)
+                    except FileNotFoundError:
+                        subprocess.call(f'{path.replace(".px", ".exe")}', stdout=tmpfile)
+                    t2 = timer()
+
+                    try:
+                        subprocess.check_output(['diff', '--strip-trailing-cr', path.replace(".px", ".tmp"), path.replace(".px", ".out")], stderr=subprocess.STDOUT)
+                    except subprocess.CalledProcessError as e:
+                        if e.returncode == 2:
+                            output.append(f"{Y}{e.output.decode()}{E}")
+                        else:
+                            output.append(f"{R}WA: {e.output.decode()}{E}")
+                    else:
+                        output.append(f"{G}OK{E} ({t2-t1:.3f}s)")
+                        passed = True
+
+    except Exception as e:
+        output.append(f"{R}{traceback.format_exc()}{E}")
+
+    # Print the output of tests in the right order.
+    output_dict[i] = '\n'.join(output) if not passed or args.verbose else ''
+    with lock:
+        while output_index in output_dict:
+            if output_dict[output_index]:
+                print(output_dict[output_index])
+            output_index += 1
 
     if passed:
         ok += 1
