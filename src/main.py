@@ -50,9 +50,10 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
     # for name, ast in units.items():
     #     compiler.run(ast, name)
 
+    ast = build_ast(filepath)
+    code = compiler.run_main(ast)
+
     with open(cpp_filename, 'w') as file:
-        ast = build_ast(filepath)
-        code = compiler.run_main(ast)
         file.write(code)
 
     if cpp_compiler.lower() not in {'', 'no', 'none'}:
