@@ -28,7 +28,7 @@ class PyxellCompiler:
         self.units = {}
         self._unit = None
         self.level = 0
-        self._tmp_index = 0
+        self._var_index = 0
 
         self._block = c.Block()
         self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
@@ -351,12 +351,16 @@ class PyxellCompiler:
 
         return [self.cast(node, value, type) for value in values]
 
+    def var(self, type):
+        var = v.Variable(type, f'v{self._var_index}')
+        self._var_index += 1
+        return var
+
     def tmp(self, value):
         if isinstance(value, v.Variable):
             return value
-        tmp = v.Variable(value.type, f'tmp{self._tmp_index}')
-        self._tmp_index += 1
-        self.store(tmp, value)
+        tmp = self.var(value.type)
+        self.store(tmp, value, auto_decl=True)
         return tmp
 
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
@@ -367,8 +371,9 @@ class PyxellCompiler:
         if check_only:
             return
 
-        self.output(f'{type} {id}')
-        self.env[id] = v.Variable(type, id)
+        var = self.var(type)
+        self.env[id] = var
+        self.output(f'{type} {var.name}')
 
         if initialize:
             self.initialized.add(id)
@@ -403,8 +408,8 @@ class PyxellCompiler:
         else:
             self.throw(node, err.NotLvalue())
 
-    def store(self, left, right):
-        spec = 'auto&& ' if isinstance(left, v.Variable) and left.name not in self.env else ''
+    def store(self, left, right, auto_decl=False):
+        spec = 'auto&& ' if auto_decl else ''
         self.output(f'{spec}{left} = {right}')
 
     def assign(self, node, expr, value):
