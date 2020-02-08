@@ -360,7 +360,7 @@ class PyxellCompiler:
         if isinstance(value, v.Variable):
             return value
         tmp = self.var(value.type)
-        self.store(tmp, value, auto_decl=True)
+        self.store(tmp, value, decl='auto&&')
         return tmp
 
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
@@ -408,9 +408,9 @@ class PyxellCompiler:
         else:
             self.throw(node, err.NotLvalue())
 
-    def store(self, left, right, auto_decl=False):
-        spec = 'auto&& ' if auto_decl else ''
-        self.output(f'{spec}{left} = {right}')
+    def store(self, left, right, decl=None):
+        decl = str(decl) + ' ' if decl else ''
+        self.output(f'{decl}{left} = {right}')
 
     def assign(self, node, expr, value):
         type = value.type
@@ -564,24 +564,11 @@ class PyxellCompiler:
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.BinaryOperation(left, op, right, type=t.String)
 
-            elif left.type == right.type and left.type.isCollection():
-                type = left.type
-                subtype = type.subtype
-
-                length1 = self.extract(left, 1)
-                length2 = self.extract(right, 1)
-                length = self.builder.add(length1, length2)
-
-                array1 = self.extract(left, 0)
-                array2 = self.extract(right, 0)
-                array = self.malloc(t.Ptr(subtype), length)
-
-                self.memcpy(array, array1, length1)
-                self.memcpy(self.builder.gep(array, [length1]), array2, length2)
-
-                result = self.malloc(type)
-                self.insert(array, result, 0)
-                self.insert(length, result, 1)
+            elif left.type == right.type and left.type.isArray():
+                result = self.var(left.type)
+                self.store(result, left, 'auto')
+                right = self.tmp(right)
+                self.output(v.Call(v.Attribute(result, 'insert'), v.Call(v.Attribute(result, 'end')), v.Call(v.Attribute(right, 'begin')), v.Call(v.Attribute(right, 'end'))))
                 return result
 
             else:
