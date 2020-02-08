@@ -518,29 +518,7 @@ class PyxellCompiler:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
             elif left.type.isCollection() and right.type == t.Int:
-                type = left.type
-                subtype = type.subtype
-
-                src = self.extract(left, 0)
-                src_length = self.extract(left, 1)
-                length = self.builder.mul(src_length, right)
-                dest = self.malloc(t.Ptr(subtype), length)
-
-                index = self.builder.alloca(t.Int)
-                self.builder.store(v.Int(0), index)
-
-                with self.block() as (label_start, label_end):
-                    i = self.builder.load(index)
-                    self.memcpy(self.builder.gep(dest, [i]), src, src_length)
-                    self.builder.store(self.builder.add(i, src_length), index)
-
-                    cond = self.builder.icmp_signed('<', self.builder.load(index), length)
-                    self.builder.cbranch(cond, label_start, label_end)
-
-                result = self.malloc(type)
-                self.insert(dest, result, 0)
-                self.insert(length, result, 1)
-                return result
+                return v.Call('extend', left, right, type=left.type)
 
             elif left.type == t.Int and right.type.isCollection():
                 return self.binaryop(node, op, right, left)
@@ -574,11 +552,7 @@ class PyxellCompiler:
                 return v.BinaryOperation(left, op, right, type=t.String)
 
             elif left.type == right.type and left.type.isArray():
-                result = self.var(left.type)
-                self.store(result, left, 'auto')
-                right = self.tmp(right)
-                self.output(v.Call(v.Attribute(result, 'insert'), v.Call(v.Attribute(result, 'end')), v.Call(v.Attribute(right, 'begin')), v.Call(v.Attribute(right, 'end'))))
-                return result
+                return v.Call('concat', left, right, type=left.type)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))

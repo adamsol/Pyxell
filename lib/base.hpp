@@ -55,6 +55,25 @@ long long pow(long long b, long long e)
 }
 
 
+/* String and array manipulation */
+
+template <typename T>
+T concat(T a, const T& b) {
+    a.insert(a.end(), b.begin(), b.end());
+    return a;
+}
+
+template <typename T>
+T extend(const T& a, long long m) {
+    T r;
+    r.reserve(a.size() * m);
+    while (m--) {
+        r.insert(r.end(), a.begin(), a.end());
+    }
+    return r;
+}
+
+
 /* Standard output */
 
 void write(long long x)
