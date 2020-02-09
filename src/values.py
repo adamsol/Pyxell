@@ -65,8 +65,8 @@ class Container(Value):
 
 class Array(Container):
 
-    def __init__(self, elements):
-        type = t.Array(elements[0].type if elements else t.Unknown)
+    def __init__(self, elements, subtype=None):
+        type = t.Array(elements[0].type if elements else (subtype or t.Unknown))
         super().__init__(type, elements, str(type) + '({{{}}})')
 
 

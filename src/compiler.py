@@ -748,21 +748,6 @@ class PyxellCompiler:
             'args': [],
         }
 
-    def array(self, subtype, values, length=None):
-        type = t.Array(subtype)
-
-        if length is None:
-            length = v.Int(len(values))
-
-        memory = self.malloc(t.Ptr(subtype), length)
-        for i, value in enumerate(values):
-            self.builder.store(value, self.builder.gep(memory, [v.Int(i)]))
-
-        result = self.malloc(type)
-        self.insert(memory, result, 0)
-        self.insert(length, result, 1)
-        return result
-
     def nullable(self, value):
         result = self.malloc(t.Nullable(value.type))
         self.insert(value, result)
@@ -999,19 +984,8 @@ class PyxellCompiler:
     def compileStmtAppend(self, node):
         # Special instruction for array comprehension.
         array = self.compile(node['array'])
-        length = self.extract(array, 1)
-        index = self.compile(node['index'])
-
-        with self.builder.if_then(self.builder.icmp_signed('==', index, length)):
-            length = self.builder.shl(length, v.Int(1))
-            memory = self.realloc(self.extract(array, 0), length)
-            self.insert(memory, array, 0)
-            self.insert(length, array, 1)
-
         value = self.compile(node['expr'])
-        self.builder.store(value, self.builder.gep(self.extract(array, 0), [index]))
-
-        self.inc(self.lvalue(node, node['index']))
+        self.output(v.Call(v.Attribute(array, 'push_back'), v.Call('std::move', value)))
 
     def compileStmtIf(self, node):
         exprs = node['exprs']
@@ -1351,10 +1325,10 @@ class PyxellCompiler:
     def compileExprArrayComprehension(self, node):
         expr = node['expr']
 
-        value, array, index = [{
+        value, array = [{
             'node': 'AtomId',
             'id': f'__cpr_{len(self.env)}_{name}',
-        } for name in ['value', 'array', 'index']]
+        } for name in ['value', 'array']]
 
         stmt = inner_stmt = {
             'node': 'StmtAssg',
@@ -1385,21 +1359,17 @@ class PyxellCompiler:
             with self.no_output():
                 inner_stmt['_eval'] = lambda: self.compile(value).type
                 self.compile(stmt)
-                type = inner_stmt.pop('_eval')
+                subtype = inner_stmt.pop('_eval')
 
         with self.local():
-            self.assign(node, array, self.array(type, [], length=v.Int(4)))
-            self.assign(node, index, v.Int(0))
+            self.declare(node, t.Array(subtype), array['id'], initialize=True)
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['array'] = array
-            inner_stmt['index'] = index
 
             self.compile(stmt)
 
             result = self.compile(array)
-            length = self.compile(index)
-            self.insert(length, result, 1)
 
         return result
 
@@ -1465,8 +1435,7 @@ class PyxellCompiler:
 
             result = self.expr('[{t}[{i}] for {i} in {a}...{b} step {c}]', t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])
 
-        # `CharArray_asString` is used directly, because `.join` would copy the array redundantly.
-        return self.builder.call(self.get(node, 'CharArray_asString'), [result]) if type == t.String else result
+        return v.Call(t.String, v.Call(v.Attribute(result, 'begin')), v.Call(v.Attribute(result, 'end')), type=t.String) if type == t.String else result
 
     def compileExprCall(self, node):
         expr = node['expr']
