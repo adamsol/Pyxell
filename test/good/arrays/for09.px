@@ -1,0 +1,8 @@
+
+a = [1]
+for x in a do
+    x += 3
+    print a[0]
+    print x
+
+print a

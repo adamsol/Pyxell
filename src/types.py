@@ -34,7 +34,9 @@ Int = PrimitiveType('Int', 'long long')
 Float = PrimitiveType('Float', 'double')
 Bool = PrimitiveType('Bool', 'bool')
 Char = PrimitiveType('Char', 'char')
+
 String = PrimitiveType('String', 'std::string')
+String.subtype = Char
 
 
 class Array(Type):

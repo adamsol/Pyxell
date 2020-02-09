@@ -193,12 +193,7 @@ class PyxellCompiler:
                 index)
             index = self.tmp(index)
 
-            if collection.type == t.String:
-                subtype = t.Char
-            elif collection.type.isArray():
-                subtype = collection.type.subtype
-
-            return v.Index(collection, index, type=subtype)
+            return v.Index(collection, index, type=collection.type.subtype)
 
         self.throw(node, err.NotIndexable(collection.type))
 
@@ -345,10 +340,7 @@ class PyxellCompiler:
         if not value.type.isNullable() and type.isNullable():
             return self.cast(node, self.nullable(value), type)
 
-        if value.type == type:
-            return value
-        else:
-            return v.Cast(value, type)
+        return v.Cast(value, type)
 
     def unify(self, node, *values):
         if not values:
@@ -370,6 +362,11 @@ class PyxellCompiler:
             return value
         tmp = self.var(value.type)
         self.store(tmp, value, decl='auto&&')
+        return tmp
+
+    def freeze(self, value):
+        tmp = self.var(value.type)
+        self.store(tmp, value, decl='auto')
         return tmp
 
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
@@ -1080,7 +1077,7 @@ class PyxellCompiler:
         getters = []
 
         def prepare(iterable, step):
-            # It must be a function so that lambdas have separate scopes.
+            # It must be a function so that there are separate scopes of variables to use in lambdas.
             if iterable['node'] == 'ExprRange':
                 values = lmap(self.compile, iterable['exprs'])
                 type = values[0].type
@@ -1089,47 +1086,43 @@ class PyxellCompiler:
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
-                if type == t.Float:
-                    if step.type not in {t.Float, t.Int}:
-                        self.throw(node, err.IllegalAssignment(step.type, t.Float))
-                    if step.type == t.Int:
-                        step = self.builder.sitofp(step, type)
-                    cmp = self.builder.fcmp_ordered
-                    desc = cmp('<', step, v.Float(0))
-                else:
-                    if step.type != t.Int:
-                        self.throw(node, err.IllegalAssignment(step.type, t.Int))
-                    values = [self.builder.zext(v, t.Int) for v in values]
-                    cmp = self.builder.icmp_signed
-                    desc = cmp('<', step, v.Int(0))
-                index = self.builder.alloca(type if type == t.Float else t.Int)
-                start = values[0]
+                desc = v.BinaryOperation(step, '<', v.Float(0) if step.type == t.Float else v.Int(0))
+                index = self.var(t.Float if type == t.Float else t.Int)
+                start = v.Cast(values[0], index.type)
+                self.cast(node, step, index.type)
                 if len(values) == 1:
-                    cond = lambda v: v.true
-                elif iterable['inclusive']:
-                    cond = lambda v: self.builder.select(desc, cmp('>=', v, values[1]), cmp('<=', v, values[1]))
+                    cond = lambda x: v.true  # infinite range
                 else:
-                    cond = lambda v: self.builder.select(desc, cmp('>', v, values[1]), cmp('<', v, values[1]))
-                getter = lambda v: v if type in {t.Int, t.Float} else self.builder.trunc(v, type)
+                    end = self.freeze(values[1])
+                    e = '=' if iterable['inclusive'] else ''
+                    cond = lambda x: v.TernaryOperation(
+                        desc, '?',
+                        v.BinaryOperation(x, f'>{e}', end), ':',
+                        v.BinaryOperation(x, f'<{e}', end))
+                getter = lambda x: v.Cast(x, type)
             else:
                 value = self.compile(iterable)
-                if value.type == t.String:
-                    types.append(t.Char)
-                elif value.type.isArray():
-                    types.append(value.type.subtype)
-                else:
+                if value.type != t.String and not value.type.isArray():
                     self.throw(node, err.NotIterable(value.type))
-                desc = self.builder.icmp_signed('<', step, v.Int(0))
-                index = self.builder.alloca(t.Int)
-                array = self.extract(value, 0)
-                length = self.extract(value, 1)
-                end1 = self.builder.sub(length, v.Int(1))
-                end2 = v.Int(0)
-                start = self.builder.select(desc, end1, end2)
-                cond = lambda v: self.builder.select(desc, self.builder.icmp_signed('>=', v, end2), self.builder.icmp_signed('<=', v, end1))
-                getter = lambda v: self.builder.load(self.builder.gep(array, [v]))
+                types.append(value.type.subtype)
+                array = self.tmp(value)
+                desc = v.BinaryOperation(step, '<', v.Int(0))
+                index = self.var(None)
+                start = self.tmp(v.TernaryOperation(
+                    desc, '?',
+                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'end'))), ':',
+                    v.Call(v.Attribute(array, 'begin'))))
+                end = self.tmp(v.TernaryOperation(
+                    desc, '?',
+                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'begin'))), ':',
+                    v.Call(v.Attribute(array, 'end'))))
+                cond = lambda x: v.TernaryOperation(
+                    desc, '?',
+                    v.BinaryOperation(x, f'>', end), ':',
+                    v.BinaryOperation(x, f'<', end))
+                getter = lambda x: v.UnaryOperation('*', x, type=value.type.subtype)
 
-            self.builder.store(start, index)
+            self.store(index, start, 'auto')
             steps.append(step)
             indices.append(index)
             conditions.append(cond)
@@ -1142,43 +1135,32 @@ class PyxellCompiler:
             self.throw(node, err.InvalidLoopStep())
 
         for iterable, step in zip(iterables, _steps):
-            prepare(iterable, step)
+            prepare(iterable, self.freeze(step))
 
-        with self.block() as (label_start, label_end):
-            label_cont = ll.Block(self.builder.function)
-
-            for index, cond in zip(indices, conditions):
-                label = ll.Block(self.builder.function)
-                self.builder.cbranch(cond(self.builder.load(index)), label, label_end)
-                self.builder.function.blocks.append(label)
-                self.builder.position_at_end(label)
-
+        body = c.Block()
+        with self.block(body):
             with self.local():
                 self.env['#loop'] = True
 
                 if len(vars) == 1 and len(types) > 1:
-                    tuple = self.tuple([getters[i](self.builder.load(index)) for i, index in enumerate(indices)])
+                    tuple = v.Tuple([getters[i](index) for i, index in enumerate(indices)])
                     self.assign(node, vars[0], tuple)
                 elif len(vars) > 1 and len(types) == 1:
                     for i, var in enumerate(vars):
-                        tuple = getters[0](self.builder.load(indices[0]))
-                        self.assign(node, var, self.extract(tuple, i))
+                        tuple = getters[0](indices[0])
+                        self.assign(node, var, v.Get(tuple, i))
                 elif len(vars) == len(types):
                     for var, index, getter in zip(vars, indices, getters):
-                        self.assign(node, var, getter(self.builder.load(index)))
+                        self.assign(node, var, getter(index))
                 else:
                     self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
 
                 self.compile(node['block'])
 
-            self.builder.function.blocks.append(label_cont)
-            self.builder.branch(label_cont)
-            self.builder.position_at_end(label_cont)
+        condition = ' && '.join(str(cond(index)) for index, cond in zip(indices, conditions))
+        update = ', '.join(f'{index} += {step}' for index, step in zip(indices, steps))
 
-            for index, step, type in zip(indices, steps, types):
-                self.inc(index, step)
-
-            self.builder.branch(label_start)
+        self.output(c.For('', condition, update, body))
 
     def compileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`

@@ -1,7 +1,8 @@
 
+s = ""
 for c in 'g'..'k' do
-    write(c.toString())
-print
+    s += c
+print s
 
 for c in 'U'...'O' step -3 do
     print c

@@ -24,22 +24,22 @@ class Literal(Value):
 
 
 def Int(x):
-    return Literal(x, '{}LL', type=t.Int)
+    return Literal(int(x), '{}LL', type=t.Int)
 
 def Float(x):
-    return Literal(x, type=t.Float)
+    return Literal(float(x), type=t.Float)
 
 def Bool(x):
-    return Literal(x, lambda value: str(value).lower(), type=t.Bool)
+    return Literal(bool(x), lambda value: str(value).lower(), type=t.Bool)
 
 false = Bool(False)
 true = Bool(True)
 
 def Char(x):
-    return Literal(x, "'{}'", type=t.Char)
+    return Literal(str(x), "'{}'", type=t.Char)
 
 def String(x):
-    return Literal(x, '"{}"s', type=t.String)
+    return Literal(str(x), '"{}"s', type=t.String)
 
 
 class Variable(Value):
@@ -116,8 +116,9 @@ class Call(Value):
 
 
 def Cast(value, type):
+    if value.type == type:
+        return value
     return Call(f'static_cast<{type}>', value, type=type)
-
 
 def Get(tuple, index):
     return Call(f'std::get<{index}>', tuple, type=tuple.type.elements[index])
