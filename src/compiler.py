@@ -900,8 +900,7 @@ class PyxellCompiler:
                     self.env[name] = type
 
                 self.env['#return'] = func_type.ret
-                self.env.pop('#continue', None)
-                self.env.pop('#break', None)
+                self.env.pop('#loop', None)
 
                 for arg, value in zip(func_type.args, func.args):
                     ptr = self.declare(body, arg.type, arg.name, redeclare=True, initialize=True)
@@ -1045,34 +1044,30 @@ class PyxellCompiler:
             self.initialized.update(set.intersection(*initialized_vars))
 
     def compileStmtWhile(self, node):
-        with self.block() as (label_start, label_end):
+        with self.local():
+            self.env['#loop'] = True
+
             expr = node['expr']
             cond = self.cast(expr, self.compile(expr), t.Bool)
 
-            label_while = self.builder.append_basic_block()
-            self.builder.cbranch(cond, label_while, label_end)
-            self.builder.position_at_end(label_while)
-
-            with self.local():
-                self.env['#continue'] = label_start
-                self.env['#break'] = label_end
-
+            body = c.Block()
+            with self.block(body):
                 self.compile(node['block'])
 
-            self.builder.branch(label_start)
+        self.output(c.While(cond, body))
 
     def compileStmtUntil(self, node):
-        with self.block() as (label_start, label_end):
-            with self.local():
-                self.env['#continue'] = label_start
-                self.env['#break'] = label_end
-
-                self.compile(node['block'])
+        with self.local():
+            self.env['#loop'] = True
 
             expr = node['expr']
             cond = self.cast(expr, self.compile(expr), t.Bool)
 
-            self.builder.cbranch(cond, label_end, label_start)
+            body = c.Block()
+            with self.block(body):
+                self.compile(node['block'])
+
+        self.output(c.DoWhile(v.UnaryOperation('!', cond), body))
 
     def compileStmtFor(self, node):
         vars = node['vars']
@@ -1159,8 +1154,7 @@ class PyxellCompiler:
                 self.builder.position_at_end(label)
 
             with self.local():
-                self.env['#continue'] = label_cont
-                self.env['#break'] = label_end
+                self.env['#loop'] = True
 
                 if len(vars) == 1 and len(types) > 1:
                     tuple = self.tuple([getters[i](self.builder.load(index)) for i, index in enumerate(indices)])
@@ -1189,12 +1183,10 @@ class PyxellCompiler:
     def compileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`
 
-        try:
-            label = self.env[f'#{stmt}']
-        except KeyError:
+        if not self.env.get('#loop'):
             self.throw(node, err.UnexpectedStatement(stmt))
 
-        self.builder.branch(label)
+        self.output(stmt)
 
     def compileStmtFunc(self, node, class_type=None):
         id = node['id']
