@@ -1,0 +1,6 @@
+
+Int x = 2
+print x.toInt()
+
+Float y = 2.5
+print y.toFloat()

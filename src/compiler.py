@@ -247,50 +247,29 @@ class PyxellCompiler:
         type = obj.type
         value = None
 
-        if type == t.Int:
-            if attr == 'toString':
-                value = self.env['Int_toString']
-            elif attr == 'toFloat':
-                value = self.env['Int_toFloat']
-            elif attr == 'char':
-                value = self.builder.trunc(obj, t.Char)
+        if attr == 'toString' and (type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isArray() or type.isTuple()):
+            value = v.Variable(t.Func([type], t.String), 'toString')
 
-        elif type == t.Float:
-            if attr == 'toString':
-                value = self.env['Float_toString']
-            elif attr == 'toInt':
-                value = self.env['Float_toInt']
+        elif attr == 'toInt' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
+            value = v.Variable(t.Func([type], t.Int), 'toInt')
 
-        elif type == t.Bool:
-            if attr == 'toString':
-                value = self.env['Bool_toString']
-            elif attr == 'toInt':
-                value = self.env['Bool_toInt']
-            elif attr == 'toFloat':
-                value = self.env['Bool_toFloat']
+        elif attr == 'toFloat' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
+            value = v.Variable(t.Func([type], t.Float), 'toFloat')
+
+        elif type == t.Int:
+            if attr == 'char':
+                value = v.Cast(obj, t.Char)
 
         elif type == t.Char:
-            if attr == 'toString':
-                value = self.env['Char_toString']
-            elif attr == 'toInt':
-                value = self.env['Char_toInt']
-            elif attr == 'toFloat':
-                value = self.env['Char_toFloat']
-            elif attr == 'code':
-                value = self.builder.zext(obj, t.Int)
+            if attr == 'code':
+                value = v.Cast(obj, t.Int)
 
         elif type.isCollection():
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif type == t.String:
-                if attr == 'toString':
-                    value = self.env['String_toString']
-                elif attr == 'toArray':
-                    value = self.env['String_toArray']
-                elif attr == 'toInt':
-                    value = self.env['String_toInt']
-                elif attr == 'toFloat':
-                    value = self.env['String_toFloat']
+                if attr == 'toArray':
+                    value = v.Variable(t.Func([type], t.Array(t.Char)), 'toArray')
                 elif attr == 'all':
                     value = self.env['String_all']
                 elif attr == 'any':
@@ -303,10 +282,8 @@ class PyxellCompiler:
                     value = self.env['String_reduce']
             elif type.isArray():
                 if attr == 'join':
-                    if type.subtype == t.Char:
-                        value = self.env['CharArray_join']
-                    elif type.subtype == t.String:
-                        value = self.env['StringArray_join']
+                    default = {'node': 'AtomString', 'string': ''}
+                    value = v.Variable(t.Func([type, t.Func.Arg(t.String, 'sep', default)], t.String), 'join')
                 elif attr == 'all':
                     value = self.env['Array_all']
                 elif attr == 'any':

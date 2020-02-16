@@ -74,58 +74,146 @@ T extend(const T& a, long long m) {
     return r;
 }
 
-
-/* Standard output */
-
-void write(long long x)
-{
-    printf("%lld", x);
-}
-
-void write(double x)
-{
-    if (fabs(x) < 1e15 && floor(x) == x) {
-        printf("%.0f.0", x);
-    } else {
-        printf("%.15g", x);
+std::string join(const std::vector<char>& x, const std::string& sep) {
+    std::string r;
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        if (i > 0) {
+            r.append(sep);
+        }
+        r.push_back(x[i]);
     }
+    return r;
 }
 
-void write(bool x)
-{
-    printf(x ? "true" : "false");
+std::string join(const std::vector<std::string>& x, const std::string& sep) {
+    std::string r;
+    for (std::size_t i = 0; i < x.size(); ++i) {
+        if (i > 0) {
+            r.append(sep);
+        }
+        r.append(x[i]);
+    }
+    return r;
 }
 
-void write(char x)
-{
-    printf("%c", x);
+std::vector<char> toArray(const std::string& x) {
+    return std::vector<char>(x.begin(), x.end());
 }
 
-void write(const std::string& x)
-{
-    printf("%s", x.c_str());
+
+/* Conversion to String */
+
+char buffer[25];
+
+std::string toString(long long x) {
+    sprintf(buffer, "%lld", x);
+    return std::string(buffer);
+}
+
+std::string toString(double x) {
+    if (fabs(x) < 1e15 && floor(x) == x) {
+        sprintf(buffer, "%.0f.0", x);
+    } else {
+        sprintf(buffer, "%.15g", x);
+    }
+    return std::string(buffer);
+}
+
+std::string toString(bool x) {
+    return x ? "true" : "false";
+}
+
+std::string toString(char x) {
+    return std::string(1, x);
+}
+
+const std::string& toString(const std::string& x) {
+    return x;
 }
 
 template <typename T>
-void write(const std::vector<T>& x)
+std::string toString(const std::vector<T>& x)
 {
-    printf("[");
+    std::string r;
+    r.append("[");
     for (std::size_t i = 0; i < x.size(); ++i) {
         if (i > 0) {
-            printf(", ");
+            r.append(", ");
         }
-        write(x[i]);
+        r.append(toString(x[i]));
     }
-    printf("]");
+    r.append("]");
+    return r;
 }
 
 template <std::size_t I = 0, typename... T>
-void write(const std::tuple<T...>& x)
+std::string toString(const std::tuple<T...>& x)
 {
     // https://stackoverflow.com/a/54225452/12643160
-    write(std::get<I>(x));
+    std::string r;
+    r.append(toString(std::get<I>(x)));
     if constexpr(I+1 < sizeof...(T)) {
-        printf(" ");
-        write<I+1>(x);
+        r.append(" ");
+        r.append(toString<I+1>(x));
     }
+    return r;
+}
+
+
+/* Conversion to Int */
+
+long long toInt(long long x) {
+    return x;
+}
+
+long long toInt(double x) {
+    return static_cast<long long>(x);
+}
+
+long long toInt(bool x) {
+    return x ? 1 : 0;
+}
+
+long long toInt(const std::string& x) {
+    long long r;
+    sscanf(x.c_str(), "%lld", &r);
+    return r;
+}
+
+long long toInt(char x) {
+    return toInt(toString(x));
+}
+
+
+/* Conversion to Float */
+
+double toFloat(long long x) {
+    return static_cast<double>(x);
+}
+
+double toFloat(double x) {
+    return x;
+}
+
+double toFloat(bool x) {
+    return x ? 1.0 : 0.0;
+}
+
+double toFloat(const std::string& x) {
+    double r;
+    sscanf(x.c_str(), "%lg", &r);
+    return r;
+}
+
+double toFloat(char x) {
+    return toFloat(toString(x));
+}
+
+
+/* Standard output */
+
+template <typename T>
+void write(const T& x)
+{
+    printf("%s", toString(x).c_str());
 }
