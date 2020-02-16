@@ -85,8 +85,21 @@ class Func(Type):
 
     def __init__(self, args, ret=Void):
         super().__init__()
-        self.args = args
+        self.args = [arg if isinstance(arg, Func.Arg) else Func.Arg(arg) for arg in args]
         self.ret = ret
+
+    def __eq__(self, other):
+        return isinstance(other, Func) and [arg.type for arg in self.args] == [arg.type for arg in other.args] and self.ret == other.ret
+
+    def __hash__(self):
+        return hash(Func)
+
+    def __str__(self):
+        args = ', '.join([str(arg.type) for arg in self.args])
+        return f'std::function<{self.ret}({args})>'
+
+    def show(self):
+        return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
 
 
 class VariableType(Type):

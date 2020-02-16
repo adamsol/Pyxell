@@ -182,6 +182,9 @@ class PyxellCompiler:
         if id not in self.initialized:
             self.throw(node, err.UninitializedIdentifier(id))
 
+        if result.isTemplate():
+            result = self.function(result)
+
         return result
 
     def extract(self, ptr, *indices, load=True):
