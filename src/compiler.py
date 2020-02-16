@@ -33,10 +33,15 @@ class PyxellCompiler:
         self._block = c.Block()
         self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
 
+        self.module_variables = c.Collection()
+        self.module_functions = c.Collection()
+        
         self.module = c.Module([
             c.Line(),
             c.Include('lib/base.hpp', system=False),
             c.Line(),
+            self.module_variables,
+            self.module_functions,
             self.main,
             c.Line()
         ])
@@ -129,10 +134,17 @@ class PyxellCompiler:
         with self.block(c.Block()):
             yield
 
-    def output(self, line):
-        if isinstance(line, (str, v.Value)):
-            line = c.Statement(str(line))
-        self._block.append(line)
+    def output(self, stmt, toplevel=False):
+        if isinstance(stmt, (str, v.Value)):
+            stmt = c.Statement(str(stmt))
+
+        if toplevel:
+            if isinstance(stmt, c.FunctionBody):
+                self.module_functions.insert(0, stmt)
+            else:
+                self.module_variables.append(stmt)
+        else:
+            self._block.append(stmt)
 
     def resolve_type(self, type):
         if type.isVar():
@@ -376,7 +388,7 @@ class PyxellCompiler:
 
         var = self.var(type)
         self.env[id] = var
-        self.output(f'{type} {var.name}')
+        self.output(f'{type} {var.name}', toplevel=(self.level == 0))
 
         if initialize:
             self.initialized.add(id)
@@ -868,11 +880,13 @@ class PyxellCompiler:
             arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
             block = c.Block()
 
-            self.module.insert(3, c.FunctionBody(
-                c.FunctionDeclaration(
-                    c.Value(str(func_type.ret), func.name),
-                    [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
-                block))
+            self.output(
+                c.FunctionBody(
+                    c.FunctionDeclaration(
+                        c.Value(str(func_type.ret), func.name),
+                        [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
+                    block),
+                toplevel=True)
 
             with self.block(block):
                 with self.local(next_level=True):
