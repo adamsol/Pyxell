@@ -1,5 +1,6 @@
 
 from . import types as t
+from .utils import *
 
 
 class Value:
@@ -79,6 +80,23 @@ class Tuple(Container):
     def __str__(self):
         elems = ', '.join(map(str, self.elements))
         return f'std::make_tuple({elems})'
+
+
+class FunctionTemplate(Value):
+
+    def __init__(self, id, typevars, type, body, env):
+        super().__init__(type)
+        self.id = id
+        self.final = True  # identifier cannot be redefined
+        self.typevars = typevars
+        self.body = body
+        self.env = env
+        self.compiled = {}
+
+
+@extend_class(Value)
+def isTemplate(value):
+    return isinstance(value, FunctionTemplate)
 
 
 class Attribute(Value):

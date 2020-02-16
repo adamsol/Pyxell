@@ -78,6 +78,17 @@ class Tuple(Type):
         return '*'.join([t.show() for t in self.elements])
 
 
+class Func(Type):
+
+    Arg = namedtuple('Arg', ['type', 'name', 'default'])
+    Arg.__new__.__defaults__ = (None,) * 3
+
+    def __init__(self, args, ret=Void):
+        super().__init__()
+        self.args = args
+        self.ret = ret
+
+
 class VariableType(Type):
 
     def __init__(self, name):
@@ -113,20 +124,9 @@ def isTuple(type):
     return isinstance(type, Tuple)
 
 
-Arg = namedtuple('Arg', ['type', 'name', 'default'])
-Arg.__new__.__defaults__ = (None,) * 3
-
-def Func(args, ret=Void):
-    args = [arg if isinstance(arg, Arg) else Arg(arg) for arg in args]
-    type = tPtr(ll.FunctionType(ret, [arg.type for arg in args]))
-    type.args = args
-    type.ret = ret
-    type.kind = 'function'
-    return type
-
 @extend_class(Type)
 def isFunc(type):
-    return getattr(type, 'kind', None) == 'function'
+    return isinstance(type, Func)
 
 
 def Class(context, name, base, members):

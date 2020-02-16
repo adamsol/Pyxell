@@ -6,5 +6,4 @@ func f(Int*String*Bool t, Int d) Bool*Int*String def
     print t
     return not t.c, t.a + 42, t.b + "#$"
 
-g = f
-print g((12, "!@", false), 50)
+print f((12, "!@", false), 50)

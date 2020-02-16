@@ -144,7 +144,7 @@ class PyxellCompiler:
         if type.isTuple():
             return t.Tuple([self.resolve_type(type) for type in type.elements])
         if type.isFunc():
-            return t.Func([Arg(self.resolve_type(arg.type), arg.name, arg.default) for arg in type.args], self.resolve_type(type.ret))
+            return t.Func([t.Func.Arg(self.resolve_type(arg.type), arg.name, arg.default) for arg in type.args], self.resolve_type(type.ret))
         return type
 
 
@@ -331,9 +331,6 @@ class PyxellCompiler:
         ptr = self.extract(obj, index, load=False)
         return ptr if lvalue else self.builder.load(ptr)
 
-    def call(self, node, name, *values):
-        return self.builder.call(self.get(node, name), values)
-
     def cast(self, node, value, type):
         if not can_cast(value.type, type):
             self.throw(node, err.IllegalAssignment(value.type, type))
@@ -352,8 +349,8 @@ class PyxellCompiler:
 
         return [self.cast(node, value, type) for value in values]
 
-    def var(self, type):
-        var = v.Variable(type, f'v{self._var_index}')
+    def var(self, type, prefix='v'):
+        var = v.Variable(type, f'{prefix}{self._var_index}')
         self._var_index += 1
         return var
 
@@ -865,42 +862,38 @@ class PyxellCompiler:
             real_types = tuple(self.env[name] for name in template.typevars)
             func_type = self.resolve_type(template.type)
 
-            func = ll.Function(self.module, func_type.pointee, self.module.get_unique_name('def.'+id))
+            func = self.var(func_type, prefix='f')
+            template.compiled[real_types] = func
 
-            func_ptr = ll.GlobalVariable(self.module, func_type, self.module.get_unique_name(id))
-            func_ptr.initializer = func
-            template.compiled[real_types] = func_ptr
+            arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
+            block = c.Block()
 
-            prev_label = self.builder.basic_block
-            entry = func.append_basic_block('entry')
-            self.builder.position_at_end(entry)
+            self.module.insert(3, c.FunctionBody(
+                c.FunctionDeclaration(
+                    c.Value(str(func_type.ret), func.name),
+                    [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
+                block))
 
-            with self.local(next_level=True):
-                self.env = template.env.copy()
+            with self.block(block):
+                with self.local(next_level=True):
+                    self.env = template.env.copy()
 
-                for name, type in zip(template.typevars, real_types):
-                    self.env[name] = type
+                    for name, type in zip(template.typevars, real_types):
+                        self.env[name] = type
 
-                self.env['#return'] = func_type.ret
-                self.env.pop('#loop', None)
+                    self.env['#return'] = func_type.ret
+                    self.env.pop('#loop', None)
 
-                for arg, value in zip(func_type.args, func.args):
-                    ptr = self.declare(body, arg.type, arg.name, redeclare=True, initialize=True)
-                    self.env[arg.name] = ptr
-                    self.builder.store(value, ptr)
+                    for arg, var in zip(func_type.args, arg_vars):
+                        self.env[arg.name] = var
+                        self.initialized.add(arg.name)
 
-                self.compile(body)
+                    self.compile(body)
 
-                if func_type.ret == t.Void:
-                    self.builder.ret_void()
-                else:
-                    if '#return' not in self.initialized:
+                    if func_type.ret != t.Void and '#return' not in self.initialized:
                         self.throw(body, err.MissingReturn())
-                    self.builder.ret(func_type.ret.default())
 
-            self.builder.position_at_end(prev_label)
-
-        return func_ptr
+        return func
 
 
     ### Statements ###
@@ -959,6 +952,11 @@ class PyxellCompiler:
 
     def compileStmtAssg(self, node):
         value = self.compile(node['expr'])
+
+        if value.type == t.Void:
+            self.output(value)
+        else:
+            value = self.tmp(value)
 
         for lvalue in node['lvalues']:
             self.assign(lvalue, lvalue, value)
@@ -1155,7 +1153,7 @@ class PyxellCompiler:
             for name in typevars:
                 self.env[name] = t.Var(name)
 
-            args = [] if class_type is None else [Arg(class_type, 'self')]
+            args = [] if class_type is None else [t.Func.Arg(class_type, 'self')]
             expect_default = False
             for arg in node['args']:
                 type = self.compile(arg['type'])
@@ -1166,13 +1164,13 @@ class PyxellCompiler:
                     expect_default = True
                 elif expect_default:
                     self.throw(arg, err.MissingDefault(name))
-                args.append(Arg(type, name, default))
+                args.append(t.Func.Arg(type, name, default))
 
             ret_type = self.compile(node.get('ret')) or t.Void
             func_type = t.Func(args, ret_type)
 
             env = self.env.copy()
-            func = FunctionTemplate(id, typevars, func_type, node['block'], env)
+            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env)
 
         if class_type is None:
             self.env[id] = env[id] = func
@@ -1206,9 +1204,9 @@ class PyxellCompiler:
             self.throw(node, err.IllegalAssignment(t.Void, type))
 
         if type == t.Void:
-            self.builder.ret_void()
+            self.output('return')
         else:
-            self.builder.ret(value)
+            self.output(f'return {value}')
 
     def compileStmtClass(self, node):
         id = node['id']
@@ -1587,11 +1585,11 @@ class PyxellCompiler:
 
                 if func.isTemplate():
                     try:
-                        func = self.builder.load(self.function(func))
+                        func = self.function(func)
                     except err as e:
                         self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
-            return self.builder.call(func, args)
+            return v.Call(func, *args, type=func.type.ret)
 
         if expr['node'] == 'ExprAttr':
             attr = expr['attr']
