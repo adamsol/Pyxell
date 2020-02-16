@@ -1,4 +1,5 @@
 
+import ast
 import re
 from collections import defaultdict
 from contextlib import contextmanager
@@ -707,7 +708,7 @@ class PyxellCompiler:
 
         for i, tag in enumerate(tags):
             try:
-                expr = parse_expr(tag)
+                expr = parse_expr(ast.literal_eval(f'"{tag}"'))
             except err as e:
                 self.throw({
                     **node,
@@ -1733,11 +1734,11 @@ class PyxellCompiler:
         return v.Char(node['char'])
 
     def compileAtomString(self, node):
-        return v.String(node['string'])
-
         expr = self.convert_string(node, node['string'])
+
         if expr['node'] == 'AtomString':
-            return self.string(expr['string'])
+            return v.String(expr['string'])
+        
         try:
             return self.compile(expr)
         except err as e:
