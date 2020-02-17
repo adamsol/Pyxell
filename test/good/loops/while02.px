@@ -1,0 +1,17 @@
+
+x = 0
+
+func f(Int y) Int def
+    x += 1
+    return y
+
+a = 0
+b = 10
+c = 20
+
+while f(a) < f(b) <= f(c) do
+    a += 2
+    b += 1
+
+print a, b, c
+print x

@@ -985,53 +985,63 @@ class PyxellCompiler:
         blocks = node['blocks']
 
         initialized_vars = []
-        else_ = None
+        stmt = None
 
         for expr, block in reversed(list(zip_longest(exprs, blocks))):
             if expr:
                 cond = self.cast(expr, self.compile(expr), t.Bool)
 
-            then_ = c.Block()
-            with self.block(then_):
+            then = c.Block()
+            with self.block(then):
                 with self.local():
                     self.compile(block)
                     initialized_vars.append(self.initialized)
 
             if expr:
-                else_ = c.If(cond, then_, else_)
+                stmt = c.If(cond, then, stmt)
             else:
-                else_ = then_
+                stmt = then
 
-        self.output(else_)
+        self.output(stmt)
 
         if len(blocks) > len(exprs):  # there is an `else` statement
             self.initialized.update(set.intersection(*initialized_vars))
 
     def compileStmtWhile(self, node):
+        expr = node['expr']
+
         with self.local():
             self.env['#loop'] = True
 
-            expr = node['expr']
-            cond = self.cast(expr, self.compile(expr), t.Bool)
-
             body = c.Block()
             with self.block(body):
+                cond = self.cast(expr, self.compile(expr), t.Bool)
+                cond = v.UnaryOperation('!', cond)
+                self.output(c.If(cond, c.Block([c.Statement('break')])))
+
                 self.compile(node['block'])
 
-        self.output(c.While(cond, body))
+        self.output(c.While(v.true, body))
 
     def compileStmtUntil(self, node):
+        expr = node['expr']
+
         with self.local():
             self.env['#loop'] = True
 
-            expr = node['expr']
-            cond = self.cast(expr, self.compile(expr), t.Bool)
+            second_iteration = self.var(t.Bool)
+            self.store(second_iteration, v.false, 'auto')
 
             body = c.Block()
             with self.block(body):
+                cond = self.cast(expr, self.compile(expr), t.Bool)
+                cond = v.BinaryOperation(second_iteration, '&&', cond)
+                self.output(c.If(cond, c.Block([c.Statement('break')])))
+                self.store(second_iteration, v.true)
+
                 self.compile(node['block'])
 
-        self.output(c.DoWhile(v.UnaryOperation('!', cond), body))
+        self.output(c.While(v.true, body))
 
     def compileStmtFor(self, node):
         vars = node['vars']
@@ -1642,32 +1652,26 @@ class PyxellCompiler:
         exprs = node['exprs']
         ops = node['ops']
 
-        return self.cmp(node, ops[0], *map(self.compile, exprs))
+        result = self.var(t.Bool)
+        self.store(result, v.false, 'auto')
 
-        with self.block() as (label_start, label_end):
-            self.builder.position_at_end(label_end)
-            phi = self.builder.phi(t.Bool)
-            self.builder.position_at_end(label_start)
+        values = [self.tmp(self.compile(exprs[0]))]
 
-            def emitIf(index):
-                values.append(self.compile(exprs[index+1]))
-                cond = self.cmp(node, ops[index], values[index], values[index+1])
+        def emitIf(index):
+            values.append(self.tmp(self.compile(exprs[index])))
+            cond = self.cmp(node, ops[index-1], values[index-1], values[index])
 
-                if len(exprs) == index+2:
-                    phi.add_incoming(cond, self.builder.basic_block)
-                    self.builder.branch(label_end)
-                    return
-
-                phi.add_incoming(v.false, self.builder.basic_block)
-                label_if = self.builder.function.append_basic_block()
-                self.builder.cbranch(cond, label_if, label_end)
-
-                with self.builder._branch_helper(label_if, label_end):
+            if index == len(exprs) - 1:
+                self.store(result, cond)
+            else:
+                block = c.Block()
+                with self.block(block):
                     emitIf(index+1)
+                self.output(c.If(cond, block))
 
-            emitIf(0)
+        emitIf(1)
 
-        return phi
+        return result
 
     def compileExprLogicalOp(self, node):
         exprs = node['exprs']
