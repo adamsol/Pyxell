@@ -183,7 +183,7 @@ class PyxellCompiler:
         if id not in self.initialized:
             self.throw(node, err.UninitializedIdentifier(id))
 
-        if result.isTemplate():
+        if result.isTemplate() and not result.typevars:
             result = self.function(result)
 
         return result

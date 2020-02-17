@@ -102,18 +102,20 @@ class Func(Type):
         return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
 
 
-class VariableType(Type):
+class Var(Type):
 
     def __init__(self, name):
         super().__init__()
         self.name = name
-        self.kind = 'variable'
 
     def __eq__(self, other):
-        return isinstance(other, VariableType) and self.name == other.name
+        return isinstance(other, Var) and self.name == other.name
 
     def __hash__(self):
-        return hash(VariableType)
+        return hash(Var)
+
+    def show(self):
+        return self.name
 
 
 Unknown = PrimitiveType('<Unknown>', 'void*')
@@ -157,12 +159,9 @@ def isClass(type):
     return getattr(type, 'kind', None) == 'class'
 
 
-def Var(name):
-    return VariableType(name)
-
 @extend_class(Type)
 def isVar(type):
-    return getattr(type, 'kind', None) == 'variable'
+    return isinstance(type, Var)
 
 
 @extend_class(Type)
