@@ -1,0 +1,7 @@
+
+use random
+
+for i in 0...2 do
+    seed(-3456)
+    print randFloat()
+    print randFloat()

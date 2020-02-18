@@ -3,7 +3,10 @@
 
 #include <cmath>
 #include <cstdio>
+#include <ctime>
+#include <limits>
 #include <functional>
+#include <random>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -235,4 +238,29 @@ char readChar()
     char r;
     scanf("%c", &r);
     return r;
+}
+
+
+/* Random numbers */
+
+std::mt19937_64 generator(time(nullptr));
+
+void seed(long long x)
+{
+    generator.seed(x);
+}
+
+long long _rand()
+{
+    return generator() & std::numeric_limits<long long>::max();
+}
+
+long long randInt(long long r)
+{
+    return _rand() % r;
+}
+
+double randFloat(double r)
+{
+    return _rand() * r / std::numeric_limits<long long>::max();
 }
