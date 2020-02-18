@@ -507,7 +507,7 @@ class PyxellCompiler:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
             elif left.type.isCollection() and right.type == t.Int:
-                return v.Call('extend', left, right, type=left.type)
+                return v.Call('multiply', left, right, type=left.type)
 
             elif left.type == t.Int and right.type.isCollection():
                 return self.binaryop(node, op, right, left)

@@ -75,11 +75,12 @@ T concat(T a, const T& b) {
 }
 
 template <typename T>
-T extend(const T& a, long long m) {
-    T r;
-    r.reserve(a.size() * m);
-    while (m--) {
-        r.insert(r.end(), a.begin(), a.end());
+T multiply(const T& a, long long m) {
+    T r(a.size() * m, typename T::value_type());
+    for (std::size_t i = 0; i < a.size(); ++i) {
+        for (std::size_t j = 0; j < m; ++j) {
+            r[j*a.size()+i] = a[i];
+        }
     }
     return r;
 }
