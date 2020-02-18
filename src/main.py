@@ -16,7 +16,7 @@ from .parsing import parse_program
 abspath = Path(__file__).parents[1]
 
 units = {}
-for name in ['std', 'math', 'time', 'random']:
+for name in ['std']:
     try:
         unit = json.load(open(abspath/f'lib/{name}.json'))
     except FileNotFoundError:
@@ -47,8 +47,8 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
 
     compiler = PyxellCompiler()
 
-    # for name, ast in units.items():
-    #     compiler.run(ast, name)
+    for name, ast in units.items():
+        compiler.run(ast, name)
 
     ast = build_ast(filepath)
     code = compiler.run_main(ast)

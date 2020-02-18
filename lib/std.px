@@ -1,13 +1,5 @@
 
-func CharArray_asString([Char] a) String extern
-func String_toArray(String s) [Char] extern
-
 func write(String s) extern
-func writeLine(String s) extern
-func writeInt(Int s) extern
-func writeFloat(Float s) extern
-func writeBool(Bool s) extern
-func writeChar(Char s) extern
 
 func read() String extern
 func readLine() String extern
@@ -69,10 +61,10 @@ func String_any(String s, Char->Bool f) Bool def
     return false
 
 func String_filter(String s, Char->Bool f) String def
-    return CharArray_asString([c for c in s if f(c)])
+    return [c for c in s if f(c)]._asString()
 
 func String_map(String s, Char->Char f) String def
-    return CharArray_asString([f(c) for c in s])
+    return [f(c) for c in s]._asString()
 
 func String_reduce<B>(String s, Char->B->B f, B r) B def
     for c in s do
@@ -80,23 +72,9 @@ func String_reduce<B>(String s, Char->B->B f, B r) B def
     return r
 
 
-func Int_pow(Int b, Int e) Int def
-    if e < 0 do
-        return 0
-    r = 1
-    while e > 0 do
-        if not 2|e do
-            r *= b
-        b *= b
-        e >>= 1
-    return r
-
-func Float_pow(Float b, Float e) Float extern
-
-
 func CharArray_join([Char] array, String sep: "") String def
     if sep.length == 0 do
-        return CharArray_asString(CharArray_asString(array).toArray())  -- copy the array
+        return array._asString()
     m = sep.length
     n = array.length
     r = [' '] * ((m+1) * (n-1) + 1)
@@ -108,7 +86,7 @@ func CharArray_join([Char] array, String sep: "") String def
             for c in sep do
                 r[p] = c
                 p += 1
-    return CharArray_asString(r)
+    return r._asString()
 
 func StringArray_join([String] array, String sep: "") String def
     m = sep.length
@@ -126,38 +104,4 @@ func StringArray_join([String] array, String sep: "") String def
             for c in sep do
                 r[p] = c
                 p += 1
-    return CharArray_asString(r)
-
-
-func Int_toString(Int n) String extern
-func Float_toString(Float f) String extern
-
-func Bool_toString(Bool b) String def
-    return b ? "true" : "false"
-
-func Char_toString(Char c) String def
-    return CharArray_asString([c])
-
-func String_toString(String s) String def
-    return s
-
-
-func String_toInt(String s) Int extern
-func String_toFloat(String s) Float extern
-
-
-func Int_toFloat(Int n) Float extern
-func Float_toInt(Float f) Int extern
-
-
-func Bool_toInt(Bool b) Int def
-    return b ? 1 : 0
-
-func Bool_toFloat(Bool b) Float def
-    return b ? 1.0 : 0.0
-
-func Char_toInt(Char c) Int def
-    return c.code - 48
-
-func Char_toFloat(Char c) Float def
-    return c.code - 48.0
+    return r._asString()

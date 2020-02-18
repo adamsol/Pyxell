@@ -14,7 +14,7 @@ using namespace std::string_literals;
 #endif
 
 
-/* Mathematics */
+/* Arithmetic operators */
 
 long long floordiv(long long a, long long b)
 {
@@ -58,6 +58,11 @@ long long pow(long long b, long long e)
 
 /* String and array manipulation */
 
+std::string asString(const std::vector<char>& x)
+{
+    return std::string(x.begin(), x.end());
+}
+
 template <typename T>
 T concat(T a, const T& b) {
     a.insert(a.end(), b.begin(), b.end());
@@ -72,32 +77,6 @@ T extend(const T& a, long long m) {
         r.insert(r.end(), a.begin(), a.end());
     }
     return r;
-}
-
-std::string join(const std::vector<char>& x, const std::string& sep) {
-    std::string r;
-    for (std::size_t i = 0; i < x.size(); ++i) {
-        if (i > 0) {
-            r.append(sep);
-        }
-        r.push_back(x[i]);
-    }
-    return r;
-}
-
-std::string join(const std::vector<std::string>& x, const std::string& sep) {
-    std::string r;
-    for (std::size_t i = 0; i < x.size(); ++i) {
-        if (i > 0) {
-            r.append(sep);
-        }
-        r.append(x[i]);
-    }
-    return r;
-}
-
-std::vector<char> toArray(const std::string& x) {
-    return std::vector<char>(x.begin(), x.end());
 }
 
 

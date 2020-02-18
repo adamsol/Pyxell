@@ -50,10 +50,10 @@ class PyxellCompiler:
     def run(self, ast, unit):
         self.units[unit] = Unit()
         with self.unit(unit):
-            # if unit != 'std':
-            #     self.env = self.units['std'].env.copy()
-            #     self.initialized = self.units['std'].initialized.copy()
-            #     self.levels = self.units['std'].levels.copy()
+            if unit != 'std':
+                self.env = self.units['std'].env.copy()
+                self.initialized = self.units['std'].initialized.copy()
+                self.levels = self.units['std'].levels.copy()
             self.compile(ast)
 
     def run_main(self, ast):
@@ -269,9 +269,7 @@ class PyxellCompiler:
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif type == t.String:
-                if attr == 'toArray':
-                    value = v.Variable(t.Func([type], t.Array(t.Char)), 'toArray')
-                elif attr == 'all':
+                if attr == 'all':
                     value = self.env['String_all']
                 elif attr == 'any':
                     value = self.env['String_any']
@@ -282,9 +280,13 @@ class PyxellCompiler:
                 elif attr == 'reduce':
                     value = self.env['String_reduce']
             elif type.isArray():
-                if attr == 'join':
-                    default = {'node': 'AtomString', 'string': ''}
-                    value = v.Variable(t.Func([type, t.Func.Arg(t.String, 'sep', default)], t.String), 'join')
+                if attr == '_asString' and type.subtype == t.Char:
+                    value = v.Variable(t.Func([type], t.String), 'asString')
+                elif attr == 'join':
+                    if type.subtype == t.Char:
+                        value = self.env['CharArray_join']
+                    elif type.subtype == t.String:
+                        value = self.env['StringArray_join']
                 elif attr == 'all':
                     value = self.env['Array_all']
                 elif attr == 'any':
@@ -818,12 +820,11 @@ class PyxellCompiler:
         if real_types in template.compiled:
             return template.compiled[real_types]
 
-        id = template.id
         body = template.body
 
         if not body:  # `extern`
-            func_ptr = ll.GlobalVariable(self.module, template.type, self.module.get_unique_name('f.'+id))
-            template.compiled[real_types] = func_ptr
+            func = v.Variable(template.type, template.id)
+            template.compiled[real_types] = func
 
         else:
             unknown_ret_type_variables = {name: t.Var(name) for name in get_type_variables(template.type.ret) if not isinstance(self.env.get(name), t.Type)}
