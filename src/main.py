@@ -16,7 +16,7 @@ from .parsing import parse_program
 abspath = Path(__file__).parents[1]
 
 units = {}
-for name in ['std']:
+for name in ['std', 'math']:
     try:
         unit = json.load(open(abspath/f'lib/{name}.json'))
     except FileNotFoundError:
