@@ -2,4 +2,4 @@
 line = readLine()
 print line
 print readLine()
-writeLine(readLine())
+print readLine()

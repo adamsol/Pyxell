@@ -1,4 +1,6 @@
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <cmath>
 #include <cstdio>
 #include <functional>
@@ -195,4 +197,42 @@ template <typename T>
 void write(const T& x)
 {
     printf("%s", toString(x).c_str());
+}
+
+
+/* Standard input */
+
+char input[1024];
+
+std::string read()
+{
+    scanf("%1023s", input);
+    return std::string(input);
+}
+
+std::string readLine()
+{
+    scanf("%1023[^\n]%*c", input);
+    return std::string(input);
+}
+
+long long readInt()
+{
+    long long r;
+    scanf("%lld", &r);
+    return r;
+}
+
+double readFloat()
+{
+    double r;
+    scanf("%lg", &r);
+    return r;
+}
+
+char readChar()
+{
+    char r;
+    scanf("%c", &r);
+    return r;
 }
