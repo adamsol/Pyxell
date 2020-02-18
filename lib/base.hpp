@@ -1,6 +1,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <ctime>
@@ -96,12 +97,12 @@ std::string toString(long long x) {
 }
 
 std::string toString(double x) {
-    if (fabs(x) < 1e15 && floor(x) == x) {
-        sprintf(buffer, "%.0f.0", x);
-    } else {
-        sprintf(buffer, "%.15g", x);
+    sprintf(buffer, "%.15g", x);
+    std::string r = std::string(buffer);
+    if (std::all_of(r.begin(), r.end(), [](char c) { return '0' <= c && c <= '9' || c == '-'; })) {
+        r.append(".0");
     }
-    return std::string(buffer);
+    return r;
 }
 
 std::string toString(bool x) {
