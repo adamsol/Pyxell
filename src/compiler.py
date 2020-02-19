@@ -40,9 +40,10 @@ class PyxellCompiler:
         self.module = c.Module([
             c.Line(),
             self.module_variables,
+            c.Line(),
             self.module_functions,
             self.main,
-            c.Line()
+            c.Line(),
         ])
 
     def run(self, ast, unit):
@@ -139,7 +140,7 @@ class PyxellCompiler:
 
         if toplevel:
             if isinstance(stmt, c.FunctionBody):
-                self.module_functions.insert(0, stmt)
+                self.module_functions.append(stmt)
             else:
                 self.module_variables.append(stmt)
         else:
@@ -859,6 +860,8 @@ class PyxellCompiler:
 
             arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
             block = c.Block()
+
+            self.output(f'{func_type.ret} {func}({", ".join(str(arg.type) for arg in func_type.args)})', toplevel=True)
 
             self.output(
                 c.FunctionBody(
