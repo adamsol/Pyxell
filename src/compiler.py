@@ -1211,6 +1211,8 @@ class PyxellCompiler:
             self.throw(node, err.IllegalAssignment(t.Void, type))
 
         if type == t.Void:
+            if expr:
+                self.output(value)
             self.output('return')
         else:
             self.output(f'return {value}')
