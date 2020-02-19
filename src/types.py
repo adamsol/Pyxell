@@ -10,9 +10,9 @@ class Type:
 
 class PrimitiveType(Type):
 
-    def __init__(self, pyxell_name, c_name):
+    def __init__(self, pyxell_name, c_name=None):
         self.pyxell_name = pyxell_name
-        self.c_name = c_name
+        self.c_name = c_name or pyxell_name
 
     def __eq__(self, other):
         if not isinstance(other, PrimitiveType):
@@ -29,13 +29,13 @@ class PrimitiveType(Type):
         return self.pyxell_name
 
 
-Void = PrimitiveType('Void', 'void')
-Int = PrimitiveType('Int', 'long long')
-Float = PrimitiveType('Float', 'double')
-Bool = PrimitiveType('Bool', 'bool')
-Char = PrimitiveType('Char', 'char')
+Void = PrimitiveType('Void')
+Int = PrimitiveType('Int')
+Float = PrimitiveType('Float')
+Bool = PrimitiveType('Bool')
+Char = PrimitiveType('Char')
 
-String = PrimitiveType('String', 'std::string')
+String = PrimitiveType('String')
 String.subtype = Char
 
 
@@ -52,7 +52,7 @@ class Array(Type):
         return hash(Array)
 
     def __str__(self):
-        return f'std::vector<{self.subtype}>'
+        return f'Array<{self.subtype}>'
 
     def show(self):
         return f'[{self.subtype.show()}]'
@@ -72,7 +72,7 @@ class Tuple(Type):
 
     def __str__(self):
         elems = ', '.join(map(str, self.elements))
-        return f'std::tuple<{elems}>'
+        return f'Tuple<{elems}>'
 
     def show(self):
         return '*'.join([t.show() for t in self.elements])

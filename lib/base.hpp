@@ -20,9 +20,25 @@ using namespace std::string_literals;
 #endif
 
 
+/* Types */
+
+using Void = void;
+using Int = long long;
+using Float = double;
+using Char = char;
+using Bool = bool;
+using String = std::string;
+
+template <typename T>
+using Array = std::vector<T>;
+
+template <typename... T>
+using Tuple = std::tuple<T...>;
+
+
 /* Arithmetic operators */
 
-long long floordiv(long long a, long long b)
+Int floordiv(Int a, Int b)
 {
     if (b < 0) {
         return floordiv(-a, -b);
@@ -33,24 +49,24 @@ long long floordiv(long long a, long long b)
     return a / b;
 }
 
-long long mod(long long a, long long b)
+Int mod(Int a, Int b)
 {
     if (b < 0) {
         return -mod(-a, -b);
     }
-    long long r = a % b;
+    Int r = a % b;
     if (r < 0) {
         r += b;
     }
     return r;
 }
 
-long long pow(long long b, long long e)
+Int pow(Int b, Int e)
 {
     if (e < 0) {
         return 0;
     }
-    long long r = 1;
+    Int r = 1;
     while (e > 0) {
         if (e % 2 != 0) {
             r *= b;
@@ -64,19 +80,21 @@ long long pow(long long b, long long e)
 
 /* String and array manipulation */
 
-std::string asString(const std::vector<char>& x)
+String asString(const Array<Char>& x)
 {
-    return std::string(x.begin(), x.end());
+    return String(x.begin(), x.end());
 }
 
 template <typename T>
-T concat(T a, const T& b) {
+T concat(T a, const T& b)
+{
     a.insert(a.end(), b.begin(), b.end());
     return a;
 }
 
 template <typename T>
-T multiply(const T& a, long long m) {
+T multiply(const T& a, Int m)
+{
     T r(a.size() * m, typename T::value_type());
     for (std::size_t i = 0; i < a.size(); ++i) {
         for (std::size_t j = 0; j < m; ++j) {
@@ -91,36 +109,41 @@ T multiply(const T& a, long long m) {
 
 char buffer[25];
 
-std::string toString(long long x) {
+String toString(Int x)
+{
     sprintf(buffer, "%lld", x);
-    return std::string(buffer);
+    return String(buffer);
 }
 
-std::string toString(double x) {
+String toString(Float x)
+{
     sprintf(buffer, "%.15g", x);
-    std::string r = std::string(buffer);
-    if (std::all_of(r.begin(), r.end(), [](char c) { return '0' <= c && c <= '9' || c == '-'; })) {
+    String r = String(buffer);
+    if (std::all_of(r.begin(), r.end(), [](Char c) { return '0' <= c && c <= '9' || c == '-'; })) {
         r.append(".0");
     }
     return r;
 }
 
-std::string toString(bool x) {
+String toString(Bool x)
+{
     return x ? "true" : "false";
 }
 
-std::string toString(char x) {
-    return std::string(1, x);
+String toString(Char x)
+{
+    return String(1, x);
 }
 
-const std::string& toString(const std::string& x) {
+const String& toString(const String& x)
+{
     return x;
 }
 
 template <typename T>
-std::string toString(const std::vector<T>& x)
+String toString(const Array<T>& x)
 {
-    std::string r;
+    String r;
     r.append("[");
     for (std::size_t i = 0; i < x.size(); ++i) {
         if (i > 0) {
@@ -133,10 +156,10 @@ std::string toString(const std::vector<T>& x)
 }
 
 template <std::size_t I = 0, typename... T>
-std::string toString(const std::tuple<T...>& x)
+String toString(const Tuple<T...>& x)
 {
     // https://stackoverflow.com/a/54225452/12643160
-    std::string r;
+    String r;
     r.append(toString(std::get<I>(x)));
     if constexpr(I+1 < sizeof...(T)) {
         r.append(" ");
@@ -148,50 +171,60 @@ std::string toString(const std::tuple<T...>& x)
 
 /* Conversion to Int */
 
-long long toInt(long long x) {
+Int toInt(Int x)
+{
     return x;
 }
 
-long long toInt(double x) {
-    return static_cast<long long>(x);
+Int toInt(Float x)
+{
+    return static_cast<Int>(x);
 }
 
-long long toInt(bool x) {
+Int toInt(Bool x)
+{
     return x ? 1 : 0;
 }
 
-long long toInt(const std::string& x) {
-    long long r;
+Int toInt(const String& x)
+{
+    Int r;
     sscanf(x.c_str(), "%lld", &r);
     return r;
 }
 
-long long toInt(char x) {
+Int toInt(Char x)
+{
     return toInt(toString(x));
 }
 
 
 /* Conversion to Float */
 
-double toFloat(long long x) {
-    return static_cast<double>(x);
+Float toFloat(Int x)
+{
+    return static_cast<Float>(x);
 }
 
-double toFloat(double x) {
+Float toFloat(Float x)
+{
     return x;
 }
 
-double toFloat(bool x) {
+Float toFloat(Bool x)
+{
     return x ? 1.0 : 0.0;
 }
 
-double toFloat(const std::string& x) {
-    double r;
+Float toFloat(const String& x)
+{
+    Float r;
     sscanf(x.c_str(), "%lg", &r);
     return r;
 }
 
-double toFloat(char x) {
+Float toFloat(Char x)
+{
     return toFloat(toString(x));
 }
 
@@ -209,35 +242,35 @@ void write(const T& x)
 
 char input[1024];
 
-std::string read()
+String read()
 {
     scanf("%1023s", input);
-    return std::string(input);
+    return String(input);
 }
 
-std::string readLine()
+String readLine()
 {
     scanf("%1023[^\n]%*c", input);
-    return std::string(input);
+    return String(input);
 }
 
-long long readInt()
+Int readInt()
 {
-    long long r;
+    Int r;
     scanf("%lld", &r);
     return r;
 }
 
-double readFloat()
+Float readFloat()
 {
-    double r;
+    Float r;
     scanf("%lg", &r);
     return r;
 }
 
-char readChar()
+Char readChar()
 {
-    char r;
+    Char r;
     scanf("%c", &r);
     return r;
 }
@@ -247,22 +280,22 @@ char readChar()
 
 std::mt19937_64 generator(time(nullptr));
 
-void seed(long long x)
+void seed(Int x)
 {
     generator.seed(x);
 }
 
-long long _rand()
+Int _rand()
 {
-    return generator() & std::numeric_limits<long long>::max();
+    return generator() & std::numeric_limits<Int>::max();
 }
 
-long long randInt(long long r)
+Int randInt(Int r)
 {
     return _rand() % r;
 }
 
-double randFloat(double r)
+Float randFloat(Float r)
 {
-    return _rand() * r / std::numeric_limits<long long>::max();
+    return _rand() * r / std::numeric_limits<Int>::max();
 }

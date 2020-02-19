@@ -574,80 +574,8 @@ class PyxellCompiler:
         except err:
             self.throw(node, err.NotComparable(left.type, right.type))
 
-        return v.BinaryOperation(left, op, right, type=t.Bool)
-
-        if left.type in {t.Int, t.Char}:
-            return self.builder.icmp_signed(op, left, right)
-
-        elif left.type == t.Float:
-            return self.builder.fcmp_ordered(op, left, right)
-
-        elif left.type == t.Bool:
-            return self.builder.icmp_unsigned(op, left, right)
-
-        elif left.type.isCollection():
-            array1 = self.extract(left, 0)
-            array2 = self.extract(right, 0)
-            length1 = self.extract(left, 1)
-            length2 = self.extract(right, 1)
-
-            index = self.builder.alloca(t.Int)
-            self.builder.store(v.Int(0), index)
-
-            with self.block() as (label_start, label_end):
-                label_true = ll.Block(self.builder.function)
-                label_false = ll.Block(self.builder.function)
-                label_cont = ll.Block(self.builder.function)
-                label_length = ll.Block(self.builder.function)
-
-                i = self.builder.load(index)
-
-                for length in [length1, length2]:
-                    label = ll.Block(self.builder.function)
-                    self.builder.cbranch(self.builder.icmp_signed('<', i, length), label, label_length)
-                    self.builder.function.blocks.append(label)
-                    self.builder.position_at_end(label)
-
-                values = [self.builder.load(self.builder.gep(array, [i])) for array in [array1, array2]]
-                cond = self.cmp(node, op+'=' if op in {'<', '>'} else op, *values)
-
-                if op == '!=':
-                    self.builder.cbranch(cond, label_true, label_cont)
-                else:
-                    self.builder.cbranch(cond, label_cont, label_false)
-
-                self.builder.function.blocks.append(label_cont)
-                self.builder.position_at_end(label_cont)
-
-                if op in {'<=', '>=', '<', '>'}:
-                    label_cont = ll.Block(self.builder.function)
-
-                    cond2 = self.cmp(node, '!=', *values)
-                    self.builder.cbranch(cond2, label_true, label_cont)
-
-                    self.builder.function.blocks.append(label_cont)
-                    self.builder.position_at_end(label_cont)
-
-                self.inc(index)
-
-                self.builder.branch(label_start)
-
-                for label in [label_true, label_false]:
-                    self.builder.function.blocks.append(label)
-                    self.builder.position_at_end(label)
-                    self.builder.branch(label_end)
-
-                self.builder.function.blocks.append(label_length)
-                self.builder.position_at_end(label_length)
-
-                length_cond = self.builder.icmp_signed(op, length1, length2)
-                self.builder.branch(label_end)
-
-            phi = self.builder.phi(t.Bool)
-            phi.add_incoming(v.true, label_true)
-            phi.add_incoming(v.false, label_false)
-            phi.add_incoming(length_cond, label_length)
-            return phi
+        if left.type in {t.Int, t.Float, t.Char, t.Bool, t.String} or left.type.isArray() or left.type.isTuple():
+            return v.BinaryOperation(left, op, right, type=t.Bool)
 
         elif left.type.isClass():
             if op not in {'==', '!='}:

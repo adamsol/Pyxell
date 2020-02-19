@@ -141,6 +141,9 @@ try:
 except FileNotFoundError:
     print(f"command not found: {args.cpp_compiler}")
     sys.exit(1)
+except subprocess.CalledProcessError as e:
+    print(e.output.decode())
+    sys.exit(1)
 
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for i, path in enumerate(tests, 1):
