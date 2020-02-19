@@ -40,7 +40,7 @@ def Char(x):
     return Literal(str(x), "'{}'", type=t.Char)
 
 def String(x):
-    return Literal(str(x), '"{}"s', type=t.String)
+    return Literal(str(x), 'make_string("{}")', type=t.String)
 
 
 class Variable(Value):
@@ -68,7 +68,7 @@ class Array(Container):
 
     def __init__(self, elements, subtype=None):
         type = t.Array(elements[0].type if elements else (subtype or t.Unknown))
-        super().__init__(type, elements, str(type) + '({{{}}})')
+        super().__init__(type, elements, f'make_array<{type.subtype}>' + '({{{}}})')
 
 
 class Tuple(Container):
@@ -107,7 +107,7 @@ class Attribute(Value):
         self.attr = attr
 
     def __str__(self):
-        return f'{self.value}.{self.attr}'
+        return f'{self.value}->{self.attr}'
 
 
 class Index(Value):
@@ -118,7 +118,7 @@ class Index(Value):
         self.index = index
 
     def __str__(self):
-        return f'{self.collection}[{self.index}]'
+        return f'{Dereference(self.collection)}[{self.index}]'
 
 
 class Call(Value):
@@ -140,6 +140,9 @@ def Cast(value, type):
 
 def Get(tuple, index):
     return Call(f'std::get<{index}>', tuple, type=tuple.type.elements[index])
+
+def Dereference(value):
+    return UnaryOperation('*', value)
 
 
 class UnaryOperation(Value):

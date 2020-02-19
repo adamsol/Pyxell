@@ -533,13 +533,13 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '+':
-            if left.type == right.type and left.type in {t.Int, t.Float, t.String}:
+            if left.type == right.type and left.type in {t.Int, t.Float}:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
-                return v.BinaryOperation(left, op, right, type=t.String)
+                return v.Call('concat', left, right, type=t.String)
 
-            elif left.type == right.type and left.type.isArray():
+            elif left.type == right.type and left.type.isCollection():
                 return v.Call('concat', left, right, type=left.type)
 
             else:
@@ -908,7 +908,7 @@ class PyxellCompiler:
         # Special instruction for array comprehension.
         array = self.compile(node['array'])
         value = self.compile(node['expr'])
-        self.output(v.Call(v.Attribute(array, 'push_back'), v.Call('std::move', value)))
+        self.output(v.Call(v.Attribute(array, 'push_back'), value))
 
     def compileStmtIf(self, node):
         exprs = node['exprs']
@@ -1297,7 +1297,7 @@ class PyxellCompiler:
                 subtype = inner_stmt.pop('_eval')
 
         with self.local():
-            self.declare(node, t.Array(subtype), array['id'], initialize=True)
+            self.assign(node, array, v.Array([], subtype))
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['array'] = array
@@ -1370,7 +1370,7 @@ class PyxellCompiler:
 
             result = self.expr('[{t}[{i}] for {i} in {a}...{b} step {c}]', t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])
 
-        return v.Call(t.String, v.Call(v.Attribute(result, 'begin')), v.Call(v.Attribute(result, 'end')), type=t.String) if type == t.String else result
+        return v.Call('make_string', v.Call(v.Attribute(result, 'begin')), v.Call(v.Attribute(result, 'end')), type=t.String) if type == t.String else result
 
     def compileExprCall(self, node):
         expr = node['expr']

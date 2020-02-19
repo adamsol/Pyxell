@@ -1,0 +1,10 @@
+
+n = 0
+s = "test" * 10^^7
+
+for i in 0...10^^7 do
+    s' = s
+    if s'[4*i] == s[-4*i-1] do
+        n += s'.length
+
+print n

@@ -1,0 +1,6 @@
+
+a = [0]
+b = a
+print b
+a[0] = 1
+print b

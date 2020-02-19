@@ -80,6 +80,7 @@ Features
 * Module system (+/-)
 * Classes with safe references (+)
 * Separate nullable types (+)
+* Automatic memory management utilizing smart pointers (+)
 
 To do:
 
@@ -91,7 +92,6 @@ To do:
 * Coroutines
 * Exception handling
 * Multiple inheritance
-* Automatic memory management
 * Concurrency
 
 
