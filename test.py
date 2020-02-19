@@ -12,7 +12,7 @@ import threading
 from pathlib import Path
 from timeit import default_timer as timer
 
-from src.main import compile
+from src.main import precompile_base_header, compile
 from src.errors import PyxellError
 
 # Setup terminal colors.
@@ -117,7 +117,7 @@ def test(i, path):
                     output.append(f"{G}OK{E} ({t2-t1:.3f}s)")
                     passed = True
 
-    except Exception as e:
+    except Exception:
         output.append(f"{R}{traceback.format_exc()}{E}")
 
     # Print the output of tests in the right order.
@@ -136,9 +136,17 @@ def test(i, path):
                 os.remove(path.replace(".px", ".cpp"))
                 os.remove(path.replace(".px", ".exe"))
 
+try:
+    precompile_base_header(args.cpp_compiler)
+except FileNotFoundError:
+    print(f"command not found: {args.cpp_compiler}")
+    sys.exit(1)
+
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for i, path in enumerate(tests, 1):
         executor.submit(test, i, path)
+
+os.remove('lib/base.hpp.gch')
 
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"

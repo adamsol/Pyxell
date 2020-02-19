@@ -6,6 +6,7 @@ pyxell
 _*
 *.tmp
 *.cpp
+*.gch
 *.spec
 build/
 dist/

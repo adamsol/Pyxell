@@ -39,8 +39,6 @@ class PyxellCompiler:
         
         self.module = c.Module([
             c.Line(),
-            c.Include('lib/base.hpp', system=False),
-            c.Line(),
             self.module_variables,
             self.module_functions,
             self.main,

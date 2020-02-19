@@ -36,6 +36,11 @@ def build_libs():
         json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
+def precompile_base_header(cpp_compiler):
+    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), '-std=c++17', '-O2']
+    subprocess.check_output(command, stderr=subprocess.STDOUT)
+
+
 def compile(filepath, cpp_compiler, verbose=False, *other_args):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
@@ -57,7 +62,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
         file.write(code)
 
     if cpp_compiler.lower() not in {'', 'no', 'none'}:
-        command = [cpp_compiler, cpp_filename, '-I', str(abspath), '-o', exe_filename, '-std=c++17', '-O2', *other_args, '-lstdc++']
+        command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', '-O2', *other_args, '-lstdc++']
         if platform.system() != 'Windows':
             command.append('-lm')
 
