@@ -1610,38 +1610,26 @@ class PyxellCompiler:
 
     def compileExprLogicalOp(self, node):
         exprs = node['exprs']
-        op = {
-            'and': '&&',
-            'or': '||',
-        }[node['op']]
+        op = node['op']
 
-        values = lmap(self.compile, exprs)
-        return v.BinaryOperation(values[0], op, values[1], type=t.Bool)
+        result = self.var(t.Bool)
+        self.store(result, v.Bool(op == 'or'), 'auto')
 
+        block = c.Block()
         cond1 = self.compile(exprs[0])
+        if op == 'or':
+            cond1 = v.UnaryOperation('!', cond1, type=t.Bool)
 
-        with self.block() as (label_start, label_end):
-            label_if = self.builder.function.append_basic_block()
+        self.output(c.If(cond1, block))
 
-            if op == 'and':
-                self.builder.cbranch(cond1, label_if, label_end)
-            elif op == 'or':
-                self.builder.cbranch(cond1, label_end, label_if)
+        with self.block(block):
+            cond2 = self.compile(exprs[1])
+            if not cond1.type == cond2.type == t.Bool:
+                self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
 
-            self.builder.position_at_end(label_end)
-            phi = self.builder.phi(t.Bool)
-            if op == 'and':
-                phi.add_incoming(v.false, label_start)
-            elif op == 'or':
-                phi.add_incoming(v.true, label_start)
+            self.store(result, cond2)
 
-            with self.builder._branch_helper(label_if, label_end):
-                cond2 = self.compile(exprs[1])
-                if not cond1.type == cond2.type == t.Bool:
-                    self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
-                phi.add_incoming(cond2, self.builder.basic_block)
-
-        return phi
+        return result
 
     def compileExprCond(self, node):
         exprs = node['exprs']

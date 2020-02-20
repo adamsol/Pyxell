@@ -4,4 +4,4 @@ func f() Int def
     return 0
 
 print f() <= f() == f()
-print f() < f() == f()
+print f() < f() == f() >= [0][1] > f()
