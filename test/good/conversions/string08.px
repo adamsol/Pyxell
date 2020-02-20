@@ -1,0 +1,3 @@
+
+s = ("xyz" * 2).toString()
+print s

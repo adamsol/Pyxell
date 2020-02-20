@@ -185,7 +185,7 @@ String toString(Char x)
     return make_string(1, x);
 }
 
-const String& toString(const String& x)
+String toString(const String& x)
 {
     return x;
 }
