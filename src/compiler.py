@@ -1551,7 +1551,10 @@ class PyxellCompiler:
             else:
                 obj = None
 
-        return _call(obj, func)
+        result = _call(obj, func)
+        if result.type != t.Void:
+            result = self.tmp(result)
+        return result
 
     def compileExprUnaryOp(self, node):
         return self.unaryop(node, node['op'], self.compile(node['expr']))
