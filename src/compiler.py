@@ -202,15 +202,42 @@ class PyxellCompiler:
             collection = self.tmp(collection)
             index = self.cast(node, index, t.Int)
             index = self.tmp(index)
-            index = v.TernaryOperation(
-                v.BinaryOperation(index, '<', v.Int(0)), '?',
-                v.BinaryOperation(self.attr(node, collection, 'length'), '+', index), ':',
+            index = v.Condition(
+                v.BinaryOperation(index, '<', v.Int(0)),
+                v.BinaryOperation(self.attr(node, collection, 'length'), '+', index),
                 index)
             index = self.tmp(index)
 
             return v.Index(collection, index, type=collection.type.subtype)
 
         self.throw(node, err.NotIndexable(collection.type))
+
+    def cond(self, node, pred, callback_true, callback_false):
+        pred = self.cast(node, pred, t.Bool)
+
+        block_true = c.Block()
+        block_false = c.Block()
+
+        with self.block(block_true):
+            value_true = callback_true()
+        with self.block(block_false):
+            value_false = callback_false()
+
+        type = unify_types(value_true.type, value_false.type)
+        if type is None:
+            self.throw(node, err.UnknownType())
+
+        result = self.var(type)
+        self.output(f'{type} {result.name}')
+
+        with self.block(block_true):
+            self.store(result, value_true)
+        with self.block(block_false):
+            self.store(result, value_false)
+
+        self.output(c.If(pred, block_true, block_false))
+
+        return result
 
     def safe(self, node, value, callback_notnull, callback_null):
         if not value.type.isNullable():
@@ -1002,9 +1029,9 @@ class PyxellCompiler:
                 else:
                     end = self.freeze(values[1])
                     e = '=' if iterable['inclusive'] else ''
-                    cond = lambda x: v.TernaryOperation(
-                        desc, '?',
-                        v.BinaryOperation(x, f'>{e}', end), ':',
+                    cond = lambda x: v.Condition(
+                        desc,
+                        v.BinaryOperation(x, f'>{e}', end),
                         v.BinaryOperation(x, f'<{e}', end))
                 getter = lambda x: v.Cast(x, type)
             else:
@@ -1015,17 +1042,17 @@ class PyxellCompiler:
                 array = self.tmp(value)
                 desc = v.BinaryOperation(step, '<', v.Int(0))
                 index = self.var(None)
-                start = self.tmp(v.TernaryOperation(
-                    desc, '?',
-                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'end'))), ':',
+                start = self.tmp(v.Condition(
+                    desc,
+                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'end'))),
                     v.Call(v.Attribute(array, 'begin'))))
-                end = self.tmp(v.TernaryOperation(
-                    desc, '?',
-                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'begin'))), ':',
+                end = self.tmp(v.Condition(
+                    desc,
+                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'begin'))),
                     v.Call(v.Attribute(array, 'end'))))
-                cond = lambda x: v.TernaryOperation(
-                    desc, '?',
-                    v.BinaryOperation(x, f'>', end), ':',
+                cond = lambda x: v.Condition(
+                    desc,
+                    v.BinaryOperation(x, f'>', end),
                     v.BinaryOperation(x, f'<', end))
                 getter = lambda x: v.UnaryOperation('*', x, type=value.type.subtype)
 
@@ -1633,10 +1660,7 @@ class PyxellCompiler:
 
     def compileExprCond(self, node):
         exprs = node['exprs']
-        cond, *values = map(self.compile, exprs)
-        cond = self.cast(exprs[0], cond, t.Bool)
-        values = self.unify(node, *values)
-        return v.TernaryOperation(cond, '?', values[0], ':', values[1], type=values[0].type)
+        return self.cond(node, self.compile(exprs[0]), lambda: self.compile(exprs[1]), lambda: self.compile(exprs[2]))
 
     def compileExprLambda(self, node):
         self.throw(node, err.IllegalLambda())
