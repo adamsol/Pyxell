@@ -71,15 +71,26 @@ class Array(Container):
         super().__init__(type, elements, f'make_array<{type.subtype}>' + '({{{}}})')
 
 
+class Nullable(Value):
+
+    def __init__(self, value=None):
+        super().__init__(t.Nullable(value.type if value else t.Unknown))
+        self.value = value
+
+    def __str__(self):
+        if self.value is None:
+            return 'std::nullopt'
+        return f'std::make_optional<{self.type.subtype}>({self.value})'
+
+
+null = Nullable()
+
+
 class Tuple(Container):
 
     def __init__(self, elements):
         type = t.Tuple([value.type for value in elements])
         super().__init__(type, elements, 'std::make_tuple({})')
-
-    def __str__(self):
-        elems = ', '.join(map(str, self.elements))
-        return f'std::make_tuple({elems})'
 
 
 class FunctionTemplate(Value):
@@ -107,7 +118,8 @@ class Attribute(Value):
         self.attr = attr
 
     def __str__(self):
-        return f'{self.value}->{self.attr}'
+        op = '.' if self.value.type.isNullable() else '->'
+        return f'{self.value}{op}{self.attr}'
 
 
 class Index(Value):
@@ -141,8 +153,17 @@ def Cast(value, type):
 def Get(tuple, index):
     return Call(f'std::get<{index}>', tuple, type=tuple.type.elements[index])
 
-def Dereference(value):
-    return UnaryOperation('*', value)
+def Dereference(value, type=None):
+    return UnaryOperation('*', value, type=type)
+
+def Extract(value):
+    return Dereference(value, type=value.type.subtype)
+
+def IsNotNull(value):
+    return Call(Attribute(value, 'has_value'), type=t.Bool)
+
+def IsNull(value):
+    return UnaryOperation('!', IsNotNull(value), type=t.Bool)
 
 
 class UnaryOperation(Value):

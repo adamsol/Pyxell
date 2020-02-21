@@ -8,6 +8,7 @@
 #include <limits>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <tuple>
@@ -68,6 +69,9 @@ Array<T> make_array(std::initializer_list<T> x)
 
 template <typename... T>
 using Tuple = std::tuple<T...>;
+
+template <typename T>
+using Nullable = std::optional<T>;
 
 
 /* Arithmetic operators */
@@ -203,6 +207,16 @@ String toString(const Array<T>& x)
     }
     r->append("]");
     return r;
+}
+
+template <typename T>
+String toString(const Nullable<T>& x)
+{
+    if (x.has_value()) {
+        return toString(x.value());
+    } else {
+        return make_string("null");
+    }
 }
 
 template <std::size_t I = 0, typename... T>

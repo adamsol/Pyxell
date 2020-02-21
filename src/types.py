@@ -58,6 +58,25 @@ class Array(Type):
         return f'[{self.subtype.show()}]'
 
 
+class Nullable(Type):
+
+    def __init__(self, subtype):
+        super().__init__()
+        self.subtype = subtype
+
+    def __eq__(self, other):
+        return isinstance(other, Nullable) and self.subtype == other.subtype
+
+    def __hash__(self):
+        return hash(Nullable)
+
+    def __str__(self):
+        return f'Nullable<{self.subtype}>'
+
+    def show(self):
+        return f'{self.subtype.show()}?'
+
+
 class Tuple(Type):
 
     def __init__(self, elements):
@@ -126,12 +145,9 @@ def isArray(type):
     return isinstance(type, Array)
 
 
-def Nullable(subtype):
-    return NullableType(subtype)
-
 @extend_class(Type)
 def isNullable(type):
-    return getattr(type, 'kind', None) == 'nullable'
+    return isinstance(type, Nullable)
 
 
 @extend_class(Type)

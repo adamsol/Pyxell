@@ -283,11 +283,11 @@ class PyxellASTVisitor(PyxellVisitor):
             'inclusive': ctx.dots.text == '..',
         }
 
-    def visitExprIs(self, ctx):
+    def visitExprIsNull(self, ctx):
         return {
-            **_node(ctx, 'ExprIs'),
-            'exprs': self.visit(ctx.expr()),
-            'not': ctx.op.text != 'is',
+            **_node(ctx, 'ExprIsNull'),
+            'expr': self.visit(ctx.expr()),
+            'not': bool(ctx.not_),
         }
 
     def visitExprCmp(self, ctx):

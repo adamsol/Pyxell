@@ -69,7 +69,7 @@ expr
   | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange
   | expr op='|' expr # ExprBinaryOp
-  | expr op=('is' | 'isn\'t') expr # ExprIs
+  | expr 'is' not_='not'? 'null' # ExprIsNull
   | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp

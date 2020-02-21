@@ -243,22 +243,7 @@ class PyxellCompiler:
         if not value.type.isNullable():
             self.throw(node, err.NotNullable(value.type))
 
-        with self.builder.if_else(self.builder.icmp_unsigned('!=', value, v.Null())) as (label_notnull, label_null):
-            with label_notnull:
-                value_notnull = callback_notnull()
-                label_notnull = self.builder.basic_block
-            with label_null:
-                value_null = callback_null()
-                label_null = self.builder.basic_block
-
-        type = unify_types(value_notnull.type, value_null.type)
-        if type is None:
-            self.throw(node, err.UnknownType())
-
-        phi = self.builder.phi(type)
-        phi.add_incoming(self.cast(node, value_notnull, type), label_notnull)
-        phi.add_incoming(self.cast(node, value_null, type), label_null)
-        return phi
+        return self.cond(node, v.IsNotNull(value), callback_notnull, callback_null)
 
     def attribute(self, node, expr, attr):
         if expr['node'] == 'AtomId':
@@ -356,7 +341,7 @@ class PyxellCompiler:
         if not can_cast(value.type, type):
             self.throw(node, err.IllegalAssignment(value.type, type))
         if not value.type.isNullable() and type.isNullable():
-            return self.cast(node, self.nullable(value), type)
+            return self.cast(node, v.Nullable(value), type)
 
         return v.Cast(value, type)
 
@@ -489,19 +474,15 @@ class PyxellCompiler:
         return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
     def unaryop(self, node, op, value):
-        if op == '!':
-            if not value.type.isNullable():
-                self.throw(node, err.NotNullable(value.type))
-        else:
-            if op in {'+', '-'}:
-                types = [t.Int, t.Float]
-            elif op == '~':
-                types = [t.Int]
-            elif op == 'not':
-                types = [t.Bool]
+        if op in {'+', '-'}:
+            types = [t.Int, t.Float]
+        elif op == '~':
+            types = [t.Int]
+        elif op == 'not':
+            types = [t.Bool]
 
-            if value.type not in types:
-                self.throw(node, err.NoUnaryOperator(op, value.type))
+        if value.type not in types:
+            self.throw(node, err.NoUnaryOperator(op, value.type))
 
         op = {
             'not': '!',
@@ -623,15 +604,8 @@ class PyxellCompiler:
     def print(self, node, value):
         type = value.type
 
-        if type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isArray() or type.isTuple():
+        if type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isArray() or type.isNullable() or type.isTuple():
             self.output(v.Call('write', value))
-
-        elif type.isNullable():
-            with self.builder.if_else(self.builder.icmp_signed('!=', value, v.Null(type))) as (label_if, label_else):
-                with label_if:
-                    self.print(node, self.extract(value))
-                with label_else:
-                    self.write('null')
 
         elif type.isClass():
             try:
@@ -694,11 +668,6 @@ class PyxellCompiler:
             'args': [],
         }
 
-    def nullable(self, value):
-        result = self.malloc(t.Nullable(value.type))
-        self.insert(value, result)
-        return result
-
     def convert_lambda(self, expr):
         ids = []
 
@@ -709,7 +678,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIs', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
+            if node in {'ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIsNull', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -919,11 +888,17 @@ class PyxellCompiler:
         left = self.lvalue(node, exprs[0])
 
         if op == '??':
-            with self.builder.if_then(self.builder.icmp_unsigned('==', left, v.Null())):
+            block = c.Block()
+
+            self.output(c.If(v.IsNull(left), block))
+
+            with self.block(block):
                 right = self.compile(exprs[1])
                 if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
                     self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
-                self.builder.store(self.nullable(self.cast(node, right, left.type.subtype)), ptr)
+
+                self.store(left, v.Nullable(self.cast(node, right, left.type.subtype)))
+
         else:
             right = self.compile(exprs[1])
             value = self.binaryop(node, op, left, right)
@@ -1340,8 +1315,8 @@ class PyxellCompiler:
         attr = node['attr']
 
         if node.get('safe'):
-            obj = self.compile(expr)
-            return self.safe(node, obj, lambda: self.nullable(self.attr(node, self.extract(obj), attr)), v.Null)
+            obj = self.tmp(self.compile(expr))
+            return self.safe(node, obj, lambda: v.Nullable(self.attr(node, v.Extract(obj), attr)), lambda: v.null)
 
         obj, value = self.attribute(node, expr, attr)
         return value
@@ -1350,8 +1325,8 @@ class PyxellCompiler:
         exprs = node['exprs']
 
         if node.get('safe'):
-            collection = self.compile(exprs[0])
-            return self.safe(node, collection, lambda: self.nullable(self.index(node, self.extract(collection), self.compile(exprs[1]))), v.Null)
+            collection = self.tmp(self.compile(exprs[0]))
+            return self.safe(node, collection, lambda: v.Nullable(self.index(node, v.Extract(collection), self.compile(exprs[1]))), lambda: v.null)
 
         return self.index(node, *map(self.compile, exprs))
 
@@ -1559,14 +1534,14 @@ class PyxellCompiler:
             attr = expr['attr']
 
             if expr.get('safe'):
-                obj = self.compile(expr['expr'])
+                obj = self.tmp(self.compile(expr['expr']))
 
                 def callback():
-                    value = self.extract(obj)
+                    value = self.tmp(v.Extract(obj))
                     func = self.attr(node, value, attr)
-                    return self.nullable(_call(value, func))
+                    return v.Nullable(_call(value, func))
 
-                return self.safe(node, obj, callback, v.Null)
+                return self.safe(node, obj, callback, lambda: v.null)
             else:
                 obj, func = self.attribute(expr, expr['expr'], attr)
 
@@ -1584,16 +1559,25 @@ class PyxellCompiler:
         return result
 
     def compileExprUnaryOp(self, node):
-        return self.unaryop(node, node['op'], self.compile(node['expr']))
+        op = node['op']
+        value = self.compile(node['expr'])
+
+        if op == '!':
+            if not value.type.isNullable():
+                self.throw(node, err.NotNullable(value.type))
+
+            return v.Extract(value)
+
+        return self.unaryop(node, op, value)
 
     def compileExprBinaryOp(self, node):
         op = node['op']
         exprs = node['exprs']
 
         if op == '??':
-            left = self.compile(exprs[0])
+            left = self.tmp(self.compile(exprs[0]))
             try:
-                return self.safe(node, left, lambda: self.extract(left), lambda: self.compile(exprs[1]))
+                return self.safe(node, left, lambda: v.Extract(left), lambda: self.compile(exprs[1]))
             except err:
                 self.throw(node, err.NoBinaryOperator(op, left.type, self.compile(exprs[1]).type))
 
@@ -1602,13 +1586,15 @@ class PyxellCompiler:
     def compileExprRange(self, node):
         self.throw(node, err.IllegalRange())
 
-    def compileExprIs(self, node):
-        left, right = map(self.compile, node['exprs'])
-        if not left.type.isNullable() or not right.type.isNullable() or unify_types(left.type, right.type) is None:
-            self.throw(node, err.NoStrictComparison(left.type, right.type))
+    def compileExprIsNull(self, node):
+        value = self.compile(node['expr'])
+        if not value.type.isNullable():
+            self.throw(node, err.NotNullable(value.type))
 
-        left, right = self.unify(node, left, right)
-        return self.builder.icmp_unsigned('!=' if node.get('not') else '==', left, right)
+        if value.type.isUnknown():  # for the `null is null` case
+            return v.Bool(not node.get('not'))
+
+        return v.IsNotNull(value) if node.get('not') else v.IsNull(value)
 
     def compileExprCmp(self, node):
         exprs = node['exprs']
@@ -1699,7 +1685,7 @@ class PyxellCompiler:
             }, str(e).partition(': ')[2][:-1])
 
     def compileAtomNull(self, node):
-        return v.Null()
+        return v.null
 
     def compileAtomSuper(self, node):
         func = self.env.get('#super')

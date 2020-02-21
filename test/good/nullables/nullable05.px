@@ -1,6 +1,9 @@
 
 Int? x = 0
-i = 0
+y = x
+
 for i in 1..10^^9 do
-    x = null
-print i, x
+    x = i
+    y = null
+
+print x, y
