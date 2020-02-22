@@ -340,10 +340,19 @@ class PyxellCompiler:
     def cast(self, node, value, type):
         if not can_cast(value.type, type):
             self.throw(node, err.IllegalAssignment(value.type, type))
-        if not value.type.isNullable() and type.isNullable():
-            return self.cast(node, v.Nullable(value), type)
 
-        return v.Cast(value, type)
+        def _cast(value, type):
+            if value.type.isUnknown() and isinstance(value, (v.Array, v.Tuple)):
+                if type.isArray():
+                    return v.Array([_cast(e, type.subtype) for e in value.elements], subtype=type.subtype)
+                if type.isTuple():
+                    return v.Tuple([_cast(e, t) for e, t in zip(value.elements, type.elements)])
+
+            if not value.type.isNullable() and type.isNullable():
+                return v.Nullable(_cast(value, type.subtype))
+            return v.Cast(value, type)
+
+        return _cast(value, type)
 
     def unify(self, node, *values):
         if not values:
@@ -438,6 +447,12 @@ class PyxellCompiler:
             self.throw(node, err.CannotUnpack(type, len1))
 
         if len1 > 1:
+            with self.no_output():
+                try:
+                    # FIXME: this fails when one variable was declared earlier and other was not
+                    value = self.cast(node, value, self.compile(expr).type)
+                except err:
+                    pass
             value = self.tmp(value)
             for i, expr in enumerate(exprs):
                 self.assign(node, expr, v.Get(value, i))
@@ -575,27 +590,6 @@ class PyxellCompiler:
                 return v.BinaryOperation(left, op, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
-
-    def cmp(self, node, op, left, right):
-        try:
-            left, right = self.unify(node, left, right)
-        except err:
-            self.throw(node, err.NotComparable(left.type, right.type))
-
-        if left.type in {t.Int, t.Float, t.Char, t.Bool, t.String} or left.type.isArray() or left.type.isTuple():
-            return v.BinaryOperation(left, op, right, type=t.Bool)
-
-        elif left.type.isClass():
-            if op not in {'==', '!='}:
-                self.throw(node, err.NotComparable(left.type, right.type))
-
-            return self.builder.icmp_unsigned(op, left, right)
-
-        elif left.type == t.Unknown:
-            return v.true
-
-        else:
-            self.throw(node, err.NotComparable(left.type, right.type))
 
     def write(self, format, *values):
         args = ''.join(f', {value}' for value in values)
@@ -1603,11 +1597,25 @@ class PyxellCompiler:
         result = self.var(t.Bool)
         self.store(result, v.false, 'auto')
 
-        values = [self.tmp(self.compile(exprs[0]))]
+        left = self.compile(exprs[0])
 
         def emitIf(index):
-            values.append(self.tmp(self.compile(exprs[index])))
-            cond = self.cmp(node, ops[index-1], values[index-1], values[index])
+            nonlocal left
+            right = self.compile(exprs[index])
+            op = ops[index-1]
+
+            try:
+                left, right = self.unify(node, left, right)
+                right = self.tmp(right)
+            except err:
+                self.throw(node, err.NotComparable(left.type, right.type))
+
+            if left.type in {t.Int, t.Float, t.Char, t.Bool, t.String} or left.type.isArray() or left.type.isTuple():
+                cond = v.BinaryOperation(left, op, right, type=t.Bool)
+            else:
+                self.throw(node, err.NotComparable(left.type, right.type))
+
+            left = right
 
             if index == len(exprs) - 1:
                 self.store(result, cond)

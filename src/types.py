@@ -137,7 +137,7 @@ class Var(Type):
         return self.name
 
 
-Unknown = PrimitiveType('<Unknown>', 'void*')
+Unknown = PrimitiveType('<unknown>', 'void*')
 
 
 @extend_class(Type)
