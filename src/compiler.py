@@ -259,7 +259,7 @@ class PyxellCompiler:
         type = obj.type
         value = None
 
-        if attr == 'toString' and (type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isArray() or type.isTuple()):
+        if attr == 'toString' and type.isPrintable():
             value = v.Variable(t.Func([type], t.String), 'toString')
 
         elif attr == 'toInt' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
@@ -598,7 +598,7 @@ class PyxellCompiler:
     def print(self, node, value):
         type = value.type
 
-        if type in {t.Int, t.Float, t.Bool, t.Char, t.String} or type.isArray() or type.isNullable() or type.isTuple():
+        if type.isPrintable():
             self.output(v.Call('write', value))
 
         elif type.isClass():

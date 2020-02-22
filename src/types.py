@@ -185,6 +185,18 @@ def isCollection(type):
     return type == String or type.isArray()
 
 @extend_class(Type)
+def isPrintable(type):
+    if type in {Int, Float, Bool, Char, String, Unknown}:
+        return True
+    if type.isArray():
+        return type.subtype.isPrintable()
+    if type.isNullable():
+        return type.subtype.isPrintable()
+    if type.isTuple():
+        return all(elem.isPrintable() for elem in type.elements)
+    return False
+
+@extend_class(Type)
 def isUnknown(type):
     if type == Unknown:
         return True

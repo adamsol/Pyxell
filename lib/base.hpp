@@ -163,6 +163,9 @@ ptr<T> multiply(const ptr<T>& a, Int m)
 
 char buffer[25];
 
+template <typename T> String toString(const Nullable<T>& x);
+template <std::size_t I = 0, typename... T> String toString(const Tuple<T...>& x);
+
 String toString(Int x)
 {
     sprintf(buffer, "%lld", x);
@@ -209,17 +212,22 @@ String toString(const Array<T>& x)
     return r;
 }
 
+String toString(const std::nullopt_t& x)
+{
+    return make_string("null");
+}
+
 template <typename T>
 String toString(const Nullable<T>& x)
 {
     if (x.has_value()) {
         return toString(x.value());
     } else {
-        return make_string("null");
+        return toString(std::nullopt);
     }
 }
 
-template <std::size_t I = 0, typename... T>
+template <std::size_t I, typename... T>
 String toString(const Tuple<T...>& x)
 {
     // https://stackoverflow.com/a/54225452/12643160

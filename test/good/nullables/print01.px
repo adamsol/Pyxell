@@ -1,0 +1,5 @@
+
+print null
+
+Int? x = 0
+print null.toString() + "{x}"
