@@ -341,18 +341,9 @@ class PyxellCompiler:
         if not can_cast(value.type, type):
             self.throw(node, err.IllegalAssignment(value.type, type))
 
-        def _cast(value, type):
-            if value.type.isUnknown() and isinstance(value, (v.Array, v.Tuple)):
-                if type.isArray():
-                    return v.Array([_cast(e, type.subtype) for e in value.elements], subtype=type.subtype)
-                if type.isTuple():
-                    return v.Tuple([_cast(e, t) for e, t in zip(value.elements, type.elements)])
-
-            if not value.type.isNullable() and type.isNullable():
-                return v.Nullable(_cast(value, type.subtype))
-            return v.Cast(value, type)
-
-        return _cast(value, type)
+        if not value.type.isNullable() and type.isNullable():
+            return v.Nullable(v.Cast(value, type.subtype))
+        return v.Cast(value, type)
 
     def unify(self, node, *values):
         if not values:
@@ -447,12 +438,6 @@ class PyxellCompiler:
             self.throw(node, err.CannotUnpack(type, len1))
 
         if len1 > 1:
-            with self.no_output():
-                try:
-                    # FIXME: this fails when one variable was declared earlier and other was not
-                    value = self.cast(node, value, self.compile(expr).type)
-                except err:
-                    pass
             value = self.tmp(value)
             for i, expr in enumerate(exprs):
                 self.assign(node, expr, v.Get(value, i))

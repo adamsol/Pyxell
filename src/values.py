@@ -78,9 +78,8 @@ class Nullable(Value):
         self.value = value
 
     def __str__(self):
-        if self.value is None:
-            return 'std::nullopt'
-        return f'std::make_optional<{self.type.subtype}>({self.value})'
+        arg = str(self.value or '')
+        return f'{self.type}({arg})'
 
 
 null = Nullable()

@@ -44,6 +44,8 @@ template <typename T> bool operator >=(const ptr<T>& lhs, const ptr<T>& rhs) { r
 
 /* Types */
 
+using Unknown = void*;
+
 using Void = void;
 using Int = long long;
 using Float = double;
@@ -59,7 +61,21 @@ String make_string(Args&&... args)
 }
 
 template <typename T>
-using Array = ptr<std::vector<T>>;
+struct Array: public ptr<std::vector<T>>
+{
+    using ptr<std::vector<T>>::ptr;
+
+    Array(const Array<Unknown>& x)
+    {
+        this->p = std::make_shared<std::vector<T>>();
+    }
+
+    template <typename U>
+    Array(const Array<U>& x)
+    {
+        this->p = std::make_shared<std::vector<T>>(x->begin(), x->end());
+    }
+};
 
 template <typename T>
 Array<T> make_array(std::initializer_list<T> x)
@@ -67,11 +83,23 @@ Array<T> make_array(std::initializer_list<T> x)
     return Array<T>(std::make_shared<std::vector<T>>(x));
 }
 
-template <typename... T>
-using Tuple = std::tuple<T...>;
+template <typename T, typename... Args>
+Array<T> make_array(Args&&... args)
+{
+    return Array<T>(std::make_shared<std::vector<T>>(std::forward<Args>(args)...));
+}
 
 template <typename T>
-using Nullable = std::optional<T>;
+struct Nullable: public std::optional<T>
+{
+    using std::optional<T>::optional;
+    operator bool() = delete;
+
+    Nullable(const Nullable<Unknown>& x): std::optional<T>() {}
+};
+
+template <typename... T>
+using Tuple = std::tuple<T...>;
 
 
 /* Arithmetic operators */
@@ -139,17 +167,29 @@ String concat(Char a, const String& b)
 }
 
 template <typename T>
-ptr<T> concat(const ptr<T>& a, const ptr<T>& b)
+Array<T> concat(const Array<T>& a, const Array<T>& b)
 {
-    auto r = ptr<T>(std::make_shared<T>(*a));
+    auto r = make_array<T>({});
+    r->insert(r->end(), a->begin(), a->end());
     r->insert(r->end(), b->begin(), b->end());
     return r;
 }
 
-template <typename T>
-ptr<T> multiply(const ptr<T>& a, Int m)
+String multiply(const String& a, Int m)
 {
-    auto r = ptr<T>(std::make_shared<T>(a->size() * m, typename T::value_type()));
+    auto r = make_string(a->size() * m, '\0');
+    for (std::size_t i = 0; i < a->size(); ++i) {
+        for (std::size_t j = 0; j < m; ++j) {
+            (*r)[j*a->size()+i] = (*a)[i];
+        }
+    }
+    return r;
+}
+
+template <typename T>
+Array<T> multiply(const Array<T>& a, Int m)
+{
+    auto r = make_array<T>(a->size() * m, T());
     for (std::size_t i = 0; i < a->size(); ++i) {
         for (std::size_t j = 0; j < m; ++j) {
             (*r)[j*a->size()+i] = (*a)[i];
@@ -212,18 +252,13 @@ String toString(const Array<T>& x)
     return r;
 }
 
-String toString(const std::nullopt_t& x)
-{
-    return make_string("null");
-}
-
 template <typename T>
 String toString(const Nullable<T>& x)
 {
     if (x.has_value()) {
         return toString(x.value());
     } else {
-        return toString(std::nullopt);
+        return make_string("null");
     }
 }
 
