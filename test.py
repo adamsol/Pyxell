@@ -38,7 +38,7 @@ args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
 tests = []
-for path in glob.glob('test/**/{}*.px'.format('[!_]' if '_' not in args.pattern else ''), recursive=True):
+for path in sorted(glob.glob('test/**/{}*.px'.format('[!_]' if '_' not in args.pattern else ''), recursive=True)):
     path = path.replace(os.path.sep, '/')
     if args.pattern in path:
         tests.append(path)
@@ -149,11 +149,11 @@ with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for i, path in enumerate(tests, 1):
         executor.submit(test, i, path)
 
-os.remove('lib/base.hpp.gch')
-
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"
 if ok == n:
     print(msg + f", {G}all passed{E}.")
 else:
     print(msg + f", {R}{n-ok} failed{E}.")
+
+os.remove('lib/base.hpp.gch')
