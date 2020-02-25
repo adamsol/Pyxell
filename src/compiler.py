@@ -171,10 +171,10 @@ class PyxellCompiler:
 
         result = self.env[id]
 
-        if isinstance(result, t.Type) and result.isClass():
+        if isinstance(result, t.Class):
             if not result.constructor:
                 self.throw(node, err.AbstractClass(result))
-            result = result.constructor
+            result = v.Constructor(result)
 
         if not isinstance(result, v.Value):
             self.throw(node, err.NotVariable(id))
@@ -325,17 +325,12 @@ class PyxellCompiler:
     def member(self, node, obj, attr, lvalue=False):
         if lvalue and not obj.type.isClass():
             self.throw(node, err.NotLvalue())
-
-        try:
-            index = list(obj.type.members.keys()).index(attr)
-        except ValueError:
+        if attr not in obj.type.members:
             self.throw(node, err.NoAttribute(obj.type, attr))
-
         if lvalue and attr in obj.type.methods:
             self.throw(node, err.NotLvalue())
 
-        ptr = self.extract(obj, index, load=False)
-        return ptr if lvalue else self.builder.load(ptr)
+        return v.Attribute(obj, obj.type.members[attr].name, type=obj.type.members[attr].type)
 
     def cast(self, node, value, type):
         if not can_cast(value.type, type):
@@ -1132,84 +1127,31 @@ class PyxellCompiler:
             self.throw(node, err.RedeclaredIdentifier(id))
         self.initialized.add(id)
 
-        base = self.compile(node['base'])
-        if base and not base.isClass():
-            self.throw(node, err.NotClass(base))
-
-        declared_members = set()
-        for member in node['members']:
-            name = member['id']
-            if name in declared_members:
-                self.throw(member, err.RepeatedMember(name))
-            declared_members.add(name)
-
-        members = base.members.copy() if base else {}
-        for member in node['members']:
-            members[member['id']] = member
-
-        type = t.Class(self.module.context, id, base, members)
+        members = {}
+        type = t.Class(id, members)
         self.env[id] = type
 
-        member_types = {}
-        methods = {}
+        for member in node['members']:
+            name = member['id']
+            if name in members:
+                self.throw(member, err.RepeatedMember(name))
+            members[name] = self.var(self.compile(member['type']), prefix='m')
 
-        for name, member in members.items():
-            if member['node'] == 'ClassField':
-                member_types[name] = self.compile(member['type'])
-            elif member['node'] in {'ClassMethod', 'ClassConstructor'}:
-                if member['block']:
-                    with self.local():
-                        if base:
-                            self.env['#super'] = base.methods.get(name)
-                        func = self.compileStmtFunc(member, class_type=type)
-                    member_types[name] = func.type
-                    methods[name] = func
-                else:
-                    methods[name] = None
+        cls = self.var(t.Func([], type), prefix='c')
+        type.constructor = cls
 
-            if base:
-                original_field = base.members.get(name)
-                if original_field and original_field['node'] == 'ClassField':
-                    original_type = self.compile(original_field['type'])
-                    new_type = member_types[name]
-                    if not can_cast(new_type, original_type):
-                        self.throw(member, err.IllegalOverride(original_type, new_type))
+        fields = [c.Value(var.type, var.name) for var in members.values()]
+        self.output(c.Struct(cls.name, fields), toplevel=True)
 
-        type.methods = methods
-        type.pointee.set_body(*member_types.values())
-
-        if None in methods.values():  # abstract class
-            return
-
-        constructor_method = methods.get('<constructor>')
-        constructor_type = t.Func(constructor_method.type.args[1:] if constructor_method else [], type)
-        constructor = ll.Function(self.module, constructor_type.pointee, self.module.get_unique_name('def.'+id))
-
-        constructor_ptr = ll.GlobalVariable(self.module, constructor_type, self.module.get_unique_name(id))
-        constructor_ptr.initializer = constructor
-        type.constructor = constructor_ptr
-
-        prev_label = self.builder.basic_block
-        entry = constructor.append_basic_block('entry')
-        self.builder.position_at_end(entry)
-
-        obj = self.malloc(type)
-
-        for i, (name, member) in enumerate(members.items()):
-            if member['node'] == 'ClassField':
+        block = c.Block()
+        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))
+        with self.block(block):
+            for member in node['members']:
+                name = member['id']
                 default = member.get('default')
                 if default:
-                    value = self.cast(member, self.compile(default), member_types[name])
-                    self.insert(value, obj, i)
-            elif member['node'] == 'ClassMethod':
-                self.insert(self.builder.load(self.function(methods[name])), obj, i)
-
-        if constructor_method:
-            self.builder.call(self.builder.load(self.function(constructor_method)), [obj, *constructor.args])
-
-        self.builder.ret(obj)
-
-        self.builder.position_at_end(prev_label)
+                    value = self.cast(member, self.compile(default), members[name].type)
+                    self.store(f'this->{members[name].name}', value)
 
 
     ### Expressions ###

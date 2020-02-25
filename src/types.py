@@ -121,6 +121,28 @@ class Func(Type):
         return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
 
 
+class Class(Type):
+
+    def __init__(self, name, members):
+        super().__init__()
+        self.name = name
+        self.members = members
+        self.methods = []
+        self.constructor = None
+
+    def __eq__(self, other):
+        return isinstance(other, Class) and self.name == other.name
+
+    def __hash__(self):
+        return hash(Class)
+
+    def __str__(self):
+        return f'std::shared_ptr<{self.constructor.name}>'
+
+    def show(self):
+        return self.name
+
+
 class Var(Type):
 
     def __init__(self, name):
@@ -160,19 +182,9 @@ def isFunc(type):
     return isinstance(type, Func)
 
 
-def Class(context, name, base, members):
-    type = tPtr(context.get_identified_type(name))
-    type.kind = 'class'
-    type.name = name
-    type.base = base
-    type.members = members
-    type.methods = None
-    type.constructor = None
-    return type
-
 @extend_class(Type)
 def isClass(type):
-    return getattr(type, 'kind', None) == 'class'
+    return isinstance(type, Class)
 
 
 @extend_class(Type)

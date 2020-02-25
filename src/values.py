@@ -109,6 +109,12 @@ def isTemplate(value):
     return isinstance(value, FunctionTemplate)
 
 
+class Constructor(Variable):
+
+    def __init__(self, cls):
+        super().__init__(cls.constructor.type, f'std::make_shared<{cls.constructor.name}>')
+
+
 class Attribute(Value):
 
     def __init__(self, value, attr, **kwargs):
