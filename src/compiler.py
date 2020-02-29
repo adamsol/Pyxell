@@ -172,9 +172,9 @@ class PyxellCompiler:
         result = self.env[id]
 
         if isinstance(result, t.Class):
-            if not result.constructor:
+            if not result.initializer:
                 self.throw(node, err.AbstractClass(result))
-            result = v.Constructor(result)
+            return result
 
         if not isinstance(result, v.Value):
             self.throw(node, err.NotVariable(id))
@@ -1134,7 +1134,7 @@ class PyxellCompiler:
         self.env[id] = type
 
         cls = self.var(t.Func([], type), prefix='c')
-        type.constructor = cls
+        type.initializer = cls
 
         fields = []
         self.output(c.Struct(cls.name, fields), toplevel=True)
@@ -1147,7 +1147,7 @@ class PyxellCompiler:
                 field = self.var(self.compile(member['type']), prefix='m')
                 fields.append(c.Value(field.type, field.name))
                 members[name] = field
-            elif member['node'] == 'ClassMethod':
+            elif member['node'] in {'ClassMethod', 'ClassConstructor'}:
                 members[name] = self.compileStmtFunc(member, class_type=type, class_fields=fields)
                 methods.add(name)
 
@@ -1481,6 +1481,13 @@ class PyxellCompiler:
                 obj = self.builder.bitcast(self.get(expr, 'self'), func.type.args[0].type)
             else:
                 obj = None
+
+        if isinstance(func, t.Class):
+            obj = self.tmp(v.Call(f'std::make_shared<{func.initializer.name}>', type=func))
+            method = func.members.get('<constructor>')
+            if method:
+                self.output(_call(obj, v.Attribute(obj, method.name, type=method.type)))
+            return obj
 
         result = _call(obj, func)
         if result.type != t.Void:

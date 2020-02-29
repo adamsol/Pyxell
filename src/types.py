@@ -128,7 +128,7 @@ class Class(Type):
         self.name = name
         self.members = members
         self.methods = methods
-        self.constructor = None
+        self.initializer = None
 
     def __eq__(self, other):
         return isinstance(other, Class) and self.name == other.name
@@ -137,7 +137,7 @@ class Class(Type):
         return hash(Class)
 
     def __str__(self):
-        return f'std::shared_ptr<{self.constructor.name}>'
+        return f'std::shared_ptr<{self.initializer.name}>'
 
     def show(self):
         return self.name
