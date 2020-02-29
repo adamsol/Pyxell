@@ -1,0 +1,12 @@
+
+class A def
+    Int x: 3
+
+    func f() [A] def
+        return [self] * self.x
+
+
+o = A()
+a = o.f()
+o.x = 7
+print a.map(_.x)

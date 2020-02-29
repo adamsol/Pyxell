@@ -711,7 +711,7 @@ class PyxellCompiler:
             }
         return expr
 
-    def function(self, template):
+    def function(self, template, class_fields=None):
         real_types = tuple(self.env.get(name) for name in template.typevars)
 
         if real_types in template.compiled:
@@ -758,16 +758,17 @@ class PyxellCompiler:
 
             arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
             block = c.Block()
+            definition = c.FunctionBody(
+                c.FunctionDeclaration(
+                    c.Value(str(func_type.ret), func.name),
+                    [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
+                block)
 
-            self.output(f'{func_type.ret} {func}({", ".join(str(arg.type) for arg in func_type.args)})', toplevel=True)
-
-            self.output(
-                c.FunctionBody(
-                    c.FunctionDeclaration(
-                        c.Value(str(func_type.ret), func.name),
-                        [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
-                    block),
-                toplevel=True)
+            if class_fields is None:
+                self.output(f'{func_type.ret} {func}({", ".join(str(arg.type) for arg in func_type.args)})', toplevel=True)
+                self.output(definition, toplevel=True)
+            else:
+                class_fields.append(definition)
 
             with self.block(block):
                 with self.local(next_level=True):
@@ -1053,7 +1054,7 @@ class PyxellCompiler:
 
         self.output(stmt)
 
-    def compileStmtFunc(self, node, class_type=None):
+    def compileStmtFunc(self, node, class_type=None, class_fields=None):
         id = node['id']
 
         if class_type is None:
@@ -1086,8 +1087,8 @@ class PyxellCompiler:
         if class_type is None:
             self.env[id] = env[id] = func
             self.levels[id] = self.level
-
-        return func
+        else:
+            return self.function(func, class_fields)
 
     def compileStmtReturn(self, node):
         try:
@@ -1128,20 +1129,27 @@ class PyxellCompiler:
         self.initialized.add(id)
 
         members = {}
-        type = t.Class(id, members)
+        methods = set()
+        type = t.Class(id, members, methods)
         self.env[id] = type
-
-        for member in node['members']:
-            name = member['id']
-            if name in members:
-                self.throw(member, err.RepeatedMember(name))
-            members[name] = self.var(self.compile(member['type']), prefix='m')
 
         cls = self.var(t.Func([], type), prefix='c')
         type.constructor = cls
 
-        fields = [c.Value(var.type, var.name) for var in members.values()]
+        fields = []
         self.output(c.Struct(cls.name, fields), toplevel=True)
+
+        for member in node['members']:
+            name = member['id']
+            if member['node'] == 'ClassField':
+                if name in members:
+                    self.throw(member, err.RepeatedMember(name))
+                field = self.var(self.compile(member['type']), prefix='m')
+                fields.append(c.Value(field.type, field.name))
+                members[name] = field
+            elif member['node'] == 'ClassMethod':
+                members[name] = self.compileStmtFunc(member, class_type=type, class_fields=fields)
+                methods.add(name)
 
         block = c.Block()
         fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))

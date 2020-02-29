@@ -123,11 +123,11 @@ class Func(Type):
 
 class Class(Type):
 
-    def __init__(self, name, members):
+    def __init__(self, name, members, methods):
         super().__init__()
         self.name = name
         self.members = members
-        self.methods = []
+        self.methods = methods
         self.constructor = None
 
     def __eq__(self, other):
