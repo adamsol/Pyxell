@@ -331,7 +331,11 @@ class PyxellCompiler:
         if lvalue and attr in obj.type.methods:
             self.throw(node, err.NotLvalue())
 
-        return v.Attribute(obj, obj.type.members[attr].name, type=obj.type.members[attr].type)
+        value = v.Attribute(obj, obj.type.members[attr].name, type=obj.type.members[attr].type)
+        if attr in obj.type.methods:
+            args = ', '.join([str(arg.type) for arg in value.type.args])
+            value = v.Call(f'reinterpret_cast<{value.type.ret}(*)({args})>', v.Call(value), type=value.type)
+        return value
 
     def cast(self, node, value, type):
         if not can_cast(value.type, type):
@@ -703,7 +707,7 @@ class PyxellCompiler:
             }
         return expr
 
-    def function(self, template, class_fields=None):
+    def function(self, template):
         real_types = tuple(self.env.get(name) for name in template.typevars)
 
         if real_types in template.compiled:
@@ -756,11 +760,8 @@ class PyxellCompiler:
                     [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
                 block)
 
-            if class_fields is None:
-                self.output(f'{func_type.ret} {func}({", ".join(str(arg.type) for arg in func_type.args)})', toplevel=True)
-                self.output(definition, toplevel=True)
-            else:
-                class_fields.append(definition)
+            self.output(f'{func_type.ret} {func}({", ".join(str(arg.type) for arg in func_type.args)})', toplevel=True)
+            self.output(definition, toplevel=True)
 
             with self.block(block):
                 with self.local(next_level=True):
@@ -1046,7 +1047,7 @@ class PyxellCompiler:
 
         self.output(stmt)
 
-    def compileStmtFunc(self, node, class_type=None, class_fields=None):
+    def compileStmtFunc(self, node, class_type=None):
         id = node['id']
 
         if class_type is None:
@@ -1080,7 +1081,7 @@ class PyxellCompiler:
             self.env[id] = env[id] = func
             self.levels[id] = self.level
         else:
-            return self.function(func, class_fields)
+            return self.function(func)
 
     def compileStmtReturn(self, node):
         try:
@@ -1141,18 +1142,38 @@ class PyxellCompiler:
 
         for member in node['members']:
             name = member['id']
+
             if member['node'] == 'ClassField':
                 if name in members:
                     self.throw(member, err.RepeatedMember(name))
+
                 field = self.var(self.compile(member['type']), prefix='m')
                 fields.append(c.Value(field.type, field.name))
                 members[name] = field
-            elif member['node'] in {'ClassMethod', 'ClassConstructor'}:
+
+            elif member['node'] == 'ClassMethod':
                 if member['block']:
-                    members[name] = self.compileStmtFunc(member, class_type=type, class_fields=fields)
+                    func = self.compileStmtFunc(member, class_type=type)
+
+                    if members.get(name):
+                        field = v.Variable(func.type, members[name].name)
+                    else:
+                        members[name] = field = self.var(func.type, prefix='m')
+
+                    block = c.Block()
+                    fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value(f'virtual void*', field.name), []), block))
+                    with self.block(block):
+                        self.output(f'return reinterpret_cast<void*>({func})')
                 else:
                     members[name] = None
+
                 methods.add(name)
+
+            elif member['node'] == 'ClassConstructor':
+                if member['block']:
+                    members[name] = self.compileStmtFunc(member, class_type=type)
+                else:
+                    members[name] = None
 
         block = c.Block()
         fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))
@@ -1489,7 +1510,7 @@ class PyxellCompiler:
             obj = self.tmp(v.Call(f'std::make_shared<{func.initializer.name}>', type=func))
             method = func.members.get('<constructor>')
             if method:
-                self.output(_call(obj, v.Attribute(obj, method.name, type=method.type)))
+                self.output(_call(obj, method))
             return obj
 
         result = _call(obj, func)
