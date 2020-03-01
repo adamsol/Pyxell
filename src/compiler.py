@@ -173,7 +173,7 @@ class PyxellCompiler:
         result = self.env[id]
 
         if isinstance(result, t.Class):
-            if not result.initializer:
+            if None in result.members.values():
                 self.throw(node, err.AbstractClass(result))
             return result
 
@@ -1126,7 +1126,6 @@ class PyxellCompiler:
 
         base_members = base.members if base else {}
         members = dict(base_members)
-
         base_methods = base.methods if base else set()
         methods = set(base_methods)
 
@@ -1149,7 +1148,10 @@ class PyxellCompiler:
                 fields.append(c.Value(field.type, field.name))
                 members[name] = field
             elif member['node'] in {'ClassMethod', 'ClassConstructor'}:
-                members[name] = self.compileStmtFunc(member, class_type=type, class_fields=fields)
+                if member['block']:
+                    members[name] = self.compileStmtFunc(member, class_type=type, class_fields=fields)
+                else:
+                    members[name] = None
                 methods.add(name)
 
         block = c.Block()

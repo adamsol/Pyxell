@@ -1,0 +1,9 @@
+
+class A def
+    constructor() def
+        skip
+
+class B(A) def
+    constructor() abstract
+
+B()
