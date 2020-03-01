@@ -259,7 +259,7 @@ class PyxellCompiler:
         type = obj.type
         value = None
 
-        if attr == 'toString' and type.isPrintable():
+        if attr == 'toString' and type.isPrintable() and not type.isClass():
             value = v.Variable(t.Func([type], t.String), 'toString')
 
         elif attr == 'toInt' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
@@ -579,18 +579,9 @@ class PyxellCompiler:
         type = value.type
 
         if type.isPrintable():
+            if type.isClass():
+                value = v.Call(self.attr(node, value, 'toString'), value)
             self.output(v.Call('write', value))
-
-        elif type.isClass():
-            try:
-                method = self.attr(node, value, "toString")
-            except err:
-                method = None
-
-            if not (method and method.type.isFunc() and len(method.type.args) == 1 and method.type.ret == t.String):
-                self.throw(node, err.NotPrintable(type))
-
-            self.print(node, self.builder.call(method, [value]))
 
         elif type != t.Unknown:
             self.throw(node, err.NotPrintable(type))
