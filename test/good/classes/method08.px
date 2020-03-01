@@ -1,0 +1,9 @@
+
+func f() def
+    print 'f'
+
+class A def
+    func f() def
+        f()
+
+A().f()

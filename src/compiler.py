@@ -34,14 +34,15 @@ class PyxellCompiler:
         self._block = c.Block()
         self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
 
-        self.module_variables = c.Collection()
-        self.module_functions = c.Collection()
+        self.module_declarations = c.Collection()
+        self.module_definitions = c.Collection()
         
         self.module = c.Module([
             c.Line(),
-            self.module_variables,
+            self.module_declarations,
             c.Line(),
-            self.module_functions,
+            self.module_definitions,
+            c.Line(),
             self.main,
             c.Line(),
         ])
@@ -139,10 +140,10 @@ class PyxellCompiler:
             stmt = c.Statement(str(stmt))
 
         if toplevel:
-            if isinstance(stmt, c.FunctionBody):
-                self.module_functions.append(stmt)
+            if isinstance(stmt, (c.FunctionBody, c.Struct)):
+                self.module_definitions.append(stmt)
             else:
-                self.module_variables.append(stmt)
+                self.module_declarations.append(stmt)
         else:
             self._block.append(stmt)
 
@@ -1136,6 +1137,7 @@ class PyxellCompiler:
         type.initializer = cls
 
         fields = []
+        self.output(f'struct {cls.name}', toplevel=True)
         self.output(c.Struct(cls.name + (f': {base.initializer.name}' if base else ''), fields), toplevel=True)
 
         for member in node['members']:
