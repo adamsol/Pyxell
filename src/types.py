@@ -123,9 +123,10 @@ class Func(Type):
 
 class Class(Type):
 
-    def __init__(self, name, members, methods):
+    def __init__(self, name, base, members, methods):
         super().__init__()
         self.name = name
+        self.base = base
         self.members = members
         self.methods = methods
         self.initializer = None

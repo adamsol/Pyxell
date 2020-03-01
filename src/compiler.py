@@ -1119,16 +1119,24 @@ class PyxellCompiler:
             self.throw(node, err.RedeclaredIdentifier(id))
         self.initialized.add(id)
 
-        members = {}
-        methods = set()
-        type = t.Class(id, members, methods)
+        base = self.compile(node['base'])
+        if base and not base.isClass():
+            self.throw(node, err.NotClass(base))
+
+        base_members = base.members if base else {}
+        members = dict(base_members)
+
+        base_methods = base.methods if base else set()
+        methods = set(base_methods)
+
+        type = t.Class(id, base, members, methods)
         self.env[id] = type
 
         cls = self.var(t.Func([], type), prefix='c')
         type.initializer = cls
 
         fields = []
-        self.output(c.Struct(cls.name, fields), toplevel=True)
+        self.output(c.Struct(cls.name + (f': {base.initializer.name}' if base else ''), fields), toplevel=True)
 
         for member in node['members']:
             name = member['id']
