@@ -1,0 +1,12 @@
+
+class A def
+    Int n
+
+    constructor(Int n) def
+        self.n = n
+
+
+a = [A(i) for i in 0..4]
+for x in a do
+    if x == a[2] do
+        print x.n

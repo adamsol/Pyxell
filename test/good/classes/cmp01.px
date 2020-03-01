@@ -5,5 +5,6 @@ class A def
 a1 = A()
 a2 = A()
 print a1 == a1
+print a2 == a1
 print a1 != a2
 print a2 != a2
