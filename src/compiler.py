@@ -260,7 +260,7 @@ class PyxellCompiler:
         type = obj.type
         value = None
 
-        if attr == 'toString' and type.isPrintable() and not type.isClass():
+        if attr == 'toString' and type.isPrintable():
             value = v.Variable(t.Func([type], t.String), 'toString')
 
         elif attr == 'toInt' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
@@ -334,7 +334,7 @@ class PyxellCompiler:
         value = v.Attribute(obj, obj.type.members[attr].name, type=obj.type.members[attr].type)
         if attr in obj.type.methods:
             args = ', '.join([str(arg.type) for arg in value.type.args])
-            value = v.Call(f'reinterpret_cast<{value.type.ret}(*)({args})>', v.Call(value), type=value.type)
+            value = v.Call(f'reinterpret_cast<{value.type.ret} (*)({args})>', v.Call(value), type=value.type)
         return value
 
     def cast(self, node, value, type):
@@ -584,8 +584,6 @@ class PyxellCompiler:
         type = value.type
 
         if type.isPrintable():
-            if type.isClass():
-                value = v.Call(self.attr(node, value, 'toString'), value)
             self.output(v.Call('write', value))
 
         elif type != t.Unknown:
@@ -1160,7 +1158,9 @@ class PyxellCompiler:
                         methods[name] = func = self.compileStmtFunc(member, class_type=type)
 
                     if member['node'] == 'ClassMethod':
-                        if base_members.get(name):
+                        if name == 'toString':
+                            members[name] = v.Variable(func.type, 'toString')
+                        elif base_members.get(name):
                             members[name] = v.Variable(func.type, base_members[name].name)
                         else:
                             members[name] = self.var(func.type, prefix='m')

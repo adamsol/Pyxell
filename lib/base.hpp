@@ -101,6 +101,9 @@ struct Nullable: public std::optional<T>
 template <typename... T>
 using Tuple = std::tuple<T...>;
 
+template <typename... T>
+using Object = std::shared_ptr<T...>;
+
 
 /* Arithmetic operators */
 
@@ -273,6 +276,12 @@ String toString(const Tuple<T...>& x)
         r->append(*toString<I+1>(x));
     }
     return r;
+}
+
+template <typename T>
+String toString(const Object<T>& x)
+{
+    return reinterpret_cast<String (*)(Object<T>)>(x->toString())(x);
 }
 
 

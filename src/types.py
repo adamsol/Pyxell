@@ -138,7 +138,7 @@ class Class(Type):
         return hash(Class)
 
     def __str__(self):
-        return f'std::shared_ptr<{self.initializer.name}>'
+        return f'Object<{self.initializer.name}>'
 
     def show(self):
         return self.name
