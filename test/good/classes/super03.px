@@ -13,8 +13,10 @@ class B(A) def
 
 class B'(B) def
     func add(Int v: 0, Char c: 'B') Int def
+        if c != 'B' do
+            print c
         super(v=v)
-        return self.x
+        return self.x + 100
 
 b = B()
 b = B'()

@@ -173,7 +173,7 @@ class PyxellCompiler:
         result = self.env[id]
 
         if isinstance(result, t.Class):
-            if None in result.members.values():
+            if None in result.methods.values():
                 self.throw(node, err.AbstractClass(result))
             return result
 
@@ -1127,8 +1127,8 @@ class PyxellCompiler:
 
         base_members = base.members if base else {}
         members = dict(base_members)
-        base_methods = base.methods if base else set()
-        methods = set(base_methods)
+        base_methods = base.methods if base else {}
+        methods = dict(base_methods)
 
         type = t.Class(id, base, members, methods)
         self.env[id] = type
@@ -1151,29 +1151,24 @@ class PyxellCompiler:
                 fields.append(c.Value(field.type, field.name))
                 members[name] = field
 
-            elif member['node'] == 'ClassMethod':
+            else:
+                members[name] = methods[name] = None
+
                 if member['block']:
-                    func = self.compileStmtFunc(member, class_type=type)
+                    with self.local():
+                        self.env['#super'] = base_methods.get(name)
+                        methods[name] = func = self.compileStmtFunc(member, class_type=type)
 
-                    if members.get(name):
-                        field = v.Variable(func.type, members[name].name)
-                    else:
-                        members[name] = field = self.var(func.type, prefix='m')
+                    if member['node'] == 'ClassMethod':
+                        if base_members.get(name):
+                            members[name] = v.Variable(func.type, base_members[name].name)
+                        else:
+                            members[name] = self.var(func.type, prefix='m')
 
-                    block = c.Block()
-                    fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value(f'virtual void*', field.name), []), block))
-                    with self.block(block):
-                        self.output(f'return reinterpret_cast<void*>({func})')
-                else:
-                    members[name] = None
-
-                methods.add(name)
-
-            elif member['node'] == 'ClassConstructor':
-                if member['block']:
-                    members[name] = self.compileStmtFunc(member, class_type=type)
-                else:
-                    members[name] = None
+                        block = c.Block()
+                        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value(f'virtual void*', members[name].name), []), block))
+                        with self.block(block):
+                            self.output(f'return reinterpret_cast<void*>({func})')
 
         block = c.Block()
         fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))
@@ -1502,13 +1497,13 @@ class PyxellCompiler:
             func = self.compile(expr)
 
             if expr['node'] == 'AtomSuper':
-                obj = self.builder.bitcast(self.get(expr, 'self'), func.type.args[0].type)
+                obj = v.Cast(self.get(expr, 'self'), func.type.args[0].type)
             else:
                 obj = None
 
         if isinstance(func, t.Class):
             obj = self.tmp(v.Call(f'std::make_shared<{func.initializer.name}>', type=func))
-            method = func.members.get('<constructor>')
+            method = func.methods.get('<constructor>')
             if method:
                 self.output(_call(obj, method))
             return obj
@@ -1668,7 +1663,7 @@ class PyxellCompiler:
         func = self.env.get('#super')
         if func is None:
             self.throw(node, err.IllegalSuper())
-        return self.builder.load(self.function(func))
+        return func
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])
