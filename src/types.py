@@ -1,11 +1,64 @@
 
 from collections import defaultdict, namedtuple
 
-from .utils import *
-
 
 class Type:
-    pass
+
+    def __eq__(self, other):
+        return type(self) == type(other) and self.eq(other)
+
+    def __hash__(self):
+        return hash(Type)
+
+    def eq(self, other):
+        return False
+
+    def isArray(self):
+        return isinstance(self, Array)
+
+    def isNullable(self):
+        return isinstance(self, Nullable)
+
+    def isTuple(self):
+        return isinstance(self, Tuple)
+
+    def isFunc(self):
+        return isinstance(self, Func)
+
+    def isClass(self):
+        return isinstance(self, Class)
+
+    def isVar(self):
+        return isinstance(self, Var)
+
+    def isUnknown(self):
+        if self == Unknown:
+            return True
+        if self.isArray():
+            return self.subtype.isUnknown()
+        if self.isNullable():
+            return self.subtype.isUnknown()
+        if self.isTuple():
+            return any(elem.isUnknown() for elem in self.elements)
+        if self.isFunc():
+            return any(arg.type.isUnknown() for arg in self.args) or self.ret.isUnknown()
+        return False
+
+    def isCollection(self):
+        return self == String or self.isArray()
+
+    def isPrintable(self):
+        if self in {Int, Float, Bool, Char, String, Unknown}:
+            return True
+        if self.isArray():
+            return self.subtype.isPrintable()
+        if self.isNullable():
+            return self.subtype.isPrintable()
+        if self.isTuple():
+            return all(elem.isPrintable() for elem in self.elements)
+        if self.isClass():
+            return 'toString' in self.methods
+        return False
 
 
 class PrimitiveType(Type):
@@ -14,19 +67,14 @@ class PrimitiveType(Type):
         self.pyxell_name = pyxell_name
         self.c_name = c_name or pyxell_name
 
-    def __eq__(self, other):
-        if not isinstance(other, PrimitiveType):
-            return False
-        return self.pyxell_name == other.pyxell_name
-
-    def __hash__(self):
-        return hash(self.pyxell_name)
-
     def __str__(self):
         return self.c_name
 
     def show(self):
         return self.pyxell_name
+
+    def eq(self, other):
+        return self.pyxell_name == other.pyxell_name
 
 
 Void = PrimitiveType('Void')
@@ -45,17 +93,14 @@ class Array(Type):
         super().__init__()
         self.subtype = subtype
 
-    def __eq__(self, other):
-        return isinstance(other, Array) and self.subtype == other.subtype
-
-    def __hash__(self):
-        return hash(Array)
-
     def __str__(self):
         return f'Array<{self.subtype}>'
 
     def show(self):
         return f'[{self.subtype.show()}]'
+
+    def eq(self, other):
+        return self.subtype == other.subtype
 
 
 class Nullable(Type):
@@ -64,17 +109,14 @@ class Nullable(Type):
         super().__init__()
         self.subtype = subtype
 
-    def __eq__(self, other):
-        return isinstance(other, Nullable) and self.subtype == other.subtype
-
-    def __hash__(self):
-        return hash(Nullable)
-
     def __str__(self):
         return f'Nullable<{self.subtype}>'
 
     def show(self):
         return f'{self.subtype.show()}?'
+
+    def eq(self, other):
+        return self.subtype == other.subtype
 
 
 class Tuple(Type):
@@ -83,18 +125,15 @@ class Tuple(Type):
         super().__init__()
         self.elements = elements
 
-    def __eq__(self, other):
-        return isinstance(other, Tuple) and self.elements == other.elements
-
-    def __hash__(self):
-        return hash(Tuple)
-
     def __str__(self):
         elems = ', '.join(map(str, self.elements))
         return f'Tuple<{elems}>'
 
     def show(self):
         return '*'.join([t.show() for t in self.elements])
+
+    def eq(self, other):
+        return self.elements == other.elements
 
 
 class Func(Type):
@@ -107,18 +146,17 @@ class Func(Type):
         self.args = [arg if isinstance(arg, Func.Arg) else Func.Arg(arg) for arg in args]
         self.ret = ret
 
-    def __eq__(self, other):
-        return isinstance(other, Func) and [arg.type for arg in self.args] == [arg.type for arg in other.args] and self.ret == other.ret
-
-    def __hash__(self):
-        return hash(Func)
+    def args_str(self):
+        return ', '.join([str(arg.type) for arg in self.args])
 
     def __str__(self):
-        args = ', '.join([str(arg.type) for arg in self.args])
-        return f'std::function<{self.ret}({args})>'
+        return f'std::function<{self.ret}({self.args_str()})>'
 
     def show(self):
         return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
+
+    def eq(self, other):
+        return [arg.type for arg in self.args] == [arg.type for arg in other.args] and self.ret == other.ret
 
 
 class Class(Type):
@@ -132,17 +170,14 @@ class Class(Type):
         self.initializer = None
         self.type = Type()
 
-    def __eq__(self, other):
-        return isinstance(other, Class) and self.name == other.name
-
-    def __hash__(self):
-        return hash(Class)
-
     def __str__(self):
         return f'Object<{self.initializer.name}>'
 
     def show(self):
         return self.name
+
+    def eq(self, other):
+        return self.name == other.name
 
 
 class Var(Type):
@@ -151,80 +186,14 @@ class Var(Type):
         super().__init__()
         self.name = name
 
-    def __eq__(self, other):
-        return isinstance(other, Var) and self.name == other.name
-
-    def __hash__(self):
-        return hash(Var)
-
     def show(self):
         return self.name
 
+    def eq(self, other):
+        return self.name == other.name
+
 
 Unknown = PrimitiveType('<unknown>', 'Unknown')
-
-
-@extend_class(Type)
-def isArray(type):
-    return isinstance(type, Array)
-
-
-@extend_class(Type)
-def isNullable(type):
-    return isinstance(type, Nullable)
-
-
-@extend_class(Type)
-def isTuple(type):
-    return isinstance(type, Tuple)
-
-
-@extend_class(Type)
-def isFunc(type):
-    return isinstance(type, Func)
-
-
-@extend_class(Type)
-def isClass(type):
-    return isinstance(type, Class)
-
-
-@extend_class(Type)
-def isVar(type):
-    return isinstance(type, Var)
-
-
-@extend_class(Type)
-def isCollection(type):
-    return type == String or type.isArray()
-
-@extend_class(Type)
-def isPrintable(type):
-    if type in {Int, Float, Bool, Char, String, Unknown}:
-        return True
-    if type.isArray():
-        return type.subtype.isPrintable()
-    if type.isNullable():
-        return type.subtype.isPrintable()
-    if type.isTuple():
-        return all(elem.isPrintable() for elem in type.elements)
-    if type.isClass():
-        return 'toString' in type.methods
-    return False
-
-@extend_class(Type)
-def isUnknown(type):
-    if type == Unknown:
-        return True
-    if type.isArray():
-        return type.subtype.isUnknown()
-    if type.isNullable():
-        return type.subtype.isUnknown()
-    if type.isTuple():
-        return any(elem.isUnknown() for elem in type.elements)
-    if type.isFunc():
-        return any(arg.type.isUnknown() for arg in type.args) or type.ret.isUnknown()
-    return False
 
 
 def unify_types(type1, *types):

@@ -1,7 +1,7 @@
 Pyxell
 ======
 
-### Clean and easy-to-use multi-paradigm programming language with static typing, compiled to C++. ###
+### Clean and easy-to-use multi-paradigm programming language with static typing. ###
 
 
 Motivation
@@ -25,7 +25,7 @@ func fib(Int n) Int def
         return 0
     a, b = 0, 1
     for i in 2..n do
-        a, b = b, a + b
+        a, b = b, a+b
     return b
         
 print fib(10)
@@ -62,37 +62,38 @@ print c.s ?? "---"
 Features
 --------
 
-* Compilation to machine code via C++ (+)
-* Python-like syntax with semantic indentation (+)
-* Strongly static typing with partial type inference (+)
-* 64-bit integers and double-precision floating-point numbers (+)
-* Native tuples (+)
-* Immutable strings (+)
-* String interpolation (+)
-* Mutable arrays (+)
-* Extensive for-loops with ranges, steps, and zipping (+)
-* Array comprehension (+)
-* Slicing (+)
-* First-class functions (+)
-* Default and named arguments (+)
-* Lambda expressions (+)
-* Generic functions (+)
-* Module system (+/-)
-* Classes with safe references (+)
-* Separate nullable types (+)
-* Automatic memory management utilizing smart pointers (+)
+* Python-like syntax with semantic indentation
+* Strongly static typing with partial type inference
+* 64-bit integers and double-precision floating-point numbers
+* Native tuples
+* Immutable strings
+* String interpolation
+* Mutable arrays
+* Complex for-loops with ranges, steps, and zipping
+* Array comprehension and slicing
+* First-class functions
+* Default and named arguments
+* Lambda expressions
+* Generic functions
+* Classes with safe references
+* Inheritance and virtual methods
+* Nullable types
+* Full transpilation to C++17 and compilation to machine code
+* Automatic memory management (utilizing C++'s smart pointers)
 
 To do:
 
-* Generic types
 * Containers library
-* Operator overloading
-* Arbitrary-precision arithmetic
 * Closures
-* Coroutines
+* Coroutines/generators
+* Arbitrary-precision arithmetic
 * Exception handling
+* Unicode
+* Generic classes
+* Operator overloading
 * Multiple inheritance
 * Concurrency
+* Module system
 
 
 Requirements
@@ -104,7 +105,7 @@ Requirements
 python -m pip install -r requirements.txt
 ```
 
-* C++17 compiler (e.g. GCC 7+ or Clang 5+) to build executables.
+* C++17 compiler (e.g. GCC 7+ or Clang 5+).
 
 
 Usage
@@ -124,10 +125,10 @@ You can pick a different command using `-c` option.
 Write `-c=none` to skip the compilation step (only C++ code will be created).
 
 
-Executable
-----------
+PyInstaller
+-----------
 
-You can build a standalone application using `pyinstaller`. Install it using `pip`, then run `make exe`.
+You can build a standalone application using `PyInstaller`. Install it using `pip`, then run `make exe`.
 An executable `pyxell.exe` (not requiring Python to run) will be created in the `dist/pyxell` folder.
 
 
@@ -153,8 +154,8 @@ python test.py -v
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
 The script is multi-threaded.
-Total execution time may vary from something like 10 seconds to 2 minutes,
-depending on the number of processors in your machine and other factors.
+Total execution time may vary from something like 20 seconds to 5 minutes,
+depending on the number of available CPU cores and other factors.
 
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
 To see all options, run it with `-h`.
@@ -181,5 +182,5 @@ History
 -------
 
 * The project was originaly written in Haskell, with BNFC as the parser generator, and used LLVM as the target language.
-* In version 0.7.0 the code was rewritten to Python and used ANTLR as the parser generator.
+* In version 0.7.0 the code was rewritten to Python, with ANTLR as the parser generator.
 * In version 0.9.0 the project was refactored to use C++ as the target language.

@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 import argparse
 import os
@@ -48,7 +47,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
     exe_filename = f'{filename}.exe'
 
     if verbose:
-        print(f'transpiling {filepath} to {cpp_filename}')
+        print(f"transpiling {filepath} to {cpp_filename}")
 
     compiler = PyxellCompiler()
 
@@ -67,7 +66,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
             command.append('-lm')
 
         if verbose:
-            print(f'running {" ".join(command)}')
+            print(f"running {' '.join(command)}")
 
         try:
             if verbose:
@@ -76,7 +75,6 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
                 subprocess.check_output(command, stderr=subprocess.STDOUT)
         except FileNotFoundError:
             print(f"command not found: {cpp_compiler}")
-
 
     return exe_filename
 
@@ -91,7 +89,7 @@ def main():
     args, other_args = parser.parse_known_args()
 
     if not (args.filepath or args.libs):
-        parser.error('either filepath or -l option is required')
+        parser.error("either filepath or -l option is required")
 
     if args.libs:
         build_libs()
@@ -108,6 +106,6 @@ def main():
 
     if args.run:
         if args.verbose:
-            print(f'executing {exe_filename}')
+            print(f"executing {exe_filename}")
 
         subprocess.call(exe_filename)

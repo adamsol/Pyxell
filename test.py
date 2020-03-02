@@ -27,13 +27,10 @@ colorama.init()
 
 # Parse arguments.
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
-parser.add_argument('pattern', nargs='?', default='',
-                    help="file path pattern (relative to test folder)")
+parser.add_argument('pattern', nargs='?', default='', help="file path pattern (relative to test folder)")
 parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
-parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16,
-                    help="number of threads to use")
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true',
-                    help="display all tests and don't remove generated files")
+parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16, help="number of threads to use")
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help="display all tests and don't remove generated files")
 args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
@@ -62,12 +59,11 @@ def test(i, path):
     global output_index
 
     passed = False
-    output = []
-    output.append(f"{B}> TEST {i}/{n}:{E} {path}")
+    output = [f"{B}> TEST {i}/{n}:{E} {path}"]
 
     try:
         try:
-            expected_error = Path(path.replace(".px", ".err")).read_text()
+            expected_error = Path(path.replace('.px', '.err')).read_text()
         except FileNotFoundError:
             expected_error = None
 
@@ -97,17 +93,17 @@ def test(i, path):
             if expected_error:
                 output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
             else:
-                with open(path.replace(".px", ".tmp"), 'w') as tmpfile:
+                with open(path.replace('.px', '.tmp'), 'w') as tmpfile:
                     t1 = timer()
                     try:
-                        with open(f'{path.replace(".px", ".in")}', 'r') as infile:
-                            subprocess.call(f'{path.replace(".px", ".exe")}', stdin=infile, stdout=tmpfile)
+                        with open(path.replace('.px', '.in'), 'r') as infile:
+                            subprocess.call(path.replace('.px', '.exe'), stdin=infile, stdout=tmpfile)
                     except FileNotFoundError:
-                        subprocess.call(f'{path.replace(".px", ".exe")}', stdout=tmpfile)
+                        subprocess.call(path.replace('.px', '.exe'), stdout=tmpfile)
                     t2 = timer()
 
                 try:
-                    subprocess.check_output(['diff', '--strip-trailing-cr', path.replace(".px", ".tmp"), path.replace(".px", ".out")], stderr=subprocess.STDOUT)
+                    subprocess.check_output(['diff', '--strip-trailing-cr', path.replace('.px', '.tmp'), path.replace('.px', '.out')], stderr=subprocess.STDOUT)
                 except subprocess.CalledProcessError as e:
                     if e.returncode == 2:
                         output.append(f"{Y}{e.output.decode()}{E}")
@@ -131,10 +127,10 @@ def test(i, path):
     if passed:
         ok += 1
         if not args.verbose:
-            os.remove(path.replace(".px", ".tmp"))
+            os.remove(path.replace('.px', '.tmp'))
             if not error:
-                os.remove(path.replace(".px", ".cpp"))
-                os.remove(path.replace(".px", ".exe"))
+                os.remove(path.replace('.px', '.cpp'))
+                os.remove(path.replace('.px', '.exe'))
 
 try:
     precompile_base_header(args.cpp_compiler)

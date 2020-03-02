@@ -1,12 +1,14 @@
 
 from . import types as t
-from .utils import *
 
 
 class Value:
 
     def __init__(self, type=None):
         self.type = type
+
+    def isTemplate(value):
+        return isinstance(value, FunctionTemplate)
 
 
 class Literal(Value):
@@ -102,11 +104,6 @@ class FunctionTemplate(Value):
         self.body = body
         self.env = env
         self.compiled = {}
-
-
-@extend_class(Value)
-def isTemplate(value):
-    return isinstance(value, FunctionTemplate)
 
 
 class Attribute(Value):

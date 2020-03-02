@@ -4,7 +4,7 @@ from antlr4.tree import Tree
 from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
 
-from .utils import *
+from .utils import lmap
 
 
 def _node(ctx, name):

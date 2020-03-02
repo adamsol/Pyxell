@@ -12,7 +12,7 @@ from . import types as t
 from .errors import PyxellError as err
 from .parsing import parse_expr
 from .types import can_cast, get_type_variables, type_variables_assignment, unify_types
-from .utils import *
+from .utils import lmap
 
 
 class Unit:
@@ -185,13 +185,6 @@ class PyxellCompiler:
 
         return result
 
-    def extract(self, ptr, *indices, load=True):
-        ptr = self.builder.gep(ptr, [v.Int(0), *[ll.Constant(ll.IntType(32), i) for i in indices]])
-        return self.builder.load(ptr) if load else ptr
-
-    def insert(self, value, ptr, *indices):
-        return self.builder.store(value, self.builder.gep(ptr, [v.Int(0), *[ll.Constant(ll.IntType(32), i) for i in indices]]))
-
     def index(self, node, collection, index, lvalue=False):
         if collection.type.isCollection():
             if lvalue and not collection.type.isArray():
@@ -330,8 +323,7 @@ class PyxellCompiler:
 
         value = v.Attribute(obj, obj.type.members[attr].name, type=obj.type.members[attr].type)
         if attr in obj.type.methods:
-            args = ', '.join([str(arg.type) for arg in value.type.args])
-            value = v.Call(f'reinterpret_cast<{value.type.ret} (*)({args})>', v.Call(value), type=value.type)
+            value = v.Call(f'reinterpret_cast<{value.type.ret} (*)({value.type.args_str()})>', v.Call(value), type=value.type)
         return value
 
     def cast(self, node, value, type):
@@ -442,33 +434,6 @@ class PyxellCompiler:
             var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
             value = self.cast(node, value, var.type)
             self.store(var, value)
-
-    def inc(self, ptr, step=v.Int(1)):
-        add = self.builder.fadd if ptr.type.pointee == t.Float else self.builder.add
-        self.builder.store(add(self.builder.load(ptr), step), ptr)
-
-    def sizeof(self, type, length=v.Int(1)):
-        return self.builder.ptrtoint(self.builder.gep(v.Null(t.Ptr(type)), [length]), t.Int)
-
-    def malloc(self, type, length=v.Int(1)):
-        size = self.sizeof(type.pointee, length)
-        ptr = self.builder.call(self.builtins['malloc'], [size])
-        return self.builder.bitcast(ptr, type)
-
-    def realloc(self, ptr, length=v.Int(1)):
-        type = ptr.type
-        size = self.sizeof(type.pointee, length)
-        ptr = self.builder.bitcast(ptr, t.Ptr())
-        ptr = self.builder.bitcast(ptr, t.Ptr())
-        ptr = self.builder.call(self.builtins['realloc'], [ptr, size])
-        return self.builder.bitcast(ptr, type)
-
-    def memcpy(self, dest, src, length):
-        type = dest.type
-        dest = self.builder.bitcast(dest, t.Ptr())
-        src = self.builder.bitcast(src, t.Ptr())
-        size = self.sizeof(type.pointee, length)
-        return self.builder.call(self.builtins['memcpy'], [dest, src, size])
 
     def unaryop(self, node, op, value):
         if op in {'+', '-'}:
@@ -755,7 +720,7 @@ class PyxellCompiler:
                     [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
                 block)
 
-            self.output(f'{func_type.ret} {func}({", ".join(str(arg.type) for arg in func_type.args)})', toplevel=True)
+            self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
             self.output(definition, toplevel=True)
 
             with self.block(block):
@@ -852,16 +817,12 @@ class PyxellCompiler:
 
         if op == '??':
             block = c.Block()
-
             self.output(c.If(v.IsNull(left), block))
-
             with self.block(block):
                 right = self.compile(exprs[1])
                 if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
                     self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
-
                 self.store(left, v.Nullable(self.cast(node, right, left.type.subtype)))
-
         else:
             right = self.compile(exprs[1])
             value = self.binaryop(node, op, left, right)
@@ -1574,18 +1535,16 @@ class PyxellCompiler:
         result = self.var(t.Bool)
         self.store(result, v.Bool(op == 'or'), 'auto')
 
-        block = c.Block()
         cond1 = self.compile(exprs[0])
         if op == 'or':
             cond1 = v.UnaryOperation('!', cond1, type=t.Bool)
 
+        block = c.Block()
         self.output(c.If(cond1, block))
-
         with self.block(block):
             cond2 = self.compile(exprs[1])
             if not cond1.type == cond2.type == t.Bool:
                 self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
-
             self.store(result, cond2)
 
         return result

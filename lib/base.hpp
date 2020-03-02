@@ -178,27 +178,28 @@ Array<T> concat(const Array<T>& a, const Array<T>& b)
     return r;
 }
 
-String multiply(const String& a, Int m)
+template <typename T>
+T multiply(const T& v, Int m)
 {
-    auto r = make_string(a->size() * m, '\0');
-    for (std::size_t i = 0; i < a->size(); ++i) {
+    auto r = T(v.size()*m, typename T::value_type());
+
+    for (std::size_t i = 0; i < v.size(); ++i) {
         for (std::size_t j = 0; j < m; ++j) {
-            (*r)[j*a->size()+i] = (*a)[i];
+            r[j*v.size()+i] = v[i];
         }
     }
     return r;
 }
 
-template <typename T>
-Array<T> multiply(const Array<T>& a, Int m)
+String multiply(const String& v, Int m)
 {
-    auto r = make_array<T>(a->size() * m, T());
-    for (std::size_t i = 0; i < a->size(); ++i) {
-        for (std::size_t j = 0; j < m; ++j) {
-            (*r)[j*a->size()+i] = (*a)[i];
-        }
-    }
-    return r;
+    return make_string(multiply(*v, m));
+}
+
+template <typename T>
+Array<T> multiply(const Array<T>& v, Int m)
+{
+    return make_array<T>(multiply(*v, m));
 }
 
 template <typename T>
