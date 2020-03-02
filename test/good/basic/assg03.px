@@ -1,0 +1,9 @@
+
+a = [0]
+
+func f(Int x) [Int] def
+    a[0] += x
+    return a
+
+f(5)[0] += 2
+print a[0]
