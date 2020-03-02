@@ -6,13 +6,16 @@ class Base def
         print "Base"
 
 class Sub1(Base) def
-    Int x: 1
+    constructor() def
+        self.x = 1
 
     func f() def
         print "Sub1"
 
 class Sub2(Base) def
-    Int x: 2
+    constructor() def
+        self.x = 2
+
 
 a = [Sub1(), Sub2()]
 print a[1].x

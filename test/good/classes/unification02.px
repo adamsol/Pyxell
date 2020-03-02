@@ -1,21 +1,15 @@
 
 class Base def
-    Int x
-
     func toString() String def
-        return "Base {self.x}"
+        return "Base"
 
 class Sub1(Base) def
-    Int x: 1
-
     func toString() String def
-        return "Sub1 {self.x}"
+        return "Sub1"
 
 class Sub2(Base) def
-    Int x: 2
-
     func toString() String def
-        return "Sub2 {self.x}"
+        return "Sub2"
 
 a = [Sub1(), Sub2()]
 print a

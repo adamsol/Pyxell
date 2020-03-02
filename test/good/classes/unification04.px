@@ -1,15 +1,11 @@
 
 class A def
-    Int x: 0
-
     func f() def
-        print "{self.x} A"
+        print "A"
 
 class B(A) def
-    Int x: 1
-
     func f() def
-        print "{self.x} B"
+        print "B"
 
 
 func get<T>(T*A a) A def
