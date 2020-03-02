@@ -26,6 +26,7 @@ class PyxellError(Exception):
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidFunctionCall = lambda id, types, msg: f"Error in function `{id}` called here{(' (with types ' + ', '.join(f'{name}={type.show()}' for name, type in types.items()) + ')') if types else ''}.\n{msg}"
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
+    InvalidMember = lambda id: f"Invalid type signature of member `{id}`"
     InvalidModule = lambda id: f"Could not find module `{id}`"
     MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     MissingReturn = lambda: f"Not all code paths return a value"

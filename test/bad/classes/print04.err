@@ -1,1 +1,1 @@
-Variable of type `Test` cannot be printed.
+Invalid type signature of member `toString`.

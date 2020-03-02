@@ -1144,6 +1144,8 @@ class PyxellCompiler:
             if member['node'] == 'ClassField':
                 if name in members:
                     self.throw(member, err.RepeatedMember(name))
+                if name == 'toString':
+                    self.throw(member, err.InvalidMember(name))
 
                 field = self.var(self.compile(member['type']), prefix='m')
                 fields.append(c.Value(field.type, field.name))
@@ -1159,6 +1161,8 @@ class PyxellCompiler:
 
                     if member['node'] == 'ClassMethod':
                         if name == 'toString':
+                            if len(func.type.args) > 1 or func.type.ret != t.String:
+                                self.throw(member, err.InvalidMember(name))
                             members[name] = v.Variable(func.type, 'toString')
                         elif base_members.get(name):
                             members[name] = v.Variable(func.type, base_members[name].name)

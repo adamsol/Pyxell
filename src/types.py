@@ -208,8 +208,7 @@ def isPrintable(type):
     if type.isTuple():
         return all(elem.isPrintable() for elem in type.elements)
     if type.isClass():
-        method = type.members.get('toString')
-        return method and method.type.isFunc() and len(method.type.args) == 1 and method.type.ret == String
+        return 'toString' in type.methods
     return False
 
 @extend_class(Type)
