@@ -201,6 +201,58 @@ Array<T> multiply(const Array<T>& a, Int m)
     return r;
 }
 
+template <typename T>
+T slice(const T& v, const Nullable<Int>& a, const Nullable<Int>& b, Int step)
+{
+    Int length = v.size();
+
+    Int start;
+    if (a.has_value()) {
+        start = a.value();
+        if (start < 0) {
+            start += length;
+        }
+    } else {
+        start = step > 0 ? 0LL : length;
+    }
+    start = std::clamp(start, 0LL, length);
+
+    Int end;
+    if (b.has_value()) {
+        end = b.value();
+        if (end < 0) {
+            end += length;
+        }
+    } else {
+        end = step > 0 ? length : 0LL;
+    }
+    end = std::clamp(end, 0LL, length);
+
+    auto r = T();
+
+    if (step < 0) {
+        for (Int i = start; i > end; i += step) {
+            r.push_back(v[i-1]);
+        }
+    } else {
+        for (Int i = start; i < end; i += step) {
+            r.push_back(v[i]);
+        }
+    }
+    return r;
+}
+
+String slice(const String& v, const Nullable<Int>& a, const Nullable<Int>& b, Int c)
+{
+    return make_string(slice(*v, a, b, c));
+}
+
+template <typename T>
+Array<T> slice(const Array<T>& v, const Nullable<Int>& a, const Nullable<Int>& b, Int c)
+{
+    return make_array<T>(slice(*v, a, b, c));
+}
+
 
 /* Conversion to String */
 

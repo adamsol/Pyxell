@@ -68,9 +68,6 @@ class PyxellCompiler:
             node['_eval'] = node['_eval']()
         return result
 
-    def expr(self, code, **params):
-        return self.compile(parse_expr(code.format(**params)))
-
     def throw(self, node, msg):
         line, column = node.get('position', (1, 1))
         raise err(msg, line, column)
@@ -1288,46 +1285,16 @@ class PyxellCompiler:
     def compileExprSlice(self, node):
         slice = node['slice']
 
-        array, length, start, end, step, index = [{
-            'node': 'AtomId',
-            'id': f'__slice_{len(self.env)}_{name}',
-        } for name in ['array', 'length', 'start', 'end', 'step', 'index']]
+        collection = self.compile(node['expr'])
+        type = collection.type
+        if not type.isCollection():
+            self.throw(node, err.NotIndexable(type))
 
-        with self.local():
-            collection = self.compile(node['expr'])
-            type = collection.type
+        a = v.Nullable(self.cast(slice[0], self.compile(slice[0]), t.Int)) if slice[0] else v.Nullable()
+        b = v.Nullable(self.cast(slice[1], self.compile(slice[1]), t.Int)) if slice[1] else v.Nullable()
+        step = self.cast(slice[2], self.compile(slice[2]), t.Int) if slice[2] else v.Int(1)
 
-            if not type.isCollection():
-                self.throw(node, err.NotIndexable(type))
-
-            self.assign(node, array, collection)
-            self.assign(node, length, self.expr('{t}.length', t=array['id']))
-
-            if slice[2] is None:
-                self.assign(node, step, v.Int(1))
-            else:
-                self.assign(node, step, self.cast(slice[2], self.compile(slice[2]), t.Int))
-
-            if slice[0] is None:
-                self.assign(node, start, self.expr('{c} > 0 ? 0 : {l}', c=step['id'], l=length['id']))
-            else:
-                self.assign(node, start, self.cast(slice[0], self.compile(slice[0]), t.Int))
-                self.assign(node, start, self.expr('{a} < 0 ? {a} + {l} : {a}', a=start['id'], l=length['id']))
-            self.assign(node, start, self.expr('{a} < 0 ? 0 : {a} > {l} ? {l} : {a}', a=start['id'], l=length['id']))
-
-            if slice[1] is None:
-                self.assign(node, end, self.expr('{c} > 0 ? {l} : 0', c=step['id'], l=length['id']))
-            else:
-                self.assign(node, end, self.cast(slice[1], self.compile(slice[1]), t.Int))
-                self.assign(node, end, self.expr('{b} < 0 ? {b} + {l} : {b}', b=end['id'], l=length['id']))
-            self.assign(node, end, self.expr('{b} < 0 ? 0 : {b} > {l} ? {l} : {b}', b=end['id'], l=length['id']))
-
-            self.assign(node, start, self.expr('{c} < 0 ? {a} - 1 : {a}', a=start['id'], c=step['id']))
-            self.assign(node, end, self.expr('{c} < 0 ? {b} - 1 : {b}', b=end['id'], c=step['id']))
-
-            result = self.expr('[{t}[{i}] for {i} in {a}...{b} step {c}]', t=array['id'], a=start['id'], b=end['id'], c=step['id'], i=index['id'])
-
-        return v.Call('make_string', v.Call(v.Attribute(result, 'begin')), v.Call(v.Attribute(result, 'end')), type=t.String) if type == t.String else result
+        return v.Call('slice', collection, a, b, step, type=type)
 
     def compileExprCall(self, node):
         expr = node['expr']
