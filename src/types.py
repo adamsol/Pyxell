@@ -130,6 +130,7 @@ class Class(Type):
         self.members = members
         self.methods = methods
         self.initializer = None
+        self.type = Type()
 
     def __eq__(self, other):
         return isinstance(other, Class) and self.name == other.name

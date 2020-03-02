@@ -1152,6 +1152,9 @@ class PyxellCompiler:
                 members[name] = field
 
             else:
+                if name in members and name not in base_members:
+                    self.throw(member, err.RepeatedMember(name))
+
                 members[name] = methods[name] = None
 
                 if member['block']:
@@ -1368,7 +1371,7 @@ class PyxellCompiler:
                     elif func_arg.default:
                         expr = func_arg.default
                     else:
-                        self.throw(node, err.TooFewArguments(func.type))
+                        self.throw(node, err.TooFewArguments())
 
                     expr = self.convert_lambda(expr)
                     if expr['node'] == 'ExprLambda':
@@ -1379,9 +1382,9 @@ class PyxellCompiler:
                             self.throw(node, err.IllegalLambda())
 
                         if len(ids) < len(type.args):
-                            self.throw(node, err.TooFewArguments(type))
+                            self.throw(node, err.TooFewArguments())
                         if len(ids) > len(type.args):
-                            self.throw(node, err.TooManyArguments(type))
+                            self.throw(node, err.TooManyArguments())
 
                         id = f'__lambda_{len(self.env)}'
                         self.compile({
@@ -1413,9 +1416,9 @@ class PyxellCompiler:
                                 self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
 
                             if len(value.type.args) < len(func_arg.type.args):
-                                self.throw(node, err.TooFewArguments(func_arg.type))
+                                self.throw(node, err.TooFewArguments())
                             if len(value.type.args) > len(func_arg.type.args):
-                                self.throw(node, err.TooManyArguments(func_arg.type))
+                                self.throw(node, err.TooManyArguments())
 
                             id = f'__lambda_generic_{len(self.env)}'
                             self.compile({
@@ -1459,7 +1462,7 @@ class PyxellCompiler:
                     self.env[name] = assigned_types[name] = type
 
                 if pos_args:
-                    self.throw(node, err.TooManyArguments(func.type))
+                    self.throw(node, err.TooManyArguments())
 
                 try:
                     args = [self.cast(node, self.compile(arg), self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
