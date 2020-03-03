@@ -1,0 +1,5 @@
+
+print [].any(_)
+print [].any(_ or true)
+print [].all()
+print [].all(lambda x: false)
