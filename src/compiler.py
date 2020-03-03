@@ -243,7 +243,7 @@ class PyxellCompiler:
                 with self.unit(id):
                     return None, self.get(node, attr)
 
-        obj = self.compile(expr)
+        obj = self.tmp(self.compile(expr))
         return obj, self.attr(node, obj, attr)
 
     def attr(self, node, obj, attr):
@@ -350,7 +350,7 @@ class PyxellCompiler:
         return var
 
     def tmp(self, value):
-        if isinstance(value, v.Variable):
+        if isinstance(value, v.Variable) or isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
             return value
         tmp = self.var(value.type)
         self.store(tmp, value, decl='auto&&')
