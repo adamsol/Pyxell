@@ -7,7 +7,7 @@ libs:
 	python pyxell.py --libs
 
 exe:
-	python -m PyInstaller --add-data "lib/;lib/" pyxell.py --noconfirm
+	python -m PyInstaller --hidden-import=decorator --add-data "lib/;lib/" pyxell.py --noconfirm
 
 clean:
 	"$(MAKE)" clean -C src
