@@ -1,190 +1,199 @@
 
 from collections import defaultdict, namedtuple
 
-import llvmlite.ir as ll
 
-from .utils import *
-
-
-__all__ = [
-    'Type', 'Value',
-    'tVoid', 'tInt', 'tFloat', 'tBool', 'tChar', 'tPtr', 'tString', 'tArray', 'tNullable', 'tTuple', 'tFunc', 'tClass', 'tVar', 'tUnknown',
-    'Arg',
-    'unify_types', 'type_variables_assignment', 'get_type_variables', 'can_cast',
-    'vInt', 'vFloat', 'vBool', 'vFalse', 'vTrue', 'vChar', 'vNull',
-    'FunctionTemplate',
-]
-
-
-Type = ll.Type
-Value = ll.Value
-
-
-class CustomStructType(ll.LiteralStructType):
-
-    def __init__(self, elements, kind):
-        super().__init__(elements)
-        self.kind = kind
+class Type:
 
     def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
-        return self.kind == getattr(other, 'kind', None)
+        return type(self) == type(other) and self.eq(other)
 
     def __hash__(self):
-        return hash(CustomStructType)
+        return hash(Type)
+
+    def eq(self, other):
+        return False
+
+    def isArray(self):
+        return isinstance(self, Array)
+
+    def isNullable(self):
+        return isinstance(self, Nullable)
+
+    def isTuple(self):
+        return isinstance(self, Tuple)
+
+    def isFunc(self):
+        return isinstance(self, Func)
+
+    def isClass(self):
+        return isinstance(self, Class)
+
+    def isVar(self):
+        return isinstance(self, Var)
+
+    def isUnknown(self):
+        if self == Unknown:
+            return True
+        if self.isArray():
+            return self.subtype.isUnknown()
+        if self.isNullable():
+            return self.subtype.isUnknown()
+        if self.isTuple():
+            return any(elem.isUnknown() for elem in self.elements)
+        if self.isFunc():
+            return any(arg.type.isUnknown() for arg in self.args) or self.ret.isUnknown()
+        return False
+
+    def isCollection(self):
+        return self == String or self.isArray()
+
+    def isPrintable(self):
+        if self in {Int, Float, Bool, Char, String, Unknown}:
+            return True
+        if self.isArray():
+            return self.subtype.isPrintable()
+        if self.isNullable():
+            return self.subtype.isPrintable()
+        if self.isTuple():
+            return all(elem.isPrintable() for elem in self.elements)
+        if self.isClass():
+            return 'toString' in self.methods
+        return False
 
 
-class NullableType(ll.PointerType):
+class PrimitiveType(Type):
+
+    def __init__(self, pyxell_name, c_name=None):
+        self.pyxell_name = pyxell_name
+        self.c_name = c_name or pyxell_name
+
+    def __str__(self):
+        return self.c_name
+
+    def show(self):
+        return self.pyxell_name
+
+    def eq(self, other):
+        return self.pyxell_name == other.pyxell_name
+
+
+Void = PrimitiveType('Void')
+Int = PrimitiveType('Int')
+Float = PrimitiveType('Float')
+Bool = PrimitiveType('Bool')
+Char = PrimitiveType('Char')
+
+String = PrimitiveType('String')
+String.subtype = Char
+
+
+class Array(Type):
 
     def __init__(self, subtype):
-        super().__init__(subtype)
+        super().__init__()
         self.subtype = subtype
-        self.kind = 'nullable'
 
-    def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
-        return self.kind == getattr(other, 'kind', None)
+    def __str__(self):
+        return f'Array<{self.subtype}>'
 
-    def __hash__(self):
-        return hash(NullableType)
+    def show(self):
+        return f'[{self.subtype.show()}]'
+
+    def eq(self, other):
+        return self.subtype == other.subtype
 
 
-class VariableType(Type):
+class Nullable(Type):
+
+    def __init__(self, subtype):
+        super().__init__()
+        self.subtype = subtype
+
+    def __str__(self):
+        return f'Nullable<{self.subtype}>'
+
+    def show(self):
+        return f'{self.subtype.show()}?'
+
+    def eq(self, other):
+        return self.subtype == other.subtype
+
+
+class Tuple(Type):
+
+    def __init__(self, elements):
+        super().__init__()
+        self.elements = elements
+
+    def __str__(self):
+        elems = ', '.join(map(str, self.elements))
+        return f'Tuple<{elems}>'
+
+    def show(self):
+        return '*'.join([t.show() for t in self.elements])
+
+    def eq(self, other):
+        return self.elements == other.elements
+
+
+class Func(Type):
+
+    Arg = namedtuple('Arg', ['type', 'name', 'default'])
+    Arg.__new__.__defaults__ = (None,) * 3
+
+    def __init__(self, args, ret=Void):
+        super().__init__()
+        self.args = [arg if isinstance(arg, Func.Arg) else Func.Arg(arg) for arg in args]
+        self.ret = ret
+
+    def args_str(self):
+        return ', '.join([str(arg.type) for arg in self.args])
+
+    def __str__(self):
+        return f'std::function<{self.ret}({self.args_str()})>'
+
+    def show(self):
+        return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
+
+    def eq(self, other):
+        return [arg.type for arg in self.args] == [arg.type for arg in other.args] and self.ret == other.ret
+
+
+class Class(Type):
+
+    def __init__(self, name, base, members, methods):
+        super().__init__()
+        self.name = name
+        self.base = base
+        self.members = members
+        self.methods = methods
+        self.initializer = None
+        self.type = Type()
+
+    def __str__(self):
+        return f'Object<{self.initializer.name}>'
+
+    def show(self):
+        return self.name
+
+    def eq(self, other):
+        return self.name == other.name
+
+
+class Var(Type):
 
     def __init__(self, name):
         super().__init__()
         self.name = name
-        self.kind = 'variable'
 
-    def __eq__(self, other):
-        return isinstance(other, VariableType) and self.name == other.name
+    def show(self):
+        return self.name
 
-    def __hash__(self):
-        return hash(VariableType)
-
-
-class UnknownType(Type):
-
-    def _to_string(self):
-        return 'i8*'
-
-    def __eq__(self, other):
-        return isinstance(other, UnknownType)
-
-    def __hash__(self):
-        return hash(UnknownType)
+    def eq(self, other):
+        return self.name == other.name
 
 
-tVoid = ll.VoidType()
-tInt = ll.IntType(64)
-tFloat = ll.DoubleType()
-tBool = ll.IntType(1)
-tChar = ll.IntType(8)
-
-
-def tPtr(type=tChar):
-    ptr_type = type.as_pointer()
-    ptr_type.kind = getattr(type, 'kind', None)
-    return ptr_type
-
-
-tString = tPtr(CustomStructType([tPtr(), tInt], 'string'))
-tString.subtype = tChar
-
-@extend_class(Type)
-def isString(type):
-    return getattr(type, 'kind', None) == 'string'
-
-
-def tArray(subtype):
-    type = tPtr(CustomStructType([tPtr(subtype), tInt], 'array'))
-    type.subtype = subtype
-    return type
-
-@extend_class(Type)
-def isArray(type):
-    return getattr(type, 'kind', None) == 'array'
-
-
-def tNullable(subtype):
-    return NullableType(subtype)
-
-@extend_class(Type)
-def isNullable(type):
-    return getattr(type, 'kind', None) == 'nullable'
-
-
-def tTuple(elements):
-    type = tPtr(CustomStructType(elements, 'tuple'))
-    type.elements = elements
-    return type
-
-@extend_class(Type)
-def isTuple(type):
-    return getattr(type, 'kind', None) == 'tuple'
-
-
-Arg = namedtuple('Arg', ['type', 'name', 'default'])
-Arg.__new__.__defaults__ = (None,) * 3
-
-def tFunc(args, ret=tVoid):
-    args = [arg if isinstance(arg, Arg) else Arg(arg) for arg in args]
-    type = tPtr(ll.FunctionType(ret, [arg.type for arg in args]))
-    type.args = args
-    type.ret = ret
-    type.kind = 'function'
-    return type
-
-@extend_class(Type)
-def isFunc(type):
-    return getattr(type, 'kind', None) == 'function'
-
-
-def tClass(context, name, base, members):
-    type = tPtr(context.get_identified_type(name))
-    type.kind = 'class'
-    type.name = name
-    type.base = base
-    type.members = members
-    type.methods = None
-    type.constructor = None
-    return type
-
-@extend_class(Type)
-def isClass(type):
-    return getattr(type, 'kind', None) == 'class'
-
-
-def tVar(name):
-    return VariableType(name)
-
-@extend_class(Type)
-def isVar(type):
-    return getattr(type, 'kind', None) == 'variable'
-
-
-@extend_class(Type)
-def isCollection(type):
-    return type == tString or type.isArray()
-
-
-tUnknown = UnknownType()
-
-@extend_class(Type)
-def isUnknown(type):
-    if type == tUnknown:
-        return True
-    if type.isArray():
-        return type.subtype.isUnknown()
-    if type.isNullable():
-        return type.subtype.isUnknown()
-    if type.isTuple():
-        return any(elem.isUnknown() for elem in type.elements)
-    if type.isFunc():
-        return any(arg.type.isUnknown() for arg in type.args) or type.ret.isUnknown()
-    return False
+Unknown = PrimitiveType('<unknown>', 'Unknown')
 
 
 def unify_types(type1, *types):
@@ -201,27 +210,27 @@ def unify_types(type1, *types):
     if type1 == type2:
         return type1
 
-    if type1 in {tInt, tFloat} and type2 in {tInt, tFloat}:
-        return tFloat
+    if type1 in {Int, Float} and type2 in {Int, Float}:
+        return Float
 
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
-        return tArray(subtype) if subtype else None
+        return Array(subtype) if subtype else None
 
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
-        return tNullable(subtype) if subtype else None
+        return Nullable(subtype) if subtype else None
 
     if type1.isTuple() and type2.isTuple():
         elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
-        return tTuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
+        return Tuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
 
     if type1.isClass() and type2.isClass():
         return common_superclass(type1, type2)
 
-    if type1 == tUnknown:
+    if type1 == Unknown:
         return type2
-    if type2 == tUnknown:
+    if type2 == Unknown:
         return type1
 
     return None
@@ -278,8 +287,8 @@ def type_variables_assignment(type1, type2):
 
     if type1.isFunc() and type2.isFunc():
         return type_variables_assignment(
-            tTuple([arg.type for arg in type1.args] + [type1.ret]),
-            tTuple([arg.type for arg in type2.args] + [type2.ret]))
+            Tuple([arg.type for arg in type1.args] + [type1.ret]),
+            Tuple([arg.type for arg in type2.args] + [type2.ret]))
 
     if type1.isClass() and type2.isClass():
         return {} if common_superclass(type1, type2) == type2 else None
@@ -287,9 +296,9 @@ def type_variables_assignment(type1, type2):
     if type2.isVar():
         return {type2.name: type1}
 
-    if type1 == tUnknown or type2 == tUnknown:
+    if type1 == Unknown or type2 == Unknown:
         return {}
-    if type1 == tInt and type2 == tFloat:
+    if type1 == Int and type2 == Float:
         return {}
     if type1 == type2:
         return {}
@@ -308,75 +317,3 @@ def can_cast(type1, type2):
     if not type1.isNullable() and type2.isNullable():
         return can_cast(type1, type2.subtype)
     return type_variables_assignment(type1, type2) == {}
-
-
-@extend_class(Type)
-def show(type):
-    if type == tVoid:
-        return 'Void'
-    if type == tInt:
-        return 'Int'
-    if type == tFloat:
-        return 'Float'
-    if type == tBool:
-        return 'Bool'
-    if type == tChar:
-        return 'Char'
-    if type.isString():
-        return 'String'
-    if type.isArray():
-        return f'[{type.subtype.show()}]'
-    if type.isNullable():
-        return f'{type.subtype.show()}?'
-    if type.isTuple():
-        return '*'.join(t.show() for t in type.elements)
-    if type.isFunc():
-        return '->'.join(arg.type.show() for arg in type.args) + '->' + type.ret.show()
-    if type.isClass() or type.isVar():
-        return type.name
-    if type == tUnknown:
-        return '<Unknown>'
-    return str(type)
-
-
-@extend_class(Type)
-def default(type):
-    return ll.Constant(type, 0 if type in {tInt, tFloat, tBool, tChar} else 'null')
-
-
-def vInt(n):
-    return ll.Constant(tInt, n)
-
-def vFloat(f):
-    return ll.Constant(tFloat, f)
-
-def vBool(b):
-    return ll.Constant(tBool, b)
-
-vFalse = vBool(False)
-vTrue = vBool(True)
-
-def vChar(c):
-    return ll.Constant(tChar, ord(c))
-
-def vNull(type=tNullable(tUnknown)):
-    return ll.Constant(type, 'null')
-
-
-@extend_class(Value)
-def isTemplate(value):
-    return False
-
-class FunctionTemplate(Value):
-
-    def __init__(self, id, typevars, type, body, env):
-        self.id = id
-        self.final = True  # identifier cannot be redefined
-        self.typevars = typevars
-        self.type = type
-        self.body = body
-        self.env = env
-        self.compiled = {}
-
-    def isTemplate(self):
-        return True

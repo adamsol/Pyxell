@@ -1,22 +1,17 @@
 
 class A def
-    String x: "A"
+    Char x: 'A'
 
-class A'(A) def
-    String x': "A'"
+class B(A) def
+    constructor() def
+        self.x = 'B'
 
-
-class B def
-    A a
-
-class B'(B) def
-    A' a
-
-
-b' = B'()
-b'.a = A'()
-print b'.a.x'
+class C(B) def
+    constructor() def
+        self.x = 'C'
 
 b = B()
-b.a = b'.a
-print b.a.x
+print b.x
+
+b = C()
+print b.x

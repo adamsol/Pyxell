@@ -6,10 +6,12 @@ class A def
         print self.x
 
 class B(A) def
-    Char x: 'B'
+    constructor() def
+        self.x = 'B'
 
 class C(A) def
-    Char x: 'C'
+    constructor() def
+        self.x = 'C'
 
     func f() def
         print "{self.x}" * 3

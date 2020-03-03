@@ -1,0 +1,21 @@
+
+[Int?] a = [1, null]
+print a
+
+[Bool]? b = [true]
+print b
+
+b = null
+print b
+
+Char*Float? c = ('c', 3.0)
+print c
+
+c = ('C', null)
+print c
+
+(String*[Int])? d = null
+print d
+
+d = ("abc", [])
+print d

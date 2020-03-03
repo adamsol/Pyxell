@@ -1,6 +1,6 @@
 
 [Int] a
 a = []
-a, a = [2], []
+a, b, a = [2], [], []
 a = [5]
-print a[0]
+print a[b.length]

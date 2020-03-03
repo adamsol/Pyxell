@@ -1,0 +1,5 @@
+
+a = true ? [] : [true]
+b = false ? [false] : []
+print a == b
+print a == [true]

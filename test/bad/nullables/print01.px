@@ -1,0 +1,3 @@
+
+(String->Void)? f = write
+print f

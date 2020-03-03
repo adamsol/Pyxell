@@ -4,3 +4,4 @@ use random
 for i in 1..10^^6 do
     if randInt(i) < 0 or randInt(i) >= i do
         print false
+        break

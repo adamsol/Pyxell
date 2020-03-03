@@ -1,23 +1,5 @@
 
 func seed(Int s) extern
-func rand() Int extern
 
--- This should be rewritten to use the Mersenne Twister algorithm.
-
-func randInt(Int r: 2) Int def  -- range shouldn't be larger than 2^60
-    b = 0
-    r' = r - 1
-    while r' > 0 do
-        b += 1
-        r' >>= 1
-    x = 0
-    -- rand() gives only 15 bits of randomness
-    for i in 1..(b < 60 ? b : 60) step 15 do
-        x = (x << 15) + rand()
-    return x % r
-
-func randFloat(Float r: 1.0) Float def
-    p = 1 << 60
-    return r * randInt(p).toFloat() / p
-
-seed(time.time())
+func randInt(Int r: 2) Int extern
+func randFloat(Float r: 1.0) Float extern

@@ -1,0 +1,8 @@
+
+func f(Int x) [Int] def
+    print x
+    return [x]
+
+a = b = f(1)
+a[0] = 2
+print b[0]

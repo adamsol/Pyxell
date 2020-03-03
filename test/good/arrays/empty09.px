@@ -3,5 +3,5 @@
 print [] == a
 print a != []
 
-print [] <= []
+print [] <= [], [] < []
 print [false] > []

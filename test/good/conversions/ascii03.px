@@ -1,3 +1,0 @@
-
-print '6'.toInt() / 3
-print '4'.toFloat() / 5

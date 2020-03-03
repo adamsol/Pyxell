@@ -2,4 +2,4 @@
 func f([Int] a, [[Int]] b) [Float]*[[Int]] def
     return [], [[]]
 
-print f([], [[]]).a.length
+print f([], []).a.length

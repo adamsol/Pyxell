@@ -1,0 +1,10 @@
+
+func f(Bool x) Bool def
+    print x
+    return x
+
+print f(false) or f(true) or f(true) or 1//0 == 0
+print
+print f(true) and f(false) and f(false) and ["a"][1] <= "a" <= "a"
+print
+print (not f(true) and f(true)) or (not f(false) or f(true)) and f(not (f(false) or f(false)))

@@ -1,13 +1,10 @@
 
-import ast
-
 from antlr4.tree import Tree
 
 from .antlr.PyxellParser import PyxellParser
 from .antlr.PyxellVisitor import PyxellVisitor
 
-from .types import *
-from .utils import *
+from .utils import lmap
 
 
 def _node(ctx, name):
@@ -286,11 +283,11 @@ class PyxellASTVisitor(PyxellVisitor):
             'inclusive': ctx.dots.text == '..',
         }
 
-    def visitExprIs(self, ctx):
+    def visitExprIsNull(self, ctx):
         return {
-            **_node(ctx, 'ExprIs'),
-            'exprs': self.visit(ctx.expr()),
-            'not': ctx.op.text != 'is',
+            **_node(ctx, 'ExprIsNull'),
+            'expr': self.visit(ctx.expr()),
+            'not': bool(ctx.not_),
         }
 
     def visitExprCmp(self, ctx):
@@ -367,13 +364,13 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitAtomChar(self, ctx):
         return {
             **_node(ctx, 'AtomChar'),
-            'char': ast.literal_eval(ctx.getText()),
+            'char': ctx.getText()[1:-1],
         }
 
     def visitAtomString(self, ctx):
         return {
             **_node(ctx, 'AtomString'),
-            'string': ast.literal_eval(ctx.getText()),
+            'string': ctx.getText()[1:-1],
         }
 
     def visitAtomNull(self, ctx):

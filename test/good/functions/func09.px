@@ -1,0 +1,9 @@
+
+func f(String a, String b) String def
+    return a + b
+
+func g(String x) String def
+    print x
+    return x
+
+print f(g("AB"), g(g("!@#")))

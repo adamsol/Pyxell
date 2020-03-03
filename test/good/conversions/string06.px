@@ -1,6 +1,6 @@
 
 s = "qwerty"
-a = s.toArray()
+a = [c for c in s]
 a[5] = 'z'
 print s, a
 

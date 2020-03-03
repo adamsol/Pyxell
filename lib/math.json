@@ -891,23 +891,90 @@
 				],
 				"stmts": [
 					{
-						"node": "StmtIf",
+						"node": "StmtDecl",
 						"position": [
 							31,
+							5
+						],
+						"type": {
+							"node": "TypeName",
+							"position": [
+								31,
+								5
+							],
+							"name": "Float"
+						},
+						"id": "m",
+						"expr": {
+							"node": "ExprBinaryOp",
+							"position": [
+								31,
+								15
+							],
+							"exprs": [
+								{
+									"node": "AtomInt",
+									"position": [
+										31,
+										15
+									],
+									"int": 10
+								},
+								{
+									"node": "ExprCall",
+									"position": [
+										31,
+										19
+									],
+									"expr": {
+										"node": "AtomId",
+										"position": [
+											31,
+											19
+										],
+										"id": "abs"
+									},
+									"args": [
+										{
+											"node": "CallArg",
+											"position": [
+												31,
+												23
+											],
+											"name": null,
+											"expr": {
+												"node": "AtomId",
+												"position": [
+													31,
+													23
+												],
+												"id": "p"
+											}
+										}
+									]
+								}
+							],
+							"op": "^^"
+						}
+					},
+					{
+						"node": "StmtIf",
+						"position": [
+							32,
 							5
 						],
 						"exprs": [
 							{
 								"node": "ExprCmp",
 								"position": [
-									31,
+									32,
 									8
 								],
 								"exprs": [
 									{
 										"node": "AtomId",
 										"position": [
-											31,
+											32,
 											8
 										],
 										"id": "p"
@@ -915,14 +982,14 @@
 									{
 										"node": "AtomInt",
 										"position": [
-											31,
-											13
+											32,
+											12
 										],
 										"int": 0
 									}
 								],
 								"ops": [
-									"!="
+									"<"
 								]
 							}
 						],
@@ -930,213 +997,56 @@
 							{
 								"node": "Block",
 								"position": [
-									31,
-									17
+									32,
+									16
 								],
 								"stmts": [
 									{
-										"node": "StmtAssgExpr",
+										"node": "StmtAssg",
 										"position": [
-											32,
+											33,
 											9
 										],
-										"exprs": [
+										"lvalues": [
 											{
 												"node": "AtomId",
 												"position": [
-													32,
+													33,
 													9
 												],
-												"id": "x"
-											},
-											{
-												"node": "ExprBinaryOp",
-												"position": [
-													32,
-													14
-												],
-												"exprs": [
-													{
-														"node": "AtomFloat",
-														"position": [
-															32,
-															14
-														],
-														"float": 10.0
-													},
-													{
-														"node": "AtomId",
-														"position": [
-															32,
-															19
-														],
-														"id": "p"
-													}
-												],
-												"op": "^"
+												"id": "m"
 											}
 										],
-										"op": "*"
-									}
-								]
-							}
-						]
-					},
-					{
-						"node": "StmtAssg",
-						"position": [
-							33,
-							5
-						],
-						"lvalues": [
-							{
-								"node": "AtomId",
-								"position": [
-									33,
-									5
-								],
-								"id": "x"
-							}
-						],
-						"expr": {
-							"node": "ExprCond",
-							"position": [
-								33,
-								9
-							],
-							"exprs": [
-								{
-									"node": "ExprCmp",
-									"position": [
-										33,
-										9
-									],
-									"exprs": [
-										{
-											"node": "AtomId",
-											"position": [
-												33,
-												9
-											],
-											"id": "x"
-										},
-										{
-											"node": "AtomFloat",
+										"expr": {
+											"node": "ExprBinaryOp",
 											"position": [
 												33,
 												13
 											],
-											"float": 0.0
-										}
-									],
-									"ops": [
-										">"
-									]
-								},
-								{
-									"node": "ExprCall",
-									"position": [
-										33,
-										19
-									],
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											33,
-											19
-										],
-										"id": "floor"
-									},
-									"args": [
-										{
-											"node": "CallArg",
-											"position": [
-												33,
-												25
+											"exprs": [
+												{
+													"node": "AtomFloat",
+													"position": [
+														33,
+														13
+													],
+													"float": 1.0
+												},
+												{
+													"node": "AtomId",
+													"position": [
+														33,
+														19
+													],
+													"id": "m"
+												}
 											],
-											"name": null,
-											"expr": {
-												"node": "ExprBinaryOp",
-												"position": [
-													33,
-													25
-												],
-												"exprs": [
-													{
-														"node": "AtomId",
-														"position": [
-															33,
-															25
-														],
-														"id": "x"
-													},
-													{
-														"node": "AtomFloat",
-														"position": [
-															33,
-															27
-														],
-														"float": 0.5
-													}
-												],
-												"op": "+"
-											}
+											"op": "/"
 										}
-									]
-								},
-								{
-									"node": "ExprCall",
-									"position": [
-										33,
-										34
-									],
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											33,
-											34
-										],
-										"id": "ceil"
-									},
-									"args": [
-										{
-											"node": "CallArg",
-											"position": [
-												33,
-												39
-											],
-											"name": null,
-											"expr": {
-												"node": "ExprBinaryOp",
-												"position": [
-													33,
-													39
-												],
-												"exprs": [
-													{
-														"node": "AtomId",
-														"position": [
-															33,
-															39
-														],
-														"id": "x"
-													},
-													{
-														"node": "AtomFloat",
-														"position": [
-															33,
-															41
-														],
-														"float": 0.5
-													}
-												],
-												"op": "-"
-											}
-										}
-									]
-								}
-							]
-						}
+									}
+								]
+							}
+						]
 					},
 					{
 						"node": "StmtIf",
@@ -1198,30 +1108,242 @@
 												"id": "x"
 											},
 											{
-												"node": "ExprBinaryOp",
+												"node": "AtomId",
 												"position": [
 													35,
 													14
 												],
+												"id": "m"
+											}
+										],
+										"op": "*"
+									}
+								]
+							}
+						]
+					},
+					{
+						"node": "StmtAssg",
+						"position": [
+							36,
+							5
+						],
+						"lvalues": [
+							{
+								"node": "AtomId",
+								"position": [
+									36,
+									5
+								],
+								"id": "x"
+							}
+						],
+						"expr": {
+							"node": "ExprCond",
+							"position": [
+								36,
+								9
+							],
+							"exprs": [
+								{
+									"node": "ExprCmp",
+									"position": [
+										36,
+										9
+									],
+									"exprs": [
+										{
+											"node": "AtomId",
+											"position": [
+												36,
+												9
+											],
+											"id": "x"
+										},
+										{
+											"node": "AtomFloat",
+											"position": [
+												36,
+												13
+											],
+											"float": 0.0
+										}
+									],
+									"ops": [
+										">"
+									]
+								},
+								{
+									"node": "ExprCall",
+									"position": [
+										36,
+										19
+									],
+									"expr": {
+										"node": "AtomId",
+										"position": [
+											36,
+											19
+										],
+										"id": "floor"
+									},
+									"args": [
+										{
+											"node": "CallArg",
+											"position": [
+												36,
+												25
+											],
+											"name": null,
+											"expr": {
+												"node": "ExprBinaryOp",
+												"position": [
+													36,
+													25
+												],
 												"exprs": [
-													{
-														"node": "AtomFloat",
-														"position": [
-															35,
-															14
-														],
-														"float": 10.0
-													},
 													{
 														"node": "AtomId",
 														"position": [
-															35,
-															19
+															36,
+															25
 														],
-														"id": "p"
+														"id": "x"
+													},
+													{
+														"node": "AtomFloat",
+														"position": [
+															36,
+															27
+														],
+														"float": 0.5
 													}
 												],
-												"op": "^"
+												"op": "+"
+											}
+										}
+									]
+								},
+								{
+									"node": "ExprCall",
+									"position": [
+										36,
+										34
+									],
+									"expr": {
+										"node": "AtomId",
+										"position": [
+											36,
+											34
+										],
+										"id": "ceil"
+									},
+									"args": [
+										{
+											"node": "CallArg",
+											"position": [
+												36,
+												39
+											],
+											"name": null,
+											"expr": {
+												"node": "ExprBinaryOp",
+												"position": [
+													36,
+													39
+												],
+												"exprs": [
+													{
+														"node": "AtomId",
+														"position": [
+															36,
+															39
+														],
+														"id": "x"
+													},
+													{
+														"node": "AtomFloat",
+														"position": [
+															36,
+															41
+														],
+														"float": 0.5
+													}
+												],
+												"op": "-"
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtIf",
+						"position": [
+							37,
+							5
+						],
+						"exprs": [
+							{
+								"node": "ExprCmp",
+								"position": [
+									37,
+									8
+								],
+								"exprs": [
+									{
+										"node": "AtomId",
+										"position": [
+											37,
+											8
+										],
+										"id": "p"
+									},
+									{
+										"node": "AtomInt",
+										"position": [
+											37,
+											13
+										],
+										"int": 0
+									}
+								],
+								"ops": [
+									"!="
+								]
+							}
+						],
+						"blocks": [
+							{
+								"node": "Block",
+								"position": [
+									37,
+									17
+								],
+								"stmts": [
+									{
+										"node": "StmtAssgExpr",
+										"position": [
+											38,
+											9
+										],
+										"exprs": [
+											{
+												"node": "AtomId",
+												"position": [
+													38,
+													9
+												],
+												"id": "x"
+											},
+											{
+												"node": "AtomId",
+												"position": [
+													38,
+													14
+												],
+												"id": "m"
 											}
 										],
 										"op": "/"
@@ -1233,13 +1355,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							36,
+							39,
 							5
 						],
 						"expr": {
 							"node": "AtomId",
 							"position": [
-								36,
+								39,
 								12
 							],
 							"id": "x"

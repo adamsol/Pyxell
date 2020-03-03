@@ -1,0 +1,10 @@
+
+class Test def
+
+    func f() def
+        skip
+
+    func f() def
+        skip
+
+f()

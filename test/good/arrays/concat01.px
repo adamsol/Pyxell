@@ -1,4 +1,5 @@
 
-a = [1] + [2, 3]
-for x in a do
-    print x
+a = [1]
+b = [2, 3]
+print a + b
+print a, b

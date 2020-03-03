@@ -1,0 +1,14 @@
+
+x = 0
+
+func f(Int y) Int def
+    x += 1
+    return y
+
+a = b = c = 0
+until f(a) <= f(b-5) < f(c-10) do
+    b += 1
+    c += 2
+
+print a, b, c
+print x

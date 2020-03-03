@@ -1,0 +1,12 @@
+
+func f<A,B>([A] x) [B] def
+    print x
+    return []
+
+a = [][:1]
+[Int] b = a
+print b + [3]
+
+c = ['c']
+c = f([])
+print c.length

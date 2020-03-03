@@ -1,0 +1,10 @@
+
+class C def
+    constructor() def
+        print "constructor"
+
+    func f(Int x) Int def
+        print x
+        return 0
+
+([C().f(1)][0], C()).b.f(2)

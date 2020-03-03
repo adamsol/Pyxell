@@ -3,4 +3,4 @@ class A def
     Int x
 
 class B(A) def
-    Float x
+    Int x

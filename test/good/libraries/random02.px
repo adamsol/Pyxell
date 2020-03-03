@@ -1,6 +1,9 @@
 
-random.seed(42)
-print [5, 17, 3364].map(random.randInt)
+use random
 
-random.seed(382692935147053)
-print random.randInt(8093240213836)
+for i in 0...2 do
+    seed(42)
+    print [5, 17, 3364].map(randInt)
+
+seed(382692935147053)
+print randInt(8093240213836)

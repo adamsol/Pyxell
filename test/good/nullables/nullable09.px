@@ -1,0 +1,11 @@
+
+func f<A,B>(A? x) [B] def
+    print x
+    return [x]
+
+x = null
+y = f(x)
+print y
+
+[Float?] z = y
+print z.map(_ ?? 1.5)

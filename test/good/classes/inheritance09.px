@@ -3,7 +3,8 @@ class A def
     String x: "A"
 
 class B(A) def
-    String x: "B"
+    constructor() def
+        self.x = "B"
 
 
 func f(A a: A(), A b: B()) String def

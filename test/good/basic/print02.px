@@ -1,4 +1,6 @@
 
 print 9.99_e14
 print 1.0_e15
+print 0.0003, 0.00003
 print -0.045_e-279
+print 1000000 - 1e-10

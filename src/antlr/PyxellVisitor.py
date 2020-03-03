@@ -169,13 +169,13 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprIs.
-    def visitExprIs(self, ctx:PyxellParser.ExprIsContext):
+    # Visit a parse tree produced by PyxellParser#ExprCall.
+    def visitExprCall(self, ctx:PyxellParser.ExprCallContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprCall.
-    def visitExprCall(self, ctx:PyxellParser.ExprCallContext):
+    # Visit a parse tree produced by PyxellParser#ExprIsNull.
+    def visitExprIsNull(self, ctx:PyxellParser.ExprIsNullContext):
         return self.visitChildren(ctx)
 
 

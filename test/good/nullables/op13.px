@@ -1,0 +1,8 @@
+
+func f(Int x) [Int]? def
+    print x
+    x *= 2
+    return x >= 0 ? [x] * x : null
+
+print f(100)?.length, f(-1)?.length
+print f(-3)?[0], f(3)?[0]

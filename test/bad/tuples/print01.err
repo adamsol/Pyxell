@@ -1,1 +1,1 @@
-Variable of type `String->Void` cannot be printed.
+Variable of type `Int*String->Void` cannot be printed.

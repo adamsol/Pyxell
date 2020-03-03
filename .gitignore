@@ -1,13 +1,12 @@
 pyxell
 *.exe
-*.o
 *.jar
 .idea/
 *.iml
 _*
 *.tmp
-*.bc
-*.ll
+*.cpp
+*.gch
 *.spec
 build/
 dist/

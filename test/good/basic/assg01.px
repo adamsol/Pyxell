@@ -1,0 +1,5 @@
+
+Int a
+Float b
+a = b = 1
+print a, b

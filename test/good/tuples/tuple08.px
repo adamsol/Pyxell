@@ -1,0 +1,7 @@
+
+func f(Int*Float x) Float*Int def
+    print x.b
+    return x.a, x.a^^2
+
+Int*Int x = 3, 4
+print f(x)

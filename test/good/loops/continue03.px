@@ -1,6 +1,6 @@
 
 i = 0
-until true do
+until i > 17 do
     i += 1
     if i < 17 do
         continue

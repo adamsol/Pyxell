@@ -1,0 +1,11 @@
+
+Int n = 8
+(Float?*([Bool]?*Char)?)? x = n, ([], 'x')
+print x
+print x!.b?.a!! + [true]
+
+x = null
+print x
+
+x = null, null
+print x

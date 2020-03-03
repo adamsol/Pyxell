@@ -1,0 +1,4 @@
+
+[Int] a = []
+[Float] b = []
+print a == [] == b

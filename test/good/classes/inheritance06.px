@@ -24,10 +24,9 @@ class C(B) def
 
 class D(A) def
     Int x: 42
-    Char c: '?'
 
     constructor() def
-        skip
+        self.c = '?'
 
     func toString() String def
         return "{self.c} {self.x}"

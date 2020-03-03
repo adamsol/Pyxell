@@ -2,7 +2,4 @@
 n = 5
 a = [4]
 a *= n
-for x in a do
-    if x != 4 do
-        print x
-print a.length == n
+print a

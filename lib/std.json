@@ -11,107 +11,19 @@
 				2,
 				1
 			],
-			"id": "CharArray_asString",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						2,
-						25
-					],
-					"type": {
-						"node": "TypeArray",
-						"position": [
-							2,
-							25
-						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								2,
-								26
-							],
-							"name": "Char"
-						}
-					},
-					"name": "a",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					2,
-					35
-				],
-				"name": "String"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				3,
-				1
-			],
-			"id": "String_toArray",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						3,
-						21
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							3,
-							21
-						],
-						"name": "String"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeArray",
-				"position": [
-					3,
-					31
-				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						3,
-						32
-					],
-					"name": "Char"
-				}
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				5,
-				1
-			],
 			"id": "write",
 			"typevars": [],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
-						5,
+						2,
 						12
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							5,
+							2,
 							12
 						],
 						"name": "String"
@@ -126,157 +38,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				6,
-				1
-			],
-			"id": "writeLine",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						6,
-						16
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							6,
-							16
-						],
-						"name": "String"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": null,
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				7,
-				1
-			],
-			"id": "writeInt",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						7,
-						15
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							7,
-							15
-						],
-						"name": "Int"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": null,
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				8,
-				1
-			],
-			"id": "writeFloat",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						8,
-						17
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							8,
-							17
-						],
-						"name": "Float"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": null,
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				9,
-				1
-			],
-			"id": "writeBool",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						9,
-						16
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							9,
-							16
-						],
-						"name": "Bool"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": null,
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				10,
-				1
-			],
-			"id": "writeChar",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						10,
-						16
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							10,
-							16
-						],
-						"name": "Char"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": null,
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				12,
+				4,
 				1
 			],
 			"id": "read",
@@ -285,7 +47,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					12,
+					4,
 					13
 				],
 				"name": "String"
@@ -295,7 +57,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				13,
+				5,
 				1
 			],
 			"id": "readLine",
@@ -304,7 +66,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					13,
+					5,
 					17
 				],
 				"name": "String"
@@ -314,7 +76,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				14,
+				6,
 				1
 			],
 			"id": "readInt",
@@ -323,7 +85,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					14,
+					6,
 					16
 				],
 				"name": "Int"
@@ -333,7 +95,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				15,
+				7,
 				1
 			],
 			"id": "readFloat",
@@ -342,7 +104,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					15,
+					7,
 					18
 				],
 				"name": "Float"
@@ -352,7 +114,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				16,
+				8,
 				1
 			],
 			"id": "readChar",
@@ -361,7 +123,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					16,
+					8,
 					17
 				],
 				"name": "Char"
@@ -371,7 +133,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				19,
+				11,
 				1
 			],
 			"id": "min",
@@ -382,13 +144,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						19,
+						11,
 						13
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							19,
+							11,
 							13
 						],
 						"name": "T"
@@ -399,13 +161,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						19,
+						11,
 						18
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							19,
+							11,
 							18
 						],
 						"name": "T"
@@ -417,7 +179,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					19,
+					11,
 					23
 				],
 				"name": "T"
@@ -425,34 +187,34 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					19,
+					11,
 					28
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							20,
+							12,
 							5
 						],
 						"expr": {
 							"node": "ExprCond",
 							"position": [
-								20,
+								12,
 								12
 							],
 							"exprs": [
 								{
 									"node": "ExprCmp",
 									"position": [
-										20,
+										12,
 										12
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												20,
+												12,
 												12
 											],
 											"id": "a"
@@ -460,7 +222,7 @@
 										{
 											"node": "AtomId",
 											"position": [
-												20,
+												12,
 												16
 											],
 											"id": "b"
@@ -473,7 +235,7 @@
 								{
 									"node": "AtomId",
 									"position": [
-										20,
+										12,
 										20
 									],
 									"id": "a"
@@ -481,7 +243,7 @@
 								{
 									"node": "AtomId",
 									"position": [
-										20,
+										12,
 										24
 									],
 									"id": "b"
@@ -495,7 +257,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				22,
+				14,
 				1
 			],
 			"id": "max",
@@ -506,13 +268,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						22,
+						14,
 						13
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							22,
+							14,
 							13
 						],
 						"name": "T"
@@ -523,13 +285,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						22,
+						14,
 						18
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							22,
+							14,
 							18
 						],
 						"name": "T"
@@ -541,7 +303,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					22,
+					14,
 					23
 				],
 				"name": "T"
@@ -549,34 +311,34 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					22,
+					14,
 					28
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							23,
+							15,
 							5
 						],
 						"expr": {
 							"node": "ExprCond",
 							"position": [
-								23,
+								15,
 								12
 							],
 							"exprs": [
 								{
 									"node": "ExprCmp",
 									"position": [
-										23,
+										15,
 										12
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												23,
+												15,
 												12
 											],
 											"id": "b"
@@ -584,7 +346,7 @@
 										{
 											"node": "AtomId",
 											"position": [
-												23,
+												15,
 												16
 											],
 											"id": "a"
@@ -597,7 +359,7 @@
 								{
 									"node": "AtomId",
 									"position": [
-										23,
+										15,
 										20
 									],
 									"id": "a"
@@ -605,7 +367,7 @@
 								{
 									"node": "AtomId",
 									"position": [
-										23,
+										15,
 										24
 									],
 									"id": "b"
@@ -619,7 +381,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				25,
+				17,
 				1
 			],
 			"id": "clamp",
@@ -630,13 +392,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						25,
+						17,
 						15
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							25,
+							17,
 							15
 						],
 						"name": "T"
@@ -647,13 +409,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						25,
+						17,
 						20
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							25,
+							17,
 							20
 						],
 						"name": "T"
@@ -664,13 +426,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						25,
+						17,
 						25
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							25,
+							17,
 							25
 						],
 						"name": "T"
@@ -682,7 +444,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					25,
+					17,
 					30
 				],
 				"name": "T"
@@ -690,26 +452,26 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					25,
+					17,
 					35
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							26,
+							18,
 							5
 						],
 						"expr": {
 							"node": "ExprCall",
 							"position": [
-								26,
+								18,
 								12
 							],
 							"expr": {
 								"node": "AtomId",
 								"position": [
-									26,
+									18,
 									12
 								],
 								"id": "min"
@@ -718,20 +480,20 @@
 								{
 									"node": "CallArg",
 									"position": [
-										26,
+										18,
 										16
 									],
 									"name": null,
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											26,
+											18,
 											16
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												26,
+												18,
 												16
 											],
 											"id": "max"
@@ -740,14 +502,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													26,
+													18,
 													20
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														26,
+														18,
 														20
 													],
 													"id": "x"
@@ -756,14 +518,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													26,
+													18,
 													23
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														26,
+														18,
 														23
 													],
 													"id": "a"
@@ -775,14 +537,14 @@
 								{
 									"node": "CallArg",
 									"position": [
-										26,
+										18,
 										27
 									],
 									"name": null,
 									"expr": {
 										"node": "AtomId",
 										"position": [
-											26,
+											18,
 											27
 										],
 										"id": "b"
@@ -797,7 +559,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				28,
+				20,
 				1
 			],
 			"id": "abs",
@@ -808,13 +570,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						28,
+						20,
 						13
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							28,
+							20,
 							13
 						],
 						"name": "T"
@@ -826,7 +588,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					28,
+					20,
 					18
 				],
 				"name": "T"
@@ -834,34 +596,34 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					28,
+					20,
 					23
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							29,
+							21,
 							5
 						],
 						"expr": {
 							"node": "ExprCond",
 							"position": [
-								29,
+								21,
 								12
 							],
 							"exprs": [
 								{
 									"node": "ExprCmp",
 									"position": [
-										29,
+										21,
 										12
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												29,
+												21,
 												12
 											],
 											"id": "x"
@@ -869,7 +631,7 @@
 										{
 											"node": "AtomInt",
 											"position": [
-												29,
+												21,
 												17
 											],
 											"int": 0
@@ -882,7 +644,7 @@
 								{
 									"node": "AtomId",
 									"position": [
-										29,
+										21,
 										21
 									],
 									"id": "x"
@@ -890,13 +652,13 @@
 								{
 									"node": "ExprUnaryOp",
 									"position": [
-										29,
+										21,
 										25
 									],
 									"expr": {
 										"node": "AtomId",
 										"position": [
-											29,
+											21,
 											26
 										],
 										"id": "x"
@@ -912,7 +674,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				31,
+				23,
 				1
 			],
 			"id": "sign",
@@ -923,13 +685,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						31,
+						23,
 						14
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							31,
+							23,
 							14
 						],
 						"name": "T"
@@ -941,7 +703,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					31,
+					23,
 					19
 				],
 				"name": "T"
@@ -949,34 +711,34 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					31,
+					23,
 					24
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							32,
+							24,
 							5
 						],
 						"expr": {
 							"node": "ExprCond",
 							"position": [
-								32,
+								24,
 								12
 							],
 							"exprs": [
 								{
 									"node": "ExprCmp",
 									"position": [
-										32,
+										24,
 										12
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												32,
+												24,
 												12
 											],
 											"id": "x"
@@ -984,7 +746,7 @@
 										{
 											"node": "AtomInt",
 											"position": [
-												32,
+												24,
 												16
 											],
 											"int": 0
@@ -997,7 +759,7 @@
 								{
 									"node": "AtomInt",
 									"position": [
-										32,
+										24,
 										20
 									],
 									"int": 1
@@ -1005,21 +767,21 @@
 								{
 									"node": "ExprCond",
 									"position": [
-										32,
+										24,
 										24
 									],
 									"exprs": [
 										{
 											"node": "ExprCmp",
 											"position": [
-												32,
+												24,
 												24
 											],
 											"exprs": [
 												{
 													"node": "AtomId",
 													"position": [
-														32,
+														24,
 														24
 													],
 													"id": "x"
@@ -1027,7 +789,7 @@
 												{
 													"node": "AtomInt",
 													"position": [
-														32,
+														24,
 														28
 													],
 													"int": 0
@@ -1040,13 +802,13 @@
 										{
 											"node": "ExprUnaryOp",
 											"position": [
-												32,
+												24,
 												32
 											],
 											"expr": {
 												"node": "AtomInt",
 												"position": [
-													32,
+													24,
 													33
 												],
 												"int": 1
@@ -1056,7 +818,7 @@
 										{
 											"node": "AtomInt",
 											"position": [
-												32,
+												24,
 												37
 											],
 											"int": 0
@@ -1072,7 +834,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				35,
+				27,
 				1
 			],
 			"id": "Array_all",
@@ -1083,19 +845,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						35,
+						27,
 						19
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							35,
+							27,
 							19
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								35,
+								27,
 								20
 							],
 							"name": "A"
@@ -1107,20 +869,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						35,
+						27,
 						26
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							35,
+							27,
 							26
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									35,
+									27,
 									26
 								],
 								"name": "A"
@@ -1129,7 +891,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								35,
+								27,
 								29
 							],
 							"name": "Bool"
@@ -1139,7 +901,7 @@
 					"default": {
 						"node": "AtomStub",
 						"position": [
-							35,
+							27,
 							37
 						]
 					}
@@ -1148,7 +910,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					35,
+					27,
 					40
 				],
 				"name": "Bool"
@@ -1156,21 +918,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					35,
+					27,
 					48
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							36,
+							28,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									36,
+									28,
 									9
 								],
 								"id": "x"
@@ -1180,7 +942,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									36,
+									28,
 									14
 								],
 								"id": "a"
@@ -1190,33 +952,33 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								36,
+								28,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										37,
+										29,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprUnaryOp",
 											"position": [
-												37,
+												29,
 												12
 											],
 											"expr": {
 												"node": "ExprCall",
 												"position": [
-													37,
+													29,
 													16
 												],
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														37,
+														29,
 														16
 													],
 													"id": "f"
@@ -1225,14 +987,14 @@
 													{
 														"node": "CallArg",
 														"position": [
-															37,
+															29,
 															18
 														],
 														"name": null,
 														"expr": {
 															"node": "AtomId",
 															"position": [
-																37,
+																29,
 																18
 															],
 															"id": "x"
@@ -1247,20 +1009,20 @@
 										{
 											"node": "Block",
 											"position": [
-												37,
+												29,
 												23
 											],
 											"stmts": [
 												{
 													"node": "StmtReturn",
 													"position": [
-														38,
+														30,
 														13
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															38,
+															30,
 															20
 														],
 														"bool": false
@@ -1276,13 +1038,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							39,
+							31,
 							5
 						],
 						"expr": {
 							"node": "AtomBool",
 							"position": [
-								39,
+								31,
 								12
 							],
 							"bool": true
@@ -1294,7 +1056,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				41,
+				33,
 				1
 			],
 			"id": "Array_any",
@@ -1305,19 +1067,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						41,
+						33,
 						19
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							41,
+							33,
 							19
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								41,
+								33,
 								20
 							],
 							"name": "A"
@@ -1329,20 +1091,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						41,
+						33,
 						26
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							41,
+							33,
 							26
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									41,
+									33,
 									26
 								],
 								"name": "A"
@@ -1351,7 +1113,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								41,
+								33,
 								29
 							],
 							"name": "Bool"
@@ -1361,7 +1123,7 @@
 					"default": {
 						"node": "AtomStub",
 						"position": [
-							41,
+							33,
 							37
 						]
 					}
@@ -1370,7 +1132,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					41,
+					33,
 					40
 				],
 				"name": "Bool"
@@ -1378,21 +1140,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					41,
+					33,
 					48
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							42,
+							34,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									42,
+									34,
 									9
 								],
 								"id": "x"
@@ -1402,7 +1164,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									42,
+									34,
 									14
 								],
 								"id": "a"
@@ -1412,27 +1174,27 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								42,
+								34,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										43,
+										35,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprCall",
 											"position": [
-												43,
+												35,
 												12
 											],
 											"expr": {
 												"node": "AtomId",
 												"position": [
-													43,
+													35,
 													12
 												],
 												"id": "f"
@@ -1441,14 +1203,14 @@
 												{
 													"node": "CallArg",
 													"position": [
-														43,
+														35,
 														14
 													],
 													"name": null,
 													"expr": {
 														"node": "AtomId",
 														"position": [
-															43,
+															35,
 															14
 														],
 														"id": "x"
@@ -1461,20 +1223,20 @@
 										{
 											"node": "Block",
 											"position": [
-												43,
+												35,
 												19
 											],
 											"stmts": [
 												{
 													"node": "StmtReturn",
 													"position": [
-														44,
+														36,
 														13
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															44,
+															36,
 															20
 														],
 														"bool": true
@@ -1490,13 +1252,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							45,
+							37,
 							5
 						],
 						"expr": {
 							"node": "AtomBool",
 							"position": [
-								45,
+								37,
 								12
 							],
 							"bool": false
@@ -1508,7 +1270,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				47,
+				39,
 				1
 			],
 			"id": "Array_filter",
@@ -1519,19 +1281,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						47,
+						39,
 						22
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							47,
+							39,
 							22
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								47,
+								39,
 								23
 							],
 							"name": "A"
@@ -1543,20 +1305,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						47,
+						39,
 						29
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							47,
+							39,
 							29
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									47,
+									39,
 									29
 								],
 								"name": "A"
@@ -1565,7 +1327,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								47,
+								39,
 								32
 							],
 							"name": "Bool"
@@ -1578,13 +1340,13 @@
 			"ret": {
 				"node": "TypeArray",
 				"position": [
-					47,
+					39,
 					40
 				],
 				"subtype": {
 					"node": "TypeName",
 					"position": [
-						47,
+						39,
 						41
 					],
 					"name": "A"
@@ -1593,26 +1355,26 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					47,
+					39,
 					47
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							48,
+							40,
 							5
 						],
 						"expr": {
 							"node": "ExprArrayComprehension",
 							"position": [
-								48,
+								40,
 								12
 							],
 							"expr": {
 								"node": "AtomId",
 								"position": [
-									48,
+									40,
 									13
 								],
 								"id": "x"
@@ -1621,14 +1383,14 @@
 								{
 									"node": "ComprehensionGenerator",
 									"position": [
-										48,
+										40,
 										15
 									],
 									"vars": [
 										{
 											"node": "AtomId",
 											"position": [
-												48,
+												40,
 												19
 											],
 											"id": "x"
@@ -1638,7 +1400,7 @@
 										{
 											"node": "AtomId",
 											"position": [
-												48,
+												40,
 												24
 											],
 											"id": "a"
@@ -1649,19 +1411,19 @@
 								{
 									"node": "ComprehensionFilter",
 									"position": [
-										48,
+										40,
 										26
 									],
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											48,
+											40,
 											29
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												48,
+												40,
 												29
 											],
 											"id": "f"
@@ -1670,14 +1432,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													48,
+													40,
 													31
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														48,
+														40,
 														31
 													],
 													"id": "x"
@@ -1695,7 +1457,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				50,
+				42,
 				1
 			],
 			"id": "Array_map",
@@ -1707,19 +1469,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						50,
+						42,
 						21
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							50,
+							42,
 							21
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								50,
+								42,
 								22
 							],
 							"name": "A"
@@ -1731,20 +1493,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						50,
+						42,
 						28
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							50,
+							42,
 							28
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									50,
+									42,
 									28
 								],
 								"name": "A"
@@ -1753,7 +1515,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								50,
+								42,
 								31
 							],
 							"name": "B"
@@ -1766,13 +1528,13 @@
 			"ret": {
 				"node": "TypeArray",
 				"position": [
-					50,
+					42,
 					36
 				],
 				"subtype": {
 					"node": "TypeName",
 					"position": [
-						50,
+						42,
 						37
 					],
 					"name": "B"
@@ -1781,32 +1543,32 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					50,
+					42,
 					43
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							51,
+							43,
 							5
 						],
 						"expr": {
 							"node": "ExprArrayComprehension",
 							"position": [
-								51,
+								43,
 								12
 							],
 							"expr": {
 								"node": "ExprCall",
 								"position": [
-									51,
+									43,
 									13
 								],
 								"expr": {
 									"node": "AtomId",
 									"position": [
-										51,
+										43,
 										13
 									],
 									"id": "f"
@@ -1815,14 +1577,14 @@
 									{
 										"node": "CallArg",
 										"position": [
-											51,
+											43,
 											15
 										],
 										"name": null,
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												51,
+												43,
 												15
 											],
 											"id": "x"
@@ -1834,14 +1596,14 @@
 								{
 									"node": "ComprehensionGenerator",
 									"position": [
-										51,
+										43,
 										18
 									],
 									"vars": [
 										{
 											"node": "AtomId",
 											"position": [
-												51,
+												43,
 												22
 											],
 											"id": "x"
@@ -1851,7 +1613,7 @@
 										{
 											"node": "AtomId",
 											"position": [
-												51,
+												43,
 												27
 											],
 											"id": "a"
@@ -1868,7 +1630,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				53,
+				45,
 				1
 			],
 			"id": "Array_reduce",
@@ -1880,19 +1642,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						53,
+						45,
 						24
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							53,
+							45,
 							24
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								53,
+								45,
 								25
 							],
 							"name": "A"
@@ -1904,20 +1666,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						53,
+						45,
 						31
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							53,
+							45,
 							34
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									53,
+									45,
 									31
 								],
 								"name": "A"
@@ -1925,7 +1687,7 @@
 							{
 								"node": "TypeName",
 								"position": [
-									53,
+									45,
 									34
 								],
 								"name": "B"
@@ -1934,7 +1696,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								53,
+								45,
 								37
 							],
 							"name": "B"
@@ -1946,13 +1708,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						53,
+						45,
 						42
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							53,
+							45,
 							42
 						],
 						"name": "B"
@@ -1964,7 +1726,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					53,
+					45,
 					47
 				],
 				"name": "B"
@@ -1972,21 +1734,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					53,
+					45,
 					52
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							54,
+							46,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									54,
+									46,
 									9
 								],
 								"id": "x"
@@ -1996,7 +1758,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									54,
+									46,
 									14
 								],
 								"id": "a"
@@ -2006,21 +1768,21 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								54,
+								46,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtAssg",
 									"position": [
-										55,
+										47,
 										9
 									],
 									"lvalues": [
 										{
 											"node": "AtomId",
 											"position": [
-												55,
+												47,
 												9
 											],
 											"id": "r"
@@ -2029,13 +1791,13 @@
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											55,
+											47,
 											13
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												55,
+												47,
 												13
 											],
 											"id": "f"
@@ -2044,14 +1806,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													55,
+													47,
 													15
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														55,
+														47,
 														15
 													],
 													"id": "x"
@@ -2060,14 +1822,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													55,
+													47,
 													18
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														55,
+														47,
 														18
 													],
 													"id": "r"
@@ -2082,13 +1844,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							56,
+							48,
 							5
 						],
 						"expr": {
 							"node": "AtomId",
 							"position": [
-								56,
+								48,
 								12
 							],
 							"id": "r"
@@ -2100,7 +1862,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				59,
+				51,
 				1
 			],
 			"id": "String_all",
@@ -2109,13 +1871,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						59,
+						51,
 						17
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							59,
+							51,
 							17
 						],
 						"name": "String"
@@ -2126,20 +1888,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						59,
+						51,
 						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							59,
+							51,
 							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									59,
+									51,
 									27
 								],
 								"name": "Char"
@@ -2148,7 +1910,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								59,
+								51,
 								33
 							],
 							"name": "Bool"
@@ -2161,7 +1923,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					59,
+					51,
 					41
 				],
 				"name": "Bool"
@@ -2169,21 +1931,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					59,
+					51,
 					49
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							60,
+							52,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									60,
+									52,
 									9
 								],
 								"id": "c"
@@ -2193,7 +1955,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									60,
+									52,
 									14
 								],
 								"id": "s"
@@ -2203,33 +1965,33 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								60,
+								52,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										61,
+										53,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprUnaryOp",
 											"position": [
-												61,
+												53,
 												12
 											],
 											"expr": {
 												"node": "ExprCall",
 												"position": [
-													61,
+													53,
 													16
 												],
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														61,
+														53,
 														16
 													],
 													"id": "f"
@@ -2238,14 +2000,14 @@
 													{
 														"node": "CallArg",
 														"position": [
-															61,
+															53,
 															18
 														],
 														"name": null,
 														"expr": {
 															"node": "AtomId",
 															"position": [
-																61,
+																53,
 																18
 															],
 															"id": "c"
@@ -2260,20 +2022,20 @@
 										{
 											"node": "Block",
 											"position": [
-												61,
+												53,
 												23
 											],
 											"stmts": [
 												{
 													"node": "StmtReturn",
 													"position": [
-														62,
+														54,
 														13
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															62,
+															54,
 															20
 														],
 														"bool": false
@@ -2289,13 +2051,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							63,
+							55,
 							5
 						],
 						"expr": {
 							"node": "AtomBool",
 							"position": [
-								63,
+								55,
 								12
 							],
 							"bool": true
@@ -2307,7 +2069,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				65,
+				57,
 				1
 			],
 			"id": "String_any",
@@ -2316,13 +2078,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						65,
+						57,
 						17
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							65,
+							57,
 							17
 						],
 						"name": "String"
@@ -2333,20 +2095,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						65,
+						57,
 						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							65,
+							57,
 							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									65,
+									57,
 									27
 								],
 								"name": "Char"
@@ -2355,7 +2117,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								65,
+								57,
 								33
 							],
 							"name": "Bool"
@@ -2368,7 +2130,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					65,
+					57,
 					41
 				],
 				"name": "Bool"
@@ -2376,21 +2138,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					65,
+					57,
 					49
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							66,
+							58,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									66,
+									58,
 									9
 								],
 								"id": "c"
@@ -2400,7 +2162,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									66,
+									58,
 									14
 								],
 								"id": "s"
@@ -2410,27 +2172,27 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								66,
+								58,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										67,
+										59,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprCall",
 											"position": [
-												67,
+												59,
 												12
 											],
 											"expr": {
 												"node": "AtomId",
 												"position": [
-													67,
+													59,
 													12
 												],
 												"id": "f"
@@ -2439,14 +2201,14 @@
 												{
 													"node": "CallArg",
 													"position": [
-														67,
+														59,
 														14
 													],
 													"name": null,
 													"expr": {
 														"node": "AtomId",
 														"position": [
-															67,
+															59,
 															14
 														],
 														"id": "c"
@@ -2459,20 +2221,20 @@
 										{
 											"node": "Block",
 											"position": [
-												67,
+												59,
 												19
 											],
 											"stmts": [
 												{
 													"node": "StmtReturn",
 													"position": [
-														68,
+														60,
 														13
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															68,
+															60,
 															20
 														],
 														"bool": true
@@ -2488,13 +2250,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							69,
+							61,
 							5
 						],
 						"expr": {
 							"node": "AtomBool",
 							"position": [
-								69,
+								61,
 								12
 							],
 							"bool": false
@@ -2506,7 +2268,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				71,
+				63,
 				1
 			],
 			"id": "String_filter",
@@ -2515,13 +2277,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						71,
+						63,
 						20
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							71,
+							63,
 							20
 						],
 						"name": "String"
@@ -2532,20 +2294,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						71,
+						63,
 						30
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							71,
+							63,
 							30
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									71,
+									63,
 									30
 								],
 								"name": "Char"
@@ -2554,7 +2316,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								71,
+								63,
 								36
 							],
 							"name": "Bool"
@@ -2567,7 +2329,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					71,
+					63,
 					44
 				],
 				"name": "String"
@@ -2575,125 +2337,117 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					71,
+					63,
 					54
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							72,
+							64,
 							5
 						],
 						"expr": {
 							"node": "ExprCall",
 							"position": [
-								72,
+								64,
 								12
 							],
 							"expr": {
-								"node": "AtomId",
+								"node": "ExprAttr",
 								"position": [
-									72,
+									64,
 									12
 								],
-								"id": "CharArray_asString"
-							},
-							"args": [
-								{
-									"node": "CallArg",
+								"expr": {
+									"node": "ExprArrayComprehension",
 									"position": [
-										72,
-										31
+										64,
+										12
 									],
-									"name": null,
 									"expr": {
-										"node": "ExprArrayComprehension",
+										"node": "AtomId",
 										"position": [
-											72,
-											31
+											64,
+											13
 										],
-										"expr": {
-											"node": "AtomId",
+										"id": "c"
+									},
+									"comprehensions": [
+										{
+											"node": "ComprehensionGenerator",
 											"position": [
-												72,
-												32
+												64,
+												15
 											],
-											"id": "c"
+											"vars": [
+												{
+													"node": "AtomId",
+													"position": [
+														64,
+														19
+													],
+													"id": "c"
+												}
+											],
+											"iterables": [
+												{
+													"node": "AtomId",
+													"position": [
+														64,
+														24
+													],
+													"id": "s"
+												}
+											],
+											"steps": []
 										},
-										"comprehensions": [
-											{
-												"node": "ComprehensionGenerator",
+										{
+											"node": "ComprehensionFilter",
+											"position": [
+												64,
+												26
+											],
+											"expr": {
+												"node": "ExprCall",
 												"position": [
-													72,
-													34
-												],
-												"vars": [
-													{
-														"node": "AtomId",
-														"position": [
-															72,
-															38
-														],
-														"id": "c"
-													}
-												],
-												"iterables": [
-													{
-														"node": "AtomId",
-														"position": [
-															72,
-															43
-														],
-														"id": "s"
-													}
-												],
-												"steps": []
-											},
-											{
-												"node": "ComprehensionFilter",
-												"position": [
-													72,
-													45
+													64,
+													29
 												],
 												"expr": {
-													"node": "ExprCall",
+													"node": "AtomId",
 													"position": [
-														72,
-														48
+														64,
+														29
 													],
-													"expr": {
-														"node": "AtomId",
+													"id": "f"
+												},
+												"args": [
+													{
+														"node": "CallArg",
 														"position": [
-															72,
-															48
+															64,
+															31
 														],
-														"id": "f"
-													},
-													"args": [
-														{
-															"node": "CallArg",
+														"name": null,
+														"expr": {
+															"node": "AtomId",
 															"position": [
-																72,
-																50
+																64,
+																31
 															],
-															"name": null,
-															"expr": {
-																"node": "AtomId",
-																"position": [
-																	72,
-																	50
-																],
-																"id": "c"
-															}
+															"id": "c"
 														}
-													]
-												}
+													}
+												]
 											}
-										]
-									}
-								}
-							]
+										}
+									]
+								},
+								"attr": "_asString",
+								"safe": false
+							},
+							"args": []
 						}
 					}
 				]
@@ -2702,7 +2456,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				74,
+				66,
 				1
 			],
 			"id": "String_map",
@@ -2711,13 +2465,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						74,
+						66,
 						17
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							74,
+							66,
 							17
 						],
 						"name": "String"
@@ -2728,20 +2482,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						74,
+						66,
 						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							74,
+							66,
 							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									74,
+									66,
 									27
 								],
 								"name": "Char"
@@ -2750,7 +2504,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								74,
+								66,
 								33
 							],
 							"name": "Char"
@@ -2763,7 +2517,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					74,
+					66,
 					41
 				],
 				"name": "String"
@@ -2771,110 +2525,102 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					74,
+					66,
 					51
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							75,
+							67,
 							5
 						],
 						"expr": {
 							"node": "ExprCall",
 							"position": [
-								75,
+								67,
 								12
 							],
 							"expr": {
-								"node": "AtomId",
+								"node": "ExprAttr",
 								"position": [
-									75,
+									67,
 									12
 								],
-								"id": "CharArray_asString"
-							},
-							"args": [
-								{
-									"node": "CallArg",
+								"expr": {
+									"node": "ExprArrayComprehension",
 									"position": [
-										75,
-										31
+										67,
+										12
 									],
-									"name": null,
 									"expr": {
-										"node": "ExprArrayComprehension",
+										"node": "ExprCall",
 										"position": [
-											75,
-											31
+											67,
+											13
 										],
 										"expr": {
-											"node": "ExprCall",
+											"node": "AtomId",
 											"position": [
-												75,
-												32
+												67,
+												13
 											],
-											"expr": {
-												"node": "AtomId",
-												"position": [
-													75,
-													32
-												],
-												"id": "f"
-											},
-											"args": [
-												{
-													"node": "CallArg",
-													"position": [
-														75,
-														34
-													],
-													"name": null,
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															75,
-															34
-														],
-														"id": "c"
-													}
-												}
-											]
+											"id": "f"
 										},
-										"comprehensions": [
+										"args": [
 											{
-												"node": "ComprehensionGenerator",
+												"node": "CallArg",
 												"position": [
-													75,
-													37
+													67,
+													15
 												],
-												"vars": [
-													{
-														"node": "AtomId",
-														"position": [
-															75,
-															41
-														],
-														"id": "c"
-													}
-												],
-												"iterables": [
-													{
-														"node": "AtomId",
-														"position": [
-															75,
-															46
-														],
-														"id": "s"
-													}
-												],
-												"steps": []
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														67,
+														15
+													],
+													"id": "c"
+												}
 											}
 										]
-									}
-								}
-							]
+									},
+									"comprehensions": [
+										{
+											"node": "ComprehensionGenerator",
+											"position": [
+												67,
+												18
+											],
+											"vars": [
+												{
+													"node": "AtomId",
+													"position": [
+														67,
+														22
+													],
+													"id": "c"
+												}
+											],
+											"iterables": [
+												{
+													"node": "AtomId",
+													"position": [
+														67,
+														27
+													],
+													"id": "s"
+												}
+											],
+											"steps": []
+										}
+									]
+								},
+								"attr": "_asString",
+								"safe": false
+							},
+							"args": []
 						}
 					}
 				]
@@ -2883,7 +2629,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				77,
+				69,
 				1
 			],
 			"id": "String_reduce",
@@ -2894,13 +2640,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						77,
+						69,
 						23
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							77,
+							69,
 							23
 						],
 						"name": "String"
@@ -2911,20 +2657,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						77,
+						69,
 						33
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							77,
+							69,
 							39
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									77,
+									69,
 									33
 								],
 								"name": "Char"
@@ -2932,7 +2678,7 @@
 							{
 								"node": "TypeName",
 								"position": [
-									77,
+									69,
 									39
 								],
 								"name": "B"
@@ -2941,7 +2687,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								77,
+								69,
 								42
 							],
 							"name": "B"
@@ -2953,13 +2699,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						77,
+						69,
 						47
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							77,
+							69,
 							47
 						],
 						"name": "B"
@@ -2971,7 +2717,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					77,
+					69,
 					52
 				],
 				"name": "B"
@@ -2979,21 +2725,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					77,
+					69,
 					57
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							78,
+							70,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									78,
+									70,
 									9
 								],
 								"id": "c"
@@ -3003,7 +2749,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									78,
+									70,
 									14
 								],
 								"id": "s"
@@ -3013,21 +2759,21 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								78,
+								70,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtAssg",
 									"position": [
-										79,
+										71,
 										9
 									],
 									"lvalues": [
 										{
 											"node": "AtomId",
 											"position": [
-												79,
+												71,
 												9
 											],
 											"id": "r"
@@ -3036,13 +2782,13 @@
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											79,
+											71,
 											13
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												79,
+												71,
 												13
 											],
 											"id": "f"
@@ -3051,14 +2797,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													79,
+													71,
 													15
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														79,
+														71,
 														15
 													],
 													"id": "c"
@@ -3067,14 +2813,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													79,
+													71,
 													18
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														79,
+														71,
 														18
 													],
 													"id": "r"
@@ -3089,13 +2835,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							80,
+							72,
 							5
 						],
 						"expr": {
 							"node": "AtomId",
 							"position": [
-								80,
+								72,
 								12
 							],
 							"id": "r"
@@ -3107,402 +2853,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				83,
-				1
-			],
-			"id": "Int_pow",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						83,
-						14
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							83,
-							14
-						],
-						"name": "Int"
-					},
-					"name": "b",
-					"default": null
-				},
-				{
-					"node": "FuncArg",
-					"position": [
-						83,
-						21
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							83,
-							21
-						],
-						"name": "Int"
-					},
-					"name": "e",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					83,
-					28
-				],
-				"name": "Int"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					83,
-					35
-				],
-				"stmts": [
-					{
-						"node": "StmtIf",
-						"position": [
-							84,
-							5
-						],
-						"exprs": [
-							{
-								"node": "ExprCmp",
-								"position": [
-									84,
-									8
-								],
-								"exprs": [
-									{
-										"node": "AtomId",
-										"position": [
-											84,
-											8
-										],
-										"id": "e"
-									},
-									{
-										"node": "AtomInt",
-										"position": [
-											84,
-											12
-										],
-										"int": 0
-									}
-								],
-								"ops": [
-									"<"
-								]
-							}
-						],
-						"blocks": [
-							{
-								"node": "Block",
-								"position": [
-									84,
-									16
-								],
-								"stmts": [
-									{
-										"node": "StmtReturn",
-										"position": [
-											85,
-											9
-										],
-										"expr": {
-											"node": "AtomInt",
-											"position": [
-												85,
-												16
-											],
-											"int": 0
-										}
-									}
-								]
-							}
-						]
-					},
-					{
-						"node": "StmtAssg",
-						"position": [
-							86,
-							5
-						],
-						"lvalues": [
-							{
-								"node": "AtomId",
-								"position": [
-									86,
-									5
-								],
-								"id": "r"
-							}
-						],
-						"expr": {
-							"node": "AtomInt",
-							"position": [
-								86,
-								9
-							],
-							"int": 1
-						}
-					},
-					{
-						"node": "StmtWhile",
-						"position": [
-							87,
-							5
-						],
-						"expr": {
-							"node": "ExprCmp",
-							"position": [
-								87,
-								11
-							],
-							"exprs": [
-								{
-									"node": "AtomId",
-									"position": [
-										87,
-										11
-									],
-									"id": "e"
-								},
-								{
-									"node": "AtomInt",
-									"position": [
-										87,
-										15
-									],
-									"int": 0
-								}
-							],
-							"ops": [
-								">"
-							]
-						},
-						"block": {
-							"node": "Block",
-							"position": [
-								87,
-								19
-							],
-							"stmts": [
-								{
-									"node": "StmtIf",
-									"position": [
-										88,
-										9
-									],
-									"exprs": [
-										{
-											"node": "ExprUnaryOp",
-											"position": [
-												88,
-												12
-											],
-											"expr": {
-												"node": "ExprBinaryOp",
-												"position": [
-													88,
-													16
-												],
-												"exprs": [
-													{
-														"node": "AtomInt",
-														"position": [
-															88,
-															16
-														],
-														"int": 2
-													},
-													{
-														"node": "AtomId",
-														"position": [
-															88,
-															18
-														],
-														"id": "e"
-													}
-												],
-												"op": "|"
-											},
-											"op": "not"
-										}
-									],
-									"blocks": [
-										{
-											"node": "Block",
-											"position": [
-												88,
-												22
-											],
-											"stmts": [
-												{
-													"node": "StmtAssgExpr",
-													"position": [
-														89,
-														13
-													],
-													"exprs": [
-														{
-															"node": "AtomId",
-															"position": [
-																89,
-																13
-															],
-															"id": "r"
-														},
-														{
-															"node": "AtomId",
-															"position": [
-																89,
-																18
-															],
-															"id": "b"
-														}
-													],
-													"op": "*"
-												}
-											]
-										}
-									]
-								},
-								{
-									"node": "StmtAssgExpr",
-									"position": [
-										90,
-										9
-									],
-									"exprs": [
-										{
-											"node": "AtomId",
-											"position": [
-												90,
-												9
-											],
-											"id": "b"
-										},
-										{
-											"node": "AtomId",
-											"position": [
-												90,
-												14
-											],
-											"id": "b"
-										}
-									],
-									"op": "*"
-								},
-								{
-									"node": "StmtAssgExpr",
-									"position": [
-										91,
-										9
-									],
-									"exprs": [
-										{
-											"node": "AtomId",
-											"position": [
-												91,
-												9
-											],
-											"id": "e"
-										},
-										{
-											"node": "AtomInt",
-											"position": [
-												91,
-												15
-											],
-											"int": 1
-										}
-									],
-									"op": ">>"
-								}
-							]
-						}
-					},
-					{
-						"node": "StmtReturn",
-						"position": [
-							92,
-							5
-						],
-						"expr": {
-							"node": "AtomId",
-							"position": [
-								92,
-								12
-							],
-							"id": "r"
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				94,
-				1
-			],
-			"id": "Float_pow",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						94,
-						16
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							94,
-							16
-						],
-						"name": "Float"
-					},
-					"name": "b",
-					"default": null
-				},
-				{
-					"node": "FuncArg",
-					"position": [
-						94,
-						25
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							94,
-							25
-						],
-						"name": "Float"
-					},
-					"name": "e",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					94,
-					34
-				],
-				"name": "Float"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				97,
+				75,
 				1
 			],
 			"id": "CharArray_join",
@@ -3511,19 +2862,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						97,
+						75,
 						21
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							97,
+							75,
 							21
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								97,
+								75,
 								22
 							],
 							"name": "Char"
@@ -3535,13 +2886,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						97,
+						75,
 						35
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							97,
+							75,
 							35
 						],
 						"name": "String"
@@ -3550,7 +2901,7 @@
 					"default": {
 						"node": "AtomString",
 						"position": [
-							97,
+							75,
 							47
 						],
 						"string": ""
@@ -3560,7 +2911,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					97,
+					75,
 					51
 				],
 				"name": "String"
@@ -3568,34 +2919,34 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					97,
+					75,
 					61
 				],
 				"stmts": [
 					{
 						"node": "StmtIf",
 						"position": [
-							98,
+							76,
 							5
 						],
 						"exprs": [
 							{
 								"node": "ExprCmp",
 								"position": [
-									98,
+									76,
 									8
 								],
 								"exprs": [
 									{
 										"node": "ExprAttr",
 										"position": [
-											98,
+											76,
 											8
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												98,
+												76,
 												8
 											],
 											"id": "sep"
@@ -3606,7 +2957,7 @@
 									{
 										"node": "AtomInt",
 										"position": [
-											98,
+											76,
 											22
 										],
 										"int": 0
@@ -3621,90 +2972,40 @@
 							{
 								"node": "Block",
 								"position": [
-									98,
+									76,
 									26
 								],
 								"stmts": [
 									{
 										"node": "StmtReturn",
 										"position": [
-											99,
+											77,
 											9
 										],
 										"expr": {
 											"node": "ExprCall",
 											"position": [
-												99,
+												77,
 												16
 											],
 											"expr": {
-												"node": "AtomId",
+												"node": "ExprAttr",
 												"position": [
-													99,
+													77,
 													16
 												],
-												"id": "CharArray_asString"
-											},
-											"args": [
-												{
-													"node": "CallArg",
+												"expr": {
+													"node": "AtomId",
 													"position": [
-														99,
-														35
+														77,
+														16
 													],
-													"name": null,
-													"expr": {
-														"node": "ExprCall",
-														"position": [
-															99,
-															35
-														],
-														"expr": {
-															"node": "ExprAttr",
-															"position": [
-																99,
-																35
-															],
-															"expr": {
-																"node": "ExprCall",
-																"position": [
-																	99,
-																	35
-																],
-																"expr": {
-																	"node": "AtomId",
-																	"position": [
-																		99,
-																		35
-																	],
-																	"id": "CharArray_asString"
-																},
-																"args": [
-																	{
-																		"node": "CallArg",
-																		"position": [
-																			99,
-																			54
-																		],
-																		"name": null,
-																		"expr": {
-																			"node": "AtomId",
-																			"position": [
-																				99,
-																				54
-																			],
-																			"id": "array"
-																		}
-																	}
-																]
-															},
-															"attr": "toArray",
-															"safe": false
-														},
-														"args": []
-													}
-												}
-											]
+													"id": "array"
+												},
+												"attr": "_asString",
+												"safe": false
+											},
+											"args": []
 										}
 									}
 								]
@@ -3714,14 +3015,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							100,
+							78,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									100,
+									78,
 									5
 								],
 								"id": "m"
@@ -3730,13 +3031,13 @@
 						"expr": {
 							"node": "ExprAttr",
 							"position": [
-								100,
+								78,
 								9
 							],
 							"expr": {
 								"node": "AtomId",
 								"position": [
-									100,
+									78,
 									9
 								],
 								"id": "sep"
@@ -3748,14 +3049,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							101,
+							79,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									101,
+									79,
 									5
 								],
 								"id": "n"
@@ -3764,13 +3065,13 @@
 						"expr": {
 							"node": "ExprAttr",
 							"position": [
-								101,
+								79,
 								9
 							],
 							"expr": {
 								"node": "AtomId",
 								"position": [
-									101,
+									79,
 									9
 								],
 								"id": "array"
@@ -3782,14 +3083,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							102,
+							80,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									102,
+									80,
 									5
 								],
 								"id": "r"
@@ -3798,21 +3099,21 @@
 						"expr": {
 							"node": "ExprBinaryOp",
 							"position": [
-								102,
+								80,
 								9
 							],
 							"exprs": [
 								{
 									"node": "ExprArray",
 									"position": [
-										102,
+										80,
 										9
 									],
 									"exprs": [
 										{
 											"node": "AtomChar",
 											"position": [
-												102,
+												80,
 												10
 											],
 											"char": " "
@@ -3822,28 +3123,28 @@
 								{
 									"node": "ExprBinaryOp",
 									"position": [
-										102,
+										80,
 										18
 									],
 									"exprs": [
 										{
 											"node": "ExprBinaryOp",
 											"position": [
-												102,
+												80,
 												18
 											],
 											"exprs": [
 												{
 													"node": "ExprBinaryOp",
 													"position": [
-														102,
+														80,
 														19
 													],
 													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
-																102,
+																80,
 																19
 															],
 															"id": "m"
@@ -3851,7 +3152,7 @@
 														{
 															"node": "AtomInt",
 															"position": [
-																102,
+																80,
 																21
 															],
 															"int": 1
@@ -3862,14 +3163,14 @@
 												{
 													"node": "ExprBinaryOp",
 													"position": [
-														102,
+														80,
 														27
 													],
 													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
-																102,
+																80,
 																27
 															],
 															"id": "n"
@@ -3877,7 +3178,7 @@
 														{
 															"node": "AtomInt",
 															"position": [
-																102,
+																80,
 																29
 															],
 															"int": 1
@@ -3891,7 +3192,7 @@
 										{
 											"node": "AtomInt",
 											"position": [
-												102,
+												80,
 												34
 											],
 											"int": 1
@@ -3906,14 +3207,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							103,
+							81,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									103,
+									81,
 									5
 								],
 								"id": "p"
@@ -3922,7 +3223,7 @@
 						"expr": {
 							"node": "AtomInt",
 							"position": [
-								103,
+								81,
 								9
 							],
 							"int": 0
@@ -3931,14 +3232,14 @@
 					{
 						"node": "StmtFor",
 						"position": [
-							104,
+							82,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									104,
+									82,
 									9
 								],
 								"id": "i"
@@ -3948,14 +3249,14 @@
 							{
 								"node": "ExprRange",
 								"position": [
-									104,
+									82,
 									14
 								],
 								"exprs": [
 									{
 										"node": "AtomInt",
 										"position": [
-											104,
+											82,
 											14
 										],
 										"int": 0
@@ -3963,7 +3264,7 @@
 									{
 										"node": "AtomId",
 										"position": [
-											104,
+											82,
 											18
 										],
 										"id": "n"
@@ -3976,28 +3277,28 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								104,
+								82,
 								22
 							],
 							"stmts": [
 								{
 									"node": "StmtAssg",
 									"position": [
-										105,
+										83,
 										9
 									],
 									"lvalues": [
 										{
 											"node": "ExprIndex",
 											"position": [
-												105,
+												83,
 												9
 											],
 											"exprs": [
 												{
 													"node": "AtomId",
 													"position": [
-														105,
+														83,
 														9
 													],
 													"id": "r"
@@ -4005,7 +3306,7 @@
 												{
 													"node": "AtomId",
 													"position": [
-														105,
+														83,
 														11
 													],
 													"id": "p"
@@ -4017,14 +3318,14 @@
 									"expr": {
 										"node": "ExprIndex",
 										"position": [
-											105,
+											83,
 											16
 										],
 										"exprs": [
 											{
 												"node": "AtomId",
 												"position": [
-													105,
+													83,
 													16
 												],
 												"id": "array"
@@ -4032,7 +3333,7 @@
 											{
 												"node": "AtomId",
 												"position": [
-													105,
+													83,
 													22
 												],
 												"id": "i"
@@ -4044,14 +3345,14 @@
 								{
 									"node": "StmtAssgExpr",
 									"position": [
-										106,
+										84,
 										9
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												106,
+												84,
 												9
 											],
 											"id": "p"
@@ -4059,7 +3360,7 @@
 										{
 											"node": "AtomInt",
 											"position": [
-												106,
+												84,
 												14
 											],
 											"int": 1
@@ -4070,21 +3371,21 @@
 								{
 									"node": "StmtIf",
 									"position": [
-										107,
+										85,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprCmp",
 											"position": [
-												107,
+												85,
 												12
 											],
 											"exprs": [
 												{
 													"node": "AtomId",
 													"position": [
-														107,
+														85,
 														12
 													],
 													"id": "i"
@@ -4092,14 +3393,14 @@
 												{
 													"node": "ExprBinaryOp",
 													"position": [
-														107,
+														85,
 														16
 													],
 													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
-																107,
+																85,
 																16
 															],
 															"id": "n"
@@ -4107,7 +3408,7 @@
 														{
 															"node": "AtomInt",
 															"position": [
-																107,
+																85,
 																18
 															],
 															"int": 1
@@ -4125,21 +3426,21 @@
 										{
 											"node": "Block",
 											"position": [
-												107,
+												85,
 												22
 											],
 											"stmts": [
 												{
 													"node": "StmtFor",
 													"position": [
-														108,
+														86,
 														13
 													],
 													"vars": [
 														{
 															"node": "AtomId",
 															"position": [
-																108,
+																86,
 																17
 															],
 															"id": "c"
@@ -4149,7 +3450,7 @@
 														{
 															"node": "AtomId",
 															"position": [
-																108,
+																86,
 																22
 															],
 															"id": "sep"
@@ -4159,28 +3460,28 @@
 													"block": {
 														"node": "Block",
 														"position": [
-															108,
+															86,
 															28
 														],
 														"stmts": [
 															{
 																"node": "StmtAssg",
 																"position": [
-																	109,
+																	87,
 																	17
 																],
 																"lvalues": [
 																	{
 																		"node": "ExprIndex",
 																		"position": [
-																			109,
+																			87,
 																			17
 																		],
 																		"exprs": [
 																			{
 																				"node": "AtomId",
 																				"position": [
-																					109,
+																					87,
 																					17
 																				],
 																				"id": "r"
@@ -4188,7 +3489,7 @@
 																			{
 																				"node": "AtomId",
 																				"position": [
-																					109,
+																					87,
 																					19
 																				],
 																				"id": "p"
@@ -4200,7 +3501,7 @@
 																"expr": {
 																	"node": "AtomId",
 																	"position": [
-																		109,
+																		87,
 																		24
 																	],
 																	"id": "c"
@@ -4209,14 +3510,14 @@
 															{
 																"node": "StmtAssgExpr",
 																"position": [
-																	110,
+																	88,
 																	17
 																],
 																"exprs": [
 																	{
 																		"node": "AtomId",
 																		"position": [
-																			110,
+																			88,
 																			17
 																		],
 																		"id": "p"
@@ -4224,7 +3525,7 @@
 																	{
 																		"node": "AtomInt",
 																		"position": [
-																			110,
+																			88,
 																			22
 																		],
 																		"int": 1
@@ -4245,41 +3546,33 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							111,
+							89,
 							5
 						],
 						"expr": {
 							"node": "ExprCall",
 							"position": [
-								111,
+								89,
 								12
 							],
 							"expr": {
-								"node": "AtomId",
+								"node": "ExprAttr",
 								"position": [
-									111,
+									89,
 									12
 								],
-								"id": "CharArray_asString"
-							},
-							"args": [
-								{
-									"node": "CallArg",
+								"expr": {
+									"node": "AtomId",
 									"position": [
-										111,
-										31
+										89,
+										12
 									],
-									"name": null,
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											111,
-											31
-										],
-										"id": "r"
-									}
-								}
-							]
+									"id": "r"
+								},
+								"attr": "_asString",
+								"safe": false
+							},
+							"args": []
 						}
 					}
 				]
@@ -4288,7 +3581,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				113,
+				91,
 				1
 			],
 			"id": "StringArray_join",
@@ -4297,19 +3590,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						113,
+						91,
 						23
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
-							113,
+							91,
 							23
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								113,
+								91,
 								24
 							],
 							"name": "String"
@@ -4321,13 +3614,13 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						113,
+						91,
 						39
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							113,
+							91,
 							39
 						],
 						"name": "String"
@@ -4336,7 +3629,7 @@
 					"default": {
 						"node": "AtomString",
 						"position": [
-							113,
+							91,
 							51
 						],
 						"string": ""
@@ -4346,7 +3639,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					113,
+					91,
 					55
 				],
 				"name": "String"
@@ -4354,21 +3647,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					113,
+					91,
 					65
 				],
 				"stmts": [
 					{
 						"node": "StmtAssg",
 						"position": [
-							114,
+							92,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									114,
+									92,
 									5
 								],
 								"id": "m"
@@ -4377,13 +3670,13 @@
 						"expr": {
 							"node": "ExprAttr",
 							"position": [
-								114,
+								92,
 								9
 							],
 							"expr": {
 								"node": "AtomId",
 								"position": [
-									114,
+									92,
 									9
 								],
 								"id": "sep"
@@ -4395,14 +3688,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							115,
+							93,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									115,
+									93,
 									5
 								],
 								"id": "n"
@@ -4411,13 +3704,13 @@
 						"expr": {
 							"node": "ExprAttr",
 							"position": [
-								115,
+								93,
 								9
 							],
 							"expr": {
 								"node": "AtomId",
 								"position": [
-									115,
+									93,
 									9
 								],
 								"id": "array"
@@ -4429,14 +3722,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							116,
+							94,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									116,
+									94,
 									5
 								],
 								"id": "l"
@@ -4445,7 +3738,7 @@
 						"expr": {
 							"node": "AtomInt",
 							"position": [
-								116,
+								94,
 								9
 							],
 							"int": 0
@@ -4454,14 +3747,14 @@
 					{
 						"node": "StmtFor",
 						"position": [
-							117,
+							95,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									117,
+									95,
 									9
 								],
 								"id": "s"
@@ -4471,7 +3764,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									117,
+									95,
 									14
 								],
 								"id": "array"
@@ -4481,21 +3774,21 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								117,
+								95,
 								22
 							],
 							"stmts": [
 								{
 									"node": "StmtAssgExpr",
 									"position": [
-										118,
+										96,
 										9
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												118,
+												96,
 												9
 											],
 											"id": "l"
@@ -4503,13 +3796,13 @@
 										{
 											"node": "ExprAttr",
 											"position": [
-												118,
+												96,
 												14
 											],
 											"expr": {
 												"node": "AtomId",
 												"position": [
-													118,
+													96,
 													14
 												],
 												"id": "s"
@@ -4526,14 +3819,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							119,
+							97,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									119,
+									97,
 									5
 								],
 								"id": "r"
@@ -4542,21 +3835,21 @@
 						"expr": {
 							"node": "ExprBinaryOp",
 							"position": [
-								119,
+								97,
 								9
 							],
 							"exprs": [
 								{
 									"node": "ExprArray",
 									"position": [
-										119,
+										97,
 										9
 									],
 									"exprs": [
 										{
 											"node": "AtomChar",
 											"position": [
-												119,
+												97,
 												10
 											],
 											"char": " "
@@ -4566,14 +3859,14 @@
 								{
 									"node": "ExprBinaryOp",
 									"position": [
-										119,
+										97,
 										18
 									],
 									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
-												119,
+												97,
 												18
 											],
 											"id": "l"
@@ -4581,14 +3874,14 @@
 										{
 											"node": "ExprBinaryOp",
 											"position": [
-												119,
+												97,
 												22
 											],
 											"exprs": [
 												{
 													"node": "AtomId",
 													"position": [
-														119,
+														97,
 														22
 													],
 													"id": "m"
@@ -4596,14 +3889,14 @@
 												{
 													"node": "ExprBinaryOp",
 													"position": [
-														119,
+														97,
 														25
 													],
 													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
-																119,
+																97,
 																25
 															],
 															"id": "n"
@@ -4611,7 +3904,7 @@
 														{
 															"node": "AtomInt",
 															"position": [
-																119,
+																97,
 																27
 															],
 															"int": 1
@@ -4632,14 +3925,14 @@
 					{
 						"node": "StmtAssg",
 						"position": [
-							120,
+							98,
 							5
 						],
 						"lvalues": [
 							{
 								"node": "AtomId",
 								"position": [
-									120,
+									98,
 									5
 								],
 								"id": "p"
@@ -4648,7 +3941,7 @@
 						"expr": {
 							"node": "AtomInt",
 							"position": [
-								120,
+								98,
 								9
 							],
 							"int": 0
@@ -4657,14 +3950,14 @@
 					{
 						"node": "StmtFor",
 						"position": [
-							121,
+							99,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									121,
+									99,
 									9
 								],
 								"id": "i"
@@ -4674,14 +3967,14 @@
 							{
 								"node": "ExprRange",
 								"position": [
-									121,
+									99,
 									14
 								],
 								"exprs": [
 									{
 										"node": "AtomInt",
 										"position": [
-											121,
+											99,
 											14
 										],
 										"int": 0
@@ -4689,7 +3982,7 @@
 									{
 										"node": "AtomId",
 										"position": [
-											121,
+											99,
 											18
 										],
 										"id": "n"
@@ -4702,21 +3995,21 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								121,
+								99,
 								22
 							],
 							"stmts": [
 								{
 									"node": "StmtFor",
 									"position": [
-										122,
+										100,
 										9
 									],
 									"vars": [
 										{
 											"node": "AtomId",
 											"position": [
-												122,
+												100,
 												13
 											],
 											"id": "c"
@@ -4726,14 +4019,14 @@
 										{
 											"node": "ExprIndex",
 											"position": [
-												122,
+												100,
 												18
 											],
 											"exprs": [
 												{
 													"node": "AtomId",
 													"position": [
-														122,
+														100,
 														18
 													],
 													"id": "array"
@@ -4741,7 +4034,7 @@
 												{
 													"node": "AtomId",
 													"position": [
-														122,
+														100,
 														24
 													],
 													"id": "i"
@@ -4754,28 +4047,28 @@
 									"block": {
 										"node": "Block",
 										"position": [
-											122,
+											100,
 											29
 										],
 										"stmts": [
 											{
 												"node": "StmtAssg",
 												"position": [
-													123,
+													101,
 													13
 												],
 												"lvalues": [
 													{
 														"node": "ExprIndex",
 														"position": [
-															123,
+															101,
 															13
 														],
 														"exprs": [
 															{
 																"node": "AtomId",
 																"position": [
-																	123,
+																	101,
 																	13
 																],
 																"id": "r"
@@ -4783,7 +4076,7 @@
 															{
 																"node": "AtomId",
 																"position": [
-																	123,
+																	101,
 																	15
 																],
 																"id": "p"
@@ -4795,7 +4088,7 @@
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														123,
+														101,
 														20
 													],
 													"id": "c"
@@ -4804,14 +4097,14 @@
 											{
 												"node": "StmtAssgExpr",
 												"position": [
-													124,
+													102,
 													13
 												],
 												"exprs": [
 													{
 														"node": "AtomId",
 														"position": [
-															124,
+															102,
 															13
 														],
 														"id": "p"
@@ -4819,7 +4112,7 @@
 													{
 														"node": "AtomInt",
 														"position": [
-															124,
+															102,
 															18
 														],
 														"int": 1
@@ -4833,21 +4126,21 @@
 								{
 									"node": "StmtIf",
 									"position": [
-										125,
+										103,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprCmp",
 											"position": [
-												125,
+												103,
 												12
 											],
 											"exprs": [
 												{
 													"node": "AtomId",
 													"position": [
-														125,
+														103,
 														12
 													],
 													"id": "i"
@@ -4855,14 +4148,14 @@
 												{
 													"node": "ExprBinaryOp",
 													"position": [
-														125,
+														103,
 														16
 													],
 													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
-																125,
+																103,
 																16
 															],
 															"id": "n"
@@ -4870,7 +4163,7 @@
 														{
 															"node": "AtomInt",
 															"position": [
-																125,
+																103,
 																18
 															],
 															"int": 1
@@ -4888,21 +4181,21 @@
 										{
 											"node": "Block",
 											"position": [
-												125,
+												103,
 												22
 											],
 											"stmts": [
 												{
 													"node": "StmtFor",
 													"position": [
-														126,
+														104,
 														13
 													],
 													"vars": [
 														{
 															"node": "AtomId",
 															"position": [
-																126,
+																104,
 																17
 															],
 															"id": "c"
@@ -4912,7 +4205,7 @@
 														{
 															"node": "AtomId",
 															"position": [
-																126,
+																104,
 																22
 															],
 															"id": "sep"
@@ -4922,28 +4215,28 @@
 													"block": {
 														"node": "Block",
 														"position": [
-															126,
+															104,
 															28
 														],
 														"stmts": [
 															{
 																"node": "StmtAssg",
 																"position": [
-																	127,
+																	105,
 																	17
 																],
 																"lvalues": [
 																	{
 																		"node": "ExprIndex",
 																		"position": [
-																			127,
+																			105,
 																			17
 																		],
 																		"exprs": [
 																			{
 																				"node": "AtomId",
 																				"position": [
-																					127,
+																					105,
 																					17
 																				],
 																				"id": "r"
@@ -4951,7 +4244,7 @@
 																			{
 																				"node": "AtomId",
 																				"position": [
-																					127,
+																					105,
 																					19
 																				],
 																				"id": "p"
@@ -4963,7 +4256,7 @@
 																"expr": {
 																	"node": "AtomId",
 																	"position": [
-																		127,
+																		105,
 																		24
 																	],
 																	"id": "c"
@@ -4972,14 +4265,14 @@
 															{
 																"node": "StmtAssgExpr",
 																"position": [
-																	128,
+																	106,
 																	17
 																],
 																"exprs": [
 																	{
 																		"node": "AtomId",
 																		"position": [
-																			128,
+																			106,
 																			17
 																		],
 																		"id": "p"
@@ -4987,7 +4280,7 @@
 																	{
 																		"node": "AtomInt",
 																		"position": [
-																			128,
+																			106,
 																			22
 																		],
 																		"int": 1
@@ -5008,846 +4301,33 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							129,
+							107,
 							5
 						],
 						"expr": {
 							"node": "ExprCall",
 							"position": [
-								129,
+								107,
 								12
 							],
 							"expr": {
-								"node": "AtomId",
+								"node": "ExprAttr",
 								"position": [
-									129,
+									107,
 									12
 								],
-								"id": "CharArray_asString"
+								"expr": {
+									"node": "AtomId",
+									"position": [
+										107,
+										12
+									],
+									"id": "r"
+								},
+								"attr": "_asString",
+								"safe": false
 							},
-							"args": [
-								{
-									"node": "CallArg",
-									"position": [
-										129,
-										31
-									],
-									"name": null,
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											129,
-											31
-										],
-										"id": "r"
-									}
-								}
-							]
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				132,
-				1
-			],
-			"id": "Int_toString",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						132,
-						19
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							132,
-							19
-						],
-						"name": "Int"
-					},
-					"name": "n",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					132,
-					26
-				],
-				"name": "String"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				133,
-				1
-			],
-			"id": "Float_toString",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						133,
-						21
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							133,
-							21
-						],
-						"name": "Float"
-					},
-					"name": "f",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					133,
-					30
-				],
-				"name": "String"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				135,
-				1
-			],
-			"id": "Bool_toString",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						135,
-						20
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							135,
-							20
-						],
-						"name": "Bool"
-					},
-					"name": "b",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					135,
-					28
-				],
-				"name": "String"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					135,
-					38
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							136,
-							5
-						],
-						"expr": {
-							"node": "ExprCond",
-							"position": [
-								136,
-								12
-							],
-							"exprs": [
-								{
-									"node": "AtomId",
-									"position": [
-										136,
-										12
-									],
-									"id": "b"
-								},
-								{
-									"node": "AtomString",
-									"position": [
-										136,
-										16
-									],
-									"string": "true"
-								},
-								{
-									"node": "AtomString",
-									"position": [
-										136,
-										25
-									],
-									"string": "false"
-								}
-							]
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				138,
-				1
-			],
-			"id": "Char_toString",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						138,
-						20
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							138,
-							20
-						],
-						"name": "Char"
-					},
-					"name": "c",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					138,
-					28
-				],
-				"name": "String"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					138,
-					38
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							139,
-							5
-						],
-						"expr": {
-							"node": "ExprCall",
-							"position": [
-								139,
-								12
-							],
-							"expr": {
-								"node": "AtomId",
-								"position": [
-									139,
-									12
-								],
-								"id": "CharArray_asString"
-							},
-							"args": [
-								{
-									"node": "CallArg",
-									"position": [
-										139,
-										31
-									],
-									"name": null,
-									"expr": {
-										"node": "ExprArray",
-										"position": [
-											139,
-											31
-										],
-										"exprs": [
-											{
-												"node": "AtomId",
-												"position": [
-													139,
-													32
-												],
-												"id": "c"
-											}
-										]
-									}
-								}
-							]
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				141,
-				1
-			],
-			"id": "String_toString",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						141,
-						22
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							141,
-							22
-						],
-						"name": "String"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					141,
-					32
-				],
-				"name": "String"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					141,
-					42
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							142,
-							5
-						],
-						"expr": {
-							"node": "AtomId",
-							"position": [
-								142,
-								12
-							],
-							"id": "s"
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				145,
-				1
-			],
-			"id": "String_toInt",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						145,
-						19
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							145,
-							19
-						],
-						"name": "String"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					145,
-					29
-				],
-				"name": "Int"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				146,
-				1
-			],
-			"id": "String_toFloat",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						146,
-						21
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							146,
-							21
-						],
-						"name": "String"
-					},
-					"name": "s",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					146,
-					31
-				],
-				"name": "Float"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				149,
-				1
-			],
-			"id": "Int_toFloat",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						149,
-						18
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							149,
-							18
-						],
-						"name": "Int"
-					},
-					"name": "n",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					149,
-					25
-				],
-				"name": "Float"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				150,
-				1
-			],
-			"id": "Float_toInt",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						150,
-						18
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							150,
-							18
-						],
-						"name": "Float"
-					},
-					"name": "f",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					150,
-					27
-				],
-				"name": "Int"
-			},
-			"block": null
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				153,
-				1
-			],
-			"id": "Bool_toInt",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						153,
-						17
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							153,
-							17
-						],
-						"name": "Bool"
-					},
-					"name": "b",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					153,
-					25
-				],
-				"name": "Int"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					153,
-					32
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							154,
-							5
-						],
-						"expr": {
-							"node": "ExprCond",
-							"position": [
-								154,
-								12
-							],
-							"exprs": [
-								{
-									"node": "AtomId",
-									"position": [
-										154,
-										12
-									],
-									"id": "b"
-								},
-								{
-									"node": "AtomInt",
-									"position": [
-										154,
-										16
-									],
-									"int": 1
-								},
-								{
-									"node": "AtomInt",
-									"position": [
-										154,
-										20
-									],
-									"int": 0
-								}
-							]
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				156,
-				1
-			],
-			"id": "Bool_toFloat",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						156,
-						19
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							156,
-							19
-						],
-						"name": "Bool"
-					},
-					"name": "b",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					156,
-					27
-				],
-				"name": "Float"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					156,
-					36
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							157,
-							5
-						],
-						"expr": {
-							"node": "ExprCond",
-							"position": [
-								157,
-								12
-							],
-							"exprs": [
-								{
-									"node": "AtomId",
-									"position": [
-										157,
-										12
-									],
-									"id": "b"
-								},
-								{
-									"node": "AtomFloat",
-									"position": [
-										157,
-										16
-									],
-									"float": 1.0
-								},
-								{
-									"node": "AtomFloat",
-									"position": [
-										157,
-										22
-									],
-									"float": 0.0
-								}
-							]
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				159,
-				1
-			],
-			"id": "Char_toInt",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						159,
-						17
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							159,
-							17
-						],
-						"name": "Char"
-					},
-					"name": "c",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					159,
-					25
-				],
-				"name": "Int"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					159,
-					32
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							160,
-							5
-						],
-						"expr": {
-							"node": "ExprBinaryOp",
-							"position": [
-								160,
-								12
-							],
-							"exprs": [
-								{
-									"node": "ExprAttr",
-									"position": [
-										160,
-										12
-									],
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											160,
-											12
-										],
-										"id": "c"
-									},
-									"attr": "code",
-									"safe": false
-								},
-								{
-									"node": "AtomInt",
-									"position": [
-										160,
-										21
-									],
-									"int": 48
-								}
-							],
-							"op": "-"
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				162,
-				1
-			],
-			"id": "Char_toFloat",
-			"typevars": [],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						162,
-						19
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							162,
-							19
-						],
-						"name": "Char"
-					},
-					"name": "c",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					162,
-					27
-				],
-				"name": "Float"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					162,
-					36
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							163,
-							5
-						],
-						"expr": {
-							"node": "ExprBinaryOp",
-							"position": [
-								163,
-								12
-							],
-							"exprs": [
-								{
-									"node": "ExprAttr",
-									"position": [
-										163,
-										12
-									],
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											163,
-											12
-										],
-										"id": "c"
-									},
-									"attr": "code",
-									"safe": false
-								},
-								{
-									"node": "AtomFloat",
-									"position": [
-										163,
-										21
-									],
-									"float": 48.0
-								}
-							],
-							"op": "-"
+							"args": []
 						}
 					}
 				]
