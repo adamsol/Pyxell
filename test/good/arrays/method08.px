@@ -1,0 +1,7 @@
+
+a = [random.randFloat() for i in 1..10^^6]
+b = a[::-1]
+print a[0] == b[0]
+
+a.reverse()
+print a == b

@@ -147,7 +147,7 @@ Int pow(Int b, Int e)
 }
 
 
-/* String and array manipulation */
+/* Operators for strings and arrays */
 
 String asString(const Array<Char>& x)
 {
@@ -191,15 +191,15 @@ T multiply(const T& v, Int m)
     return r;
 }
 
-String multiply(const String& v, Int m)
+String multiply(const String& x, Int m)
 {
-    return make_string(multiply(*v, m));
+    return make_string(multiply(*x, m));
 }
 
 template <typename T>
-Array<T> multiply(const Array<T>& v, Int m)
+Array<T> multiply(const Array<T>& x, Int m)
 {
-    return make_array<T>(multiply(*v, m));
+    return make_array<T>(multiply(*x, m));
 }
 
 template <typename T>
@@ -243,15 +243,92 @@ T slice(const T& v, const Nullable<Int>& a, const Nullable<Int>& b, Int step)
     return r;
 }
 
-String slice(const String& v, const Nullable<Int>& a, const Nullable<Int>& b, Int c)
+String slice(const String& x, const Nullable<Int>& a, const Nullable<Int>& b, Int c)
 {
-    return make_string(slice(*v, a, b, c));
+    return make_string(slice(*x, a, b, c));
 }
 
 template <typename T>
-Array<T> slice(const Array<T>& v, const Nullable<Int>& a, const Nullable<Int>& b, Int c)
+Array<T> slice(const Array<T>& x, const Nullable<Int>& a, const Nullable<Int>& b, Int c)
 {
-    return make_array<T>(slice(*v, a, b, c));
+    return make_array<T>(slice(*x, a, b, c));
+}
+
+
+/* Array methods */
+
+template <typename T>
+Void push(const Array<T>& x, const T& e)
+{
+    x->push_back(e);
+}
+
+template <typename T>
+Void insert(const Array<T>& x, Int p, const T& e)
+{
+    if (p < 0) {
+        p += x->size();
+    }
+    x->insert(x->begin()+p, e);
+}
+
+template <typename T>
+Void extend(const Array<T>& x, const Array<T>& y)
+{
+    x->reserve(x->size() + y->size());
+    x->insert(x->end(), y->begin(), y->end());
+}
+
+template <typename T>
+T pop(const Array<T>& x)
+{
+    auto r = x->back();
+    x->pop_back();
+    return r;
+}
+
+template <typename T>
+Void erase(const Array<T>& x, Int p, Int n)
+{
+    if (p < 0) {
+        p += x->size();
+    }
+    x->erase(x->begin()+p, x->begin()+p+n);
+}
+
+template <typename T>
+Void clear(const Array<T>& x)
+{
+    x->clear();
+}
+
+template <typename T>
+Void reverse(const Array<T>& x)
+{
+    std::reverse(x->begin(), x->end());
+}
+
+template <typename T>
+Array<T> copy(const Array<T>& x)
+{
+    return make_array<T>(*x);
+}
+
+template <typename T>
+Nullable<Int> find(const Array<T>& x, const T& e)
+{
+    for (std::size_t i = 0; i < x->size(); ++i) {
+        if ((*x)[i] == e) {
+            return Nullable<Int>(i);
+        }
+    }
+    return Nullable<Int>();
+}
+
+template <typename T>
+Int count(const Array<T>& x, const T& e)
+{
+    return std::count(x->begin(), x->end(), e);
 }
 
 

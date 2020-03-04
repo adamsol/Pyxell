@@ -299,6 +299,26 @@ class PyxellCompiler:
                     value = self.env['Array_map']
                 elif attr == 'reduce':
                     value = self.env['Array_reduce']
+                elif attr == 'push':
+                    value = v.Variable(t.Func([type, type.subtype]), attr)
+                elif attr == 'insert':
+                    value = v.Variable(t.Func([type, t.Int, type.subtype]), attr)
+                elif attr == 'extend':
+                    value = v.Variable(t.Func([type, type]), attr)
+                elif attr == 'pop':
+                    value = v.Variable(t.Func([type], type.subtype), attr)
+                elif attr == 'erase':
+                    value = v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default={'node': 'AtomInt', 'int': 1})]), attr)
+                elif attr == 'clear':
+                    value = v.Variable(t.Func([type]), attr)
+                elif attr == 'reverse':
+                    value = v.Variable(t.Func([type]), attr)
+                elif attr == 'copy':
+                    value = v.Variable(t.Func([type], type), attr)
+                elif attr == 'find':
+                    value = v.Variable(t.Func([type, type.subtype], t.Nullable(t.Int)), attr)
+                elif attr == 'count':
+                    value = v.Variable(t.Func([type, type.subtype], t.Int), attr)
 
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')

@@ -1,0 +1,5 @@
+
+a = ['x']
+b = a.copy()
+a[0] = 'y'
+print a, b

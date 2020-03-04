@@ -1,0 +1,7 @@
+
+[Bool] a = []
+for i in 1..10^^8 do
+    a.push(2|i)
+
+print a.length
+print a[-2:]

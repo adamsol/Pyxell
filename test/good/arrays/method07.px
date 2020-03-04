@@ -1,0 +1,12 @@
+
+a = [0...10^^7]
+
+a.erase(7, 10^^7 - 8)
+a.erase(5)
+print a.pop(), a.pop()
+
+a.erase(-3, 2)
+print a
+
+a.clear()
+print a

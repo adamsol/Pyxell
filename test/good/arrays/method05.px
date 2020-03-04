@@ -1,0 +1,5 @@
+
+[Int] a = [1, 2, 3]
+a.insert(0, 8)
+a.insert(-1, 9)
+print a

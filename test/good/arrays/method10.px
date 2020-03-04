@@ -1,0 +1,4 @@
+
+a = [1..10^^6]
+print a.find(0), (a*2).find(723641)
+print a.count(-2), (a*5).count(9358)
