@@ -149,6 +149,8 @@ class PyxellCompiler:
             return self.env[type.name]
         if type.isArray():
             return t.Array(self.resolve_type(type.subtype))
+        if type.isSet():
+            return t.Set(self.resolve_type(type.subtype))
         if type.isNullable():
             return t.Nullable(self.resolve_type(type.subtype))
         if type.isTuple():
@@ -186,7 +188,7 @@ class PyxellCompiler:
         return result
 
     def index(self, node, collection, index, lvalue=False):
-        if collection.type.isCollection():
+        if collection.type.isIndexable():
             if lvalue and not collection.type.isArray():
                 self.throw(node, err.NotLvalue())
 
@@ -267,7 +269,7 @@ class PyxellCompiler:
             if attr == 'code':
                 value = v.Cast(obj, t.Int)
 
-        elif type.isCollection():
+        elif type.isIterable():
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif type == t.String:
@@ -495,10 +497,10 @@ class PyxellCompiler:
             if left.type == right.type and left.type in {t.Int, t.Float}:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
-            elif left.type.isCollection() and right.type == t.Int:
+            elif left.type.isIndexable() and right.type == t.Int:
                 return v.Call('multiply', left, right, type=left.type)
 
-            elif left.type == t.Int and right.type.isCollection():
+            elif left.type == t.Int and right.type.isIndexable():
                 return self.binaryop(node, op, right, left)
 
             else:
@@ -529,7 +531,7 @@ class PyxellCompiler:
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.Call('concat', left, right, type=t.String)
 
-            elif left.type == right.type and left.type.isCollection():
+            elif left.type == right.type and left.type.isIterable():
                 return v.Call('concat', left, right, type=left.type)
 
             else:
@@ -628,7 +630,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprArray', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIsNull', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
+            if node in {'ExprArray', 'ExprSet', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIsNull', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -955,7 +957,7 @@ class PyxellCompiler:
                 getter = lambda x: v.Cast(x, type)
             else:
                 value = self.compile(iterable)
-                if value.type != t.String and not value.type.isArray():
+                if not value.type.isIterable():
                     self.throw(node, err.NotIterable(value.type))
                 types.append(value.type.subtype)
                 array = self.tmp(value)
@@ -1243,6 +1245,11 @@ class PyxellCompiler:
 
         return result
 
+    def compileExprSet(self, node):
+        exprs = node['exprs']
+
+        return v.Set(self.unify(node, *map(self.compile, exprs)))
+
     def compileExprAttr(self, node):
         expr = node['expr']
         attr = node['attr']
@@ -1268,7 +1275,7 @@ class PyxellCompiler:
 
         collection = self.compile(node['expr'])
         type = collection.type
-        if not type.isCollection():
+        if not type.isIndexable():
             self.throw(node, err.NotIndexable(type))
 
         a = v.Nullable(self.cast(slice[0], self.compile(slice[0]), t.Int)) if slice[0] else v.Nullable()
@@ -1649,6 +1656,9 @@ class PyxellCompiler:
 
     def compileTypeArray(self, node):
         return t.Array(self.compile(node['subtype']))
+
+    def compileTypeSet(self, node):
+        return t.Set(self.compile(node['subtype']))
 
     def compileTypeNullable(self, node):
         return t.Nullable(self.compile(node['subtype']))

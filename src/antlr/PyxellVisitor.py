@@ -199,6 +199,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprSet.
+    def visitExprSet(self, ctx:PyxellParser.ExprSetContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprLambda.
     def visitExprLambda(self, ctx:PyxellParser.ExprLambdaContext):
         return self.visitChildren(ctx)
@@ -296,6 +301,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#TypeFunc0.
     def visitTypeFunc0(self, ctx:PyxellParser.TypeFunc0Context):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#TypeSet.
+    def visitTypeSet(self, ctx:PyxellParser.TypeSetContext):
         return self.visitChildren(ctx)
 
 

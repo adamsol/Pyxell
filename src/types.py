@@ -16,6 +16,9 @@ class Type:
     def isArray(self):
         return isinstance(self, Array)
 
+    def isSet(self):
+        return isinstance(self, Set)
+
     def isNullable(self):
         return isinstance(self, Nullable)
 
@@ -36,6 +39,8 @@ class Type:
             return True
         if self.isArray():
             return self.subtype.isUnknown()
+        if self.isSet():
+            return self.subtype.isUnknown()
         if self.isNullable():
             return self.subtype.isUnknown()
         if self.isTuple():
@@ -44,13 +49,18 @@ class Type:
             return any(arg.type.isUnknown() for arg in self.args) or self.ret.isUnknown()
         return False
 
-    def isCollection(self):
+    def isIndexable(self):
         return self == String or self.isArray()
+
+    def isIterable(self):
+        return self.isIndexable() or self.isSet()
 
     def isPrintable(self):
         if self in {Int, Float, Bool, Char, String, Unknown}:
             return True
         if self.isArray():
+            return self.subtype.isPrintable()
+        if self.isSet():
             return self.subtype.isPrintable()
         if self.isNullable():
             return self.subtype.isPrintable()
@@ -98,6 +108,22 @@ class Array(Type):
 
     def show(self):
         return f'[{self.subtype.show()}]'
+
+    def eq(self, other):
+        return self.subtype == other.subtype
+
+
+class Set(Type):
+
+    def __init__(self, subtype):
+        super().__init__()
+        self.subtype = subtype
+
+    def __str__(self):
+        return f'Set<{self.subtype}>'
+
+    def show(self):
+        return f'{{{self.subtype.show()}}}'
 
     def eq(self, other):
         return self.subtype == other.subtype
@@ -217,6 +243,10 @@ def unify_types(type1, *types):
         subtype = unify_types(type1.subtype, type2.subtype)
         return Array(subtype) if subtype else None
 
+    if type1.isSet() and type2.isSet():
+        subtype = unify_types(type1.subtype, type2.subtype)
+        return Set(subtype) if subtype else None
+
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
         return Nullable(subtype) if subtype else None
@@ -262,9 +292,11 @@ def type_variables_assignment(type1, type2):
     if type1.isArray() and type2.isArray():
         return type_variables_assignment(type1.subtype, type2.subtype)
 
-    if type1.isNullable() and type2.isNullable():
+    if type1.isSet() and type2.isSet():
         return type_variables_assignment(type1.subtype, type2.subtype)
 
+    if type1.isNullable() and type2.isNullable():
+        return type_variables_assignment(type1.subtype, type2.subtype)
     if type2.isNullable():
         return type_variables_assignment(type1, type2.subtype)
 
@@ -313,6 +345,8 @@ def get_type_variables(type):
 
 def can_cast(type1, type2):
     if type1.isArray() and type2.isArray():
+        return type1.subtype == type2.subtype or type1.subtype.isUnknown()
+    if type1.isSet() and type2.isSet():
         return type1.subtype == type2.subtype or type1.subtype.isUnknown()
     if not type1.isNullable() and type2.isNullable():
         return can_cast(type1, type2.subtype)

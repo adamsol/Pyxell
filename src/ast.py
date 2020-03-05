@@ -226,6 +226,12 @@ class PyxellASTVisitor(PyxellVisitor):
             'expr': self.visit(ctx.expr()),
         }
 
+    def visitExprSet(self, ctx):
+        return {
+            **_node(ctx, 'ExprSet'),
+            'exprs': self.visit(ctx.expr()),
+        }
+
     def visitExprAttr(self, ctx):
         return {
             **_node(ctx, 'ExprAttr'),
@@ -410,6 +416,12 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitTypeArray(self, ctx):
         return {
             **_node(ctx, 'TypeArray'),
+            'subtype': self.visit(ctx.typ()),
+        }
+
+    def visitTypeSet(self, ctx):
+        return {
+            **_node(ctx, 'TypeSet'),
             'subtype': self.visit(ctx.typ()),
         }
 

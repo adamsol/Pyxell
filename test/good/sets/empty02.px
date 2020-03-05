@@ -1,0 +1,3 @@
+
+{Float} a = {}
+print a.length

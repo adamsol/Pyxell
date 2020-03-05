@@ -73,6 +73,13 @@ class Array(Container):
         super().__init__(type, elements, f'make_array<{type.subtype}>' + '({{{}}})')
 
 
+class Set(Container):
+
+    def __init__(self, elements, subtype=None):
+        type = t.Set(elements[0].type if elements else (subtype or t.Unknown))
+        super().__init__(type, elements, f'make_set<{type.subtype}>' + '({{{}}})')
+
+
 class Nullable(Value):
 
     def __init__(self, value=None):

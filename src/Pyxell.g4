@@ -53,6 +53,7 @@ expr
   | '[' (expr ',')* expr? ']' # ExprArray
   | '[' expr 'step' expr ']' # ExprArrayRangeStep
   | '[' expr comprehension+ ']' # ExprArrayComprehension
+  | '{' (expr ',')* expr? '}' # ExprSet
   | expr safe='?'? '.' ID # ExprAttr
   | expr safe='?'? '[' tuple_expr ']' # ExprIndex
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice
@@ -115,6 +116,7 @@ typ
   : ID # TypeName
   | '(' typ ')' # TypeParentheses
   | '[' typ ']' # TypeArray
+  | '{' typ '}' # TypeSet
   | typ '?' # TypeNullable
   | <assoc=right> typ '*' typ # TypeTuple
   | <assoc=right> typ '->' typ # TypeFunc

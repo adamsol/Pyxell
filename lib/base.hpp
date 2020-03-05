@@ -12,6 +12,7 @@
 #include <random>
 #include <string>
 #include <tuple>
+#include <unordered_set>
 #include <vector>
 
 // https://github.com/godotengine/godot/pull/33376
@@ -52,6 +53,8 @@ using Float = double;
 using Char = char;
 using Bool = bool;
 
+/* String */
+
 using String = ptr<std::string>;
 
 template <typename... Args>
@@ -59,6 +62,8 @@ String make_string(Args&&... args)
 {
     return String(std::make_shared<std::string>(std::forward<Args>(args)...));
 }
+
+/* Array */
 
 template <typename T>
 struct Array: public ptr<std::vector<T>>
@@ -89,6 +94,39 @@ Array<T> make_array(Args&&... args)
     return Array<T>(std::make_shared<std::vector<T>>(std::forward<Args>(args)...));
 }
 
+/* Set */
+
+template <typename T>
+struct Set: public ptr<std::unordered_set<T>>
+{
+    using ptr<std::unordered_set<T>>::ptr;
+
+    Set(const Set<Unknown>& x)
+    {
+        this->p = std::make_shared<std::unordered_set<T>>();
+    }
+
+    template <typename U>
+    Set(const Set<U>& x)
+    {
+        this->p = std::make_shared<std::unordered_set<T>>(x->begin(), x->end());
+    }
+};
+
+template <typename T>
+Set<T> make_set(std::initializer_list<T> x)
+{
+    return Set<T>(std::make_shared<std::unordered_set<T>>(x));
+}
+
+template <typename T, typename... Args>
+Set<T> make_set(Args&&... args)
+{
+    return Set<T>(std::make_shared<std::unordered_set<T>>(std::forward<Args>(args)...));
+}
+
+/* Nullable */
+
 template <typename T>
 struct Nullable: public std::optional<T>
 {
@@ -98,8 +136,12 @@ struct Nullable: public std::optional<T>
     Nullable(const Nullable<Unknown>& x): std::optional<T>() {}
 };
 
+/* Tuple */
+
 template <typename... T>
 using Tuple = std::tuple<T...>;
+
+/* Class */
 
 template <typename... T>
 using Object = std::shared_ptr<T...>;
@@ -382,6 +424,21 @@ String toString(const Array<T>& x)
         r->append(*toString((*x)[i]));
     }
     r->append("]");
+    return r;
+}
+
+template <typename T>
+String toString(const Set<T>& x)
+{
+    auto r = make_string();
+    r->append("{");
+    for (auto it = x->begin(); it != x->end(); ++it) {
+        if (it != x->begin()) {
+            r->append(", ");
+        }
+        r->append(*toString(*it));
+    }
+    r->append("}");
     return r;
 }
 
