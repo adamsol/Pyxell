@@ -34,6 +34,7 @@ class PyxellError(Exception):
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"
     NoUnaryOperator = lambda op, t: f"No unary operator `{op}` defined for `{t.show()}`"
     NotComparable = lambda t1, t2: f"Cannot compare `{t1.show()}` with `{t2.show()}`"
+    NotHashable = lambda t: f"Type `{t.show()}` is not hashable"
     NotIndexable = lambda t: f"Type `{t.show()}` is not indexable"
     NotIterable = lambda t: f"Type `{t.show()}` is not iterable"
     NotLvalue = lambda: f"Expression cannot be assigned to"

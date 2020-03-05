@@ -55,6 +55,21 @@ class Type:
     def isIterable(self):
         return self.isIndexable() or self.isSet()
 
+    def isHashable(self):
+        if self in {Int, Float, Bool, Char, String, Unknown}:
+            return True
+        if self.isArray():
+            return False
+        if self.isSet():
+            return False
+        if self.isNullable():
+            return self.subtype.isHashable()
+        if self.isTuple():
+            return all(elem.isHashable() for elem in self.elements)
+        if self.isClass():
+            return True
+        return False
+
     def isPrintable(self):
         if self in {Int, Float, Bool, Char, String, Unknown}:
             return True

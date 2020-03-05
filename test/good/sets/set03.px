@@ -1,0 +1,4 @@
+
+s = "xyz"
+t = "xy" + 'z'
+print {s, t, "XYZ"}.length

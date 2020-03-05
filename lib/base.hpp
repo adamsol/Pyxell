@@ -21,28 +21,6 @@
 #endif
 
 
-/* Wrapper around shared_ptr for proper comparison operators */
-
-template <typename T>
-struct ptr
-{
-    std::shared_ptr<T> p;
-
-    ptr() {}
-    ptr(std::shared_ptr<T> p): p(p) {}
-
-    T& operator *() const { return *p; }
-    T* operator ->() const { return p.get(); }
-};
-
-template <typename T> bool operator ==(const ptr<T>& lhs, const ptr<T>& rhs) { return *lhs == *rhs; }
-template <typename T> bool operator !=(const ptr<T>& lhs, const ptr<T>& rhs) { return *lhs != *rhs; }
-template <typename T> bool operator <(const ptr<T>& lhs, const ptr<T>& rhs) { return *lhs < *rhs; }
-template <typename T> bool operator >(const ptr<T>& lhs, const ptr<T>& rhs) { return *lhs > *rhs; }
-template <typename T> bool operator <=(const ptr<T>& lhs, const ptr<T>& rhs) { return *lhs <= *rhs; }
-template <typename T> bool operator >=(const ptr<T>& lhs, const ptr<T>& rhs) { return *lhs >= *rhs; }
-
-
 /* Types */
 
 using Unknown = void*;
@@ -53,9 +31,42 @@ using Float = double;
 using Char = char;
 using Bool = bool;
 
+/* Wrapper around shared_ptr for proper comparison operators and hash function */
+
+template <typename T>
+struct custom_ptr
+{
+    std::shared_ptr<T> p;
+
+    custom_ptr() {}
+    custom_ptr(std::shared_ptr<T> p): p(p) {}
+
+    T& operator *() const { return *p; }
+    T* operator ->() const { return p.get(); }
+};
+
+template <typename T> bool operator ==(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs == *rhs; }
+template <typename T> bool operator !=(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs != *rhs; }
+template <typename T> bool operator <(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs < *rhs; }
+template <typename T> bool operator >(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs > *rhs; }
+template <typename T> bool operator <=(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs <= *rhs; }
+template <typename T> bool operator >=(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs >= *rhs; }
+
+namespace std
+{
+    template <typename T>
+    struct hash<custom_ptr<T>>
+    {
+        size_t operator ()(const custom_ptr<T>& x) const
+        {
+            return hash<T>()(*x);
+        }
+    };
+}
+
 /* String */
 
-using String = ptr<std::string>;
+using String = custom_ptr<std::string>;
 
 template <typename... Args>
 String make_string(Args&&... args)
@@ -66,9 +77,9 @@ String make_string(Args&&... args)
 /* Array */
 
 template <typename T>
-struct Array: public ptr<std::vector<T>>
+struct Array: public custom_ptr<std::vector<T>>
 {
-    using ptr<std::vector<T>>::ptr;
+    using custom_ptr<std::vector<T>>::custom_ptr;
 
     Array(const Array<Unknown>& x)
     {
@@ -97,9 +108,9 @@ Array<T> make_array(Args&&... args)
 /* Set */
 
 template <typename T>
-struct Set: public ptr<std::unordered_set<T>>
+struct Set: public custom_ptr<std::unordered_set<T>>
 {
-    using ptr<std::unordered_set<T>>::ptr;
+    using custom_ptr<std::unordered_set<T>>::custom_ptr;
 
     Set(const Set<Unknown>& x)
     {
@@ -131,15 +142,60 @@ template <typename T>
 struct Nullable: public std::optional<T>
 {
     using std::optional<T>::optional;
-    operator bool() = delete;
+    operator bool() = delete;  // so that null isn't displayed as false
 
     Nullable(const Nullable<Unknown>& x): std::optional<T>() {}
+};
+
+template <typename T>
+bool operator ==(const Nullable<T>& lhs, const Nullable<T>& rhs)
+{
+    return static_cast<std::optional<T>>(lhs) == static_cast<std::optional<T>>(rhs);
+}
+
+template <typename T>
+struct std::hash<Nullable<T>>
+{
+    std::size_t operator ()(const Nullable<T>& x) const
+    {
+        return hash<std::optional<T>>()(x);
+    }
 };
 
 /* Tuple */
 
 template <typename... T>
 using Tuple = std::tuple<T...>;
+
+// https://www.variadic.xyz/2018/01/15/hashing-stdpair-and-stdtuple/
+// https://stackoverflow.com/a/15124153/12643160
+// https://stackoverflow.com/a/7115547/12643160
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1406r0.html
+template<typename... T>
+struct std::hash<Tuple<T...>>
+{
+    template<typename E>
+    std::size_t get_hash(const E& x) const
+    {
+        return std::hash<E>()(x);
+    }
+
+    template<std::size_t I>
+    void combine_hash(std::size_t& seed, const Tuple<T...>& x) const
+    {
+        seed ^= get_hash(std::get<I>(x)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        if constexpr(I+1 < sizeof...(T)) {
+            combine_hash<I+1>(seed, x);
+        }
+    }
+
+    std::size_t operator()(const Tuple<T...>& x) const
+    {
+        std::size_t seed = 0;
+        combine_hash<0>(seed, x);
+        return seed;
+    }
+};
 
 /* Class */
 
@@ -452,7 +508,7 @@ String toString(const Nullable<T>& x)
     }
 }
 
-template <std::size_t I, typename... T>
+template <std::size_t I /* = 0 is already in the declaration */, typename... T>
 String toString(const Tuple<T...>& x)
 {
     // https://stackoverflow.com/a/54225452/12643160

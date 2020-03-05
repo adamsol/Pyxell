@@ -1248,7 +1248,11 @@ class PyxellCompiler:
     def compileExprSet(self, node):
         exprs = node['exprs']
 
-        return v.Set(self.unify(node, *map(self.compile, exprs)))
+        value = v.Set(self.unify(node, *map(self.compile, exprs)))
+        if not value.type.subtype.isHashable():
+            self.throw(node, err.NotHashable(value.type.subtype))
+
+        return value
 
     def compileExprAttr(self, node):
         expr = node['expr']
