@@ -524,6 +524,18 @@ class PyxellCompiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
+        elif op == '&':
+            if left.type == right.type and left.type.isSet():
+                return v.Call('intersect', left, right, type=left.type)
+            else:
+                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+
+        elif op == '#':
+            if left.type == right.type and left.type.isSet():
+                return v.Call('symdiff', left, right, type=left.type)
+            else:
+                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+
         elif op == '+':
             if left.type == right.type and left.type in {t.Int, t.Float}:
                 return v.BinaryOperation(left, op, right, type=left.type)
@@ -540,6 +552,10 @@ class PyxellCompiler:
         elif op == '-':
             if left.type == right.type and left.type in {t.Int, t.Float}:
                 return v.BinaryOperation(left, op, right, type=left.type)
+
+            elif left.type == right.type and left.type.isSet():
+                return v.Call('subtract', left, right, type=left.type)
+
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 

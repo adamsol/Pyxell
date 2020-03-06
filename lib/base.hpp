@@ -7,6 +7,7 @@
 #include <ctime>
 #include <limits>
 #include <functional>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <random>
@@ -168,8 +169,8 @@ template <typename... T>
 using Tuple = std::tuple<T...>;
 
 // https://www.variadic.xyz/2018/01/15/hashing-stdpair-and-stdtuple/
-// https://stackoverflow.com/a/15124153/12643160
-// https://stackoverflow.com/a/7115547/12643160
+// https://stackoverflow.com/a/15124153
+// https://stackoverflow.com/a/7115547
 // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1406r0.html
 template<typename... T>
 struct std::hash<Tuple<T...>>
@@ -245,7 +246,7 @@ Int pow(Int b, Int e)
 }
 
 
-/* Operators for strings and arrays */
+/* Container operators */
 
 String asString(const Array<Char>& x)
 {
@@ -270,9 +271,46 @@ String concat(Char a, const String& b)
 template <typename T>
 Array<T> concat(const Array<T>& a, const Array<T>& b)
 {
-    auto r = make_array<T>({});
-    r->insert(r->end(), a->begin(), a->end());
+    auto r = make_array<T>(*a);
     r->insert(r->end(), b->begin(), b->end());
+    return r;
+}
+
+template <typename T>
+Set<T> concat(const Set<T>& a, const Set<T>& b)
+{
+    auto r = make_set<T>(*a);
+    r->insert(b->begin(), b->end());
+    return r;
+}
+
+template <typename T>
+Set<T> subtract(const Set<T>& a, const Set<T>& b)
+{
+    auto r = make_set<T>();
+    // https://stackoverflow.com/a/22711060
+    std::copy_if(a->begin(), a->end(), std::inserter(*r, r->begin()),
+                 [&b](const T& e) { return b->find(e) == b->end(); });
+    return r;
+}
+
+template <typename T>
+Set<T> intersect(const Set<T>& a, const Set<T>& b)
+{
+    auto r = make_set<T>();
+    std::copy_if(a->begin(), a->end(), std::inserter(*r, r->begin()),
+                 [&b](const T& e) { return b->find(e) != b->end(); });
+    return r;
+}
+
+template <typename T>
+Set<T> symdiff(const Set<T>& a, const Set<T>& b)
+{
+    auto r = make_set<T>();
+    std::copy_if(a->begin(), a->end(), std::inserter(*r, r->begin()),
+                 [&b](const T& e) { return b->find(e) == b->end(); });
+    std::copy_if(b->begin(), b->end(), std::inserter(*r, r->begin()),
+                 [&a](const T& e) { return a->find(e) == a->end(); });
     return r;
 }
 
@@ -511,7 +549,7 @@ String toString(const Nullable<T>& x)
 template <std::size_t I /* = 0 is already in the declaration */, typename... T>
 String toString(const Tuple<T...>& x)
 {
-    // https://stackoverflow.com/a/54225452/12643160
+    // https://stackoverflow.com/a/54225452
     auto r = make_string();
     r->append(*toString(std::get<I>(x)));
     if constexpr(I+1 < sizeof...(T)) {
