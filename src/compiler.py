@@ -1544,10 +1544,10 @@ class PyxellCompiler:
             except err:
                 self.throw(node, err.NotComparable(left.type, right.type))
 
-            if left.type.isClass() and op not in {'==', '!='}:
+            if (left.type.isSet() or left.type.isClass()) and op not in {'==', '!='}:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
-            if left.type in {t.Int, t.Float, t.Char, t.Bool, t.String} or left.type.isArray() or left.type.isTuple() or left.type.isClass():
+            if left.type in {t.Int, t.Float, t.Char, t.Bool, t.String} or left.type.isIterable() or left.type.isTuple() or left.type.isClass():
                 cond = v.BinaryOperation(left, op, right, type=t.Bool)
             else:
                 self.throw(node, err.NotComparable(left.type, right.type))
