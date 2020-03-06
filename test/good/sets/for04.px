@@ -1,0 +1,10 @@
+
+a = 0
+for x in {1, 2, 3, 2, 1, 5} step 1 do
+    a += x
+print a
+
+b = 0.0
+for x in {0.5, 1, -2.25, -0.125, 1} step -1 do
+    b += x
+print b

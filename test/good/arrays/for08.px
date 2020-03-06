@@ -1,3 +1,6 @@
 
 for x in [] do
     print x
+for x in {} step -1 do
+    print x
+print true

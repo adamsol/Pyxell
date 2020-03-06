@@ -1,0 +1,6 @@
+
+s = {true, false}
+for b, c in s, 'a'... do
+    print c
+for n, b in 3..3, s do
+    print n

@@ -1,0 +1,10 @@
+
+n = 0
+
+for x in {'x', 'y', 'x', 'z', 'y'} step 2 do
+    n += 1
+print n
+
+for x in {"", "a", "b", "b"} step -3 do
+    n += 1
+print n

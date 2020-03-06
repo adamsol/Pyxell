@@ -928,69 +928,73 @@ class PyxellCompiler:
         types = []
         steps = []
         indices = []
+        iterators = []
         conditions = []
         getters = []
 
         def prepare(iterable, step):
             # It must be a function so that there are separate scopes of variables to use in lambdas.
+
             if iterable['node'] == 'ExprRange':
                 values = lmap(self.compile, iterable['exprs'])
                 type = values[0].type
-                types.append(type)
                 if type not in {t.Int, t.Float, t.Bool, t.Char}:
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
-                desc = v.BinaryOperation(step, '<', v.Float(0) if step.type == t.Float else v.Int(0))
-                index = self.var(t.Float if type == t.Float else t.Int)
+
+                types.append(type)
+                index = iterator = self.var(t.Float if type == t.Float else t.Int)
                 start = v.Cast(values[0], index.type)
                 self.cast(node, step, index.type)
+
                 if len(values) == 1:
                     cond = lambda x: v.true  # infinite range
                 else:
                     end = self.freeze(values[1])
                     e = '=' if iterable['inclusive'] else ''
-                    cond = lambda x: v.Condition(
-                        desc,
-                        v.BinaryOperation(x, f'>{e}', end),
-                        v.BinaryOperation(x, f'<{e}', end))
-                getter = lambda x: v.Cast(x, type)
-            else:
-                value = self.compile(iterable)
-                if not value.type.isIterable():
-                    self.throw(node, err.NotIterable(value.type))
-                types.append(value.type.subtype)
-                array = self.tmp(value)
-                desc = v.BinaryOperation(step, '<', v.Int(0))
-                index = self.var(None)
-                start = self.tmp(v.Condition(
-                    desc,
-                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'end'))),
-                    v.Call(v.Attribute(array, 'begin'))))
-                end = self.tmp(v.Condition(
-                    desc,
-                    v.UnaryOperation('--', v.Call(v.Attribute(array, 'begin'))),
-                    v.Call(v.Attribute(array, 'end'))))
-                cond = lambda x: v.Condition(
-                    desc,
-                    v.BinaryOperation(x, f'>', end),
-                    v.BinaryOperation(x, f'<', end))
-                getter = lambda x: v.UnaryOperation('*', x, type=value.type.subtype)
+                    cond = lambda x: f'{step} < 0 ? {x} >{e} {end} : {x} <{e} {end}'
 
-            self.store(index, start, 'auto')
-            steps.append(step)
+                getter = lambda x: v.Cast(x, type)
+
+            else:
+                value = self.tmp(self.compile(iterable))
+                type = value.type
+                if not type.isIterable():
+                    self.throw(node, err.NotIterable(type))
+
+                types.append(type.subtype)
+                index = self.var(t.Int)
+                self.store(index, v.Int(0), 'auto')
+                iterator = self.var(None)
+                start = self.tmp(v.Call(v.Attribute(value, 'begin')))
+
+                if type.isIndexable():
+                    # The following doesn't work in GCC with non-random access iterators (program crashes or loops forever).
+                    end = self.tmp(v.Call(v.Attribute(value, 'end')))
+                    self.output(f'if ({step} < 0 && {start} != {end}) {start} = std::prev({end})')
+                else:
+                    # But then we don't care about the order anyway.
+                    self.store(step, v.Call('abs', step))
+
+                length = self.tmp(v.Call(v.Attribute(value, 'size')))
+                cond = lambda x: f'abs({x}) < {length}'
+                getter = lambda x: v.UnaryOperation('*', x, type=type.subtype)
+
+            self.store(iterator, start, 'auto')
             indices.append(index)
+            iterators.append(iterator)
             conditions.append(cond)
             getters.append(getter)
 
-        _steps = lmap(self.compile, node.get('steps', [])) or [v.Int(1)]
-        if len(_steps) == 1:
-            _steps *= len(iterables)
-        elif len(_steps) != len(iterables):
+        steps = [self.freeze(self.compile(step)) for step in node.get('steps') or [{'node': 'AtomInt', 'int': 1}]]
+        if len(steps) == 1:
+            steps *= len(iterables)
+        elif len(steps) != len(iterables):
             self.throw(node, err.InvalidLoopStep())
 
-        for iterable, step in zip(iterables, _steps):
-            prepare(iterable, self.freeze(step))
+        for iterable, step in zip(iterables, steps):
+            prepare(iterable, step)
 
         body = c.Block()
         with self.block(body):
@@ -998,21 +1002,24 @@ class PyxellCompiler:
                 self.env['#loop'] = True
 
                 if len(vars) == 1 and len(types) > 1:
-                    tuple = v.Tuple([getters[i](index) for i, index in enumerate(indices)])
+                    tuple = v.Tuple([getters[i](iterator) for i, iterator in enumerate(iterators)])
                     self.assign(node, vars[0], tuple)
                 elif len(vars) > 1 and len(types) == 1:
                     for i, var in enumerate(vars):
-                        tuple = getters[0](indices[0])
+                        tuple = getters[0](iterators[0])
                         self.assign(node, var, v.Get(tuple, i))
                 elif len(vars) == len(types):
-                    for var, index, getter in zip(vars, indices, getters):
-                        self.assign(node, var, getter(index))
+                    for var, iterator, getter in zip(vars, iterators, getters):
+                        self.assign(node, var, getter(iterator))
                 else:
                     self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
 
                 self.compile(node['block'])
 
-        condition = ' && '.join(str(cond(index)) for index, cond in zip(indices, conditions))
+        # Advancing iterator beyond the container boundaries is UB (and crashes in practice),
+        # so it must happen after the condition is checked, when we know it is safe.
+        condition = ' && '.join(f'{cond(index)}' + (f' && ({index} == 0 || (std::advance({iterator}, {step}), true))' if iterator.type is None else '')
+                                for index, iterator, cond, step in zip(indices, iterators, conditions, steps))
         update = ', '.join(f'{index} += {step}' for index, step in zip(indices, steps))
 
         self.output(c.For('', condition, update, body))
