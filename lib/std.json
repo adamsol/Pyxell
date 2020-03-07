@@ -3108,11 +3108,12 @@
 							],
 							"exprs": [
 								{
-									"node": "ExprArray",
+									"node": "ExprCollection",
 									"position": [
 										80,
 										9
 									],
+									"kind": "array",
 									"exprs": [
 										{
 											"node": "AtomChar",
@@ -3844,11 +3845,12 @@
 							],
 							"exprs": [
 								{
-									"node": "ExprArray",
+									"node": "ExprCollection",
 									"position": [
 										97,
 										9
 									],
+									"kind": "array",
 									"exprs": [
 										{
 											"node": "AtomChar",

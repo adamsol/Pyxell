@@ -51,9 +51,10 @@ expr
   : atom # ExprAtom
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
-  | '[' expr 'step' expr ']' # ExprArrayRangeStep
-  | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' (expr ',')* expr? '}' # ExprSet
+  | '[' expr 'step' expr ']' # ExprArrayRangeStep
+  | '{' expr 'step' expr '}' # ExprSetRangeStep
+  | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' expr comprehension+ '}' # ExprSetComprehension
   | expr safe='?'? '.' ID # ExprAttr
   | expr safe='?'? '[' tuple_expr ']' # ExprIndex

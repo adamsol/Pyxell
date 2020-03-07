@@ -189,6 +189,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprSetRangeStep.
+    def visitExprSetRangeStep(self, ctx:PyxellParser.ExprSetRangeStepContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprSlice.
     def visitExprSlice(self, ctx:PyxellParser.ExprSliceContext):
         return self.visitChildren(ctx)

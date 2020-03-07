@@ -628,7 +628,8 @@ class PyxellCompiler:
             'expr': {
                 'node': 'ExprAttr',
                 'expr': {
-                    'node': 'ExprArray',
+                    'node': 'ExprCollection',
+                    'kind': 'array',
                     'exprs': exprs,
                 },
                 'attr': 'join',
@@ -646,7 +647,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprArray', 'ExprSet', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIsNull', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
+            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIsNull', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -1197,8 +1198,9 @@ class PyxellCompiler:
 
     ### Expressions ###
 
-    def compileExprArray(self, node):
+    def compileExprCollection(self, node):
         exprs = node['exprs']
+        kind = node['kind']
 
         if len(exprs) == 1 and exprs[0]['node'] == 'ExprRange':
             var = {
@@ -1207,7 +1209,7 @@ class PyxellCompiler:
             }
             return self.compile({
                 'node': 'ExprComprehension',
-                'kind': 'array',
+                'kind': kind,
                 'expr': var,
                 'comprehensions': [{
                     'node': 'ComprehensionGenerator',
@@ -1220,7 +1222,15 @@ class PyxellCompiler:
             self.throw(node, err.InvalidSyntax())
 
         values = self.unify(node, *map(self.compile, exprs))
-        return v.Array(values)
+
+        if kind == 'array':
+            result = v.Array(values)
+        elif kind == 'set':
+            result = v.Set(values)
+            if not result.type.subtype.isHashable():
+                self.throw(node, err.NotHashable(result.type.subtype))
+
+        return result
 
     def compileExprComprehension(self, node):
         expr = node['expr']
@@ -1278,15 +1288,6 @@ class PyxellCompiler:
             result = self.compile(collection)
 
         return result
-
-    def compileExprSet(self, node):
-        exprs = node['exprs']
-
-        value = v.Set(self.unify(node, *map(self.compile, exprs)))
-        if not value.type.subtype.isHashable():
-            self.throw(node, err.NotHashable(value.type.subtype))
-
-        return value
 
     def compileExprAttr(self, node):
         expr = node['expr']

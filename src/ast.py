@@ -193,13 +193,30 @@ class PyxellASTVisitor(PyxellVisitor):
 
     def visitExprArray(self, ctx):
         return {
-            **_node(ctx, 'ExprArray'),
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'array',
+            'exprs': self.visit(ctx.expr()),
+        }
+
+    def visitExprSet(self, ctx):
+        return {
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'set',
             'exprs': self.visit(ctx.expr()),
         }
 
     def visitExprArrayRangeStep(self, ctx):
         return {
-            **_node(ctx, 'ExprArray'),
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'array',
+            'exprs': [self.visit(ctx.expr(0))],
+            'step': self.visit(ctx.expr(1)),
+        }
+
+    def visitExprSetRangeStep(self, ctx):
+        return {
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'set',
             'exprs': [self.visit(ctx.expr(0))],
             'step': self.visit(ctx.expr(1)),
         }
@@ -210,12 +227,6 @@ class PyxellASTVisitor(PyxellVisitor):
             'kind': 'array',
             'expr': self.visit(ctx.expr()),
             'comprehensions': self.visit(ctx.comprehension()),
-        }
-
-    def visitExprSet(self, ctx):
-        return {
-            **_node(ctx, 'ExprSet'),
-            'exprs': self.visit(ctx.expr()),
         }
 
     def visitExprSetComprehension(self, ctx):
