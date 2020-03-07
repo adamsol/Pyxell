@@ -651,7 +651,7 @@ class PyxellCompiler:
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
                 }
-            if node == 'ExprArrayComprehension':
+            if node == 'ExprComprehension':
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -869,10 +869,14 @@ class PyxellCompiler:
             self.store(left, value)
 
     def compileStmtAppend(self, node):
-        # Special instruction for array comprehension.
-        array = self.compile(node['array'])
+        # Special instruction for array/set comprehension.
+        collection = self.compile(node['collection'])
         value = self.compile(node['expr'])
-        self.output(v.Call(v.Attribute(array, 'push_back'), value))
+
+        if collection.type.isArray():
+            self.output(v.Call(v.Attribute(collection, 'push_back'), value))
+        elif collection.type.isSet():
+            self.output(v.Call(v.Attribute(collection, 'insert'), value))
 
     def compileStmtIf(self, node):
         exprs = node['exprs']
@@ -1202,7 +1206,8 @@ class PyxellCompiler:
                 'id': f'__range_{len(self.env)}',
             }
             return self.compile({
-                'node': 'ExprArrayComprehension',
+                'node': 'ExprComprehension',
+                'kind': 'array',
                 'expr': var,
                 'comprehensions': [{
                     'node': 'ComprehensionGenerator',
@@ -1217,13 +1222,14 @@ class PyxellCompiler:
         values = self.unify(node, *map(self.compile, exprs))
         return v.Array(values)
 
-    def compileExprArrayComprehension(self, node):
+    def compileExprComprehension(self, node):
         expr = node['expr']
+        kind = node['kind']
 
-        value, array = [{
+        value, collection = [{
             'node': 'AtomId',
             'id': f'__cpr_{len(self.env)}_{name}',
-        } for name in ['value', 'array']]
+        } for name in ['value', 'collection']]
 
         stmt = inner_stmt = {
             'node': 'StmtAssg',
@@ -1257,14 +1263,19 @@ class PyxellCompiler:
                 subtype = inner_stmt.pop('_eval')
 
         with self.local():
-            self.assign(node, array, v.Array([], subtype))
+            if kind == 'array':
+                self.assign(node, collection, v.Array([], subtype))
+            elif kind == 'set':
+                if not subtype.isHashable():
+                    self.throw(node, err.NotHashable(subtype))
+                self.assign(node, collection, v.Set([], subtype))
 
             inner_stmt['node'] = 'StmtAppend'
-            inner_stmt['array'] = array
+            inner_stmt['collection'] = collection
 
             self.compile(stmt)
 
-            result = self.compile(array)
+            result = self.compile(collection)
 
         return result
 

@@ -206,7 +206,22 @@ class PyxellASTVisitor(PyxellVisitor):
 
     def visitExprArrayComprehension(self, ctx):
         return {
-            **_node(ctx, 'ExprArrayComprehension'),
+            **_node(ctx, 'ExprComprehension'),
+            'kind': 'array',
+            'expr': self.visit(ctx.expr()),
+            'comprehensions': self.visit(ctx.comprehension()),
+        }
+
+    def visitExprSet(self, ctx):
+        return {
+            **_node(ctx, 'ExprSet'),
+            'exprs': self.visit(ctx.expr()),
+        }
+
+    def visitExprSetComprehension(self, ctx):
+        return {
+            **_node(ctx, 'ExprComprehension'),
+            'kind': 'set',
             'expr': self.visit(ctx.expr()),
             'comprehensions': self.visit(ctx.comprehension()),
         }
@@ -224,12 +239,6 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ComprehensionFilter'),
             'expr': self.visit(ctx.expr()),
-        }
-
-    def visitExprSet(self, ctx):
-        return {
-            **_node(ctx, 'ExprSet'),
-            'exprs': self.visit(ctx.expr()),
         }
 
     def visitExprAttr(self, ctx):

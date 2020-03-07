@@ -1366,11 +1366,12 @@
 							5
 						],
 						"expr": {
-							"node": "ExprArrayComprehension",
+							"node": "ExprComprehension",
 							"position": [
 								40,
 								12
 							],
+							"kind": "array",
 							"expr": {
 								"node": "AtomId",
 								"position": [
@@ -1554,11 +1555,12 @@
 							5
 						],
 						"expr": {
-							"node": "ExprArrayComprehension",
+							"node": "ExprComprehension",
 							"position": [
 								43,
 								12
 							],
+							"kind": "array",
 							"expr": {
 								"node": "ExprCall",
 								"position": [
@@ -2360,11 +2362,12 @@
 									12
 								],
 								"expr": {
-									"node": "ExprArrayComprehension",
+									"node": "ExprComprehension",
 									"position": [
 										64,
 										12
 									],
+									"kind": "array",
 									"expr": {
 										"node": "AtomId",
 										"position": [
@@ -2548,11 +2551,12 @@
 									12
 								],
 								"expr": {
-									"node": "ExprArrayComprehension",
+									"node": "ExprComprehension",
 									"position": [
 										67,
 										12
 									],
+									"kind": "array",
 									"expr": {
 										"node": "ExprCall",
 										"position": [
