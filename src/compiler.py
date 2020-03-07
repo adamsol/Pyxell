@@ -272,6 +272,10 @@ class PyxellCompiler:
         elif type.isIterable():
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
+
+            elif attr == 'join' and type.subtype in {t.Char, t.String}:
+                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default={'node': 'AtomString', 'string': ''})], t.String), attr)
+
             elif type == t.String:
                 if attr == 'all':
                     value = self.env['String_all']
@@ -283,14 +287,10 @@ class PyxellCompiler:
                     value = self.env['String_map']
                 elif attr == 'reduce':
                     value = self.env['String_reduce']
+
             elif type.isArray():
                 if attr == '_asString' and type.subtype == t.Char:
                     value = v.Variable(t.Func([type], t.String), 'asString')
-                elif attr == 'join':
-                    if type.subtype == t.Char:
-                        value = self.env['CharArray_join']
-                    elif type.subtype == t.String:
-                        value = self.env['StringArray_join']
                 elif attr == 'all':
                     value = self.env['Array_all']
                 elif attr == 'any':

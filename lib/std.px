@@ -70,38 +70,3 @@ func String_reduce<B>(String s, Char->B->B f, B r) B def
     for c in s do
         r = f(c, r)
     return r
-
-
-func CharArray_join([Char] array, String sep: "") String def
-    if sep.length == 0 do
-        return array._asString()
-    m = sep.length
-    n = array.length
-    r = [' '] * ((m+1) * (n-1) + 1)
-    p = 0
-    for i in 0...n do
-        r[p] = array[i]
-        p += 1
-        if i < n-1 do
-            for c in sep do
-                r[p] = c
-                p += 1
-    return r._asString()
-
-func StringArray_join([String] array, String sep: "") String def
-    m = sep.length
-    n = array.length
-    l = 0
-    for s in array do
-        l += s.length
-    r = [' '] * (l + m*(n-1))
-    p = 0
-    for i in 0...n do
-        for c in array[i] do
-            r[p] = c
-            p += 1
-        if i < n-1 do
-            for c in sep do
-                r[p] = c
-                p += 1
-    return r._asString()

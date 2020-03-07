@@ -245,7 +245,6 @@ Int pow(Int b, Int e)
     return r;
 }
 
-
 /* Container operators */
 
 String asString(const Array<Char>& x)
@@ -390,6 +389,34 @@ Array<T> slice(const Array<T>& x, const Nullable<Int>& a, const Nullable<Int>& b
     return make_array<T>(slice(*x, a, b, c));
 }
 
+
+/* Container methods */
+
+template <typename T, std::enable_if_t<std::is_same<typename T::value_type, Char>::value, int> = 0>
+String join(const custom_ptr<T>& x, const String& sep)
+{
+    auto r = make_string();
+    for (auto it = x->begin(); it != x->end(); ++it) {
+        if (it != x->begin()) {
+            r->append(*sep);
+        }
+        r->push_back(*it);
+    }
+    return r;
+}
+
+template <typename T, std::enable_if_t<std::is_same<typename T::value_type, String>::value, int> = 0>
+String join(const custom_ptr<T>& x, const String& sep)
+{
+    auto r = make_string();
+    for (auto it = x->begin(); it != x->end(); ++it) {
+        if (it != x->begin()) {
+            r->append(*sep);
+        }
+        r->append(**it);
+    }
+    return r;
+}
 
 /* Array methods */
 
@@ -565,7 +592,6 @@ String toString(const Object<T>& x)
     return reinterpret_cast<String (*)(Object<T>)>(x->toString())(x);
 }
 
-
 /* Conversion to Int */
 
 Int toInt(Int x)
@@ -594,7 +620,6 @@ Int toInt(Char x)
 {
     return toInt(toString(x));
 }
-
 
 /* Conversion to Float */
 
@@ -633,7 +658,6 @@ void write(const T& x)
 {
     printf("%s", toString(x)->c_str());
 }
-
 
 /* Standard input */
 
