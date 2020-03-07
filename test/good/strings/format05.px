@@ -1,0 +1,7 @@
+
+a = "A"
+print "{{}}"
+print "{{a}}."
+print "{{{a}{a}}}"
+print "{{{{}}{a}"
+print "{a}{{{a}{{{{a}}}}a}}}}"

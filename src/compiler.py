@@ -589,11 +589,16 @@ class PyxellCompiler:
         elif type != t.Unknown:
             self.throw(node, err.NotPrintable(type))
 
-    def convert_string(self, node, lit):
-        parts = re.split(r'{([^}]+)}', lit)
+    def convert_string(self, node, string):
+        string = re.sub('{{', '\\\\u007B', string)
+        string = re.sub('}}', '\\\\u007D'[::-1], string[::-1])[::-1]
+        parts = re.split(r'{([^}]+)}', string)
 
         if len(parts) == 1:
-            return node
+            return {
+                **node,
+                'string': string,
+            }
 
         lits, tags = parts[::2], parts[1::2]
         exprs = [None] * len(parts)
