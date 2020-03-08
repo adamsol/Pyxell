@@ -6,8 +6,4 @@ class B(A) def
     Int y
 
 
-func f({A} a) def
-    return
-
-b = {B()}
-f(b)
+[A]*Int t = [B()], 6

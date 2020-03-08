@@ -359,10 +359,19 @@ def get_type_variables(type):
 
 
 def can_cast(type1, type2):
+
     if type1.isArray() and type2.isArray():
         return type1.subtype == type2.subtype or type1.subtype.isUnknown()
+
     if type1.isSet() and type2.isSet():
+        return type1.subtype == type2.subtype or type1.subtype.isUnknown()
+
+    if type1.isNullable() and type2.isNullable():
         return type1.subtype == type2.subtype or type1.subtype.isUnknown()
     if not type1.isNullable() and type2.isNullable():
         return can_cast(type1, type2.subtype)
+
+    if type1.isTuple() and type2.isTuple():
+        return len(type1.elements) == len(type2.elements) and all(can_cast(t1, t2) for t1, t2 in zip(type1.elements, type2.elements))
+
     return type_variables_assignment(type1, type2) == {}

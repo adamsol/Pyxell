@@ -6,8 +6,5 @@ class B(A) def
     Int y
 
 
-func f({A} a) def
-    return
-
-b = {B()}
-f(b)
+{B}? b = {B()}
+{A}? a = b
