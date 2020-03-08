@@ -837,81 +837,66 @@
 				27,
 				1
 			],
-			"id": "Array_all",
-			"typevars": [
-				"A"
-			],
+			"id": "String_all",
+			"typevars": [],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						27,
-						19
+						17
 					],
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeName",
 						"position": [
 							27,
-							19
+							17
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								27,
-								20
-							],
-							"name": "A"
-						}
+						"name": "String"
 					},
-					"name": "a",
+					"name": "s",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						27,
-						26
+						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							27,
-							26
+							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									27,
-									26
+									27
 								],
-								"name": "A"
+								"name": "Char"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								27,
-								29
+								33
 							],
 							"name": "Bool"
 						}
 					},
 					"name": "f",
-					"default": {
-						"node": "AtomStub",
-						"position": [
-							27,
-							37
-						]
-					}
+					"default": null
 				}
 			],
 			"ret": {
 				"node": "TypeName",
 				"position": [
 					27,
-					40
+					41
 				],
 				"name": "Bool"
 			},
@@ -919,7 +904,7 @@
 				"node": "Block",
 				"position": [
 					27,
-					48
+					49
 				],
 				"stmts": [
 					{
@@ -935,7 +920,7 @@
 									28,
 									9
 								],
-								"id": "x"
+								"id": "c"
 							}
 						],
 						"iterables": [
@@ -945,7 +930,7 @@
 									28,
 									14
 								],
-								"id": "a"
+								"id": "s"
 							}
 						],
 						"steps": [],
@@ -997,7 +982,7 @@
 																29,
 																18
 															],
-															"id": "x"
+															"id": "c"
 														}
 													}
 												]
@@ -1059,81 +1044,66 @@
 				33,
 				1
 			],
-			"id": "Array_any",
-			"typevars": [
-				"A"
-			],
+			"id": "String_any",
+			"typevars": [],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						33,
-						19
+						17
 					],
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeName",
 						"position": [
 							33,
-							19
+							17
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								33,
-								20
-							],
-							"name": "A"
-						}
+						"name": "String"
 					},
-					"name": "a",
+					"name": "s",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						33,
-						26
+						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							33,
-							26
+							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									33,
-									26
+									27
 								],
-								"name": "A"
+								"name": "Char"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								33,
-								29
+								33
 							],
 							"name": "Bool"
 						}
 					},
 					"name": "f",
-					"default": {
-						"node": "AtomStub",
-						"position": [
-							33,
-							37
-						]
-					}
+					"default": null
 				}
 			],
 			"ret": {
 				"node": "TypeName",
 				"position": [
 					33,
-					40
+					41
 				],
 				"name": "Bool"
 			},
@@ -1141,7 +1111,7 @@
 				"node": "Block",
 				"position": [
 					33,
-					48
+					49
 				],
 				"stmts": [
 					{
@@ -1157,7 +1127,7 @@
 									34,
 									9
 								],
-								"id": "x"
+								"id": "c"
 							}
 						],
 						"iterables": [
@@ -1167,7 +1137,7 @@
 									34,
 									14
 								],
-								"id": "a"
+								"id": "s"
 							}
 						],
 						"steps": [],
@@ -1213,7 +1183,7 @@
 															35,
 															14
 														],
-														"id": "x"
+														"id": "c"
 													}
 												}
 											]
@@ -1273,62 +1243,53 @@
 				39,
 				1
 			],
-			"id": "Array_filter",
-			"typevars": [
-				"A"
-			],
+			"id": "String_filter",
+			"typevars": [],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						39,
-						22
+						20
 					],
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeName",
 						"position": [
 							39,
-							22
+							20
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								39,
-								23
-							],
-							"name": "A"
-						}
+						"name": "String"
 					},
-					"name": "a",
+					"name": "s",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						39,
-						29
+						30
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							39,
-							29
+							30
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									39,
-									29
+									30
 								],
-								"name": "A"
+								"name": "Char"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								39,
-								32
+								36
 							],
 							"name": "Bool"
 						}
@@ -1338,25 +1299,18 @@
 				}
 			],
 			"ret": {
-				"node": "TypeArray",
+				"node": "TypeName",
 				"position": [
 					39,
-					40
+					44
 				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						39,
-						41
-					],
-					"name": "A"
-				}
+				"name": "String"
 			},
 			"block": {
 				"node": "Block",
 				"position": [
 					39,
-					47
+					54
 				],
 				"stmts": [
 					{
@@ -1366,90 +1320,107 @@
 							5
 						],
 						"expr": {
-							"node": "ExprComprehension",
+							"node": "ExprCall",
 							"position": [
 								40,
 								12
 							],
-							"kind": "array",
 							"expr": {
-								"node": "AtomId",
+								"node": "ExprAttr",
 								"position": [
 									40,
-									13
+									12
 								],
-								"id": "x"
-							},
-							"comprehensions": [
-								{
-									"node": "ComprehensionGenerator",
+								"expr": {
+									"node": "ExprComprehension",
 									"position": [
 										40,
-										15
+										12
 									],
-									"vars": [
-										{
-											"node": "AtomId",
-											"position": [
-												40,
-												19
-											],
-											"id": "x"
-										}
-									],
-									"iterables": [
-										{
-											"node": "AtomId",
-											"position": [
-												40,
-												24
-											],
-											"id": "a"
-										}
-									],
-									"steps": []
-								},
-								{
-									"node": "ComprehensionFilter",
-									"position": [
-										40,
-										26
-									],
+									"kind": "array",
 									"expr": {
-										"node": "ExprCall",
+										"node": "AtomId",
 										"position": [
 											40,
-											29
+											13
 										],
-										"expr": {
-											"node": "AtomId",
+										"id": "c"
+									},
+									"comprehensions": [
+										{
+											"node": "ComprehensionGenerator",
 											"position": [
 												40,
-												29
+												15
 											],
-											"id": "f"
+											"vars": [
+												{
+													"node": "AtomId",
+													"position": [
+														40,
+														19
+													],
+													"id": "c"
+												}
+											],
+											"iterables": [
+												{
+													"node": "AtomId",
+													"position": [
+														40,
+														24
+													],
+													"id": "s"
+												}
+											],
+											"steps": []
 										},
-										"args": [
-											{
-												"node": "CallArg",
+										{
+											"node": "ComprehensionFilter",
+											"position": [
+												40,
+												26
+											],
+											"expr": {
+												"node": "ExprCall",
 												"position": [
 													40,
-													31
+													29
 												],
-												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
 														40,
-														31
+														29
 													],
-													"id": "x"
-												}
+													"id": "f"
+												},
+												"args": [
+													{
+														"node": "CallArg",
+														"position": [
+															40,
+															31
+														],
+														"name": null,
+														"expr": {
+															"node": "AtomId",
+															"position": [
+																40,
+																31
+															],
+															"id": "c"
+														}
+													}
+												]
 											}
-										]
-									}
-								}
-							]
+										}
+									]
+								},
+								"attr": "_asString",
+								"safe": false
+							},
+							"args": []
 						}
 					}
 				]
@@ -1461,65 +1432,55 @@
 				42,
 				1
 			],
-			"id": "Array_map",
-			"typevars": [
-				"A",
-				"B"
-			],
+			"id": "String_map",
+			"typevars": [],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						42,
-						21
+						17
 					],
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeName",
 						"position": [
 							42,
-							21
+							17
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								42,
-								22
-							],
-							"name": "A"
-						}
+						"name": "String"
 					},
-					"name": "a",
+					"name": "s",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						42,
-						28
+						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							42,
-							28
+							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									42,
-									28
+									27
 								],
-								"name": "A"
+								"name": "Char"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								42,
-								31
+								33
 							],
-							"name": "B"
+							"name": "Char"
 						}
 					},
 					"name": "f",
@@ -1527,25 +1488,18 @@
 				}
 			],
 			"ret": {
-				"node": "TypeArray",
+				"node": "TypeName",
 				"position": [
 					42,
-					36
+					41
 				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						42,
-						37
-					],
-					"name": "B"
-				}
+				"name": "String"
 			},
 			"block": {
 				"node": "Block",
 				"position": [
 					42,
-					43
+					51
 				],
 				"stmts": [
 					{
@@ -1555,75 +1509,92 @@
 							5
 						],
 						"expr": {
-							"node": "ExprComprehension",
+							"node": "ExprCall",
 							"position": [
 								43,
 								12
 							],
-							"kind": "array",
 							"expr": {
-								"node": "ExprCall",
+								"node": "ExprAttr",
 								"position": [
 									43,
-									13
+									12
 								],
 								"expr": {
-									"node": "AtomId",
+									"node": "ExprComprehension",
 									"position": [
 										43,
-										13
+										12
 									],
-									"id": "f"
-								},
-								"args": [
-									{
-										"node": "CallArg",
+									"kind": "array",
+									"expr": {
+										"node": "ExprCall",
 										"position": [
 											43,
-											15
+											13
 										],
-										"name": null,
 										"expr": {
 											"node": "AtomId",
 											"position": [
 												43,
-												15
+												13
 											],
-											"id": "x"
+											"id": "f"
+										},
+										"args": [
+											{
+												"node": "CallArg",
+												"position": [
+													43,
+													15
+												],
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														43,
+														15
+													],
+													"id": "c"
+												}
+											}
+										]
+									},
+									"comprehensions": [
+										{
+											"node": "ComprehensionGenerator",
+											"position": [
+												43,
+												18
+											],
+											"vars": [
+												{
+													"node": "AtomId",
+													"position": [
+														43,
+														22
+													],
+													"id": "c"
+												}
+											],
+											"iterables": [
+												{
+													"node": "AtomId",
+													"position": [
+														43,
+														27
+													],
+													"id": "s"
+												}
+											],
+											"steps": []
 										}
-									}
-								]
+									]
+								},
+								"attr": "_asString",
+								"safe": false
 							},
-							"comprehensions": [
-								{
-									"node": "ComprehensionGenerator",
-									"position": [
-										43,
-										18
-									],
-									"vars": [
-										{
-											"node": "AtomId",
-											"position": [
-												43,
-												22
-											],
-											"id": "x"
-										}
-									],
-									"iterables": [
-										{
-											"node": "AtomId",
-											"position": [
-												43,
-												27
-											],
-											"id": "a"
-										}
-									],
-									"steps": []
-								}
-							]
+							"args": []
 						}
 					}
 				]
@@ -1635,9 +1606,8 @@
 				45,
 				1
 			],
-			"id": "Array_reduce",
+			"id": "String_reduce",
 			"typevars": [
-				"A",
 				"B"
 			],
 			"args": [
@@ -1645,52 +1615,45 @@
 					"node": "FuncArg",
 					"position": [
 						45,
-						24
+						23
 					],
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeName",
 						"position": [
 							45,
-							24
+							23
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								45,
-								25
-							],
-							"name": "A"
-						}
+						"name": "String"
 					},
-					"name": "a",
+					"name": "s",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						45,
-						31
+						33
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							45,
-							34
+							39
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									45,
-									31
+									33
 								],
-								"name": "A"
+								"name": "Char"
 							},
 							{
 								"node": "TypeName",
 								"position": [
 									45,
-									34
+									39
 								],
 								"name": "B"
 							}
@@ -1699,7 +1662,7 @@
 							"node": "TypeName",
 							"position": [
 								45,
-								37
+								42
 							],
 							"name": "B"
 						}
@@ -1711,13 +1674,13 @@
 					"node": "FuncArg",
 					"position": [
 						45,
-						42
+						47
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
 							45,
-							42
+							47
 						],
 						"name": "B"
 					},
@@ -1729,7 +1692,7 @@
 				"node": "TypeName",
 				"position": [
 					45,
-					47
+					52
 				],
 				"name": "B"
 			},
@@ -1737,7 +1700,7 @@
 				"node": "Block",
 				"position": [
 					45,
-					52
+					57
 				],
 				"stmts": [
 					{
@@ -1753,7 +1716,7 @@
 									46,
 									9
 								],
-								"id": "x"
+								"id": "c"
 							}
 						],
 						"iterables": [
@@ -1763,7 +1726,7 @@
 									46,
 									14
 								],
-								"id": "a"
+								"id": "s"
 							}
 						],
 						"steps": [],
@@ -1818,7 +1781,7 @@
 														47,
 														15
 													],
-													"id": "x"
+													"id": "c"
 												}
 											},
 											{
@@ -1867,66 +1830,81 @@
 				51,
 				1
 			],
-			"id": "String_all",
-			"typevars": [],
+			"id": "Array_all",
+			"typevars": [
+				"A"
+			],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						51,
-						17
+						19
 					],
 					"type": {
-						"node": "TypeName",
+						"node": "TypeArray",
 						"position": [
 							51,
-							17
+							19
 						],
-						"name": "String"
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								51,
+								20
+							],
+							"name": "A"
+						}
 					},
-					"name": "s",
+					"name": "a",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						51,
-						27
+						26
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							51,
-							27
+							26
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									51,
-									27
+									26
 								],
-								"name": "Char"
+								"name": "A"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								51,
-								33
+								29
 							],
 							"name": "Bool"
 						}
 					},
 					"name": "f",
-					"default": null
+					"default": {
+						"node": "AtomStub",
+						"position": [
+							51,
+							37
+						]
+					}
 				}
 			],
 			"ret": {
 				"node": "TypeName",
 				"position": [
 					51,
-					41
+					40
 				],
 				"name": "Bool"
 			},
@@ -1934,7 +1912,7 @@
 				"node": "Block",
 				"position": [
 					51,
-					49
+					48
 				],
 				"stmts": [
 					{
@@ -1950,7 +1928,7 @@
 									52,
 									9
 								],
-								"id": "c"
+								"id": "x"
 							}
 						],
 						"iterables": [
@@ -1960,7 +1938,7 @@
 									52,
 									14
 								],
-								"id": "s"
+								"id": "a"
 							}
 						],
 						"steps": [],
@@ -2012,7 +1990,7 @@
 																53,
 																18
 															],
-															"id": "c"
+															"id": "x"
 														}
 													}
 												]
@@ -2074,66 +2052,81 @@
 				57,
 				1
 			],
-			"id": "String_any",
-			"typevars": [],
+			"id": "Array_any",
+			"typevars": [
+				"A"
+			],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						57,
-						17
+						19
 					],
 					"type": {
-						"node": "TypeName",
+						"node": "TypeArray",
 						"position": [
 							57,
-							17
+							19
 						],
-						"name": "String"
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								57,
+								20
+							],
+							"name": "A"
+						}
 					},
-					"name": "s",
+					"name": "a",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						57,
-						27
+						26
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							57,
-							27
+							26
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									57,
-									27
+									26
 								],
-								"name": "Char"
+								"name": "A"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								57,
-								33
+								29
 							],
 							"name": "Bool"
 						}
 					},
 					"name": "f",
-					"default": null
+					"default": {
+						"node": "AtomStub",
+						"position": [
+							57,
+							37
+						]
+					}
 				}
 			],
 			"ret": {
 				"node": "TypeName",
 				"position": [
 					57,
-					41
+					40
 				],
 				"name": "Bool"
 			},
@@ -2141,7 +2134,7 @@
 				"node": "Block",
 				"position": [
 					57,
-					49
+					48
 				],
 				"stmts": [
 					{
@@ -2157,7 +2150,7 @@
 									58,
 									9
 								],
-								"id": "c"
+								"id": "x"
 							}
 						],
 						"iterables": [
@@ -2167,7 +2160,7 @@
 									58,
 									14
 								],
-								"id": "s"
+								"id": "a"
 							}
 						],
 						"steps": [],
@@ -2213,7 +2206,7 @@
 															59,
 															14
 														],
-														"id": "c"
+														"id": "x"
 													}
 												}
 											]
@@ -2273,53 +2266,62 @@
 				63,
 				1
 			],
-			"id": "String_filter",
-			"typevars": [],
+			"id": "Array_filter",
+			"typevars": [
+				"A"
+			],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						63,
-						20
+						22
 					],
 					"type": {
-						"node": "TypeName",
+						"node": "TypeArray",
 						"position": [
 							63,
-							20
+							22
 						],
-						"name": "String"
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								63,
+								23
+							],
+							"name": "A"
+						}
 					},
-					"name": "s",
+					"name": "a",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						63,
-						30
+						29
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							63,
-							30
+							29
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									63,
-									30
+									29
 								],
-								"name": "Char"
+								"name": "A"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								63,
-								36
+								32
 							],
 							"name": "Bool"
 						}
@@ -2329,18 +2331,25 @@
 				}
 			],
 			"ret": {
-				"node": "TypeName",
+				"node": "TypeArray",
 				"position": [
 					63,
-					44
+					40
 				],
-				"name": "String"
+				"subtype": {
+					"node": "TypeName",
+					"position": [
+						63,
+						41
+					],
+					"name": "A"
+				}
 			},
 			"block": {
 				"node": "Block",
 				"position": [
 					63,
-					54
+					47
 				],
 				"stmts": [
 					{
@@ -2350,107 +2359,90 @@
 							5
 						],
 						"expr": {
-							"node": "ExprCall",
+							"node": "ExprComprehension",
 							"position": [
 								64,
 								12
 							],
+							"kind": "array",
 							"expr": {
-								"node": "ExprAttr",
+								"node": "AtomId",
 								"position": [
 									64,
-									12
+									13
 								],
-								"expr": {
-									"node": "ExprComprehension",
+								"id": "x"
+							},
+							"comprehensions": [
+								{
+									"node": "ComprehensionGenerator",
 									"position": [
 										64,
-										12
+										15
 									],
-									"kind": "array",
+									"vars": [
+										{
+											"node": "AtomId",
+											"position": [
+												64,
+												19
+											],
+											"id": "x"
+										}
+									],
+									"iterables": [
+										{
+											"node": "AtomId",
+											"position": [
+												64,
+												24
+											],
+											"id": "a"
+										}
+									],
+									"steps": []
+								},
+								{
+									"node": "ComprehensionFilter",
+									"position": [
+										64,
+										26
+									],
 									"expr": {
-										"node": "AtomId",
+										"node": "ExprCall",
 										"position": [
 											64,
-											13
+											29
 										],
-										"id": "c"
-									},
-									"comprehensions": [
-										{
-											"node": "ComprehensionGenerator",
+										"expr": {
+											"node": "AtomId",
 											"position": [
 												64,
-												15
+												29
 											],
-											"vars": [
-												{
-													"node": "AtomId",
-													"position": [
-														64,
-														19
-													],
-													"id": "c"
-												}
-											],
-											"iterables": [
-												{
-													"node": "AtomId",
-													"position": [
-														64,
-														24
-													],
-													"id": "s"
-												}
-											],
-											"steps": []
+											"id": "f"
 										},
-										{
-											"node": "ComprehensionFilter",
-											"position": [
-												64,
-												26
-											],
-											"expr": {
-												"node": "ExprCall",
+										"args": [
+											{
+												"node": "CallArg",
 												"position": [
 													64,
-													29
+													31
 												],
+												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
 														64,
-														29
+														31
 													],
-													"id": "f"
-												},
-												"args": [
-													{
-														"node": "CallArg",
-														"position": [
-															64,
-															31
-														],
-														"name": null,
-														"expr": {
-															"node": "AtomId",
-															"position": [
-																64,
-																31
-															],
-															"id": "c"
-														}
-													}
-												]
+													"id": "x"
+												}
 											}
-										}
-									]
-								},
-								"attr": "_asString",
-								"safe": false
-							},
-							"args": []
+										]
+									}
+								}
+							]
 						}
 					}
 				]
@@ -2462,55 +2454,65 @@
 				66,
 				1
 			],
-			"id": "String_map",
-			"typevars": [],
+			"id": "Array_map",
+			"typevars": [
+				"A",
+				"B"
+			],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						66,
-						17
+						21
 					],
 					"type": {
-						"node": "TypeName",
+						"node": "TypeArray",
 						"position": [
 							66,
-							17
+							21
 						],
-						"name": "String"
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								66,
+								22
+							],
+							"name": "A"
+						}
 					},
-					"name": "s",
+					"name": "a",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						66,
-						27
+						28
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							66,
-							27
+							28
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									66,
-									27
+									28
 								],
-								"name": "Char"
+								"name": "A"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								66,
-								33
+								31
 							],
-							"name": "Char"
+							"name": "B"
 						}
 					},
 					"name": "f",
@@ -2518,18 +2520,25 @@
 				}
 			],
 			"ret": {
-				"node": "TypeName",
+				"node": "TypeArray",
 				"position": [
 					66,
-					41
+					36
 				],
-				"name": "String"
+				"subtype": {
+					"node": "TypeName",
+					"position": [
+						66,
+						37
+					],
+					"name": "B"
+				}
 			},
 			"block": {
 				"node": "Block",
 				"position": [
 					66,
-					51
+					43
 				],
 				"stmts": [
 					{
@@ -2539,92 +2548,75 @@
 							5
 						],
 						"expr": {
-							"node": "ExprCall",
+							"node": "ExprComprehension",
 							"position": [
 								67,
 								12
 							],
+							"kind": "array",
 							"expr": {
-								"node": "ExprAttr",
+								"node": "ExprCall",
 								"position": [
 									67,
-									12
+									13
 								],
 								"expr": {
-									"node": "ExprComprehension",
+									"node": "AtomId",
 									"position": [
 										67,
-										12
+										13
 									],
-									"kind": "array",
-									"expr": {
-										"node": "ExprCall",
+									"id": "f"
+								},
+								"args": [
+									{
+										"node": "CallArg",
 										"position": [
 											67,
-											13
+											15
 										],
+										"name": null,
 										"expr": {
 											"node": "AtomId",
 											"position": [
 												67,
-												13
+												15
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
-												"position": [
-													67,
-													15
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
-													"position": [
-														67,
-														15
-													],
-													"id": "c"
-												}
-											}
-										]
-									},
-									"comprehensions": [
+											"id": "x"
+										}
+									}
+								]
+							},
+							"comprehensions": [
+								{
+									"node": "ComprehensionGenerator",
+									"position": [
+										67,
+										18
+									],
+									"vars": [
 										{
-											"node": "ComprehensionGenerator",
+											"node": "AtomId",
 											"position": [
 												67,
-												18
+												22
 											],
-											"vars": [
-												{
-													"node": "AtomId",
-													"position": [
-														67,
-														22
-													],
-													"id": "c"
-												}
-											],
-											"iterables": [
-												{
-													"node": "AtomId",
-													"position": [
-														67,
-														27
-													],
-													"id": "s"
-												}
-											],
-											"steps": []
+											"id": "x"
 										}
-									]
-								},
-								"attr": "_asString",
-								"safe": false
-							},
-							"args": []
+									],
+									"iterables": [
+										{
+											"node": "AtomId",
+											"position": [
+												67,
+												27
+											],
+											"id": "a"
+										}
+									],
+									"steps": []
+								}
+							]
 						}
 					}
 				]
@@ -2636,8 +2628,9 @@
 				69,
 				1
 			],
-			"id": "String_reduce",
+			"id": "Array_reduce",
 			"typevars": [
+				"A",
 				"B"
 			],
 			"args": [
@@ -2645,45 +2638,52 @@
 					"node": "FuncArg",
 					"position": [
 						69,
-						23
+						24
 					],
 					"type": {
-						"node": "TypeName",
+						"node": "TypeArray",
 						"position": [
 							69,
-							23
+							24
 						],
-						"name": "String"
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								69,
+								25
+							],
+							"name": "A"
+						}
 					},
-					"name": "s",
+					"name": "a",
 					"default": null
 				},
 				{
 					"node": "FuncArg",
 					"position": [
 						69,
-						33
+						31
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							69,
-							39
+							34
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									69,
-									33
+									31
 								],
-								"name": "Char"
+								"name": "A"
 							},
 							{
 								"node": "TypeName",
 								"position": [
 									69,
-									39
+									34
 								],
 								"name": "B"
 							}
@@ -2692,7 +2692,7 @@
 							"node": "TypeName",
 							"position": [
 								69,
-								42
+								37
 							],
 							"name": "B"
 						}
@@ -2704,13 +2704,13 @@
 					"node": "FuncArg",
 					"position": [
 						69,
-						47
+						42
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
 							69,
-							47
+							42
 						],
 						"name": "B"
 					},
@@ -2722,7 +2722,7 @@
 				"node": "TypeName",
 				"position": [
 					69,
-					52
+					47
 				],
 				"name": "B"
 			},
@@ -2730,7 +2730,7 @@
 				"node": "Block",
 				"position": [
 					69,
-					57
+					52
 				],
 				"stmts": [
 					{
@@ -2746,7 +2746,7 @@
 									70,
 									9
 								],
-								"id": "c"
+								"id": "x"
 							}
 						],
 						"iterables": [
@@ -2756,7 +2756,7 @@
 									70,
 									14
 								],
-								"id": "s"
+								"id": "a"
 							}
 						],
 						"steps": [],
@@ -2811,7 +2811,7 @@
 														71,
 														15
 													],
-													"id": "c"
+													"id": "x"
 												}
 											},
 											{
@@ -2846,6 +2846,1036 @@
 							"node": "AtomId",
 							"position": [
 								72,
+								12
+							],
+							"id": "r"
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				75,
+				1
+			],
+			"id": "Set_all",
+			"typevars": [
+				"A"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						75,
+						17
+					],
+					"type": {
+						"node": "TypeSet",
+						"position": [
+							75,
+							17
+						],
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								75,
+								18
+							],
+							"name": "A"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						75,
+						24
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							75,
+							24
+						],
+						"args": [
+							{
+								"node": "TypeName",
+								"position": [
+									75,
+									24
+								],
+								"name": "A"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								75,
+								27
+							],
+							"name": "Bool"
+						}
+					},
+					"name": "f",
+					"default": {
+						"node": "AtomStub",
+						"position": [
+							75,
+							35
+						]
+					}
+				}
+			],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					75,
+					38
+				],
+				"name": "Bool"
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					75,
+					46
+				],
+				"stmts": [
+					{
+						"node": "StmtFor",
+						"position": [
+							76,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									76,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									76,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								76,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtIf",
+									"position": [
+										77,
+										9
+									],
+									"exprs": [
+										{
+											"node": "ExprUnaryOp",
+											"position": [
+												77,
+												12
+											],
+											"expr": {
+												"node": "ExprCall",
+												"position": [
+													77,
+													16
+												],
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														77,
+														16
+													],
+													"id": "f"
+												},
+												"args": [
+													{
+														"node": "CallArg",
+														"position": [
+															77,
+															18
+														],
+														"name": null,
+														"expr": {
+															"node": "AtomId",
+															"position": [
+																77,
+																18
+															],
+															"id": "x"
+														}
+													}
+												]
+											},
+											"op": "not"
+										}
+									],
+									"blocks": [
+										{
+											"node": "Block",
+											"position": [
+												77,
+												23
+											],
+											"stmts": [
+												{
+													"node": "StmtReturn",
+													"position": [
+														78,
+														13
+													],
+													"expr": {
+														"node": "AtomBool",
+														"position": [
+															78,
+															20
+														],
+														"bool": false
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							79,
+							5
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								79,
+								12
+							],
+							"bool": true
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				81,
+				1
+			],
+			"id": "Set_any",
+			"typevars": [
+				"A"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						81,
+						17
+					],
+					"type": {
+						"node": "TypeSet",
+						"position": [
+							81,
+							17
+						],
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								81,
+								18
+							],
+							"name": "A"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						81,
+						24
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							81,
+							24
+						],
+						"args": [
+							{
+								"node": "TypeName",
+								"position": [
+									81,
+									24
+								],
+								"name": "A"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								81,
+								27
+							],
+							"name": "Bool"
+						}
+					},
+					"name": "f",
+					"default": {
+						"node": "AtomStub",
+						"position": [
+							81,
+							35
+						]
+					}
+				}
+			],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					81,
+					38
+				],
+				"name": "Bool"
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					81,
+					46
+				],
+				"stmts": [
+					{
+						"node": "StmtFor",
+						"position": [
+							82,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									82,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									82,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								82,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtIf",
+									"position": [
+										83,
+										9
+									],
+									"exprs": [
+										{
+											"node": "ExprCall",
+											"position": [
+												83,
+												12
+											],
+											"expr": {
+												"node": "AtomId",
+												"position": [
+													83,
+													12
+												],
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
+													"position": [
+														83,
+														14
+													],
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															83,
+															14
+														],
+														"id": "x"
+													}
+												}
+											]
+										}
+									],
+									"blocks": [
+										{
+											"node": "Block",
+											"position": [
+												83,
+												19
+											],
+											"stmts": [
+												{
+													"node": "StmtReturn",
+													"position": [
+														84,
+														13
+													],
+													"expr": {
+														"node": "AtomBool",
+														"position": [
+															84,
+															20
+														],
+														"bool": true
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							85,
+							5
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								85,
+								12
+							],
+							"bool": false
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				87,
+				1
+			],
+			"id": "Set_filter",
+			"typevars": [
+				"A"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						87,
+						20
+					],
+					"type": {
+						"node": "TypeSet",
+						"position": [
+							87,
+							20
+						],
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								87,
+								21
+							],
+							"name": "A"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						87,
+						27
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							87,
+							27
+						],
+						"args": [
+							{
+								"node": "TypeName",
+								"position": [
+									87,
+									27
+								],
+								"name": "A"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								87,
+								30
+							],
+							"name": "Bool"
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeSet",
+				"position": [
+					87,
+					38
+				],
+				"subtype": {
+					"node": "TypeName",
+					"position": [
+						87,
+						39
+					],
+					"name": "A"
+				}
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					87,
+					45
+				],
+				"stmts": [
+					{
+						"node": "StmtReturn",
+						"position": [
+							88,
+							5
+						],
+						"expr": {
+							"node": "ExprComprehension",
+							"position": [
+								88,
+								12
+							],
+							"kind": "set",
+							"expr": {
+								"node": "AtomId",
+								"position": [
+									88,
+									13
+								],
+								"id": "x"
+							},
+							"comprehensions": [
+								{
+									"node": "ComprehensionGenerator",
+									"position": [
+										88,
+										15
+									],
+									"vars": [
+										{
+											"node": "AtomId",
+											"position": [
+												88,
+												19
+											],
+											"id": "x"
+										}
+									],
+									"iterables": [
+										{
+											"node": "AtomId",
+											"position": [
+												88,
+												24
+											],
+											"id": "a"
+										}
+									],
+									"steps": []
+								},
+								{
+									"node": "ComprehensionFilter",
+									"position": [
+										88,
+										26
+									],
+									"expr": {
+										"node": "ExprCall",
+										"position": [
+											88,
+											29
+										],
+										"expr": {
+											"node": "AtomId",
+											"position": [
+												88,
+												29
+											],
+											"id": "f"
+										},
+										"args": [
+											{
+												"node": "CallArg",
+												"position": [
+													88,
+													31
+												],
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														88,
+														31
+													],
+													"id": "x"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				90,
+				1
+			],
+			"id": "Set_map",
+			"typevars": [
+				"A",
+				"B"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						90,
+						19
+					],
+					"type": {
+						"node": "TypeSet",
+						"position": [
+							90,
+							19
+						],
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								90,
+								20
+							],
+							"name": "A"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						90,
+						26
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							90,
+							26
+						],
+						"args": [
+							{
+								"node": "TypeName",
+								"position": [
+									90,
+									26
+								],
+								"name": "A"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								90,
+								29
+							],
+							"name": "B"
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeSet",
+				"position": [
+					90,
+					34
+				],
+				"subtype": {
+					"node": "TypeName",
+					"position": [
+						90,
+						35
+					],
+					"name": "B"
+				}
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					90,
+					41
+				],
+				"stmts": [
+					{
+						"node": "StmtReturn",
+						"position": [
+							91,
+							5
+						],
+						"expr": {
+							"node": "ExprComprehension",
+							"position": [
+								91,
+								12
+							],
+							"kind": "set",
+							"expr": {
+								"node": "ExprCall",
+								"position": [
+									91,
+									13
+								],
+								"expr": {
+									"node": "AtomId",
+									"position": [
+										91,
+										13
+									],
+									"id": "f"
+								},
+								"args": [
+									{
+										"node": "CallArg",
+										"position": [
+											91,
+											15
+										],
+										"name": null,
+										"expr": {
+											"node": "AtomId",
+											"position": [
+												91,
+												15
+											],
+											"id": "x"
+										}
+									}
+								]
+							},
+							"comprehensions": [
+								{
+									"node": "ComprehensionGenerator",
+									"position": [
+										91,
+										18
+									],
+									"vars": [
+										{
+											"node": "AtomId",
+											"position": [
+												91,
+												22
+											],
+											"id": "x"
+										}
+									],
+									"iterables": [
+										{
+											"node": "AtomId",
+											"position": [
+												91,
+												27
+											],
+											"id": "a"
+										}
+									],
+									"steps": []
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				93,
+				1
+			],
+			"id": "Set_reduce",
+			"typevars": [
+				"A",
+				"B"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						93,
+						22
+					],
+					"type": {
+						"node": "TypeSet",
+						"position": [
+							93,
+							22
+						],
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								93,
+								23
+							],
+							"name": "A"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						93,
+						29
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							93,
+							32
+						],
+						"args": [
+							{
+								"node": "TypeName",
+								"position": [
+									93,
+									29
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									93,
+									32
+								],
+								"name": "B"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								93,
+								35
+							],
+							"name": "B"
+						}
+					},
+					"name": "f",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						93,
+						40
+					],
+					"type": {
+						"node": "TypeName",
+						"position": [
+							93,
+							40
+						],
+						"name": "B"
+					},
+					"name": "r",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					93,
+					45
+				],
+				"name": "B"
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					93,
+					50
+				],
+				"stmts": [
+					{
+						"node": "StmtFor",
+						"position": [
+							94,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									94,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									94,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								94,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtAssg",
+									"position": [
+										95,
+										9
+									],
+									"lvalues": [
+										{
+											"node": "AtomId",
+											"position": [
+												95,
+												9
+											],
+											"id": "r"
+										}
+									],
+									"expr": {
+										"node": "ExprCall",
+										"position": [
+											95,
+											13
+										],
+										"expr": {
+											"node": "AtomId",
+											"position": [
+												95,
+												13
+											],
+											"id": "f"
+										},
+										"args": [
+											{
+												"node": "CallArg",
+												"position": [
+													95,
+													15
+												],
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														95,
+														15
+													],
+													"id": "x"
+												}
+											},
+											{
+												"node": "CallArg",
+												"position": [
+													95,
+													18
+												],
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														95,
+														18
+													],
+													"id": "r"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							96,
+							5
+						],
+						"expr": {
+							"node": "AtomId",
+							"position": [
+								96,
 								12
 							],
 							"id": "r"

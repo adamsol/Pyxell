@@ -1,0 +1,20 @@
+
+n = 3*10^^6
+s = 5
+
+x = {1..n step s}
+
+for i in {3..n step s} do
+    x.add(i)
+
+c = 0
+for i in 1..n do
+    if x.contains(i) do
+        c += 1
+
+print c
+
+for i in s+1..n do
+    x.remove(i)
+
+print x == {1, 3}

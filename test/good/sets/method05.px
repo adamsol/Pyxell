@@ -1,0 +1,8 @@
+
+x = {true}
+y = x
+z = y.copy()
+
+x.union({false})
+print y.length
+print z

@@ -24,6 +24,30 @@ func sign<T>(T x) T def
     return x > 0 ? 1 : x < 0 ? -1 : 0
 
 
+func String_all(String s, Char->Bool f) Bool def
+    for c in s do
+        if not f(c) do
+            return false
+    return true
+
+func String_any(String s, Char->Bool f) Bool def
+    for c in s do
+        if f(c) do
+            return true
+    return false
+
+func String_filter(String s, Char->Bool f) String def
+    return [c for c in s if f(c)]._asString()
+
+func String_map(String s, Char->Char f) String def
+    return [f(c) for c in s]._asString()
+
+func String_reduce<B>(String s, Char->B->B f, B r) B def
+    for c in s do
+        r = f(c, r)
+    return r
+
+
 func Array_all<A>([A] a, A->Bool f: _) Bool def
     for x in a do
         if not f(x) do
@@ -48,25 +72,25 @@ func Array_reduce<A,B>([A] a, A->B->B f, B r) B def
     return r
 
 
-func String_all(String s, Char->Bool f) Bool def
-    for c in s do
-        if not f(c) do
+func Set_all<A>({A} a, A->Bool f: _) Bool def
+    for x in a do
+        if not f(x) do
             return false
     return true
 
-func String_any(String s, Char->Bool f) Bool def
-    for c in s do
-        if f(c) do
+func Set_any<A>({A} a, A->Bool f: _) Bool def
+    for x in a do
+        if f(x) do
             return true
     return false
 
-func String_filter(String s, Char->Bool f) String def
-    return [c for c in s if f(c)]._asString()
+func Set_filter<A>({A} a, A->Bool f) {A} def
+    return {x for x in a if f(x)}
 
-func String_map(String s, Char->Char f) String def
-    return [f(c) for c in s]._asString()
+func Set_map<A,B>({A} a, A->B f) {B} def
+    return {f(x) for x in a}
 
-func String_reduce<B>(String s, Char->B->B f, B r) B def
-    for c in s do
-        r = f(c, r)
+func Set_reduce<A,B>({A} a, A->B->B f, B r) B def
+    for x in a do
+        r = f(x, r)
     return r

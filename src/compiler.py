@@ -272,9 +272,10 @@ class PyxellCompiler:
         elif type.isIterable():
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
-
             elif attr == 'join' and type.subtype in {t.Char, t.String}:
                 value = v.Variable(t.Func([type, t.Func.Arg(t.String, default={'node': 'AtomString', 'string': ''})], t.String), attr)
+            elif attr == '_asString' and type.subtype == t.Char:
+                value = v.Variable(t.Func([type], t.String), 'asString')
 
             elif type == t.String:
                 if attr == 'all':
@@ -289,9 +290,7 @@ class PyxellCompiler:
                     value = self.env['String_reduce']
 
             elif type.isArray():
-                if attr == '_asString' and type.subtype == t.Char:
-                    value = v.Variable(t.Func([type], t.String), 'asString')
-                elif attr == 'all':
+                if attr == 'all':
                     value = self.env['Array_all']
                 elif attr == 'any':
                     value = self.env['Array_any']
@@ -321,6 +320,36 @@ class PyxellCompiler:
                     value = v.Variable(t.Func([type, type.subtype], t.Nullable(t.Int)), attr)
                 elif attr == 'count':
                     value = v.Variable(t.Func([type, type.subtype], t.Int), attr)
+
+            elif type.isSet():
+                if attr == 'all':
+                    value = self.env['Set_all']
+                elif attr == 'any':
+                    value = self.env['Set_any']
+                elif attr == 'filter':
+                    value = self.env['Set_filter']
+                elif attr == 'map':
+                    value = self.env['Set_map']
+                elif attr == 'reduce':
+                    value = self.env['Set_reduce']
+                elif attr == 'add':
+                    value = v.Variable(t.Func([type, type.subtype]), attr)
+                elif attr == 'union':
+                    value = v.Variable(t.Func([type, type]), 'union_')
+                elif attr == 'subtract':
+                    value = v.Variable(t.Func([type, type]), attr)
+                elif attr == 'intersect':
+                    value = v.Variable(t.Func([type, type]), attr)
+                elif attr == 'pop':
+                    value = v.Variable(t.Func([type], type.subtype), attr)
+                elif attr == 'remove':
+                    value = v.Variable(t.Func([type, type.subtype]), attr)
+                elif attr == 'clear':
+                    value = v.Variable(t.Func([type]), attr)
+                elif attr == 'copy':
+                    value = v.Variable(t.Func([type], type), attr)
+                elif attr == 'contains':
+                    value = v.Variable(t.Func([type, type.subtype], t.Bool), attr)
 
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')
@@ -526,13 +555,13 @@ class PyxellCompiler:
 
         elif op == '&':
             if left.type == right.type and left.type.isSet():
-                return v.Call('intersect', left, right, type=left.type)
+                return v.Call('intersection', left, right, type=left.type)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '#':
             if left.type == right.type and left.type.isSet():
-                return v.Call('symdiff', left, right, type=left.type)
+                return v.Call('symmetric_difference', left, right, type=left.type)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -554,7 +583,7 @@ class PyxellCompiler:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
             elif left.type == right.type and left.type.isSet():
-                return v.Call('subtract', left, right, type=left.type)
+                return v.Call('difference', left, right, type=left.type)
 
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))

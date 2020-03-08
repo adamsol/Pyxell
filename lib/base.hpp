@@ -247,11 +247,6 @@ Int pow(Int b, Int e)
 
 /* Container operators */
 
-String asString(const Array<Char>& x)
-{
-    return make_string(x->begin(), x->end());
-}
-
 String concat(const String& a, const String& b)
 {
     return make_string(*a + *b);
@@ -284,7 +279,7 @@ Set<T> concat(const Set<T>& a, const Set<T>& b)
 }
 
 template <typename T>
-Set<T> subtract(const Set<T>& a, const Set<T>& b)
+Set<T> difference(const Set<T>& a, const Set<T>& b)
 {
     auto r = make_set<T>();
     // https://stackoverflow.com/a/22711060
@@ -294,7 +289,7 @@ Set<T> subtract(const Set<T>& a, const Set<T>& b)
 }
 
 template <typename T>
-Set<T> intersect(const Set<T>& a, const Set<T>& b)
+Set<T> intersection(const Set<T>& a, const Set<T>& b)
 {
     auto r = make_set<T>();
     std::copy_if(a->begin(), a->end(), std::inserter(*r, r->begin()),
@@ -303,7 +298,7 @@ Set<T> intersect(const Set<T>& a, const Set<T>& b)
 }
 
 template <typename T>
-Set<T> symdiff(const Set<T>& a, const Set<T>& b)
+Set<T> symmetric_difference(const Set<T>& a, const Set<T>& b)
 {
     auto r = make_set<T>();
     std::copy_if(a->begin(), a->end(), std::inserter(*r, r->begin()),
@@ -418,6 +413,12 @@ String join(const custom_ptr<T>& x, const String& sep)
     return r;
 }
 
+template <typename T>
+String asString(const custom_ptr<T>& x)
+{
+    return make_string(x->begin(), x->end());
+}
+
 /* Array methods */
 
 template <typename T>
@@ -492,6 +493,66 @@ template <typename T>
 Int count(const Array<T>& x, const T& e)
 {
     return std::count(x->begin(), x->end(), e);
+}
+
+/* Set methods */
+
+template <typename T>
+Void add(const Set<T>& x, const T& e)
+{
+    x->insert(e);
+}
+
+template <typename T>
+Void union_(const Set<T>& x, const Set<T>& y)
+{
+    x->insert(y->begin(), y->end());
+}
+
+template <typename T>
+Void subtract(const Set<T>& x, const Set<T>& y)
+{
+    for (auto&& e: *y) {
+        x->erase(e);
+    }
+}
+
+template <typename T>
+Void intersect(const Set<T>& x, const Set<T>& y)
+{
+    subtract(x, difference(x, y));
+}
+
+template <typename T>
+T pop(const Set<T>& x)
+{
+    auto r = *x->begin();
+    x->erase(r);
+    return r;
+}
+
+template <typename T>
+Void remove(const Set<T>& x, const T& e)
+{
+    x->erase(e);
+}
+
+template <typename T>
+Void clear(const Set<T>& x)
+{
+    x->clear();
+}
+
+template <typename T>
+Set<T> copy(const Set<T>& x)
+{
+    return make_set<T>(*x);
+}
+
+template <typename T>
+bool contains(const Set<T>& x, const T& e)
+{
+    return x->find(e) != x->end();
 }
 
 

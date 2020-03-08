@@ -1,0 +1,9 @@
+
+{String} a = {}
+
+a.add("xyz")
+a.add("xyz")
+print a
+
+a.add("zyx")
+print a.length

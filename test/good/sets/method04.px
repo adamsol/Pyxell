@@ -1,0 +1,18 @@
+
+x = {'a'..'z'}
+{Char} y = {}
+
+x.remove('a')
+x.remove('t')
+
+n = 0
+while x.length > 0 do
+    n += 1
+    y.add(x.pop())
+
+print x
+print n
+print y == {'b'..'z'} - {'t'}
+
+y.clear()
+print y.length
