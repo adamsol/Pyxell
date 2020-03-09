@@ -1,0 +1,3 @@
+
+{String:Int} d = {:}
+print d.length

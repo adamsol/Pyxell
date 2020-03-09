@@ -205,6 +205,20 @@ class PyxellASTVisitor(PyxellVisitor):
             'exprs': self.visit(ctx.expr()),
         }
 
+    def visitExprDict(self, ctx):
+        return {
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'dict',
+            'exprs': self.visit(ctx.expr()),
+        }
+
+    def visitExprEmptyDict(self, ctx):
+        return {
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'dict',
+            'exprs': [],
+        }
+
     def visitExprArrayRangeStep(self, ctx):
         return {
             **_node(ctx, 'ExprCollection'),
@@ -443,6 +457,13 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'TypeSet'),
             'subtype': self.visit(ctx.typ()),
+        }
+
+    def visitTypeDict(self, ctx):
+        return {
+            **_node(ctx, 'TypeDict'),
+            'key_type': self.visit(ctx.typ(0)),
+            'value_type': self.visit(ctx.typ(1)),
         }
 
     def visitTypeNullable(self, ctx):

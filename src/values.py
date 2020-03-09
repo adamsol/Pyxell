@@ -80,6 +80,15 @@ class Set(Container):
         super().__init__(type, elements, f'make_set<{type.subtype}>' + '({{{}}})')
 
 
+class Dict(Container):
+
+    def __init__(self, keys, values, key_type=None, value_type=None):
+        type = t.Dict(keys[0].type if keys else (key_type or t.Unknown),
+                      values[0].type if values else (value_type or t.Unknown))
+        elements = [f'{{{key}, {value}}}' for key, value in zip(keys, values)]
+        super().__init__(type, elements, f'make_dict<{type.key_type}, {type.value_type}>' + '({{{}}})')
+
+
 class Nullable(Value):
 
     def __init__(self, value=None):

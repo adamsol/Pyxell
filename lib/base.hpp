@@ -13,7 +13,9 @@
 #include <random>
 #include <string>
 #include <tuple>
+#include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 // https://github.com/godotengine/godot/pull/33376
@@ -135,6 +137,37 @@ template <typename T, typename... Args>
 Set<T> make_set(Args&&... args)
 {
     return Set<T>(std::make_shared<std::unordered_set<T>>(std::forward<Args>(args)...));
+}
+
+/* Dict */
+
+template <typename K, typename V>
+struct Dict: public custom_ptr<std::unordered_map<K, V>>
+{
+    using custom_ptr<std::unordered_map<K, V>>::custom_ptr;
+
+    Dict(const Dict<Unknown, Unknown>& x)
+    {
+        this->p = std::make_shared<std::unordered_map<K, V>>();
+    }
+
+    template <typename L, typename W>
+    Dict(const Dict<L, W>& x)
+    {
+        this->p = std::make_shared<std::unordered_map<K, V>>(x->begin(), x->end());
+    }
+};
+
+template <typename K, typename V>
+Dict<K, V> make_dict(std::initializer_list<std::pair<const K, V>> x)
+{
+    return Dict<K, V>(std::make_shared<std::unordered_map<K, V>>(x));
+}
+
+template <typename K, typename V, typename... Args>
+Dict<K, V> make_dict(Args&&... args)
+{
+    return Dict<K, V>(std::make_shared<std::unordered_map<K, V>>(std::forward<Args>(args)...));
 }
 
 /* Nullable */
@@ -619,6 +652,26 @@ String toString(const Set<T>& x)
             r->append(", ");
         }
         r->append(*toString(*it));
+    }
+    r->append("}");
+    return r;
+}
+
+template <typename K, typename V>
+String toString(const Dict<K, V>& x)
+{
+    if (x->empty()) {
+        return make_string("{:}");
+    }
+    auto r = make_string();
+    r->append("{");
+    for (auto it = x->begin(); it != x->end(); ++it) {
+        if (it != x->begin()) {
+            r->append(", ");
+        }
+        r->append(*toString(it->first));
+        r->append(": ");
+        r->append(*toString(it->second));
     }
     r->append("}");
     return r;

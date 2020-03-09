@@ -52,6 +52,8 @@ expr
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
   | '{' (expr ',')* expr? '}' # ExprSet
+  | '{' (expr ':' expr ',')* expr ':' expr '}' # ExprDict
+  | '{:}' # ExprEmptyDict
   | '[' expr 'step' expr ']' # ExprArrayRangeStep
   | '{' expr 'step' expr '}' # ExprSetRangeStep
   | '[' expr comprehension+ ']' # ExprArrayComprehension
@@ -120,6 +122,7 @@ typ
   | '(' typ ')' # TypeParentheses
   | '[' typ ']' # TypeArray
   | '{' typ '}' # TypeSet
+  | '{' typ ':' typ '}' # TypeDict
   | typ '?' # TypeNullable
   | <assoc=right> typ '*' typ # TypeTuple
   | <assoc=right> typ '->' typ # TypeFunc

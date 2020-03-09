@@ -19,6 +19,9 @@ class Type:
     def isSet(self):
         return isinstance(self, Set)
 
+    def isDict(self):
+        return isinstance(self, Dict)
+
     def isNullable(self):
         return isinstance(self, Nullable)
 
@@ -41,6 +44,8 @@ class Type:
             return self.subtype.isUnknown()
         if self.isSet():
             return self.subtype.isUnknown()
+        if self.isDict():
+            return self.key_type.isUnknown() or self.value_type.isUnknown()
         if self.isNullable():
             return self.subtype.isUnknown()
         if self.isTuple():
@@ -49,18 +54,19 @@ class Type:
             return any(arg.type.isUnknown() for arg in self.args) or self.ret.isUnknown()
         return False
 
-    def isIndexable(self):
+    def isSequence(self):
         return self == String or self.isArray()
 
-    def isIterable(self):
-        return self.isIndexable() or self.isSet()
+    def isContainer(self):
+        return self.isArray() or self.isSet() or self.isDict()
+
+    def isCollection(self):
+        return self.isSequence() or self.isContainer()
 
     def isHashable(self):
         if self in {Int, Float, Bool, Char, String, Unknown}:
             return True
-        if self.isArray():
-            return False
-        if self.isSet():
+        if self.isContainer():
             return False
         if self.isNullable():
             return self.subtype.isHashable()
@@ -77,6 +83,8 @@ class Type:
             return self.subtype.isPrintable()
         if self.isSet():
             return self.subtype.isPrintable()
+        if self.isDict():
+            return self.key_type.isPrintable() and self.value_type.isPrintable()
         if self.isNullable():
             return self.subtype.isPrintable()
         if self.isTuple():
@@ -84,6 +92,12 @@ class Type:
         if self.isClass():
             return 'toString' in self.methods
         return False
+
+    def isOrderable(self):
+        return self in {Int, Float, Char, Bool, String} or self.isArray() or self.isTuple()
+
+    def isComparable(self):
+        return self.isOrderable() or self.isSet() or self.isDict() or self.isClass()
 
 
 class PrimitiveType(Type):
@@ -142,6 +156,23 @@ class Set(Type):
 
     def eq(self, other):
         return self.subtype == other.subtype
+
+
+class Dict(Type):
+
+    def __init__(self, key_type, value_type):
+        super().__init__()
+        self.key_type = key_type
+        self.value_type = value_type
+
+    def __str__(self):
+        return f'Dict<{self.key_type}, {self.value_type}>'
+
+    def show(self):
+        return f'{{{self.key_type.show()}:{self.value_type.show()}}}'
+
+    def eq(self, other):
+        return self.key_type == other.key_type and self.value_type == other.value_type
 
 
 class Nullable(Type):
@@ -262,6 +293,11 @@ def unify_types(type1, *types):
         subtype = unify_types(type1.subtype, type2.subtype)
         return Set(subtype) if subtype else None
 
+    if type1.isDict() and type2.isDict():
+        key_type = unify_types(type1.key_type, type2.key_type)
+        value_type = unify_types(type1.value_type, type2.value_type)
+        return Dict(key_type, value_type) if key_type and value_type else None
+
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
         return Nullable(subtype) if subtype else None
@@ -309,6 +345,11 @@ def type_variables_assignment(type1, type2):
 
     if type1.isSet() and type2.isSet():
         return type_variables_assignment(type1.subtype, type2.subtype)
+
+    if type1.isDict() and type2.isDict():
+        return type_variables_assignment(
+            Tuple([type1.key_type, type1.value_type]),
+            Tuple([type2.key_type, type2.value_type]))
 
     if type1.isNullable() and type2.isNullable():
         return type_variables_assignment(type1.subtype, type2.subtype)
@@ -365,6 +406,10 @@ def can_cast(type1, type2):
 
     if type1.isSet() and type2.isSet():
         return type1.subtype == type2.subtype or type1.subtype.isUnknown()
+
+    if type1.isDict() and type2.isDict():
+        return (type1.key_type == type2.key_type or type1.key_type.isUnknown()) and \
+               (type1.value_type == type2.value_type or type1.value_type.isUnknown())
 
     if type1.isNullable() and type2.isNullable():
         return type1.subtype == type2.subtype or type1.subtype.isUnknown()

@@ -1,0 +1,3 @@
+
+s = {2: "qw", 6: "erty"}.toString()
+print s == "{{2: qw, 6: erty}}" or s == "{{6: erty, 2: qw}}"

@@ -1,0 +1,12 @@
+
+{String:[Int]} d = {:}
+
+d[""] = []
+print d
+
+d["zxy"] = [5]
+d[""] = [3]
+print d.length
+
+d["zxy"].push(1)
+print d["zxy"]

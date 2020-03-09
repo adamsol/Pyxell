@@ -151,6 +151,8 @@ class PyxellCompiler:
             return t.Array(self.resolve_type(type.subtype))
         if type.isSet():
             return t.Set(self.resolve_type(type.subtype))
+        if type.isDict():
+            return t.Dict(self.resolve_type(type.key_type), self.resolve_type(type.value_type))
         if type.isNullable():
             return t.Nullable(self.resolve_type(type.subtype))
         if type.isTuple():
@@ -188,20 +190,25 @@ class PyxellCompiler:
         return result
 
     def index(self, node, collection, index, lvalue=False):
-        if collection.type.isIndexable():
-            if lvalue and not collection.type.isArray():
+        if collection.type.isSequence() or collection.type.isDict():
+            if lvalue and collection.type == t.String:
                 self.throw(node, err.NotLvalue())
 
             collection = self.tmp(collection)
-            index = self.cast(node, index, t.Int)
-            index = self.tmp(index)
-            index = v.Condition(
-                v.BinaryOperation(index, '<', v.Int(0)),
-                v.BinaryOperation(self.attr(node, collection, 'length'), '+', index),
-                index)
-            index = self.tmp(index)
 
-            return v.Index(collection, index, type=collection.type.subtype)
+            if collection.type.isSequence():
+                index = self.tmp(self.cast(node, index, t.Int))
+                index = v.Condition(
+                    v.BinaryOperation(index, '<', v.Int(0)),
+                    v.BinaryOperation(self.attr(node, collection, 'length'), '+', index),
+                    index)
+                type = collection.type.subtype
+
+            elif collection.type.isDict():
+                index = self.cast(node, index, collection.type.key_type)
+                type = collection.type.value_type
+
+            return v.Index(collection, index, type=type)
 
         self.throw(node, err.NotIndexable(collection.type))
 
@@ -269,7 +276,7 @@ class PyxellCompiler:
             if attr == 'code':
                 value = v.Cast(obj, t.Int)
 
-        elif type.isIterable():
+        elif type.isCollection():
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif attr == 'join' and type.subtype in {t.Char, t.String}:
@@ -526,10 +533,10 @@ class PyxellCompiler:
             if left.type == right.type and left.type in {t.Int, t.Float}:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
-            elif left.type.isIndexable() and right.type == t.Int:
+            elif left.type.isSequence() and right.type == t.Int:
                 return v.Call('multiply', left, right, type=left.type)
 
-            elif left.type == t.Int and right.type.isIndexable():
+            elif left.type == t.Int and right.type.isSequence():
                 return self.binaryop(node, op, right, left)
 
             else:
@@ -572,7 +579,7 @@ class PyxellCompiler:
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.Call('concat', left, right, type=t.String)
 
-            elif left.type == right.type and left.type.isIterable():
+            elif left.type == right.type and left.type.isCollection():
                 return v.Call('concat', left, right, type=left.type)
 
             else:
@@ -1015,7 +1022,7 @@ class PyxellCompiler:
             else:
                 value = self.tmp(self.compile(iterable))
                 type = value.type
-                if not type.isIterable():
+                if not type.isCollection():
                     self.throw(node, err.NotIterable(type))
 
                 types.append(type.subtype)
@@ -1024,7 +1031,7 @@ class PyxellCompiler:
                 iterator = self.var(None)
                 start = self.tmp(v.Call(v.Attribute(value, 'begin')))
 
-                if type.isIndexable():
+                if type.isSequence():
                     # The following doesn't work in GCC with non-random access iterators (program crashes or loops forever).
                     end = self.tmp(v.Call(v.Attribute(value, 'end')))
                     self.output(f'if ({step} < 0 && {start} != {end}) {start} = std::prev({end})')
@@ -1255,14 +1262,16 @@ class PyxellCompiler:
         elif node.get('step'):
             self.throw(node, err.InvalidSyntax())
 
-        values = self.unify(node, *map(self.compile, exprs))
-
         if kind == 'array':
-            result = v.Array(values)
+            result = v.Array(self.unify(node, *map(self.compile, exprs)))
         elif kind == 'set':
-            result = v.Set(values)
+            result = v.Set(self.unify(node, *map(self.compile, exprs)))
             if not result.type.subtype.isHashable():
                 self.throw(node, err.NotHashable(result.type.subtype))
+        elif kind == 'dict':
+            result = v.Dict(self.unify(node, *map(self.compile, exprs[0::2])), self.unify(node, *map(self.compile, exprs[1::2])))
+            if not result.type.key_type.isHashable():
+                self.throw(node, err.NotHashable(result.type.key_type))
 
         return result
 
@@ -1348,7 +1357,7 @@ class PyxellCompiler:
 
         collection = self.compile(node['expr'])
         type = collection.type
-        if not type.isIndexable():
+        if not type.isSequence():
             self.throw(node, err.NotIndexable(type))
 
         a = v.Nullable(self.cast(slice[0], self.compile(slice[0]), t.Int)) if slice[0] else v.Nullable()
@@ -1606,14 +1615,12 @@ class PyxellCompiler:
             except err:
                 self.throw(node, err.NotComparable(left.type, right.type))
 
-            if (left.type.isSet() or left.type.isClass()) and op not in {'==', '!='}:
+            if not left.type.isComparable():
+                self.throw(node, err.NotComparable(left.type, right.type))
+            if not left.type.isOrderable() and op not in {'==', '!='}:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
-            if left.type in {t.Int, t.Float, t.Char, t.Bool, t.String} or left.type.isIterable() or left.type.isTuple() or left.type.isClass():
-                cond = v.BinaryOperation(left, op, right, type=t.Bool)
-            else:
-                self.throw(node, err.NotComparable(left.type, right.type))
-
+            cond = v.BinaryOperation(left, op, right, type=t.Bool)
             left = right
 
             if index == len(exprs) - 1:
@@ -1732,6 +1739,9 @@ class PyxellCompiler:
 
     def compileTypeSet(self, node):
         return t.Set(self.compile(node['subtype']))
+
+    def compileTypeDict(self, node):
+        return t.Dict(self.compile(node['key_type']), self.compile(node['value_type']))
 
     def compileTypeNullable(self, node):
         return t.Nullable(self.compile(node['subtype']))
