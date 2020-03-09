@@ -232,7 +232,7 @@ Int mod(Int a, Int b)
 Int pow(Int b, Int e)
 {
     if (e < 0) {
-        return 0;
+        return b == -1 && e % 2 == -1 ? -1 : b == 1 || b == -1 ? 1 : 0;
     }
     Int r = 1;
     while (e > 0) {
