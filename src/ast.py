@@ -239,7 +239,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ExprComprehension'),
             'kind': 'array',
-            'expr': self.visit(ctx.expr()),
+            'exprs': [self.visit(ctx.expr())],
             'comprehensions': self.visit(ctx.comprehension()),
         }
 
@@ -247,7 +247,15 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ExprComprehension'),
             'kind': 'set',
-            'expr': self.visit(ctx.expr()),
+            'exprs': [self.visit(ctx.expr())],
+            'comprehensions': self.visit(ctx.comprehension()),
+        }
+
+    def visitExprDictComprehension(self, ctx):
+        return {
+            **_node(ctx, 'ExprComprehension'),
+            'kind': 'dict',
+            'exprs': self.visit(ctx.expr()),
             'comprehensions': self.visit(ctx.comprehension()),
         }
 

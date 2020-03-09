@@ -58,6 +58,7 @@ expr
   | '{' expr 'step' expr '}' # ExprSetRangeStep
   | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' expr comprehension+ '}' # ExprSetComprehension
+  | '{' expr ':' expr comprehension+ '}' # ExprDictComprehension
   | expr safe='?'? '.' ID # ExprAttr
   | expr safe='?'? '[' tuple_expr ']' # ExprIndex
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice

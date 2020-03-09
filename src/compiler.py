@@ -12,7 +12,7 @@ from . import types as t
 from .errors import PyxellError as err
 from .parsing import parse_expr
 from .types import can_cast, get_type_variables, type_variables_assignment, unify_types
-from .utils import lmap
+from .utils import lmap, lzip
 
 
 class Unit:
@@ -696,7 +696,7 @@ class PyxellCompiler:
             if node == 'ExprComprehension':
                 return {
                     **expr,
-                    'expr': convert_expr(expr['expr']),
+                    'exprs': lmap(convert_expr, expr['exprs']),
                     'comprehensions': lmap(convert_expr, expr['comprehensions']),
                 }
             if node == 'ComprehensionGenerator':
@@ -911,14 +911,16 @@ class PyxellCompiler:
             self.store(left, value)
 
     def compileStmtAppend(self, node):
-        # Special instruction for array/set comprehension.
+        # Special instruction for array/set/dict comprehension.
         collection = self.compile(node['collection'])
-        value = self.compile(node['expr'])
+        values = lmap(self.compile, node['exprs'])
 
         if collection.type.isArray():
-            self.output(v.Call(v.Attribute(collection, 'push_back'), value))
+            self.output(v.Call(v.Attribute(collection, 'push_back'), *values))
         elif collection.type.isSet():
-            self.output(v.Call(v.Attribute(collection, 'insert'), value))
+            self.output(v.Call(v.Attribute(collection, 'insert'), *values))
+        elif collection.type.isDict():
+            self.output(v.Call(v.Attribute(collection, 'insert_or_assign'), *values))
 
     def compileStmtIf(self, node):
         exprs = node['exprs']
@@ -1251,7 +1253,7 @@ class PyxellCompiler:
             return self.compile({
                 'node': 'ExprComprehension',
                 'kind': kind,
-                'expr': var,
+                'exprs': [var],
                 'comprehensions': [{
                     'node': 'ComprehensionGenerator',
                     'vars': [var],
@@ -1269,14 +1271,14 @@ class PyxellCompiler:
             if not result.type.subtype.isHashable():
                 self.throw(node, err.NotHashable(result.type.subtype))
         elif kind == 'dict':
-            result = v.Dict(self.unify(node, *map(self.compile, exprs[0::2])), self.unify(node, *map(self.compile, exprs[1::2])))
+            result = v.Dict(lzip(self.unify(node, *map(self.compile, exprs[0::2])), self.unify(node, *map(self.compile, exprs[1::2]))))
             if not result.type.key_type.isHashable():
                 self.throw(node, err.NotHashable(result.type.key_type))
 
         return result
 
     def compileExprComprehension(self, node):
-        expr = node['expr']
+        exprs = node['exprs']
         kind = node['kind']
 
         value, collection = [{
@@ -1287,7 +1289,10 @@ class PyxellCompiler:
         stmt = inner_stmt = {
             'node': 'StmtAssg',
             'lvalues': [value],
-            'expr': expr,
+            'expr': {
+                'node': 'ExprTuple',
+                'exprs': exprs,
+            },
         }
 
         for i, cpr in reversed(list(enumerate(node['comprehensions']))):
@@ -1311,20 +1316,25 @@ class PyxellCompiler:
         # A small hack to obtain type of the expression.
         with self.local():
             with self.no_output():
-                inner_stmt['_eval'] = lambda: self.compile(value).type
+                inner_stmt['_eval'] = lambda: self.compile(value).type.elements
                 self.compile(stmt)
-                subtype = inner_stmt.pop('_eval')
+                types = inner_stmt.pop('_eval')
 
         with self.local():
             if kind == 'array':
-                self.assign(node, collection, v.Array([], subtype))
+                self.assign(node, collection, v.Array([], types[0]))
             elif kind == 'set':
-                if not subtype.isHashable():
-                    self.throw(node, err.NotHashable(subtype))
-                self.assign(node, collection, v.Set([], subtype))
+                if not types[0].isHashable():
+                    self.throw(node, err.NotHashable(types[0]))
+                self.assign(node, collection, v.Set([], types[0]))
+            elif kind == 'dict':
+                if not types[0].isHashable():
+                    self.throw(node, err.NotHashable(types[0]))
+                self.assign(node, collection, v.Dict([], *types))
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['collection'] = collection
+            inner_stmt['exprs'] = exprs
 
             self.compile(stmt)
 

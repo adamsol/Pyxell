@@ -194,6 +194,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ExprDictComprehension.
+    def visitExprDictComprehension(self, ctx:PyxellParser.ExprDictComprehensionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprCond.
     def visitExprCond(self, ctx:PyxellParser.ExprCondContext):
         return self.visitChildren(ctx)

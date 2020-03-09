@@ -1338,14 +1338,16 @@
 										12
 									],
 									"kind": "array",
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											40,
-											13
-										],
-										"id": "c"
-									},
+									"exprs": [
+										{
+											"node": "AtomId",
+											"position": [
+												40,
+												13
+											],
+											"id": "c"
+										}
+									],
 									"comprehensions": [
 										{
 											"node": "ComprehensionGenerator",
@@ -1527,39 +1529,41 @@
 										12
 									],
 									"kind": "array",
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											43,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
+									"exprs": [
+										{
+											"node": "ExprCall",
 											"position": [
 												43,
 												13
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
+											"expr": {
+												"node": "AtomId",
 												"position": [
 													43,
-													15
+													13
 												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
 													"position": [
 														43,
 														15
 													],
-													"id": "c"
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															43,
+															15
+														],
+														"id": "c"
+													}
 												}
-											}
-										]
-									},
+											]
+										}
+									],
 									"comprehensions": [
 										{
 											"node": "ComprehensionGenerator",
@@ -2365,14 +2369,16 @@
 								12
 							],
 							"kind": "array",
-							"expr": {
-								"node": "AtomId",
-								"position": [
-									64,
-									13
-								],
-								"id": "x"
-							},
+							"exprs": [
+								{
+									"node": "AtomId",
+									"position": [
+										64,
+										13
+									],
+									"id": "x"
+								}
+							],
 							"comprehensions": [
 								{
 									"node": "ComprehensionGenerator",
@@ -2554,39 +2560,41 @@
 								12
 							],
 							"kind": "array",
-							"expr": {
-								"node": "ExprCall",
-								"position": [
-									67,
-									13
-								],
-								"expr": {
-									"node": "AtomId",
+							"exprs": [
+								{
+									"node": "ExprCall",
 									"position": [
 										67,
 										13
 									],
-									"id": "f"
-								},
-								"args": [
-									{
-										"node": "CallArg",
+									"expr": {
+										"node": "AtomId",
 										"position": [
 											67,
-											15
+											13
 										],
-										"name": null,
-										"expr": {
-											"node": "AtomId",
+										"id": "f"
+									},
+									"args": [
+										{
+											"node": "CallArg",
 											"position": [
 												67,
 												15
 											],
-											"id": "x"
+											"name": null,
+											"expr": {
+												"node": "AtomId",
+												"position": [
+													67,
+													15
+												],
+												"id": "x"
+											}
 										}
-									}
-								]
-							},
+									]
+								}
+							],
 							"comprehensions": [
 								{
 									"node": "ComprehensionGenerator",
@@ -3395,14 +3403,16 @@
 								12
 							],
 							"kind": "set",
-							"expr": {
-								"node": "AtomId",
-								"position": [
-									88,
-									13
-								],
-								"id": "x"
-							},
+							"exprs": [
+								{
+									"node": "AtomId",
+									"position": [
+										88,
+										13
+									],
+									"id": "x"
+								}
+							],
 							"comprehensions": [
 								{
 									"node": "ComprehensionGenerator",
@@ -3584,39 +3594,41 @@
 								12
 							],
 							"kind": "set",
-							"expr": {
-								"node": "ExprCall",
-								"position": [
-									91,
-									13
-								],
-								"expr": {
-									"node": "AtomId",
+							"exprs": [
+								{
+									"node": "ExprCall",
 									"position": [
 										91,
 										13
 									],
-									"id": "f"
-								},
-								"args": [
-									{
-										"node": "CallArg",
+									"expr": {
+										"node": "AtomId",
 										"position": [
 											91,
-											15
+											13
 										],
-										"name": null,
-										"expr": {
-											"node": "AtomId",
+										"id": "f"
+									},
+									"args": [
+										{
+											"node": "CallArg",
 											"position": [
 												91,
 												15
 											],
-											"id": "x"
+											"name": null,
+											"expr": {
+												"node": "AtomId",
+												"position": [
+													91,
+													15
+												],
+												"id": "x"
+											}
 										}
-									}
-								]
-							},
+									]
+								}
+							],
 							"comprehensions": [
 								{
 									"node": "ComprehensionGenerator",
