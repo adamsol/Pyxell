@@ -40,12 +40,8 @@ class Type:
     def isUnknown(self):
         if self == Unknown:
             return True
-        if self.isArray():
+        if self.isContainer():
             return self.subtype.isUnknown()
-        if self.isSet():
-            return self.subtype.isUnknown()
-        if self.isDict():
-            return self.key_type.isUnknown() or self.value_type.isUnknown()
         if self.isNullable():
             return self.subtype.isUnknown()
         if self.isTuple():
@@ -79,12 +75,8 @@ class Type:
     def isPrintable(self):
         if self in {Int, Float, Bool, Char, String, Unknown}:
             return True
-        if self.isArray():
+        if self.isContainer():
             return self.subtype.isPrintable()
-        if self.isSet():
-            return self.subtype.isPrintable()
-        if self.isDict():
-            return self.key_type.isPrintable() and self.value_type.isPrintable()
         if self.isNullable():
             return self.subtype.isPrintable()
         if self.isTuple():
@@ -126,11 +118,17 @@ String = PrimitiveType('String')
 String.subtype = Char
 
 
-class Array(Type):
+class Wrapper(Type):
 
     def __init__(self, subtype):
         super().__init__()
         self.subtype = subtype
+
+    def eq(self, other):
+        return self.subtype == other.subtype
+
+
+class Array(Wrapper):
 
     def __str__(self):
         return f'Array<{self.subtype}>'
@@ -138,15 +136,8 @@ class Array(Type):
     def show(self):
         return f'[{self.subtype.show()}]'
 
-    def eq(self, other):
-        return self.subtype == other.subtype
 
-
-class Set(Type):
-
-    def __init__(self, subtype):
-        super().__init__()
-        self.subtype = subtype
+class Set(Wrapper):
 
     def __str__(self):
         return f'Set<{self.subtype}>'
@@ -154,16 +145,13 @@ class Set(Type):
     def show(self):
         return f'{{{self.subtype.show()}}}'
 
-    def eq(self, other):
-        return self.subtype == other.subtype
 
-
-class Dict(Type):
+class Dict(Wrapper):
 
     def __init__(self, key_type, value_type):
-        super().__init__()
         self.key_type = key_type
         self.value_type = value_type
+        super().__init__(Tuple([self.key_type, self.value_type]))
 
     def __str__(self):
         return f'Dict<{self.key_type}, {self.value_type}>'
@@ -171,24 +159,14 @@ class Dict(Type):
     def show(self):
         return f'{{{self.key_type.show()}:{self.value_type.show()}}}'
 
-    def eq(self, other):
-        return self.key_type == other.key_type and self.value_type == other.value_type
 
-
-class Nullable(Type):
-
-    def __init__(self, subtype):
-        super().__init__()
-        self.subtype = subtype
+class Nullable(Wrapper):
 
     def __str__(self):
         return f'Nullable<{self.subtype}>'
 
     def show(self):
         return f'{self.subtype.show()}?'
-
-    def eq(self, other):
-        return self.subtype == other.subtype
 
 
 class Tuple(Type):
@@ -347,9 +325,7 @@ def type_variables_assignment(type1, type2):
         return type_variables_assignment(type1.subtype, type2.subtype)
 
     if type1.isDict() and type2.isDict():
-        return type_variables_assignment(
-            Tuple([type1.key_type, type1.value_type]),
-            Tuple([type2.key_type, type2.value_type]))
+        return type_variables_assignment(type1.subtype, type2.subtype)
 
     if type1.isNullable() and type2.isNullable():
         return type_variables_assignment(type1.subtype, type2.subtype)

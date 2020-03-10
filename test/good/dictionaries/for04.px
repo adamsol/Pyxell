@@ -1,0 +1,6 @@
+
+for t in {:} do
+    print false
+for t in {:}, {"": 0} step -1 do
+    print false
+print true

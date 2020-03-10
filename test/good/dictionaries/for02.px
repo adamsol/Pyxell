@@ -1,0 +1,6 @@
+
+n = 0
+for l, (s, b) in {s.length: (s, true) for s in {"q", "X", "test", ""}} step -1 do
+    if b and s.length >= 0 do
+        n += l
+print n
