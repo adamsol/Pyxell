@@ -1,0 +1,6 @@
+
+d = {'x': 1}
+d.update({'x': 2, 'y': 3, 'x': 4})
+
+print d['x']
+print d['y']

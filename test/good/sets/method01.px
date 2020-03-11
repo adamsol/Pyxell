@@ -1,6 +1,6 @@
 
-print {true}.all(), [1, 2, 3].all(_>1)
-print {false}.any(), [" ", ""].any(0<_.length)
+print {true}.all(), {1, 2, 3}.all(_>1)
+print {false}.any(), {" ", ""}.any(0<_.length)
 print {'A', 'B', 'A'}.filter(_=='A')
 print {3, -7}.map(_^0)
 print {x//2 for x in 2..10}.reduce(_+_, 0)

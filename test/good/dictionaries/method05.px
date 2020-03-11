@@ -1,0 +1,7 @@
+
+x = {i.toString(): i for i in 1..5}
+y = x.copy()
+z = y
+
+y["4"] = 40
+print x["4"], z["4"]

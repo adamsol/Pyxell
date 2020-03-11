@@ -1,0 +1,9 @@
+
+a = [5]
+d = {"": [], "@": a}
+
+print d.get("")
+print d.get("#")?[0]
+
+d.get("@")![0] = 3
+print a

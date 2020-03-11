@@ -598,6 +598,51 @@ bool contains(const Set<T>& x, const T& e)
     return x->find(e) != x->end();
 }
 
+/* Dict methods */
+
+template <typename K, typename V>
+Void update(const Dict<K, V>& x, const Dict<K, V>& y)
+{
+    for (auto&& e: *y) {
+        x->insert_or_assign(e.first, e.second);
+    }
+}
+
+template <typename K, typename V>
+Nullable<V> get(const Dict<K, V>& x, const K& e)
+{
+    auto it = x->find(e);
+    if (it != x->end()) {
+        return Nullable<V>(it->second);
+    } else {
+        return Nullable<V>();
+    }
+}
+
+template <typename K, typename V>
+Nullable<V> pop(const Dict<K, V>& x, const K& e)
+{
+    Nullable<V> r;
+    auto it = x->find(e);
+    if (it != x->end()) {
+        r = Nullable<V>(it->second);
+        x->erase(it);
+    }
+    return r;
+}
+
+template <typename K, typename V>
+Void clear(const Dict<K, V>& x)
+{
+    x->clear();
+}
+
+template <typename K, typename V>
+Dict<K, V> copy(const Dict<K, V>& x)
+{
+    return make_dict<K, V>(*x);
+}
+
 
 /* Conversion to String */
 

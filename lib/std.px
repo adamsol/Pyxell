@@ -94,3 +94,31 @@ func Set_reduce<A,B>({A} a, A->B->B f, B r) B def
     for x in a do
         r = f(x, r)
     return r
+
+
+func Dict_all<A,B>({A:B} a, A*B->Bool f) Bool def
+    for x in a do
+        if not f(x) do
+            return false
+    return true
+
+func Dict_any<A,B>({A:B} a, A*B->Bool f) Bool def
+    for x in a do
+        if f(x) do
+            return true
+    return false
+
+func Dict_filter<A,B>({A:B} a, A*B->Bool f) {A:B} def
+    return {x.a: x.b for x in a if f(x)}
+
+func Dict_map<A,B,C,D>({A:B} a, A*B->C*D f) {C:D} def
+    {C:D} r = {:}
+    for x in a do
+        y = f(x)
+        r[y.a] = y.b
+    return r
+
+func Dict_reduce<A,B,C>({A:B} a, A*B->C->C f, C r) C def
+    for x in a do
+        r = f(x, r)
+    return r

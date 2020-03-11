@@ -358,6 +358,28 @@ class PyxellCompiler:
                 elif attr == 'contains':
                     value = v.Variable(t.Func([type, type.subtype], t.Bool), attr)
 
+            elif type.isDict():
+                if attr == 'all':
+                    value = self.env['Dict_all']
+                elif attr == 'any':
+                    value = self.env['Dict_any']
+                elif attr == 'filter':
+                    value = self.env['Dict_filter']
+                elif attr == 'map':
+                    value = self.env['Dict_map']
+                elif attr == 'reduce':
+                    value = self.env['Dict_reduce']
+                elif attr == 'update':
+                    value = v.Variable(t.Func([type, type]), attr)
+                elif attr == 'get':
+                    value = v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr)
+                elif attr == 'pop':
+                    value = v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr)
+                elif attr == 'clear':
+                    value = v.Variable(t.Func([type]), attr)
+                elif attr == 'copy':
+                    value = v.Variable(t.Func([type], type), attr)
+
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')
             if 0 <= index < len(type.elements):
