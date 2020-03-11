@@ -52,7 +52,7 @@ def transform_indented_code(code):
             # If the line isn't indented more than the current block and doesn't start with a closing parenthesis or bracket,
             # put a semicolon at the end of the previous line.
             # Otherwise, assume it is continuation of the previous expression.
-            if j is not None and not re.match(r'\s*[)\]]', line):
+            if j is not None and not re.match(r'\s*[)\]\}]', line):
                 lines[j] += ';'
 
             # If the line is indented less than the current block, close the previous blocks.

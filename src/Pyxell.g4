@@ -52,7 +52,7 @@ expr
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
   | '{' (expr ',')* expr? '}' # ExprSet
-  | '{' (expr ':' expr ',')* expr ':' expr '}' # ExprDict
+  | '{' (expr ':' expr ',')* expr ':' expr ','? '}' # ExprDict
   | '{:}' # ExprEmptyDict
   | '[' expr 'step' expr ']' # ExprArrayRangeStep
   | '{' expr 'step' expr '}' # ExprSetRangeStep
