@@ -1,11 +1,12 @@
 
 Int n = 8
-(Float?*([Bool]?*Char)?)? x = n, ([], 'x')
+Int? n' = 9
+(Float?*Float?*([Bool]?*Char)?)? x = n, n', ([], 'x')
 print x
-print x!.b?.a!! + [true]
+print x!.c?.a!! + [true]
 
 x = null
 print x
 
-x = null, null
+x = null, null, null
 print x

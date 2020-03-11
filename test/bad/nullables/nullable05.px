@@ -1,0 +1,5 @@
+
+a = {null: true}
+Float? f = 0.5
+b = {f: true}
+a = b

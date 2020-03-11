@@ -316,28 +316,26 @@ def common_superclass(type1, type2):
             return None
 
 
-def type_variables_assignment(type1, type2):
+def type_variables_assignment(type1, type2, conversion_allowed=True):
 
     if type1.isArray() and type2.isArray():
-        return type_variables_assignment(type1.subtype, type2.subtype)
-
+        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=False)
     if type1.isSet() and type2.isSet():
-        return type_variables_assignment(type1.subtype, type2.subtype)
-
+        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=False)
     if type1.isDict() and type2.isDict():
-        return type_variables_assignment(type1.subtype, type2.subtype)
+        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=False)
 
     if type1.isNullable() and type2.isNullable():
-        return type_variables_assignment(type1.subtype, type2.subtype)
+        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed)
     if type2.isNullable():
-        return type_variables_assignment(type1, type2.subtype)
+        return type_variables_assignment(type1, type2.subtype, conversion_allowed)
 
     if type1.isTuple() and type2.isTuple():
         if len(type1.elements) != len(type2.elements):
             return None
         result = defaultdict(list)
         for e1, e2 in zip(type1.elements, type2.elements):
-            d = type_variables_assignment(e1, e2)
+            d = type_variables_assignment(e1, e2, conversion_allowed)
             if d is None:
                 return None
             for name, type in d.items():
@@ -352,17 +350,18 @@ def type_variables_assignment(type1, type2):
     if type1.isFunc() and type2.isFunc():
         return type_variables_assignment(
             Tuple([arg.type for arg in type1.args] + [type1.ret]),
-            Tuple([arg.type for arg in type2.args] + [type2.ret]))
+            Tuple([arg.type for arg in type2.args] + [type2.ret]),
+            conversion_allowed)
 
-    if type1.isClass() and type2.isClass():
+    if type1.isClass() and type2.isClass() and conversion_allowed:
         return {} if common_superclass(type1, type2) == type2 else None
 
     if type2.isVar():
         return {type2.name: type1}
 
-    if type1 == Unknown or type2 == Unknown:
+    if type1 == Unknown:
         return {}
-    if type1 == Int and type2 == Float:
+    if type1 == Int and type2 == Float and conversion_allowed:
         return {}
     if type1 == type2:
         return {}
@@ -376,23 +375,4 @@ def get_type_variables(type):
 
 
 def can_cast(type1, type2):
-
-    if type1.isArray() and type2.isArray():
-        return type1.subtype == type2.subtype or type1.subtype.isUnknown()
-
-    if type1.isSet() and type2.isSet():
-        return type1.subtype == type2.subtype or type1.subtype.isUnknown()
-
-    if type1.isDict() and type2.isDict():
-        return (type1.key_type == type2.key_type or type1.key_type.isUnknown()) and \
-               (type1.value_type == type2.value_type or type1.value_type.isUnknown())
-
-    if type1.isNullable() and type2.isNullable():
-        return type1.subtype == type2.subtype or type1.subtype.isUnknown()
-    if not type1.isNullable() and type2.isNullable():
-        return can_cast(type1, type2.subtype)
-
-    if type1.isTuple() and type2.isTuple():
-        return len(type1.elements) == len(type2.elements) and all(can_cast(t1, t2) for t1, t2 in zip(type1.elements, type2.elements))
-
     return type_variables_assignment(type1, type2) == {}
