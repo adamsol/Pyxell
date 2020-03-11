@@ -311,6 +311,16 @@ Set<T> concat(const Set<T>& a, const Set<T>& b)
     return r;
 }
 
+template <typename K, typename V>
+Dict<K, V> concat(const Dict<K, V>& a, const Dict<K, V>& b)
+{
+    auto r = make_dict<K, V>(*a);
+    for (auto&& e: *b) {
+        r->insert_or_assign(e.first, e.second);
+    }
+    return r;
+}
+
 template <typename T>
 Set<T> difference(const Set<T>& a, const Set<T>& b)
 {
