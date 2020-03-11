@@ -12,7 +12,7 @@ from . import types as t
 from .errors import PyxellError as err
 from .parsing import parse_expr
 from .types import can_cast, get_type_variables, type_variables_assignment, unify_types
-from .utils import lmap, lzip
+from .utils import lmap
 
 
 class Unit:
@@ -1271,9 +1271,15 @@ class PyxellCompiler:
             if not result.type.subtype.isHashable():
                 self.throw(node, err.NotHashable(result.type.subtype))
         elif kind == 'dict':
-            result = v.Dict(lzip(self.unify(node, *map(self.compile, exprs[0::2])), self.unify(node, *map(self.compile, exprs[1::2]))))
-            if not result.type.key_type.isHashable():
-                self.throw(node, err.NotHashable(result.type.key_type))
+            keys = self.unify(node, *map(self.compile, exprs[0::2]))
+            key_type = keys[0].type if keys else t.Unknown
+            if not key_type.isHashable():
+                self.throw(node, err.NotHashable(key_type))
+            values = self.unify(node, *map(self.compile, exprs[1::2]))
+            value_type = values[0].type if keys else t.Unknown
+            result = self.tmp(v.Dict(key_type, value_type))
+            for key, value in zip(keys, values):
+                self.output(v.Call(v.Attribute(result, 'insert_or_assign'), key, value))
 
         return result
 
@@ -1330,7 +1336,7 @@ class PyxellCompiler:
             elif kind == 'dict':
                 if not types[0].isHashable():
                     self.throw(node, err.NotHashable(types[0]))
-                self.assign(node, collection, v.Dict([], *types))
+                self.assign(node, collection, v.Dict(*types))
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['collection'] = collection

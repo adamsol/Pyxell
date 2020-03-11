@@ -82,11 +82,9 @@ class Set(Container):
 
 class Dict(Container):
 
-    def __init__(self, elements, key_type=None, value_type=None):
-        type = t.Dict(elements[0][0].type if elements else (key_type or t.Unknown),
-                      elements[0][1].type if elements else (value_type or t.Unknown))
-        elements = [f'{{{key}, {value}}}' for key, value in elements]
-        super().__init__(type, elements, f'make_dict<{type.key_type}, {type.value_type}>' + '({{{}}})')
+    def __init__(self, key_type, value_type):
+        type = t.Dict(key_type, value_type)
+        super().__init__(type, [], f'make_dict<{type.key_type}, {type.value_type}>()')
 
 
 class Nullable(Value):
