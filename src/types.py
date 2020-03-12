@@ -13,6 +13,9 @@ class Type:
     def eq(self, other):
         return False
 
+    def isNumber(self):
+        return self in {Int, Rat, Float}
+
     def isArray(self):
         return isinstance(self, Array)
 
@@ -60,7 +63,7 @@ class Type:
         return self.isSequence() or self.isContainer()
 
     def isHashable(self):
-        if self in {Int, Float, Bool, Char, String, Unknown}:
+        if self.isNumber() or self in {Bool, Char, String, Unknown}:
             return True
         if self.isContainer():
             return False
@@ -73,7 +76,7 @@ class Type:
         return False
 
     def isPrintable(self):
-        if self in {Int, Float, Bool, Char, String, Unknown}:
+        if self.isNumber() or self in {Bool, Char, String, Unknown}:
             return True
         if self.isContainer():
             return self.subtype.isPrintable()
@@ -86,7 +89,7 @@ class Type:
         return False
 
     def isOrderable(self):
-        return self in {Int, Float, Char, Bool, String} or self.isArray() or self.isTuple()
+        return self.isNumber() or self in {Char, Bool, String} or self.isArray() or self.isTuple()
 
     def isComparable(self):
         return self.isOrderable() or self.isSet() or self.isDict() or self.isClass()
@@ -110,6 +113,7 @@ class PrimitiveType(Type):
 
 Void = PrimitiveType('Void')
 Int = PrimitiveType('Int')
+Rat = PrimitiveType('Rat')
 Float = PrimitiveType('Float')
 Bool = PrimitiveType('Bool')
 Char = PrimitiveType('Char')
@@ -260,6 +264,9 @@ def unify_types(type1, *types):
     if type1 == type2:
         return type1
 
+    if type1 in {Int, Rat} and type2 in {Int, Rat}:
+        return Rat
+
     if type1 in {Int, Float} and type2 in {Int, Float}:
         return Float
 
@@ -361,7 +368,9 @@ def type_variables_assignment(type1, type2, conversion_allowed=True):
 
     if type1 == Unknown:
         return {}
-    if type1 == Int and type2 == Float and conversion_allowed:
+    if type1 == Int and type2 == Rat and conversion_allowed:
+        return {}
+    if type1 in {Int, Rat} and type2 == Float and conversion_allowed:
         return {}
     if type1 == type2:
         return {}

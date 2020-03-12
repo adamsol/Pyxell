@@ -89,6 +89,7 @@ Features
 * Python-like syntax with semantic indentation
 * Strongly static typing with partial type inference
 * 64-bit integers and double-precision floating-point numbers
+* Arbitrary-precision rational numbers
 * Immutable strings
 * String interpolation
 * Mutable containers: array, set, dictionary
@@ -110,7 +111,6 @@ To do:
 
 * Closures
 * Coroutines/generators
-* Arbitrary-precision arithmetic
 * Exception handling
 * Unicode
 * Generic classes
@@ -178,7 +178,7 @@ python test.py -v
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
 The script is multi-threaded.
-Total execution time may vary from something like 20 seconds to 5 minutes,
+Total execution time may vary from something like 30 seconds to 5 minutes,
 depending on the number of available CPU cores and other factors.
 
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).

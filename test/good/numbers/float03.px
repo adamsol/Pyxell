@@ -4,3 +4,7 @@ a /= 4
 print a
 a /= -2.5
 print a
+
+b = 6.25
+b ^= -0.5
+print b

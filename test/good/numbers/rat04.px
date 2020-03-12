@@ -1,0 +1,9 @@
+
+Rat a = -3
+b = a
+
+a ^= -4
+a *= b
+a += -b
+
+print a, b

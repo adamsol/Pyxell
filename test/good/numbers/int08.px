@@ -1,4 +1,10 @@
 
+print 01_000_000
+
+print 0b101
+print 0o101
+print 0x101
+
 print -0B_1_1110_0011_0101
 print -0O_0123456_7
 print -0X_BA_93_7E_d4_Ff_52c8e

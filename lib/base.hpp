@@ -18,6 +18,9 @@
 #include <utility>
 #include <vector>
 
+#include "indy256/bigint.hpp"
+
+
 // https://github.com/godotengine/godot/pull/33376
 #if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900 && defined(_TWO_DIGIT_EXPONENT)) && !defined(_UCRT)
 	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
@@ -34,6 +37,106 @@ using Float = double;
 using Char = char;
 using Bool = bool;
 
+/* Rational */
+
+struct Rat
+{
+    bigint numerator, denominator;
+
+    Rat(): denominator(1) {}
+    Rat(long long n): numerator(n), denominator(1) {}
+    Rat(const std::string& s): numerator(s), denominator(1) {}
+
+    void reduce()
+    {
+		bigint d = gcd(numerator, denominator);
+		numerator /= d;
+		denominator /= d;
+
+        numerator.sign *= denominator.sign;
+        denominator.sign = 1;
+    }
+
+    Rat& operator += (const Rat& other)
+    {
+        numerator *= other.denominator;
+        numerator += denominator * other.numerator;
+        denominator *= other.denominator;
+        reduce();
+        return *this;
+    }
+    Rat& operator -= (const Rat& other)
+    {
+        numerator *= other.denominator;
+        numerator -= denominator * other.numerator;
+        denominator *= other.denominator;
+        reduce();
+        return *this;
+    }
+    Rat& operator *= (const Rat& other)
+    {
+        numerator *= other.numerator;
+        denominator *= other.denominator;
+        reduce();
+        return *this;
+    }
+    Rat& operator /= (const Rat& other)
+    {
+        numerator *= other.denominator;
+        denominator *= other.numerator;
+        reduce();
+        return *this;
+    }
+
+    bool operator == (const Rat& other) const { return numerator == other.numerator && denominator == other.denominator; }
+    bool operator != (const Rat& other) const { return numerator != other.numerator || denominator != other.denominator; }
+    bool operator < (const Rat& other) const { return numerator * other.denominator < denominator * other.numerator; }
+    bool operator > (const Rat& other) const { return numerator * other.denominator > denominator * other.numerator; }
+    bool operator <= (const Rat& other) const { return numerator * other.denominator <= denominator * other.numerator; }
+    bool operator >= (const Rat& other) const { return numerator * other.denominator >= denominator * other.numerator; }
+};
+
+Rat operator + (Rat a, const Rat& b)
+{
+    return a += b;
+}
+Rat operator - (Rat a, const Rat& b)
+{
+    return a -= b;
+}
+Rat operator - (Rat a)
+{
+    a.numerator.sign = -a.numerator.sign;
+    return a;
+}
+Rat operator * (Rat a, const Rat& b)
+{
+    return a *= b;
+}
+Rat operator / (Rat a, const Rat& b)
+{
+    return a /= b;
+}
+
+namespace std
+{
+	template <>
+    struct hash<Rat>
+    {
+        size_t operator () (const Rat& x) const
+        {
+        	std::size_t seed = 0;
+        	for (int e: x.numerator.z) {
+        		seed ^= hash<int>()(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        	}
+        	for (int e: x.denominator.z) {
+        		seed ^= hash<int>()(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        	}
+        	return seed;
+        }
+    };
+}
+
 /* Wrapper around shared_ptr for proper comparison operators and hash function */
 
 template <typename T>
@@ -44,23 +147,23 @@ struct custom_ptr
     custom_ptr() {}
     custom_ptr(std::shared_ptr<T> p): p(p) {}
 
-    T& operator *() const { return *p; }
-    T* operator ->() const { return p.get(); }
+    T& operator * () const { return *p; }
+    T* operator -> () const { return p.get(); }
 };
 
-template <typename T> bool operator ==(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs == *rhs; }
-template <typename T> bool operator !=(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs != *rhs; }
-template <typename T> bool operator <(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs < *rhs; }
-template <typename T> bool operator >(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs > *rhs; }
-template <typename T> bool operator <=(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs <= *rhs; }
-template <typename T> bool operator >=(const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs >= *rhs; }
+template <typename T> bool operator == (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs == *rhs; }
+template <typename T> bool operator != (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs != *rhs; }
+template <typename T> bool operator < (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs < *rhs; }
+template <typename T> bool operator > (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs > *rhs; }
+template <typename T> bool operator <= (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs <= *rhs; }
+template <typename T> bool operator >= (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs >= *rhs; }
 
 namespace std
 {
     template <typename T>
     struct hash<custom_ptr<T>>
     {
-        size_t operator ()(const custom_ptr<T>& x) const
+        size_t operator () (const custom_ptr<T>& x) const
         {
             return hash<T>()(*x);
         }
@@ -176,13 +279,13 @@ template <typename T>
 struct Nullable: public std::optional<T>
 {
     using std::optional<T>::optional;
-    operator bool() = delete;  // so that null isn't displayed as false
+    operator bool () = delete;  // so that null isn't displayed as false
 
     Nullable(const Nullable<Unknown>& x): std::optional<T>() {}
 };
 
 template <typename T>
-bool operator ==(const Nullable<T>& lhs, const Nullable<T>& rhs)
+bool operator == (const Nullable<T>& lhs, const Nullable<T>& rhs)
 {
     return static_cast<std::optional<T>>(lhs) == static_cast<std::optional<T>>(rhs);
 }
@@ -190,7 +293,7 @@ bool operator ==(const Nullable<T>& lhs, const Nullable<T>& rhs)
 template <typename T>
 struct std::hash<Nullable<T>>
 {
-    std::size_t operator ()(const Nullable<T>& x) const
+    std::size_t operator () (const Nullable<T>& x) const
     {
         return hash<std::optional<T>>()(x);
     }
@@ -223,7 +326,7 @@ struct std::hash<Tuple<T...>>
         }
     }
 
-    std::size_t operator()(const Tuple<T...>& x) const
+    std::size_t operator () (const Tuple<T...>& x) const
     {
         std::size_t seed = 0;
         combine_hash<0>(seed, x);
@@ -269,7 +372,24 @@ Int pow(Int b, Int e)
     }
     Int r = 1;
     while (e > 0) {
-        if (e % 2 != 0) {
+        if (e & 1) {
+            r *= b;
+        }
+        b *= b;
+        e >>= 1;
+    }
+    return r;
+}
+
+Rat pow(Rat b, Int e)
+{
+    if (e < 0) {
+       std::swap(b.numerator, b.denominator);
+       e = -e;
+    }
+    Rat r = 1;
+    while (e > 0) {
+        if (e & 1) {
             r *= b;
         }
         b *= b;
@@ -668,6 +788,16 @@ String toString(Int x)
 {
     sprintf(buffer, "%lld", x);
     return make_string(buffer);
+}
+
+String toString(const Rat& x)
+{
+	auto r = make_string(x.numerator.to_string());
+	if (x.denominator > 1) {
+		r->append("/");
+		r->append(x.denominator.to_string());
+	}
+	return r;
 }
 
 String toString(Float x)

@@ -5,4 +5,5 @@ b = a - 6
 a += b
 b %= 6
 a //= b
+b ^^= 5
 print a, b
