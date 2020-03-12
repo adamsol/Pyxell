@@ -1,3 +1,4 @@
 
 a = [2, 4, 5, 8]
 print a.length
+print a.empty

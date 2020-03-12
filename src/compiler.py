@@ -279,6 +279,8 @@ class PyxellCompiler:
         elif type.isCollection():
             if attr == 'length':
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
+            elif attr == 'empty':
+                value = v.Call(v.Attribute(obj, 'empty'), type=t.Bool)
             elif attr == 'join' and type.subtype in {t.Char, t.String}:
                 value = v.Variable(t.Func([type, t.Func.Arg(t.String, default={'node': 'AtomString', 'string': ''})], t.String), attr)
             elif attr == '_asString' and type.subtype == t.Char:

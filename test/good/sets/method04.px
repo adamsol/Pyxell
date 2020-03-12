@@ -6,7 +6,7 @@ x.remove('a')
 x.remove('t')
 
 n = 0
-while x.length > 0 do
+while not x.empty do
     n += 1
     y.add(x.pop())
 
