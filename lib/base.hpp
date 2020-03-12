@@ -487,6 +487,19 @@ Void extend(const Array<T>& x, const Array<T>& y)
 }
 
 template <typename T>
+Nullable<T> get(const Array<T>& x, Int i)
+{
+    if (i < 0) {
+        i += x->size();
+    }
+    if (0 <= i && i < x->size()) {
+        return Nullable<T>((*x)[i]);
+    } else {
+        return Nullable<T>();
+    }
+}
+
+template <typename T>
 T pop(const Array<T>& x)
 {
     auto r = x->back();

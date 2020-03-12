@@ -315,6 +315,8 @@ class PyxellCompiler:
                     value = v.Variable(t.Func([type, t.Int, type.subtype]), attr)
                 elif attr == 'extend':
                     value = v.Variable(t.Func([type, type]), attr)
+                elif attr == 'get':
+                    value = v.Variable(t.Func([type, t.Int], t.Nullable(type.subtype)), attr)
                 elif attr == 'pop':
                     value = v.Variable(t.Func([type], type.subtype), attr)
                 elif attr == 'erase':

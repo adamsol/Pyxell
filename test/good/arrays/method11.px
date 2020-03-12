@@ -1,0 +1,6 @@
+
+a = ['A'...'Z']
+print a.get(8)?.code
+print a.get(25)?.code
+print a.get(-1)
+print a.get(-100) ?? '~'
