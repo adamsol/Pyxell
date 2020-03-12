@@ -19,6 +19,29 @@ and tries to avoid common design flaws that have been nicely described
 Examples
 --------
 
+Range literals, string interpolation:
+
+```
+a = ['A'..'Z']
+for x, i in a, 0... step 5 do
+    print "a[{i}] = {x}" 
+```
+
+Dynamic containers:
+
+```
+[Int] a = [1]  -- array (Python's list / C++'s vector)
+a.push(2)
+
+{Float} b = {3.0}  -- hash set
+b.add(4.0)
+
+{Char:String} c = {'5': "6"}  -- dictionary (hash map) 
+c['7'] = "8"
+```
+
+Tuples:
+
 ```
 func fib(Int n) Int def
     if n <= 0 do
@@ -31,11 +54,7 @@ func fib(Int n) Int def
 print fib(10)
 ```
 
-```
-a = ['A'..'Z']
-for x, i in a, 0... do
-    print "a[{i}] = {x}" 
-```
+Generic functions, lambda expressions:
 
 ```
 func reduce<A,B>([A] a, A->B->B f, B r) B def
@@ -43,8 +62,13 @@ func reduce<A,B>([A] a, A->B->B f, B r) B def
         r = f(x, r)
     return r
 
-print reduce(_*_, 1, [2, 3, 4])  -- 24
+print reduce([2, 3, 4], _*_, 1)  -- 24
+
+-- There are built-in methods like this:
+print [0..10 step 2].reduce(_+_, 0)  -- 30
 ```
+
+Classes, nullable types:
 
 ```
 class C def
@@ -65,14 +89,15 @@ Features
 * Python-like syntax with semantic indentation
 * Strongly static typing with partial type inference
 * 64-bit integers and double-precision floating-point numbers
-* Native tuples
 * Immutable strings
 * String interpolation
-* Mutable arrays
+* Mutable containers: array, set, dictionary
+* Array/string slicing
 * Complex for-loops with ranges, steps, and zipping
-* Array comprehension and slicing
+* Array/set/dictionary comprehension
+* Native tuples
 * First-class functions
-* Default and named arguments
+* Default and named function arguments
 * Lambda expressions
 * Generic functions
 * Classes with safe references
@@ -83,7 +108,6 @@ Features
 
 To do:
 
-* Containers library
 * Closures
 * Coroutines/generators
 * Arbitrary-precision arithmetic
