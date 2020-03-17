@@ -1045,6 +1045,11 @@ Int readInt()
     return r;
 }
 
+Rat readRat()
+{
+    return Rat(*read());
+}
+
 Float readFloat()
 {
     Float r;
