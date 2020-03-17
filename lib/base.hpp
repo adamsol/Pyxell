@@ -88,6 +88,11 @@ struct Rat
         return *this;
     }
 
+    operator double () const
+    {
+        return numerator.doubleValue() / denominator.doubleValue();
+    }
+
     bool operator == (const Rat& other) const { return numerator == other.numerator && denominator == other.denominator; }
     bool operator != (const Rat& other) const { return numerator != other.numerator || denominator != other.denominator; }
     bool operator < (const Rat& other) const { return numerator * other.denominator < denominator * other.numerator; }

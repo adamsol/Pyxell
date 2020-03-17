@@ -267,7 +267,7 @@ def unify_types(type1, *types):
     if type1 in {Int, Rat} and type2 in {Int, Rat}:
         return Rat
 
-    if type1 in {Int, Float} and type2 in {Int, Float}:
+    if type1 in {Int, Rat, Float} and type2 in {Int, Rat, Float}:
         return Float
 
     if type1.isArray() and type2.isArray():

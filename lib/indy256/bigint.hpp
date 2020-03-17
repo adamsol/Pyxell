@@ -4,6 +4,7 @@ https://github.com/indy256/codelibrary/tree/master/cpp/numeric/
 Pyxell:
 - explicitly listed necessary includes,
 - removed `using namespace std`,
+- added conversion to double,
 - implemented conversion to string without streams,
 - removed unused code.
 */
@@ -240,6 +241,13 @@ struct bigint {
 
     long long longValue() const {
         long long res = 0;
+        for (int i = (int) z.size() - 1; i >= 0; i--)
+            res = res * base + z[i];
+        return res * sign;
+    }
+
+    double doubleValue() const {
+        double res = 0.0;
         for (int i = (int) z.size() - 1; i >= 0; i--)
             res = res * base + z[i];
         return res * sign;

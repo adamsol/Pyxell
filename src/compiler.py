@@ -547,6 +547,8 @@ class PyxellCompiler:
         if op == '^':
             if left.type in {t.Int, t.Rat} and right.type == t.Int:
                 return v.Call('pow', v.Cast(left, t.Rat), right, type=t.Rat)
+            elif left.type.isNumber() and right.type == t.Rat:
+                return v.Call('pow', v.Cast(left, t.Float), v.Cast(right, t.Float), type=t.Float)
             elif left.type == right.type == t.Float:
                 return v.Call('pow', left, right, type=t.Float)
             else:
