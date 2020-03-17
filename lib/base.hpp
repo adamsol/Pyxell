@@ -45,7 +45,16 @@ struct Rat
 
     Rat(): denominator(1) {}
     Rat(long long n): numerator(n), denominator(1) {}
-    Rat(const std::string& s): numerator(s), denominator(1) {}
+
+    Rat(const std::string& s): denominator(1)
+    {
+    	std::size_t p = s.find('/');
+		numerator = bigint(s.substr(0, p));
+		if (p != s.npos) {
+			denominator = bigint(s.substr(p+1));
+    	}
+    	reduce();
+    }
 
     void reduce()
     {
@@ -916,6 +925,11 @@ Int toInt(Int x)
     return x;
 }
 
+Int toInt(const Rat& x)
+{
+    return x.numerator.longValue() / x.denominator.longValue();
+}
+
 Int toInt(Float x)
 {
     return static_cast<Int>(x);
@@ -938,9 +952,41 @@ Int toInt(Char x)
     return toInt(toString(x));
 }
 
+/* Conversion to Rat */
+
+Rat toRat(Int x)
+{
+    return Rat(x);
+}
+
+Rat toRat(const Rat& x)
+{
+    return x;
+}
+
+Rat toRat(Bool x)
+{
+    return x ? 1 : 0;
+}
+
+Rat toRat(const String& x)
+{
+    return Rat(*x);
+}
+
+Rat toRat(Char x)
+{
+    return toRat(toString(x));
+}
+
 /* Conversion to Float */
 
 Float toFloat(Int x)
+{
+    return static_cast<Float>(x);
+}
+
+Float toFloat(const Rat& x)
 {
     return static_cast<Float>(x);
 }

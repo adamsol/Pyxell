@@ -262,10 +262,11 @@ class PyxellCompiler:
         if attr == 'toString' and type.isPrintable():
             value = v.Variable(t.Func([type], t.String), 'toString')
 
-        elif attr == 'toInt' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
+        elif attr in 'toInt' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
             value = v.Variable(t.Func([type], t.Int), 'toInt')
-
-        elif attr == 'toFloat' and type in {t.Int, t.Float, t.Bool, t.Char, t.String}:
+        elif attr == 'toRat' and type in {t.Int, t.Rat, t.Bool, t.Char, t.String}:
+            value = v.Variable(t.Func([type], t.Rat), 'toRat')
+        elif attr == 'toFloat' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
             value = v.Variable(t.Func([type], t.Float), 'toFloat')
 
         elif type == t.Int:

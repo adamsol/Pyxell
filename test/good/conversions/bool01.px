@@ -1,3 +1,4 @@
 
 print false.toInt()
+print true.toRat() / 2
 print true.toFloat() / 2
