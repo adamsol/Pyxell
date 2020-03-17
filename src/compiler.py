@@ -1024,7 +1024,6 @@ class PyxellCompiler:
         iterables = node['iterables']
 
         types = []
-        steps = []
         indices = []
         iterators = []
         conditions = []
@@ -1036,13 +1035,13 @@ class PyxellCompiler:
             if iterable['node'] == 'ExprRange':
                 values = lmap(self.compile, iterable['exprs'])
                 type = values[0].type
-                if type not in {t.Int, t.Float, t.Bool, t.Char}:
+                if type not in {t.Int, t.Rat, t.Float, t.Bool, t.Char}:
                     self.throw(iterable, err.UnknownType())
                 if len(values) > 1:
                     values[1] = self.cast(iterable, values[1], type)
 
                 types.append(type)
-                index = iterator = self.var(t.Float if type == t.Float else t.Int)
+                index = iterator = self.var({t.Rat: t.Rat, t.Float: t.Float}.get(type, t.Int))
                 start = v.Cast(values[0], index.type)
                 self.cast(node, step, index.type)
 
@@ -1050,8 +1049,9 @@ class PyxellCompiler:
                     cond = lambda x: v.true  # infinite range
                 else:
                     end = self.freeze(values[1])
-                    e = '=' if iterable['inclusive'] else ''
-                    cond = lambda x: f'{step} < 0 ? {x} >{e} {end} : {x} <{e} {end}'
+                    eq = '=' if iterable['inclusive'] else ''
+                    neg = self.tmp(v.BinaryOperation(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
+                    cond = lambda x: f'{neg} ? {x} >{eq} {end} : {x} <{eq} {end}'
 
                 getter = lambda x: v.Cast(x, type)
 

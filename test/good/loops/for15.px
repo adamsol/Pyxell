@@ -1,0 +1,5 @@
+
+for x in 2/7..1+2/7 do
+    print x
+for x in 16/2..-1 step -13/6 do
+    print x
