@@ -1,0 +1,6 @@
+
+func f({Float:[Rat]} d) def
+	d[3][0] /= 2
+	print d
+
+f({3: [7]})

@@ -6,4 +6,5 @@ class B(A) def
     Int y
 
 
-[A]*Int t = [B()], 6
+b = [B()]
+[[A]]*Int t = [b], 6

@@ -1,0 +1,7 @@
+
+func f([{String?}?] x) [{String?}?]? def
+	return x.empty ? null : x
+
+s = "abc"
+print f([{s}, {null}]) ?? []
+print f([])?.pop()

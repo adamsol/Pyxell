@@ -1,0 +1,3 @@
+
+{Int}*{Float} x = {1}, {7}
+print x

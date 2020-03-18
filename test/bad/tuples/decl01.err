@@ -1,1 +1,1 @@
-Illegal assignment from `Float*Float` to `Float*Int`.
+Illegal assignment from `Float` to `Int`.

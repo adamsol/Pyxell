@@ -1,0 +1,6 @@
+
+func f([Float] x: [0]) def
+    print x
+
+f()
+f(x=[8, 9])

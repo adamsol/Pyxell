@@ -6,4 +6,5 @@ class B(A) def
     Int y
 
 
-[A]? a = [B()]
+b = [B()]
+[A]? a = b

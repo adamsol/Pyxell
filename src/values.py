@@ -72,22 +72,26 @@ class Container(Value):
 class Array(Container):
 
     def __init__(self, elements, subtype=None):
-        type = t.Array(elements[0].type if elements else (subtype or t.Unknown))
+        type = t.Array(subtype or (elements[0].type if elements else t.Unknown))
         super().__init__(type, elements, f'make_array<{type.subtype}>' + '({{{}}})')
 
 
 class Set(Container):
 
     def __init__(self, elements, subtype=None):
-        type = t.Set(elements[0].type if elements else (subtype or t.Unknown))
+        type = t.Set(subtype or (elements[0].type if elements else t.Unknown))
         super().__init__(type, elements, f'make_set<{type.subtype}>' + '({{{}}})')
 
 
 class Dict(Container):
 
-    def __init__(self, key_type, value_type):
-        type = t.Dict(key_type, value_type)
-        super().__init__(type, [], f'make_dict<{type.key_type}, {type.value_type}>()')
+    def __init__(self, keys, values, key_type=None, value_type=None):
+        type = t.Dict(key_type or (keys[0].type if keys else t.Unknown),
+                      value_type or (values[0].type if values else t.Unknown))
+        elements = [f'{{{key}, {value}}}' for key, value in zip(keys, values)]
+        super().__init__(type, elements, f'make_dict<{type.key_type}, {type.value_type}>' + '({{{}}})')
+        self.keys = keys
+        self.values = values
 
 
 class Nullable(Value):

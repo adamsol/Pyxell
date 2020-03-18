@@ -1,0 +1,7 @@
+
+class A def
+    [Rat] x: [6]
+
+a = A()
+a.x[0] /= 4
+print a.x

@@ -1,1 +1,1 @@
- Illegal assignment from `{Char:<unknown>?}` to `{Float:String?}`.
+ Illegal assignment from `Char` to `Float`.

@@ -278,7 +278,11 @@ struct Dict: public custom_ptr<std::unordered_map<K, V>>
 template <typename K, typename V>
 Dict<K, V> make_dict(std::initializer_list<std::pair<const K, V>> x)
 {
-    return Dict<K, V>(std::make_shared<std::unordered_map<K, V>>(x));
+    auto r = Dict<K, V>(std::make_shared<std::unordered_map<K, V>>());
+    for (auto&& p: x) {
+    	r->insert_or_assign(p.first, p.second);
+    }
+    return r;
 }
 
 template <typename K, typename V, typename... Args>

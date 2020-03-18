@@ -412,12 +412,26 @@ class PyxellCompiler:
         return value
 
     def cast(self, node, value, type):
-        if not can_cast(value.type, type):
-            self.throw(node, err.IllegalAssignment(value.type, type))
+        def _cast(value, type):
+            # Special cases to allow implicit type coercion of container literals.
+            if isinstance(value, v.Array) and type.isArray():
+                return v.Array([_cast(e, type.subtype) for e in value.elements], type.subtype)
+            if isinstance(value, v.Set) and type.isSet():
+                return v.Set([_cast(e, type.subtype) for e in value.elements], type.subtype)
+            if isinstance(value, v.Dict) and type.isDict():
+                return v.Dict([_cast(e, type.key_type) for e in value.keys], [_cast(e, type.value_type) for e in value.values], type.key_type, type.value_type)
+            if isinstance(value, v.Tuple) and type.isTuple() and len(value.elements) == len(type.elements):
+                return v.Tuple([_cast(e, t) for e, t in zip(value.elements, type.elements)])
 
-        if not value.type.isNullable() and type.isNullable():
-            return v.Nullable(v.Cast(value, type.subtype))
-        return v.Cast(value, type)
+            # This is the only place where containers are not covariant during type checking.
+            if not can_cast(value.type, type, covariance=False):
+                self.throw(node, err.IllegalAssignment(value.type, type))
+
+            if not value.type.isNullable() and type.isNullable():
+                return v.Nullable(v.Cast(value, type.subtype))
+            return v.Cast(value, type)
+
+        return _cast(value, type)
 
     def unify(self, node, *values):
         if not values:
@@ -1306,14 +1320,10 @@ class PyxellCompiler:
                 self.throw(node, err.NotHashable(result.type.subtype))
         elif kind == 'dict':
             keys = self.unify(node, *map(self.compile, exprs[0::2]))
-            key_type = keys[0].type if keys else t.Unknown
-            if not key_type.isHashable():
-                self.throw(node, err.NotHashable(key_type))
             values = self.unify(node, *map(self.compile, exprs[1::2]))
-            value_type = values[0].type if keys else t.Unknown
-            result = self.tmp(v.Dict(key_type, value_type))
-            for key, value in zip(keys, values):
-                self.output(v.Call(v.Attribute(result, 'insert_or_assign'), key, value))
+            if keys and not keys[0].type.isHashable():
+                self.throw(node, err.NotHashable(keys[0].type))
+            result = v.Dict(keys, values)
 
         return result
 
@@ -1370,7 +1380,7 @@ class PyxellCompiler:
             elif kind == 'dict':
                 if not types[0].isHashable():
                     self.throw(node, err.NotHashable(types[0]))
-                self.assign(node, collection, v.Dict(*types))
+                self.assign(node, collection, v.Dict([], [], *types))
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['collection'] = collection

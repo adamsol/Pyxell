@@ -1,1 +1,1 @@
-Illegal assignment from `Int*Int` to `Int*Char`.
+Illegal assignment from `Int` to `Char`.

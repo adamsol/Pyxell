@@ -1,13 +1,14 @@
 
 class A def
-    String x: "A"
+    func toString() String def
+        return "A"
 
 class B(A) def
-    constructor() def
-        self.x = "B"
+    func toString() String def
+        return "B"
 
 
-func f(A a: A(), A b: B()) String def
-    return a.x + b.x
+func f([A] a) [A] def
+    return [a[0], B()]
 
-print f()
+print f([B()])

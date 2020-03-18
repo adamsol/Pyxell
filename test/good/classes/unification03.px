@@ -17,10 +17,10 @@ class Sub2(Base) def
         self.x = 2
 
 
-a = [Sub1(), Sub2()]
-print a[1].x
-a[1] = Base()
-print a[1].x
+[Base] a = [Sub2()]
+print a[0].x
+a[0] = Base()
+print a[0].x
 
 func f(Base*Base t) Base*Base def
     return t
