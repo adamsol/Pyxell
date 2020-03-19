@@ -67,10 +67,10 @@ def test(i, path):
         except FileNotFoundError:
             expected_error = None
 
-        error = False
-
         try:
-            compile(path, args.cpp_compiler)
+            error = True
+            exe_filename = compile(path, args.cpp_compiler)
+            error = False
         except PyxellError as e:
             error_message = str(e)
             if expected_error:
@@ -81,17 +81,17 @@ def test(i, path):
                     output.append(f"{R}{error_message}\n---\n> {expected_error}{E}")
             else:
                 output.append(f"{R}{error_message}{E}")
-            error = True
         except subprocess.CalledProcessError as e:
             output.append(f"{R}{e.output.decode()}{E}")
-            error = True
         except Exception:
             output.append(f"{R}{traceback.format_exc()}{E}")
-            error = True
 
         if not error:
             if expected_error:
                 output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
+            elif exe_filename is None:
+                output.append(f"{G}OK{E}")
+                passed = True
             else:
                 with open(path.replace('.px', '.tmp'), 'w') as tmpfile:
                     t1 = timer()
@@ -152,4 +152,7 @@ if ok == n:
 else:
     print(msg + f", {R}{n-ok} failed{E}.")
 
-os.remove('lib/base.hpp.gch')
+try:
+    os.remove('lib/base.hpp.gch')
+except OSError:
+    pass
