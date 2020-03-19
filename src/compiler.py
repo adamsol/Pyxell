@@ -513,10 +513,10 @@ class PyxellCompiler:
         return v.UnaryOperation(op, value, type=value.type)
 
     def binaryop(self, node, op, left, right):
-        if op in {'*', '+', '-'} and left.type != right.type and left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat}:
+        if op != '^' and left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat} and t.Rat in {left.type, right.type}:
             left = self.cast(node, left, t.Rat)
             right = self.cast(node, right, t.Rat)
-        if left.type != right.type and left.type.isNumber() and right.type.isNumber() and t.Float in {left.type, right.type}:
+        if left.type.isNumber() and right.type.isNumber() and t.Float in {left.type, right.type}:
             left = self.cast(node, left, t.Float)
             right = self.cast(node, right, t.Float)
 
@@ -550,7 +550,7 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '/':
-            if left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat}:
+            if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.BinaryOperation(v.Cast(left, t.Rat), op, v.Cast(right, t.Rat), type=t.Rat)
             elif left.type == right.type == t.Float:
                 return v.BinaryOperation(left, op, right, type=t.Float)
@@ -558,14 +558,14 @@ class PyxellCompiler:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '//':
-            if left.type == right.type == t.Int:
+            if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.Call('floordiv', left, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
         elif op == '%':
-            if left.type == right.type == t.Int:
-                return v.Call('mod', left, right, type=t.Int)
+            if left.type == right.type and left.type in {t.Int, t.Rat}:
+                return v.Call('mod', left, right, type=left.type)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 

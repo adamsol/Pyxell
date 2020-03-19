@@ -19,6 +19,12 @@ and tries to avoid common design flaws that have been nicely described
 Examples
 --------
 
+Rational numbers:
+
+```
+print 1/10 + 5^-1  -- 3/10
+```
+
 Range literals, string interpolation:
 
 ```
@@ -40,7 +46,7 @@ b.add(4.0)
 c['7'] = "8"
 ```
 
-Tuples:
+Functions, tuples:
 
 ```
 func fib(Int n) Int def

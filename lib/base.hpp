@@ -80,6 +80,13 @@ struct Rat
         reduce();
         return *this;
     }
+    Rat& operator %= (const Rat& other)
+    {
+        numerator = (numerator * other.denominator) % (other.numerator * denominator);
+        denominator *= other.denominator;
+        reduce();
+        return *this;
+    }
     Rat& operator += (const Rat& other)
     {
         numerator *= other.denominator;
@@ -117,6 +124,10 @@ Rat operator * (Rat a, const Rat& b)
 Rat operator / (Rat a, const Rat& b)
 {
     return a /= b;
+}
+Rat operator % (Rat a, const Rat& b)
+{
+    return a %= b;
 }
 Rat operator + (Rat a, const Rat& b)
 {
@@ -371,6 +382,21 @@ Int floordiv(Int a, Int b)
     return a / b;
 }
 
+Rat floordiv(const Rat& a, const Rat& b)
+{
+    if (b.numerator.sign < 0) {
+        return floordiv(-a, -b);
+    }
+    bigint c = a.numerator * b.denominator;
+    bigint d = b.numerator * a.denominator;
+    if (c.sign < 0) {
+        c -= d - 1;
+    }
+    Rat r;
+    r.numerator = c / d;
+    return r;
+}
+
 Int mod(Int a, Int b)
 {
     if (b < 0) {
@@ -381,6 +407,18 @@ Int mod(Int a, Int b)
         r += b;
     }
     return r;
+}
+
+Rat mod(const Rat& a, const Rat& b)
+{
+    if (b.numerator.sign < 0) {
+        return -mod(-a, -b);
+    }
+    Rat r = a % b;
+	if (r.numerator.sign < 0) {
+		r += b;
+	}
+	return r;
 }
 
 Int pow(Int b, Int e)
