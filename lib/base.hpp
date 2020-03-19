@@ -66,6 +66,20 @@ struct Rat
         denominator.sign = 1;
     }
 
+    Rat& operator *= (const Rat& other)
+    {
+        numerator *= other.numerator;
+        denominator *= other.denominator;
+        reduce();
+        return *this;
+    }
+    Rat& operator /= (const Rat& other)
+    {
+        numerator *= other.denominator;
+        denominator *= other.numerator;
+        reduce();
+        return *this;
+    }
     Rat& operator += (const Rat& other)
     {
         numerator *= other.denominator;
@@ -81,21 +95,7 @@ struct Rat
         denominator *= other.denominator;
         reduce();
         return *this;
-    }
-    Rat& operator *= (const Rat& other)
-    {
-        numerator *= other.numerator;
-        denominator *= other.denominator;
-        reduce();
-        return *this;
-    }
-    Rat& operator /= (const Rat& other)
-    {
-        numerator *= other.denominator;
-        denominator *= other.numerator;
-        reduce();
-        return *this;
-    }
+	}
 
     operator double () const
     {
@@ -110,6 +110,14 @@ struct Rat
     bool operator >= (const Rat& other) const { return numerator * other.denominator >= denominator * other.numerator; }
 };
 
+Rat operator * (Rat a, const Rat& b)
+{
+    return a *= b;
+}
+Rat operator / (Rat a, const Rat& b)
+{
+    return a /= b;
+}
 Rat operator + (Rat a, const Rat& b)
 {
     return a += b;
@@ -122,14 +130,6 @@ Rat operator - (Rat a)
 {
     a.numerator.sign = -a.numerator.sign;
     return a;
-}
-Rat operator * (Rat a, const Rat& b)
-{
-    return a *= b;
-}
-Rat operator / (Rat a, const Rat& b)
-{
-    return a /= b;
 }
 
 namespace std
@@ -799,8 +799,12 @@ Dict<K, V> copy(const Dict<K, V>& x)
 
 char buffer[25];
 
+template <typename T> String toString(const Array<T>& x);
+template <typename T> String toString(const Set<T>& x);
+template <typename K, typename V> String toString(const Dict<K, V>& x);
 template <typename T> String toString(const Nullable<T>& x);
 template <std::size_t I = 0, typename... T> String toString(const Tuple<T...>& x);
+template <typename T> String toString(const Object<T>& x);
 
 String toString(Int x)
 {

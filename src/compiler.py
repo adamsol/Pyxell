@@ -58,6 +58,7 @@ class PyxellCompiler:
 
     def run_main(self, ast):
         self.run(ast, 'main')
+        self.output('return 0')
         return str(self.module)
 
     def compile(self, node):
@@ -269,13 +270,10 @@ class PyxellCompiler:
         elif attr == 'toFloat' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
             value = v.Variable(t.Func([type], t.Float), 'toFloat')
 
-        elif type == t.Int:
-            if attr == 'char':
-                value = v.Cast(obj, t.Char)
-
-        elif type == t.Char:
-            if attr == 'code':
-                value = v.Cast(obj, t.Int)
+        elif attr == 'char' and type == t.Int:
+            value = v.Cast(obj, t.Char)
+        elif attr == 'code' and type == t.Char:
+            value = v.Cast(obj, t.Int)
 
         elif type.isCollection():
             if attr == 'length':
@@ -288,102 +286,65 @@ class PyxellCompiler:
                 value = v.Variable(t.Func([type], t.String), 'asString')
 
             elif type == t.String:
-                if attr == 'all':
-                    value = self.env['String_all']
-                elif attr == 'any':
-                    value = self.env['String_any']
-                elif attr == 'filter':
-                    value = self.env['String_filter']
-                elif attr == 'map':
-                    value = self.env['String_map']
-                elif attr == 'reduce':
-                    value = self.env['String_reduce']
+                value = {
+                    'all': self.env['String_all'],
+                    'any': self.env['String_any'],
+                    'filter': self.env['String_filter'],
+                    'map': self.env['String_map'],
+                    'reduce': self.env['String_reduce'],
+                }.get(attr)
 
             elif type.isArray():
-                if attr == 'all':
-                    value = self.env['Array_all']
-                elif attr == 'any':
-                    value = self.env['Array_any']
-                elif attr == 'filter':
-                    value = self.env['Array_filter']
-                elif attr == 'map':
-                    value = self.env['Array_map']
-                elif attr == 'reduce':
-                    value = self.env['Array_reduce']
-                elif attr == 'push':
-                    value = v.Variable(t.Func([type, type.subtype]), attr)
-                elif attr == 'insert':
-                    value = v.Variable(t.Func([type, t.Int, type.subtype]), attr)
-                elif attr == 'extend':
-                    value = v.Variable(t.Func([type, type]), attr)
-                elif attr == 'get':
-                    value = v.Variable(t.Func([type, t.Int], t.Nullable(type.subtype)), attr)
-                elif attr == 'pop':
-                    value = v.Variable(t.Func([type], type.subtype), attr)
-                elif attr == 'erase':
-                    value = v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default={'node': 'AtomInt', 'int': 1})]), attr)
-                elif attr == 'clear':
-                    value = v.Variable(t.Func([type]), attr)
-                elif attr == 'reverse':
-                    value = v.Variable(t.Func([type]), attr)
-                elif attr == 'copy':
-                    value = v.Variable(t.Func([type], type), attr)
-                elif attr == 'find':
-                    value = v.Variable(t.Func([type, type.subtype], t.Nullable(t.Int)), attr)
-                elif attr == 'count':
-                    value = v.Variable(t.Func([type, type.subtype], t.Int), attr)
+                value = {
+                    'all': self.env['Array_all'],
+                    'any': self.env['Array_any'],
+                    'filter': self.env['Array_filter'],
+                    'map': self.env['Array_map'],
+                    'reduce': self.env['Array_reduce'],
+                    'push': v.Variable(t.Func([type, type.subtype]), attr),
+                    'insert': v.Variable(t.Func([type, t.Int, type.subtype]), attr),
+                    'extend': v.Variable(t.Func([type, type]), attr),
+                    'get': v.Variable(t.Func([type, t.Int], t.Nullable(type.subtype)), attr),
+                    'pop': v.Variable(t.Func([type], type.subtype), attr),
+                    'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default={'node': 'AtomInt', 'int': 1})]), attr),
+                    'clear': v.Variable(t.Func([type]), attr),
+                    'reverse': v.Variable(t.Func([type]), attr),
+                    'copy': v.Variable(t.Func([type], type), attr),
+                    'find': v.Variable(t.Func([type, type.subtype], t.Nullable(t.Int)), attr),
+                    'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
+                }.get(attr)
 
             elif type.isSet():
-                if attr == 'all':
-                    value = self.env['Set_all']
-                elif attr == 'any':
-                    value = self.env['Set_any']
-                elif attr == 'filter':
-                    value = self.env['Set_filter']
-                elif attr == 'map':
-                    value = self.env['Set_map']
-                elif attr == 'reduce':
-                    value = self.env['Set_reduce']
-                elif attr == 'add':
-                    value = v.Variable(t.Func([type, type.subtype]), attr)
-                elif attr == 'union':
-                    value = v.Variable(t.Func([type, type]), 'union_')
-                elif attr == 'subtract':
-                    value = v.Variable(t.Func([type, type]), attr)
-                elif attr == 'intersect':
-                    value = v.Variable(t.Func([type, type]), attr)
-                elif attr == 'pop':
-                    value = v.Variable(t.Func([type], type.subtype), attr)
-                elif attr == 'remove':
-                    value = v.Variable(t.Func([type, type.subtype]), attr)
-                elif attr == 'clear':
-                    value = v.Variable(t.Func([type]), attr)
-                elif attr == 'copy':
-                    value = v.Variable(t.Func([type], type), attr)
-                elif attr == 'contains':
-                    value = v.Variable(t.Func([type, type.subtype], t.Bool), attr)
+                value = {
+                    'all': self.env['Set_all'],
+                    'any': self.env['Set_any'],
+                    'filter': self.env['Set_filter'],
+                    'map': self.env['Set_map'],
+                    'reduce': self.env['Set_reduce'],
+                    'add': v.Variable(t.Func([type, type.subtype]), attr),
+                    'union': v.Variable(t.Func([type, type]), 'union_'),
+                    'subtract': v.Variable(t.Func([type, type]), attr),
+                    'intersect': v.Variable(t.Func([type, type]), attr),
+                    'pop': v.Variable(t.Func([type], type.subtype), attr),
+                    'remove': v.Variable(t.Func([type, type.subtype]), attr),
+                    'clear': v.Variable(t.Func([type]), attr),
+                    'copy': v.Variable(t.Func([type], type), attr),
+                    'contains': v.Variable(t.Func([type, type.subtype], t.Bool), attr),
+                }.get(attr)
 
             elif type.isDict():
-                if attr == 'all':
-                    value = self.env['Dict_all']
-                elif attr == 'any':
-                    value = self.env['Dict_any']
-                elif attr == 'filter':
-                    value = self.env['Dict_filter']
-                elif attr == 'map':
-                    value = self.env['Dict_map']
-                elif attr == 'reduce':
-                    value = self.env['Dict_reduce']
-                elif attr == 'update':
-                    value = v.Variable(t.Func([type, type]), attr)
-                elif attr == 'get':
-                    value = v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr)
-                elif attr == 'pop':
-                    value = v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr)
-                elif attr == 'clear':
-                    value = v.Variable(t.Func([type]), attr)
-                elif attr == 'copy':
-                    value = v.Variable(t.Func([type], type), attr)
+                value = {
+                    'all': self.env['Dict_all'],
+                    'any': self.env['Dict_any'],
+                    'filter': self.env['Dict_filter'],
+                    'map': self.env['Dict_map'],
+                    'reduce': self.env['Dict_reduce'],
+                    'update': v.Variable(t.Func([type, type]), attr),
+                    'get': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),
+                    'pop': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),
+                    'clear': v.Variable(t.Func([type]), attr),
+                    'copy': v.Variable(t.Func([type], type), attr),
+                }.get(attr)
 
         elif type.isTuple() and len(attr) == 1:
             index = ord(attr) - ord('a')
@@ -1611,8 +1572,9 @@ class PyxellCompiler:
                 obj = None
 
         if isinstance(func, t.Class):
-            obj = self.tmp(v.Call(f'std::make_shared<{func.initializer.name}>', type=func))
-            method = func.methods.get('<constructor>')
+            cls = func
+            obj = self.tmp(v.Object(cls))
+            method = cls.methods.get('<constructor>')
             if method:
                 self.output(_call(obj, method))
             return obj

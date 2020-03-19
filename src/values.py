@@ -115,6 +115,15 @@ class Tuple(Container):
         super().__init__(type, elements, 'std::make_tuple({})')
 
 
+class Object(Value):
+
+    def __init__(self, cls):
+        super().__init__(cls)
+
+    def __str__(self):
+        return f'std::make_shared<{self.type.initializer.name}>()'
+
+
 class FunctionTemplate(Value):
 
     def __init__(self, id, typevars, type, body, env):

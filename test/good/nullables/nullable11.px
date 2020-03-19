@@ -1,6 +1,6 @@
 
 func f([{String?}?] x) [{String?}?]? def
-	return x.empty ? null : x
+    return x.empty ? null : x
 
 s = "abc"
 print f([{s}, {null}]) ?? []

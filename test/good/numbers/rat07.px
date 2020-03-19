@@ -2,15 +2,15 @@
 n = 10^^6
 
 func f(Rat x) Rat def
-	n -= 1
-	if n == 0 do
-		x -= 1
-		print "{x}"[-10:]
-	return x
+    n -= 1
+    if n == 0 do
+        x -= 1
+        print "{x}"[-10:]
+    return x
 
 x = 2^50000
 y = x
 for i in 1..n do
-	y = f(x)
+    y = f(x)
 
 print y + 1 == x
