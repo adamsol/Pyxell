@@ -1,0 +1,16 @@
+
+class A def
+    func f() Char def
+        return 'A'
+
+class B(A) def
+    func f() Char def
+        return 'B'
+
+
+A? a = B()
+print a?.f()
+
+a = A()
+Char? c = a?.f()
+print c

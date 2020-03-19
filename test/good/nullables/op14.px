@@ -1,0 +1,16 @@
+
+class A def
+
+    func f(Int x: 0) Int def
+        return x
+
+    func g() def
+        print 'g'
+
+
+A? a = null
+print a?.f()
+
+a = A()
+print a?.f(x=10)
+a?.g()

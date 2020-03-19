@@ -1591,7 +1591,13 @@ class PyxellCompiler:
                 def callback():
                     value = self.tmp(v.Extract(obj))
                     func = self.attr(node, value, attr)
-                    return v.Nullable(_call(value, func))
+                    result = _call(value, func)
+
+                    if result.type == t.Void:
+                        self.output(result)
+                        return v.null
+                    else:
+                        return v.Nullable(result)
 
                 return self.safe(node, obj, callback, lambda: v.null)
             else:
