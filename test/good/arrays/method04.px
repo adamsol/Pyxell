@@ -1,6 +1,6 @@
 
 [Bool] a = []
-for i in 1..10^^8 do
+for i in 1..10^^6 do
     a.push(2|i)
 
 print a.length

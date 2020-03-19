@@ -2,7 +2,7 @@
 Int? x = 0
 y = x
 
-for i in 1..10^^9 do
+for i in 1..10^^7 do
     x = i
     y = null
 

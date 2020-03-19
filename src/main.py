@@ -37,18 +37,15 @@ def build_libs():
         json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
-COMPILER_ARGS = ['-std=c++17', '-O2']
-
-
-def precompile_base_header(cpp_compiler):
+def precompile_base_header(cpp_compiler, opt_level=2):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return
 
-    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), *COMPILER_ARGS]
+    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), '-std=c++17', f'-O{opt_level}']
     subprocess.check_output(command, stderr=subprocess.STDOUT)
 
 
-def compile(filepath, cpp_compiler, verbose=False):
+def compile(filepath, cpp_compiler, verbose=False, opt_level=2):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
     cpp_filename = f'{filename}.cpp'
@@ -72,7 +69,7 @@ def compile(filepath, cpp_compiler, verbose=False):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return None
 
-    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, *COMPILER_ARGS, '-lstdc++']
+    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', f'-O{opt_level}', '-lstdc++']
     if platform.system() != 'Windows':
         command.append('-lm')
 

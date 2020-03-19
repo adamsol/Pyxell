@@ -1,8 +1,8 @@
 
 n = 0
-s = "test" * 10^^7
+s = "test" * 3*10^^6
 
-for i in 0...10^^7 do
+for i in 0...3*10^^6 do
     s' = s
     if s'[4*i] == s[-4*i-1] do
         n += s'.length

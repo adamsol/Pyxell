@@ -69,7 +69,7 @@ def test(i, path):
 
         try:
             error = True
-            exe_filename = compile(path, args.cpp_compiler)
+            exe_filename = compile(path, args.cpp_compiler, opt_level=0)
             error = False
         except PyxellError as e:
             error_message = str(e)
@@ -133,7 +133,7 @@ def test(i, path):
                 os.remove(path.replace('.px', '.exe'))
 
 try:
-    precompile_base_header(args.cpp_compiler)
+    precompile_base_header(args.cpp_compiler, opt_level=0)
 except FileNotFoundError:
     print(f"command not found: {args.cpp_compiler}")
     sys.exit(1)

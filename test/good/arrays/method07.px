@@ -1,7 +1,7 @@
 
-a = [0...10^^7]
+a = [0...10^^6]
 
-a.erase(7, 10^^7 - 8)
+a.erase(7, 10^^6 - 8)
 a.erase(5)
 print a.pop(), a.pop()
 

@@ -1,5 +1,5 @@
 
-n = 10^^6
+n = 3*10^^5
 
 func f(Rat x) Rat def
     n -= 1
