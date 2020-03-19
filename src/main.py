@@ -15,6 +15,7 @@ from .version import __version__
 
 abspath = Path(__file__).parents[1]
 
+
 units = {}
 for name in ['std', 'math', 'random']:
     try:
@@ -36,15 +37,18 @@ def build_libs():
         json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
+COMPILER_ARGS = ['-std=c++17', '-O2']
+
+
 def precompile_base_header(cpp_compiler):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return
 
-    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), '-std=c++17', '-O2']
+    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), *COMPILER_ARGS]
     subprocess.check_output(command, stderr=subprocess.STDOUT)
 
 
-def compile(filepath, cpp_compiler, verbose=False, *other_args):
+def compile(filepath, cpp_compiler, verbose=False):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
     cpp_filename = f'{filename}.cpp'
@@ -68,7 +72,7 @@ def compile(filepath, cpp_compiler, verbose=False, *other_args):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return None
 
-    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', '-O2', *other_args, '-lstdc++']
+    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, *COMPILER_ARGS, '-lstdc++']
     if platform.system() != 'Windows':
         command.append('-lm')
 
@@ -94,7 +98,7 @@ def main():
     parser.add_argument('-r', '--run', action='store_true', help="run the program after compilation")
     parser.add_argument('-v', '--verbose', action='store_true', help="output diagnostic information")
     parser.add_argument('-V', '--version', action='store_true', help="print version number and exit")
-    args, other_args = parser.parse_known_args()
+    args = parser.parse_args()
 
     if args.version:
         print(f"Pyxell {__version__}")
@@ -108,7 +112,7 @@ def main():
         parser.error("filepath is required")
 
     try:
-        exe_filename = compile(args.filepath, args.cpp_compiler, args.verbose, *other_args)
+        exe_filename = compile(args.filepath, args.cpp_compiler, args.verbose)
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)
