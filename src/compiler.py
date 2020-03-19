@@ -1048,11 +1048,10 @@ class PyxellCompiler:
 
             if iterable['node'] == 'ExprRange':
                 values = lmap(self.compile, iterable['exprs'])
+                values = self.unify(iterable, *values)
                 type = values[0].type
                 if type not in {t.Int, t.Rat, t.Float, t.Bool, t.Char}:
                     self.throw(iterable, err.UnknownType())
-                if len(values) > 1:
-                    values[1] = self.cast(iterable, values[1], type)
 
                 types.append(type)
                 index = iterator = self.var({t.Rat: t.Rat, t.Float: t.Float}.get(type, t.Int))

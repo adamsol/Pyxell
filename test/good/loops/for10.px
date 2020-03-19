@@ -1,5 +1,5 @@
 
 n = 0
-for x in 0.0...5, 1.125..24/4 step 0.125 do
+for x in 0.0...5, 9/8..6.0 step 0.125 do
     n += 1
 print n
