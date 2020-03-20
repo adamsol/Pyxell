@@ -29,7 +29,7 @@ colorama.init()
 # Parse arguments.
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='', help="file path pattern (relative to test folder)")
-parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
+parser.add_argument('-c', '--cpp-compiler', default='clang', help="C++ compiler command (default: clang)")
 parser.add_argument('-f', '--fast', action='store_true', help="put all tests into one C++ file for faster compilation")
 parser.add_argument('-O', '--opt-level', default='0', help="compiler optimization level (default: 0)")
 parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16, help="number of threads to use")

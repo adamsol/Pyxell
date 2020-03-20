@@ -178,18 +178,16 @@ Tests
 -----
 
 ```
-python test.py -v
+python test.py --verbose --fast
 ```
 
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
-The script is multi-threaded.
-Total execution time may vary from something like 30 seconds to 5 minutes,
-depending on the compiler (Clang is faster than GCC), number of available CPU cores, and other factors.
+The script is multi-threaded and uses Clang as the default C++ compiler (contrary to standard compilation, where GCC is the default).
+Total execution time should be around 30 seconds.
 
-To speed up testing, you can use `-f` option,
-which results in putting all tests into one `.cpp` file and running the compilation just once.
-This might not always work, though (GCC 7.2 on Windows produces errors: `too many sections`, `file too big`, while Clang works fine).
+If, however, the tests fail with an error like this: `too many sections` / `file too big` (seen with GCC 7.2 on Windows),
+then you might need to drop the `--fast` option, which will increase the execution time significantly.
 
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
 
