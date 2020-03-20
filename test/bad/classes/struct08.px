@@ -1,0 +1,5 @@
+
+class A def
+    Rat x
+
+A(8.0)

@@ -2,7 +2,7 @@
 class Test def
     Int x
 
-    constructor() def
+    constructor(Int x) def
         skip
 
-Test(3)
+Test()

@@ -1390,7 +1390,7 @@ class PyxellCompiler:
     def compileExprCall(self, node):
         expr = node['expr']
 
-        def _call(obj, func):
+        def _resolve_args(obj, func):
             if not func.type.isFunc():
                 self.throw(node, err.NotFunction(func.type))
 
@@ -1420,14 +1420,24 @@ class PyxellCompiler:
 
                 for i, func_arg in enumerate(func_args):
                     name = func_arg.name
+
                     if name in named_args:
                         if i in pos_args:
                             self.throw(node, err.RepeatedArgument(name))
                         expr = named_args.pop(name)
+
                     elif i in pos_args:
                         expr = pos_args.pop(i)
+
                     elif func_arg.default:
                         expr = func_arg.default
+
+                        if expr is True:
+                            # Special case for default class constructors.
+                            value = v.Value(type=func_arg.type)
+                            value.not_provided = True
+                            args.append(value)
+                            continue
                     else:
                         self.throw(node, err.TooFewArguments())
 
@@ -1541,6 +1551,11 @@ class PyxellCompiler:
                     except err as e:
                         self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
+                return func, args
+
+        def _call(obj, func):
+            func, args = _resolve_args(obj, func)
+
             return v.Call(func, *args, type=func.type.ret)
 
         if expr['node'] == 'ExprAttr':
@@ -1582,6 +1597,13 @@ class PyxellCompiler:
             method = cls.methods.get('<constructor>')
             if method:
                 self.output(_call(obj, method))
+            else:
+                fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
+                constructor_type = t.Func([t.Func.Arg(field.type, name, default=True) for name, field in fields.items()])
+                args = _resolve_args(None, v.Value(type=constructor_type))[1]
+                for name, value in zip(fields, args):
+                    if not getattr(value, 'not_provided', False):
+                        self.store(self.attr(node, obj, name), value)
             return obj
 
         result = _call(obj, func)

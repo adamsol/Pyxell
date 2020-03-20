@@ -1,0 +1,17 @@
+
+class A def
+    Bool x
+
+class B(A) def
+    Char y
+
+    func f() def
+        print self.x
+
+class C(B) def
+    String z
+
+
+B(true).f()
+print B(false, 'y').y
+print C(z="xyz").z

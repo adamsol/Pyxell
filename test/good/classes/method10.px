@@ -1,0 +1,11 @@
+
+class A def
+    Int x
+
+    func f() Int*Float def
+        return self.x, self.y
+
+    Float y
+
+print A(1, 2).f()
+print A(y=3, x=4).f()
