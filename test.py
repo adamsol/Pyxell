@@ -5,6 +5,7 @@ import colorama
 import concurrent.futures
 import glob
 import os
+import re
 import subprocess
 import sys
 import traceback
@@ -12,7 +13,7 @@ import threading
 from pathlib import Path
 from timeit import default_timer as timer
 
-from src.main import precompile_base_header, compile
+from src.main import precompile_base_header, compile, run_cpp_compiler
 from src.errors import PyxellError
 
 # Setup terminal colors.
@@ -29,17 +30,20 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='', help="file path pattern (relative to test folder)")
 parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
+parser.add_argument('-f', '--fast', action='store_true', help="put all tests into one C++ file for faster compilation")
 parser.add_argument('-O', '--opt-level', default='0', help="compiler optimization level (default: 0)")
 parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16, help="number of threads to use")
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help="display all tests and don't remove generated files")
 args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
-tests = []
+tests = {}
+i = 1
 for path in sorted(glob.glob('test/**/{}*.px'.format('[!_]' if '_' not in args.pattern else ''), recursive=True)):
     path = path.replace(os.path.sep, '/')
     if args.pattern in path:
-        tests.append(path)
+        tests[path] = i
+        i += 1
 
 n = len(tests)
 
@@ -55,12 +59,18 @@ output_dict = {}
 output_index = 1
 lock = threading.Lock()
 
-def test(i, path):
+aggregate_cpp_code = []
+aggregate_cpp_filename = 'all-tests.cpp'
+aggregate_exe_filename = aggregate_cpp_filename.replace('.cpp', '.exe')
+tests_to_compile = set()
+
+def test(path, running_aggregate_tests=False):
     global ok
     global output_index
 
+    index = tests[path]
     passed = False
-    output = [f"{B}> TEST {i}/{n}:{E} {path}"]
+    output = [f"{B}> TEST {index}/{n}:{E} {path}"]
 
     try:
         try:
@@ -68,9 +78,14 @@ def test(i, path):
         except FileNotFoundError:
             expected_error = None
 
+        exe_filename = True
+
         try:
             error = True
-            exe_filename = compile(path, args.cpp_compiler, args.opt_level)
+            if running_aggregate_tests:
+                exe_filename = f'./{aggregate_exe_filename}'
+            else:
+                exe_filename = compile(path, args.cpp_compiler if not args.fast else '', args.opt_level)
             error = False
         except PyxellError as e:
             error_message = str(e)
@@ -90,17 +105,32 @@ def test(i, path):
         if not error:
             if expected_error:
                 output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
+
+            elif args.fast and not running_aggregate_tests:
+                aggregate_cpp_code.extend([
+                    f'namespace test{index} {{',
+                    re.sub('^', '  ', Path(path.replace('.px', '.cpp')).read_text(), flags=re.MULTILINE),
+                    '}\n',
+                ])
+                tests_to_compile.add(path)
+                # The function will be run again with running_aggregate_tests=True.
+                return
+
             elif exe_filename is None:
                 output.append(f"{G}OK{E}")
                 passed = True
+
             else:
                 with open(path.replace('.px', '.tmp'), 'w') as tmpfile:
                     t1 = timer()
+                    command = [exe_filename]
+                    if running_aggregate_tests:
+                        command.append(path)
                     try:
                         with open(path.replace('.px', '.in'), 'r') as infile:
-                            subprocess.call(path.replace('.px', '.exe'), stdin=infile, stdout=tmpfile)
+                            subprocess.call(command, stdin=infile, stdout=tmpfile)
                     except FileNotFoundError:
-                        subprocess.call(path.replace('.px', '.exe'), stdout=tmpfile)
+                        subprocess.call(command, stdout=tmpfile)
                     t2 = timer()
 
                 try:
@@ -118,7 +148,7 @@ def test(i, path):
         output.append(f"{R}{traceback.format_exc()}{E}")
 
     # Print the output of tests in the right order.
-    output_dict[i] = '\n'.join(output) if not passed or args.verbose else ''
+    output_dict[index] = '\n'.join(output) if not passed or args.verbose else ''
     with lock:
         while output_index in output_dict:
             if output_dict[output_index]:
@@ -143,8 +173,32 @@ except subprocess.CalledProcessError as e:
     sys.exit(1)
 
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
-    for i, path in enumerate(tests, 1):
-        executor.submit(test, i, path)
+    for path in tests:
+        executor.submit(test, path)
+
+if args.fast:
+    if args.verbose:
+        print(f"Compiling {aggregate_cpp_filename}.")
+
+    aggregate_cpp_code.extend([
+        'int main(int argc, char **argv) {',
+        '  std::string path = argv[1];',
+        *[f'  if (path == "{path}") test{tests[path]}::main();' for path in tests_to_compile],
+        '}',
+    ])
+
+    with open(aggregate_cpp_filename, 'w') as file:
+        file.write('\n'.join(aggregate_cpp_code))
+
+    run_cpp_compiler(args.cpp_compiler, aggregate_cpp_filename, aggregate_exe_filename, args.opt_level)
+
+    with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
+        for path in tests_to_compile:
+            executor.submit(test, path, running_aggregate_tests=True)
+
+    if not args.verbose:
+        os.remove(aggregate_cpp_filename)
+        os.remove(aggregate_exe_filename)
 
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"

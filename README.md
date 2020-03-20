@@ -185,10 +185,15 @@ Tests are divided into good (supposed to compile and run properly) and bad (shou
 
 The script is multi-threaded.
 Total execution time may vary from something like 30 seconds to 5 minutes,
-depending on the number of available CPU cores and other factors.
+depending on the compiler (Clang is faster than GCC), number of available CPU cores, and other factors.
+
+To speed up testing, you can use `-f` option,
+which results in putting all tests into one `.cpp` file and running the compilation just once.
+This might not always work, though (GCC 7.2 on Windows produces errors: `too many sections`, `file too big`, while Clang works fine).
 
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
-To see all options, run it with `-h`.
+
+To see all options, run the script with `-h`.
 
 Tests serve currently also as a documentation of the language.
 You can browse them to learn the syntax and semantics.

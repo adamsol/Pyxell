@@ -45,6 +45,23 @@ def precompile_base_header(cpp_compiler, opt_level):
     subprocess.check_output(command, stderr=subprocess.STDOUT)
 
 
+def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose=False):
+    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', f'-O{opt_level}', '-lstdc++']
+    if platform.system() != 'Windows':
+        command.append('-lm')
+
+    if verbose:
+        print(f"running {' '.join(command)}")
+
+    try:
+        if verbose:
+            subprocess.call(command, stderr=subprocess.STDOUT)
+        else:
+            subprocess.check_output(command, stderr=subprocess.STDOUT)
+    except FileNotFoundError:
+        print(f"command not found: {cpp_compiler}")
+
+
 def compile(filepath, cpp_compiler, opt_level, verbose=False):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
@@ -69,20 +86,7 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return None
 
-    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', f'-O{opt_level}', '-lstdc++']
-    if platform.system() != 'Windows':
-        command.append('-lm')
-
-    if verbose:
-        print(f"running {' '.join(command)}")
-
-    try:
-        if verbose:
-            subprocess.call(command, stderr=subprocess.STDOUT)
-        else:
-            subprocess.check_output(command, stderr=subprocess.STDOUT)
-    except FileNotFoundError:
-        print(f"command not found: {cpp_compiler}")
+    run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose)
 
     return exe_filename
 
