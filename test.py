@@ -29,6 +29,7 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='', help="file path pattern (relative to test folder)")
 parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
+parser.add_argument('-O', '--opt-level', default='0', help="compiler optimization level (default: 0)")
 parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16, help="number of threads to use")
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help="display all tests and don't remove generated files")
 args = parser.parse_args()
@@ -69,7 +70,7 @@ def test(i, path):
 
         try:
             error = True
-            exe_filename = compile(path, args.cpp_compiler, opt_level=0)
+            exe_filename = compile(path, args.cpp_compiler, args.opt_level)
             error = False
         except PyxellError as e:
             error_message = str(e)
@@ -133,7 +134,7 @@ def test(i, path):
                 os.remove(path.replace('.px', '.exe'))
 
 try:
-    precompile_base_header(args.cpp_compiler, opt_level=0)
+    precompile_base_header(args.cpp_compiler, args.opt_level)
 except FileNotFoundError:
     print(f"command not found: {args.cpp_compiler}")
     sys.exit(1)

@@ -37,7 +37,7 @@ def build_libs():
         json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
-def precompile_base_header(cpp_compiler, opt_level=2):
+def precompile_base_header(cpp_compiler, opt_level):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return
 
@@ -45,7 +45,7 @@ def precompile_base_header(cpp_compiler, opt_level=2):
     subprocess.check_output(command, stderr=subprocess.STDOUT)
 
 
-def compile(filepath, cpp_compiler, verbose=False, opt_level=2):
+def compile(filepath, cpp_compiler, opt_level, verbose=False):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
     cpp_filename = f'{filename}.cpp'
@@ -92,6 +92,7 @@ def main():
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
     parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
     parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
+    parser.add_argument('-O', '--opt-level', default='2', help="compiler optimization level (default: 2)")
     parser.add_argument('-r', '--run', action='store_true', help="run the program after compilation")
     parser.add_argument('-v', '--verbose', action='store_true', help="output diagnostic information")
     parser.add_argument('-V', '--version', action='store_true', help="print version number and exit")
@@ -109,7 +110,7 @@ def main():
         parser.error("filepath is required")
 
     try:
-        exe_filename = compile(args.filepath, args.cpp_compiler, args.verbose)
+        exe_filename = compile(args.filepath, args.cpp_compiler, args.opt_level, args.verbose)
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)
