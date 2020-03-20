@@ -1560,8 +1560,12 @@ class PyxellCompiler:
                         return v.Nullable(result)
 
                 return self.safe(node, obj, callback, lambda: v.null)
+
             else:
                 obj, func = self.attribute(expr, expr['expr'], attr)
+
+                if obj and obj.type.isClass() and attr not in obj.type.methods:
+                    obj = None
 
         else:
             func = self.compile(expr)
