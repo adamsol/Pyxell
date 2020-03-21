@@ -1,4 +1,4 @@
 
-print [2, 5, 7, 4].reduce(max, 0)
+print [2, 5, 7, 4].reduce(max)
 print [1/2, -3, -2/7, 1].map(clamp(_, -1, 1))
 print [1, -2.5, -3].map(abs)

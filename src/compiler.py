@@ -319,7 +319,7 @@ class PyxellCompiler:
                     'any': self.env['String_any'],
                     'filter': self.env['String_filter'],
                     'map': self.env['String_map'],
-                    'reduce': self.env['String_reduce'],
+                    'fold': self.env['String_fold'],
                 }.get(attr)
 
             elif type.isArray():
@@ -328,6 +328,7 @@ class PyxellCompiler:
                     'any': self.env['Array_any'],
                     'filter': self.env['Array_filter'],
                     'map': self.env['Array_map'],
+                    'fold': self.env['Array_fold'],
                     'reduce': self.env['Array_reduce'],
                     'push': v.Variable(t.Func([type, type.subtype]), attr),
                     'insert': v.Variable(t.Func([type, t.Int, type.subtype]), attr),
@@ -348,6 +349,7 @@ class PyxellCompiler:
                     'any': self.env['Set_any'],
                     'filter': self.env['Set_filter'],
                     'map': self.env['Set_map'],
+                    'fold': self.env['Set_fold'],
                     'reduce': self.env['Set_reduce'],
                     'add': v.Variable(t.Func([type, type.subtype]), attr),
                     'union': v.Variable(t.Func([type, type]), 'union_'),
@@ -366,7 +368,7 @@ class PyxellCompiler:
                     'any': self.env['Dict_any'],
                     'filter': self.env['Dict_filter'],
                     'map': self.env['Dict_map'],
-                    'reduce': self.env['Dict_reduce'],
+                    'fold': self.env['Dict_fold'],
                     'update': v.Variable(t.Func([type, type]), attr),
                     'get': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),
                     'pop': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),

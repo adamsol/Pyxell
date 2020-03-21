@@ -1629,7 +1629,7 @@
 				46,
 				1
 			],
-			"id": "String_reduce",
+			"id": "String_fold",
 			"typevars": [
 				"B"
 			],
@@ -1638,13 +1638,13 @@
 					"node": "FuncArg",
 					"position": [
 						46,
-						23
+						21
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
 							46,
-							23
+							21
 						],
 						"name": "String"
 					},
@@ -1655,20 +1655,20 @@
 					"node": "FuncArg",
 					"position": [
 						46,
-						33
+						31
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							46,
-							39
+							37
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									46,
-									33
+									31
 								],
 								"name": "Char"
 							},
@@ -1676,7 +1676,7 @@
 								"node": "TypeName",
 								"position": [
 									46,
-									39
+									37
 								],
 								"name": "B"
 							}
@@ -1685,7 +1685,7 @@
 							"node": "TypeName",
 							"position": [
 								46,
-								42
+								40
 							],
 							"name": "B"
 						}
@@ -1697,13 +1697,13 @@
 					"node": "FuncArg",
 					"position": [
 						46,
-						47
+						45
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
 							46,
-							47
+							45
 						],
 						"name": "B"
 					},
@@ -1715,7 +1715,7 @@
 				"node": "TypeName",
 				"position": [
 					46,
-					52
+					50
 				],
 				"name": "B"
 			},
@@ -1723,7 +1723,7 @@
 				"node": "Block",
 				"position": [
 					46,
-					57
+					55
 				],
 				"stmts": [
 					{
@@ -2655,7 +2655,7 @@
 				70,
 				1
 			],
-			"id": "Array_reduce",
+			"id": "Array_fold",
 			"typevars": [
 				"A",
 				"B"
@@ -2665,19 +2665,19 @@
 					"node": "FuncArg",
 					"position": [
 						70,
-						24
+						22
 					],
 					"type": {
 						"node": "TypeArray",
 						"position": [
 							70,
-							24
+							22
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
 								70,
-								25
+								23
 							],
 							"name": "A"
 						}
@@ -2689,20 +2689,20 @@
 					"node": "FuncArg",
 					"position": [
 						70,
-						31
+						29
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							70,
-							34
+							32
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
 									70,
-									31
+									29
 								],
 								"name": "A"
 							},
@@ -2710,7 +2710,7 @@
 								"node": "TypeName",
 								"position": [
 									70,
-									34
+									32
 								],
 								"name": "B"
 							}
@@ -2719,7 +2719,7 @@
 							"node": "TypeName",
 							"position": [
 								70,
-								37
+								35
 							],
 							"name": "B"
 						}
@@ -2731,13 +2731,13 @@
 					"node": "FuncArg",
 					"position": [
 						70,
-						42
+						40
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
 							70,
-							42
+							40
 						],
 						"name": "B"
 					},
@@ -2749,7 +2749,7 @@
 				"node": "TypeName",
 				"position": [
 					70,
-					47
+					45
 				],
 				"name": "B"
 			},
@@ -2757,7 +2757,7 @@
 				"node": "Block",
 				"position": [
 					70,
-					52
+					50
 				],
 				"stmts": [
 					{
@@ -2884,7 +2884,365 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				76,
+				75,
+				1
+			],
+			"id": "Array_reduce",
+			"typevars": [
+				"A"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						75,
+						22
+					],
+					"type": {
+						"node": "TypeArray",
+						"position": [
+							75,
+							22
+						],
+						"subtype": {
+							"node": "TypeName",
+							"position": [
+								75,
+								23
+							],
+							"name": "A"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						75,
+						29
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							75,
+							32
+						],
+						"args": [
+							{
+								"node": "TypeName",
+								"position": [
+									75,
+									29
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									75,
+									32
+								],
+								"name": "A"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								75,
+								35
+							],
+							"name": "A"
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					75,
+					40
+				],
+				"name": "A"
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					75,
+					45
+				],
+				"stmts": [
+					{
+						"node": "StmtAssg",
+						"position": [
+							76,
+							5
+						],
+						"lvalues": [
+							{
+								"node": "AtomId",
+								"position": [
+									76,
+									5
+								],
+								"id": "r"
+							}
+						],
+						"expr": {
+							"node": "AtomDefault",
+							"position": [
+								76,
+								9
+							],
+							"type": {
+								"node": "TypeName",
+								"position": [
+									76,
+									17
+								],
+								"name": "A"
+							}
+						}
+					},
+					{
+						"node": "StmtAssg",
+						"position": [
+							77,
+							5
+						],
+						"lvalues": [
+							{
+								"node": "AtomId",
+								"position": [
+									77,
+									5
+								],
+								"id": "b"
+							}
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								77,
+								9
+							],
+							"bool": true
+						}
+					},
+					{
+						"node": "StmtFor",
+						"position": [
+							78,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									78,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									78,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								78,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtIf",
+									"position": [
+										79,
+										9
+									],
+									"exprs": [
+										{
+											"node": "AtomId",
+											"position": [
+												79,
+												12
+											],
+											"id": "b"
+										}
+									],
+									"blocks": [
+										{
+											"node": "Block",
+											"position": [
+												79,
+												16
+											],
+											"stmts": [
+												{
+													"node": "StmtAssg",
+													"position": [
+														80,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																80,
+																13
+															],
+															"id": "r"
+														}
+													],
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															80,
+															17
+														],
+														"id": "x"
+													}
+												},
+												{
+													"node": "StmtAssg",
+													"position": [
+														81,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																81,
+																13
+															],
+															"id": "b"
+														}
+													],
+													"expr": {
+														"node": "AtomBool",
+														"position": [
+															81,
+															17
+														],
+														"bool": false
+													}
+												}
+											]
+										},
+										{
+											"node": "Block",
+											"position": [
+												82,
+												16
+											],
+											"stmts": [
+												{
+													"node": "StmtAssg",
+													"position": [
+														83,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																83,
+																13
+															],
+															"id": "r"
+														}
+													],
+													"expr": {
+														"node": "ExprCall",
+														"position": [
+															83,
+															17
+														],
+														"expr": {
+															"node": "AtomId",
+															"position": [
+																83,
+																17
+															],
+															"id": "f"
+														},
+														"args": [
+															{
+																"node": "CallArg",
+																"position": [
+																	83,
+																	19
+																],
+																"name": null,
+																"expr": {
+																	"node": "AtomId",
+																	"position": [
+																		83,
+																		19
+																	],
+																	"id": "x"
+																}
+															},
+															{
+																"node": "CallArg",
+																"position": [
+																	83,
+																	22
+																],
+																"name": null,
+																"expr": {
+																	"node": "AtomId",
+																	"position": [
+																		83,
+																		22
+																	],
+																	"id": "r"
+																}
+															}
+														]
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							84,
+							5
+						],
+						"expr": {
+							"node": "AtomId",
+							"position": [
+								84,
+								12
+							],
+							"id": "r"
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				87,
 				1
 			],
 			"id": "Set_all",
@@ -2895,19 +3253,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						76,
+						87,
 						17
 					],
 					"type": {
 						"node": "TypeSet",
 						"position": [
-							76,
+							87,
 							17
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								76,
+								87,
 								18
 							],
 							"name": "A"
@@ -2919,20 +3277,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						76,
+						87,
 						24
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							76,
+							87,
 							24
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									76,
+									87,
 									24
 								],
 								"name": "A"
@@ -2941,7 +3299,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								76,
+								87,
 								27
 							],
 							"name": "Bool"
@@ -2951,7 +3309,7 @@
 					"default": {
 						"node": "AtomStub",
 						"position": [
-							76,
+							87,
 							35
 						]
 					}
@@ -2960,7 +3318,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					76,
+					87,
 					38
 				],
 				"name": "Bool"
@@ -2968,21 +3326,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					76,
+					87,
 					46
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							77,
+							88,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									77,
+									88,
 									9
 								],
 								"id": "x"
@@ -2992,7 +3350,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									77,
+									88,
 									14
 								],
 								"id": "a"
@@ -3002,33 +3360,33 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								77,
+								88,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										78,
+										89,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprUnaryOp",
 											"position": [
-												78,
+												89,
 												12
 											],
 											"expr": {
 												"node": "ExprCall",
 												"position": [
-													78,
+													89,
 													16
 												],
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														78,
+														89,
 														16
 													],
 													"id": "f"
@@ -3037,14 +3395,14 @@
 													{
 														"node": "CallArg",
 														"position": [
-															78,
+															89,
 															18
 														],
 														"name": null,
 														"expr": {
 															"node": "AtomId",
 															"position": [
-																78,
+																89,
 																18
 															],
 															"id": "x"
@@ -3059,20 +3417,20 @@
 										{
 											"node": "Block",
 											"position": [
-												78,
+												89,
 												23
 											],
 											"stmts": [
 												{
 													"node": "StmtReturn",
 													"position": [
-														79,
+														90,
 														13
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															79,
+															90,
 															20
 														],
 														"bool": false
@@ -3088,13 +3446,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							80,
+							91,
 							5
 						],
 						"expr": {
 							"node": "AtomBool",
 							"position": [
-								80,
+								91,
 								12
 							],
 							"bool": true
@@ -3106,7 +3464,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				82,
+				93,
 				1
 			],
 			"id": "Set_any",
@@ -3117,19 +3475,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						82,
+						93,
 						17
 					],
 					"type": {
 						"node": "TypeSet",
 						"position": [
-							82,
+							93,
 							17
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								82,
+								93,
 								18
 							],
 							"name": "A"
@@ -3141,20 +3499,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						82,
+						93,
 						24
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							82,
+							93,
 							24
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									82,
+									93,
 									24
 								],
 								"name": "A"
@@ -3163,7 +3521,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								82,
+								93,
 								27
 							],
 							"name": "Bool"
@@ -3173,7 +3531,7 @@
 					"default": {
 						"node": "AtomStub",
 						"position": [
-							82,
+							93,
 							35
 						]
 					}
@@ -3182,7 +3540,7 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					82,
+					93,
 					38
 				],
 				"name": "Bool"
@@ -3190,21 +3548,21 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					82,
+					93,
 					46
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							83,
+							94,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									83,
+									94,
 									9
 								],
 								"id": "x"
@@ -3214,7 +3572,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									83,
+									94,
 									14
 								],
 								"id": "a"
@@ -3224,27 +3582,27 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								83,
+								94,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										84,
+										95,
 										9
 									],
 									"exprs": [
 										{
 											"node": "ExprCall",
 											"position": [
-												84,
+												95,
 												12
 											],
 											"expr": {
 												"node": "AtomId",
 												"position": [
-													84,
+													95,
 													12
 												],
 												"id": "f"
@@ -3253,14 +3611,14 @@
 												{
 													"node": "CallArg",
 													"position": [
-														84,
+														95,
 														14
 													],
 													"name": null,
 													"expr": {
 														"node": "AtomId",
 														"position": [
-															84,
+															95,
 															14
 														],
 														"id": "x"
@@ -3273,20 +3631,20 @@
 										{
 											"node": "Block",
 											"position": [
-												84,
+												95,
 												19
 											],
 											"stmts": [
 												{
 													"node": "StmtReturn",
 													"position": [
-														85,
+														96,
 														13
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															85,
+															96,
 															20
 														],
 														"bool": true
@@ -3302,13 +3660,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							86,
+							97,
 							5
 						],
 						"expr": {
 							"node": "AtomBool",
 							"position": [
-								86,
+								97,
 								12
 							],
 							"bool": false
@@ -3320,7 +3678,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				88,
+				99,
 				1
 			],
 			"id": "Set_filter",
@@ -3331,19 +3689,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						88,
+						99,
 						20
 					],
 					"type": {
 						"node": "TypeSet",
 						"position": [
-							88,
+							99,
 							20
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								88,
+								99,
 								21
 							],
 							"name": "A"
@@ -3355,20 +3713,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						88,
+						99,
 						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							88,
+							99,
 							27
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									88,
+									99,
 									27
 								],
 								"name": "A"
@@ -3377,7 +3735,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								88,
+								99,
 								30
 							],
 							"name": "Bool"
@@ -3390,13 +3748,13 @@
 			"ret": {
 				"node": "TypeSet",
 				"position": [
-					88,
+					99,
 					38
 				],
 				"subtype": {
 					"node": "TypeName",
 					"position": [
-						88,
+						99,
 						39
 					],
 					"name": "A"
@@ -3405,20 +3763,20 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					88,
+					99,
 					45
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							89,
+							100,
 							5
 						],
 						"expr": {
 							"node": "ExprComprehension",
 							"position": [
-								89,
+								100,
 								12
 							],
 							"kind": "set",
@@ -3426,7 +3784,7 @@
 								{
 									"node": "AtomId",
 									"position": [
-										89,
+										100,
 										13
 									],
 									"id": "x"
@@ -3436,14 +3794,14 @@
 								{
 									"node": "ComprehensionGenerator",
 									"position": [
-										89,
+										100,
 										15
 									],
 									"vars": [
 										{
 											"node": "AtomId",
 											"position": [
-												89,
+												100,
 												19
 											],
 											"id": "x"
@@ -3453,7 +3811,7 @@
 										{
 											"node": "AtomId",
 											"position": [
-												89,
+												100,
 												24
 											],
 											"id": "a"
@@ -3464,19 +3822,19 @@
 								{
 									"node": "ComprehensionFilter",
 									"position": [
-										89,
+										100,
 										26
 									],
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											89,
+											100,
 											29
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												89,
+												100,
 												29
 											],
 											"id": "f"
@@ -3485,14 +3843,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													89,
+													100,
 													31
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														89,
+														100,
 														31
 													],
 													"id": "x"
@@ -3510,7 +3868,7 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				91,
+				102,
 				1
 			],
 			"id": "Set_map",
@@ -3522,19 +3880,19 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						91,
+						102,
 						19
 					],
 					"type": {
 						"node": "TypeSet",
 						"position": [
-							91,
+							102,
 							19
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								91,
+								102,
 								20
 							],
 							"name": "A"
@@ -3546,20 +3904,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						91,
+						102,
 						26
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							91,
+							102,
 							26
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									91,
+									102,
 									26
 								],
 								"name": "A"
@@ -3568,7 +3926,7 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								91,
+								102,
 								29
 							],
 							"name": "B"
@@ -3581,13 +3939,13 @@
 			"ret": {
 				"node": "TypeSet",
 				"position": [
-					91,
+					102,
 					34
 				],
 				"subtype": {
 					"node": "TypeName",
 					"position": [
-						91,
+						102,
 						35
 					],
 					"name": "B"
@@ -3596,20 +3954,20 @@
 			"block": {
 				"node": "Block",
 				"position": [
-					91,
+					102,
 					41
 				],
 				"stmts": [
 					{
 						"node": "StmtReturn",
 						"position": [
-							92,
+							103,
 							5
 						],
 						"expr": {
 							"node": "ExprComprehension",
 							"position": [
-								92,
+								103,
 								12
 							],
 							"kind": "set",
@@ -3617,13 +3975,13 @@
 								{
 									"node": "ExprCall",
 									"position": [
-										92,
+										103,
 										13
 									],
 									"expr": {
 										"node": "AtomId",
 										"position": [
-											92,
+											103,
 											13
 										],
 										"id": "f"
@@ -3632,14 +3990,14 @@
 										{
 											"node": "CallArg",
 											"position": [
-												92,
+												103,
 												15
 											],
 											"name": null,
 											"expr": {
 												"node": "AtomId",
 												"position": [
-													92,
+													103,
 													15
 												],
 												"id": "x"
@@ -3652,14 +4010,14 @@
 								{
 									"node": "ComprehensionGenerator",
 									"position": [
-										92,
+										103,
 										18
 									],
 									"vars": [
 										{
 											"node": "AtomId",
 											"position": [
-												92,
+												103,
 												22
 											],
 											"id": "x"
@@ -3669,7 +4027,7 @@
 										{
 											"node": "AtomId",
 											"position": [
-												92,
+												103,
 												27
 											],
 											"id": "a"
@@ -3686,10 +4044,10 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				94,
+				105,
 				1
 			],
-			"id": "Set_reduce",
+			"id": "Set_fold",
 			"typevars": [
 				"A",
 				"B"
@@ -3698,20 +4056,20 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						94,
-						22
+						105,
+						20
 					],
 					"type": {
 						"node": "TypeSet",
 						"position": [
-							94,
-							22
+							105,
+							20
 						],
 						"subtype": {
 							"node": "TypeName",
 							"position": [
-								94,
-								23
+								105,
+								21
 							],
 							"name": "A"
 						}
@@ -3722,29 +4080,29 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						94,
-						29
+						105,
+						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							94,
-							32
+							105,
+							30
 						],
 						"args": [
 							{
 								"node": "TypeName",
 								"position": [
-									94,
-									29
+									105,
+									27
 								],
 								"name": "A"
 							},
 							{
 								"node": "TypeName",
 								"position": [
-									94,
-									32
+									105,
+									30
 								],
 								"name": "B"
 							}
@@ -3752,8 +4110,8 @@
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								94,
-								35
+								105,
+								33
 							],
 							"name": "B"
 						}
@@ -3764,14 +4122,14 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						94,
-						40
+						105,
+						38
 					],
 					"type": {
 						"node": "TypeName",
 						"position": [
-							94,
-							40
+							105,
+							38
 						],
 						"name": "B"
 					},
@@ -3782,29 +4140,29 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					94,
-					45
+					105,
+					43
 				],
 				"name": "B"
 			},
 			"block": {
 				"node": "Block",
 				"position": [
-					94,
-					50
+					105,
+					48
 				],
 				"stmts": [
 					{
 						"node": "StmtFor",
 						"position": [
-							95,
+							106,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									95,
+									106,
 									9
 								],
 								"id": "x"
@@ -3814,7 +4172,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									95,
+									106,
 									14
 								],
 								"id": "a"
@@ -3824,21 +4182,21 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								95,
+								106,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtAssg",
 									"position": [
-										96,
+										107,
 										9
 									],
 									"lvalues": [
 										{
 											"node": "AtomId",
 											"position": [
-												96,
+												107,
 												9
 											],
 											"id": "r"
@@ -3847,13 +4205,13 @@
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											96,
+											107,
 											13
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												96,
+												107,
 												13
 											],
 											"id": "f"
@@ -3862,14 +4220,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													96,
+													107,
 													15
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														96,
+														107,
 														15
 													],
 													"id": "x"
@@ -3878,14 +4236,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													96,
+													107,
 													18
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														96,
+														107,
 														18
 													],
 													"id": "r"
@@ -3900,13 +4258,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							97,
+							108,
 							5
 						],
 						"expr": {
 							"node": "AtomId",
 							"position": [
-								97,
+								108,
 								12
 							],
 							"id": "r"
@@ -3918,42 +4276,33 @@
 		{
 			"node": "StmtFunc",
 			"position": [
-				100,
+				110,
 				1
 			],
-			"id": "Dict_all",
+			"id": "Set_reduce",
 			"typevars": [
-				"A",
-				"B"
+				"A"
 			],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
-						100,
+						110,
 						20
 					],
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeSet",
 						"position": [
-							100,
+							110,
 							20
 						],
-						"key_type": {
+						"subtype": {
 							"node": "TypeName",
 							"position": [
-								100,
+								110,
 								21
 							],
 							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								100,
-								23
-							],
-							"name": "B"
 						}
 					},
 					"name": "a",
@@ -3962,49 +4311,40 @@
 				{
 					"node": "FuncArg",
 					"position": [
-						100,
-						29
+						110,
+						27
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
-							100,
-							29
+							110,
+							30
 						],
 						"args": [
 							{
-								"node": "TypeTuple",
+								"node": "TypeName",
 								"position": [
-									100,
-									29
+									110,
+									27
 								],
-								"elements": [
-									{
-										"node": "TypeName",
-										"position": [
-											100,
-											29
-										],
-										"name": "A"
-									},
-									{
-										"node": "TypeName",
-										"position": [
-											100,
-											31
-										],
-										"name": "B"
-									}
-								]
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									110,
+									30
+								],
+								"name": "A"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
-								100,
-								34
+								110,
+								33
 							],
-							"name": "Bool"
+							"name": "A"
 						}
 					},
 					"name": "f",
@@ -4014,29 +4354,86 @@
 			"ret": {
 				"node": "TypeName",
 				"position": [
-					100,
-					42
+					110,
+					38
 				],
-				"name": "Bool"
+				"name": "A"
 			},
 			"block": {
 				"node": "Block",
 				"position": [
-					100,
-					50
+					110,
+					43
 				],
 				"stmts": [
 					{
+						"node": "StmtAssg",
+						"position": [
+							111,
+							5
+						],
+						"lvalues": [
+							{
+								"node": "AtomId",
+								"position": [
+									111,
+									5
+								],
+								"id": "r"
+							}
+						],
+						"expr": {
+							"node": "AtomDefault",
+							"position": [
+								111,
+								9
+							],
+							"type": {
+								"node": "TypeName",
+								"position": [
+									111,
+									17
+								],
+								"name": "A"
+							}
+						}
+					},
+					{
+						"node": "StmtAssg",
+						"position": [
+							112,
+							5
+						],
+						"lvalues": [
+							{
+								"node": "AtomId",
+								"position": [
+									112,
+									5
+								],
+								"id": "b"
+							}
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								112,
+								9
+							],
+							"bool": true
+						}
+					},
+					{
 						"node": "StmtFor",
 						"position": [
-							101,
+							113,
 							5
 						],
 						"vars": [
 							{
 								"node": "AtomId",
 								"position": [
-									101,
+									113,
 									9
 								],
 								"id": "x"
@@ -4046,7 +4443,7 @@
 							{
 								"node": "AtomId",
 								"position": [
-									101,
+									113,
 									14
 								],
 								"id": "a"
@@ -4056,314 +4453,157 @@
 						"block": {
 							"node": "Block",
 							"position": [
-								101,
+								113,
 								18
 							],
 							"stmts": [
 								{
 									"node": "StmtIf",
 									"position": [
-										102,
+										114,
 										9
 									],
 									"exprs": [
 										{
-											"node": "ExprUnaryOp",
+											"node": "AtomId",
 											"position": [
-												102,
+												114,
 												12
 											],
-											"expr": {
-												"node": "ExprCall",
-												"position": [
-													102,
-													16
-												],
-												"expr": {
-													"node": "AtomId",
-													"position": [
-														102,
-														16
-													],
-													"id": "f"
-												},
-												"args": [
-													{
-														"node": "CallArg",
-														"position": [
-															102,
-															18
-														],
-														"name": null,
-														"expr": {
-															"node": "AtomId",
-															"position": [
-																102,
-																18
-															],
-															"id": "x"
-														}
-													}
-												]
-											},
-											"op": "not"
+											"id": "b"
 										}
 									],
 									"blocks": [
 										{
 											"node": "Block",
 											"position": [
-												102,
-												23
+												114,
+												16
 											],
 											"stmts": [
 												{
-													"node": "StmtReturn",
+													"node": "StmtAssg",
 													"position": [
-														103,
+														115,
 														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																115,
+																13
+															],
+															"id": "r"
+														}
+													],
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															115,
+															17
+														],
+														"id": "x"
+													}
+												},
+												{
+													"node": "StmtAssg",
+													"position": [
+														116,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																116,
+																13
+															],
+															"id": "b"
+														}
 													],
 													"expr": {
 														"node": "AtomBool",
 														"position": [
-															103,
-															20
+															116,
+															17
 														],
 														"bool": false
 													}
 												}
 											]
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"node": "StmtReturn",
-						"position": [
-							104,
-							5
-						],
-						"expr": {
-							"node": "AtomBool",
-							"position": [
-								104,
-								12
-							],
-							"bool": true
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				106,
-				1
-			],
-			"id": "Dict_any",
-			"typevars": [
-				"A",
-				"B"
-			],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						106,
-						20
-					],
-					"type": {
-						"node": "TypeDict",
-						"position": [
-							106,
-							20
-						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								106,
-								21
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								106,
-								23
-							],
-							"name": "B"
-						}
-					},
-					"name": "a",
-					"default": null
-				},
-				{
-					"node": "FuncArg",
-					"position": [
-						106,
-						29
-					],
-					"type": {
-						"node": "TypeFunc",
-						"position": [
-							106,
-							29
-						],
-						"args": [
-							{
-								"node": "TypeTuple",
-								"position": [
-									106,
-									29
-								],
-								"elements": [
-									{
-										"node": "TypeName",
-										"position": [
-											106,
-											29
-										],
-										"name": "A"
-									},
-									{
-										"node": "TypeName",
-										"position": [
-											106,
-											31
-										],
-										"name": "B"
-									}
-								]
-							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								106,
-								34
-							],
-							"name": "Bool"
-						}
-					},
-					"name": "f",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeName",
-				"position": [
-					106,
-					42
-				],
-				"name": "Bool"
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					106,
-					50
-				],
-				"stmts": [
-					{
-						"node": "StmtFor",
-						"position": [
-							107,
-							5
-						],
-						"vars": [
-							{
-								"node": "AtomId",
-								"position": [
-									107,
-									9
-								],
-								"id": "x"
-							}
-						],
-						"iterables": [
-							{
-								"node": "AtomId",
-								"position": [
-									107,
-									14
-								],
-								"id": "a"
-							}
-						],
-						"steps": [],
-						"block": {
-							"node": "Block",
-							"position": [
-								107,
-								18
-							],
-							"stmts": [
-								{
-									"node": "StmtIf",
-									"position": [
-										108,
-										9
-									],
-									"exprs": [
-										{
-											"node": "ExprCall",
-											"position": [
-												108,
-												12
-											],
-											"expr": {
-												"node": "AtomId",
-												"position": [
-													108,
-													12
-												],
-												"id": "f"
-											},
-											"args": [
-												{
-													"node": "CallArg",
-													"position": [
-														108,
-														14
-													],
-													"name": null,
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															108,
-															14
-														],
-														"id": "x"
-													}
-												}
-											]
-										}
-									],
-									"blocks": [
+										},
 										{
 											"node": "Block",
 											"position": [
-												108,
-												19
+												117,
+												16
 											],
 											"stmts": [
 												{
-													"node": "StmtReturn",
+													"node": "StmtAssg",
 													"position": [
-														109,
+														118,
 														13
 													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																118,
+																13
+															],
+															"id": "r"
+														}
+													],
 													"expr": {
-														"node": "AtomBool",
+														"node": "ExprCall",
 														"position": [
-															109,
-															20
+															118,
+															17
 														],
-														"bool": true
+														"expr": {
+															"node": "AtomId",
+															"position": [
+																118,
+																17
+															],
+															"id": "f"
+														},
+														"args": [
+															{
+																"node": "CallArg",
+																"position": [
+																	118,
+																	19
+																],
+																"name": null,
+																"expr": {
+																	"node": "AtomId",
+																	"position": [
+																		118,
+																		19
+																	],
+																	"id": "x"
+																}
+															},
+															{
+																"node": "CallArg",
+																"position": [
+																	118,
+																	22
+																],
+																"name": null,
+																"expr": {
+																	"node": "AtomId",
+																	"position": [
+																		118,
+																		22
+																	],
+																	"id": "r"
+																}
+															}
+														]
 													}
 												}
 											]
@@ -4376,614 +4616,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							110,
-							5
-						],
-						"expr": {
-							"node": "AtomBool",
-							"position": [
-								110,
-								12
-							],
-							"bool": false
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				112,
-				1
-			],
-			"id": "Dict_filter",
-			"typevars": [
-				"A",
-				"B"
-			],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						112,
-						23
-					],
-					"type": {
-						"node": "TypeDict",
-						"position": [
-							112,
-							23
-						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								112,
-								24
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								112,
-								26
-							],
-							"name": "B"
-						}
-					},
-					"name": "a",
-					"default": null
-				},
-				{
-					"node": "FuncArg",
-					"position": [
-						112,
-						32
-					],
-					"type": {
-						"node": "TypeFunc",
-						"position": [
-							112,
-							32
-						],
-						"args": [
-							{
-								"node": "TypeTuple",
-								"position": [
-									112,
-									32
-								],
-								"elements": [
-									{
-										"node": "TypeName",
-										"position": [
-											112,
-											32
-										],
-										"name": "A"
-									},
-									{
-										"node": "TypeName",
-										"position": [
-											112,
-											34
-										],
-										"name": "B"
-									}
-								]
-							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								112,
-								37
-							],
-							"name": "Bool"
-						}
-					},
-					"name": "f",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeDict",
-				"position": [
-					112,
-					45
-				],
-				"key_type": {
-					"node": "TypeName",
-					"position": [
-						112,
-						46
-					],
-					"name": "A"
-				},
-				"value_type": {
-					"node": "TypeName",
-					"position": [
-						112,
-						48
-					],
-					"name": "B"
-				}
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					112,
-					54
-				],
-				"stmts": [
-					{
-						"node": "StmtReturn",
-						"position": [
-							113,
-							5
-						],
-						"expr": {
-							"node": "ExprComprehension",
-							"position": [
-								113,
-								12
-							],
-							"kind": "dict",
-							"exprs": [
-								{
-									"node": "ExprAttr",
-									"position": [
-										113,
-										13
-									],
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											113,
-											13
-										],
-										"id": "x"
-									},
-									"attr": "a",
-									"safe": false
-								},
-								{
-									"node": "ExprAttr",
-									"position": [
-										113,
-										18
-									],
-									"expr": {
-										"node": "AtomId",
-										"position": [
-											113,
-											18
-										],
-										"id": "x"
-									},
-									"attr": "b",
-									"safe": false
-								}
-							],
-							"comprehensions": [
-								{
-									"node": "ComprehensionGenerator",
-									"position": [
-										113,
-										22
-									],
-									"vars": [
-										{
-											"node": "AtomId",
-											"position": [
-												113,
-												26
-											],
-											"id": "x"
-										}
-									],
-									"iterables": [
-										{
-											"node": "AtomId",
-											"position": [
-												113,
-												31
-											],
-											"id": "a"
-										}
-									],
-									"steps": []
-								},
-								{
-									"node": "ComprehensionFilter",
-									"position": [
-										113,
-										33
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											113,
-											36
-										],
-										"expr": {
-											"node": "AtomId",
-											"position": [
-												113,
-												36
-											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
-												"position": [
-													113,
-													38
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
-													"position": [
-														113,
-														38
-													],
-													"id": "x"
-												}
-											}
-										]
-									}
-								}
-							]
-						}
-					}
-				]
-			}
-		},
-		{
-			"node": "StmtFunc",
-			"position": [
-				115,
-				1
-			],
-			"id": "Dict_map",
-			"typevars": [
-				"A",
-				"B",
-				"C",
-				"D"
-			],
-			"args": [
-				{
-					"node": "FuncArg",
-					"position": [
-						115,
-						24
-					],
-					"type": {
-						"node": "TypeDict",
-						"position": [
-							115,
-							24
-						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								115,
-								25
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								115,
-								27
-							],
-							"name": "B"
-						}
-					},
-					"name": "a",
-					"default": null
-				},
-				{
-					"node": "FuncArg",
-					"position": [
-						115,
-						33
-					],
-					"type": {
-						"node": "TypeFunc",
-						"position": [
-							115,
-							33
-						],
-						"args": [
-							{
-								"node": "TypeTuple",
-								"position": [
-									115,
-									33
-								],
-								"elements": [
-									{
-										"node": "TypeName",
-										"position": [
-											115,
-											33
-										],
-										"name": "A"
-									},
-									{
-										"node": "TypeName",
-										"position": [
-											115,
-											35
-										],
-										"name": "B"
-									}
-								]
-							}
-						],
-						"ret": {
-							"node": "TypeTuple",
-							"position": [
-								115,
-								38
-							],
-							"elements": [
-								{
-									"node": "TypeName",
-									"position": [
-										115,
-										38
-									],
-									"name": "C"
-								},
-								{
-									"node": "TypeName",
-									"position": [
-										115,
-										40
-									],
-									"name": "D"
-								}
-							]
-						}
-					},
-					"name": "f",
-					"default": null
-				}
-			],
-			"ret": {
-				"node": "TypeDict",
-				"position": [
-					115,
-					45
-				],
-				"key_type": {
-					"node": "TypeName",
-					"position": [
-						115,
-						46
-					],
-					"name": "C"
-				},
-				"value_type": {
-					"node": "TypeName",
-					"position": [
-						115,
-						48
-					],
-					"name": "D"
-				}
-			},
-			"block": {
-				"node": "Block",
-				"position": [
-					115,
-					54
-				],
-				"stmts": [
-					{
-						"node": "StmtDecl",
-						"position": [
-							116,
-							5
-						],
-						"type": {
-							"node": "TypeDict",
-							"position": [
-								116,
-								5
-							],
-							"key_type": {
-								"node": "TypeName",
-								"position": [
-									116,
-									6
-								],
-								"name": "C"
-							},
-							"value_type": {
-								"node": "TypeName",
-								"position": [
-									116,
-									8
-								],
-								"name": "D"
-							}
-						},
-						"id": "r",
-						"expr": {
-							"node": "ExprCollection",
-							"position": [
-								116,
-								15
-							],
-							"kind": "dict",
-							"exprs": []
-						}
-					},
-					{
-						"node": "StmtFor",
-						"position": [
-							117,
-							5
-						],
-						"vars": [
-							{
-								"node": "AtomId",
-								"position": [
-									117,
-									9
-								],
-								"id": "x"
-							}
-						],
-						"iterables": [
-							{
-								"node": "AtomId",
-								"position": [
-									117,
-									14
-								],
-								"id": "a"
-							}
-						],
-						"steps": [],
-						"block": {
-							"node": "Block",
-							"position": [
-								117,
-								18
-							],
-							"stmts": [
-								{
-									"node": "StmtAssg",
-									"position": [
-										118,
-										9
-									],
-									"lvalues": [
-										{
-											"node": "AtomId",
-											"position": [
-												118,
-												9
-											],
-											"id": "y"
-										}
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											118,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
-											"position": [
-												118,
-												13
-											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
-												"position": [
-													118,
-													15
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
-													"position": [
-														118,
-														15
-													],
-													"id": "x"
-												}
-											}
-										]
-									}
-								},
-								{
-									"node": "StmtAssg",
-									"position": [
-										119,
-										9
-									],
-									"lvalues": [
-										{
-											"node": "ExprIndex",
-											"position": [
-												119,
-												9
-											],
-											"exprs": [
-												{
-													"node": "AtomId",
-													"position": [
-														119,
-														9
-													],
-													"id": "r"
-												},
-												{
-													"node": "ExprAttr",
-													"position": [
-														119,
-														11
-													],
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															119,
-															11
-														],
-														"id": "y"
-													},
-													"attr": "a",
-													"safe": false
-												}
-											],
-											"safe": false
-										}
-									],
-									"expr": {
-										"node": "ExprAttr",
-										"position": [
-											119,
-											18
-										],
-										"expr": {
-											"node": "AtomId",
-											"position": [
-												119,
-												18
-											],
-											"id": "y"
-										},
-										"attr": "b",
-										"safe": false
-									}
-								}
-							]
-						}
-					},
-					{
-						"node": "StmtReturn",
-						"position": [
-							120,
+							119,
 							5
 						],
 						"expr": {
 							"node": "AtomId",
 							"position": [
-								120,
+								119,
 								12
 							],
 							"id": "r"
@@ -4998,30 +4637,29 @@
 				122,
 				1
 			],
-			"id": "Dict_reduce",
+			"id": "Dict_all",
 			"typevars": [
 				"A",
-				"B",
-				"C"
+				"B"
 			],
 			"args": [
 				{
 					"node": "FuncArg",
 					"position": [
 						122,
-						25
+						20
 					],
 					"type": {
 						"node": "TypeDict",
 						"position": [
 							122,
-							25
+							20
 						],
 						"key_type": {
 							"node": "TypeName",
 							"position": [
 								122,
-								26
+								21
 							],
 							"name": "A"
 						},
@@ -5029,7 +4667,7 @@
 							"node": "TypeName",
 							"position": [
 								122,
-								28
+								23
 							],
 							"name": "B"
 						}
@@ -5041,27 +4679,27 @@
 					"node": "FuncArg",
 					"position": [
 						122,
-						34
+						29
 					],
 					"type": {
 						"node": "TypeFunc",
 						"position": [
 							122,
-							39
+							29
 						],
 						"args": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									122,
-									34
+									29
 								],
 								"elements": [
 									{
 										"node": "TypeName",
 										"position": [
 											122,
-											34
+											29
 										],
 										"name": "A"
 									},
@@ -5069,48 +4707,23 @@
 										"node": "TypeName",
 										"position": [
 											122,
-											36
+											31
 										],
 										"name": "B"
 									}
 								]
-							},
-							{
-								"node": "TypeName",
-								"position": [
-									122,
-									39
-								],
-								"name": "C"
 							}
 						],
 						"ret": {
 							"node": "TypeName",
 							"position": [
 								122,
-								42
+								34
 							],
-							"name": "C"
+							"name": "Bool"
 						}
 					},
 					"name": "f",
-					"default": null
-				},
-				{
-					"node": "FuncArg",
-					"position": [
-						122,
-						47
-					],
-					"type": {
-						"node": "TypeName",
-						"position": [
-							122,
-							47
-						],
-						"name": "C"
-					},
-					"name": "r",
 					"default": null
 				}
 			],
@@ -5118,15 +4731,15 @@
 				"node": "TypeName",
 				"position": [
 					122,
-					52
+					42
 				],
-				"name": "C"
+				"name": "Bool"
 			},
 			"block": {
 				"node": "Block",
 				"position": [
 					122,
-					57
+					50
 				],
 				"stmts": [
 					{
@@ -5164,31 +4777,831 @@
 							],
 							"stmts": [
 								{
-									"node": "StmtAssg",
+									"node": "StmtIf",
 									"position": [
 										124,
+										9
+									],
+									"exprs": [
+										{
+											"node": "ExprUnaryOp",
+											"position": [
+												124,
+												12
+											],
+											"expr": {
+												"node": "ExprCall",
+												"position": [
+													124,
+													16
+												],
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														124,
+														16
+													],
+													"id": "f"
+												},
+												"args": [
+													{
+														"node": "CallArg",
+														"position": [
+															124,
+															18
+														],
+														"name": null,
+														"expr": {
+															"node": "AtomId",
+															"position": [
+																124,
+																18
+															],
+															"id": "x"
+														}
+													}
+												]
+											},
+											"op": "not"
+										}
+									],
+									"blocks": [
+										{
+											"node": "Block",
+											"position": [
+												124,
+												23
+											],
+											"stmts": [
+												{
+													"node": "StmtReturn",
+													"position": [
+														125,
+														13
+													],
+													"expr": {
+														"node": "AtomBool",
+														"position": [
+															125,
+															20
+														],
+														"bool": false
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							126,
+							5
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								126,
+								12
+							],
+							"bool": true
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				128,
+				1
+			],
+			"id": "Dict_any",
+			"typevars": [
+				"A",
+				"B"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						128,
+						20
+					],
+					"type": {
+						"node": "TypeDict",
+						"position": [
+							128,
+							20
+						],
+						"key_type": {
+							"node": "TypeName",
+							"position": [
+								128,
+								21
+							],
+							"name": "A"
+						},
+						"value_type": {
+							"node": "TypeName",
+							"position": [
+								128,
+								23
+							],
+							"name": "B"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						128,
+						29
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							128,
+							29
+						],
+						"args": [
+							{
+								"node": "TypeTuple",
+								"position": [
+									128,
+									29
+								],
+								"elements": [
+									{
+										"node": "TypeName",
+										"position": [
+											128,
+											29
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											128,
+											31
+										],
+										"name": "B"
+									}
+								]
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								128,
+								34
+							],
+							"name": "Bool"
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					128,
+					42
+				],
+				"name": "Bool"
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					128,
+					50
+				],
+				"stmts": [
+					{
+						"node": "StmtFor",
+						"position": [
+							129,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									129,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									129,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								129,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtIf",
+									"position": [
+										130,
+										9
+									],
+									"exprs": [
+										{
+											"node": "ExprCall",
+											"position": [
+												130,
+												12
+											],
+											"expr": {
+												"node": "AtomId",
+												"position": [
+													130,
+													12
+												],
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
+													"position": [
+														130,
+														14
+													],
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															130,
+															14
+														],
+														"id": "x"
+													}
+												}
+											]
+										}
+									],
+									"blocks": [
+										{
+											"node": "Block",
+											"position": [
+												130,
+												19
+											],
+											"stmts": [
+												{
+													"node": "StmtReturn",
+													"position": [
+														131,
+														13
+													],
+													"expr": {
+														"node": "AtomBool",
+														"position": [
+															131,
+															20
+														],
+														"bool": true
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							132,
+							5
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								132,
+								12
+							],
+							"bool": false
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				134,
+				1
+			],
+			"id": "Dict_filter",
+			"typevars": [
+				"A",
+				"B"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						134,
+						23
+					],
+					"type": {
+						"node": "TypeDict",
+						"position": [
+							134,
+							23
+						],
+						"key_type": {
+							"node": "TypeName",
+							"position": [
+								134,
+								24
+							],
+							"name": "A"
+						},
+						"value_type": {
+							"node": "TypeName",
+							"position": [
+								134,
+								26
+							],
+							"name": "B"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						134,
+						32
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							134,
+							32
+						],
+						"args": [
+							{
+								"node": "TypeTuple",
+								"position": [
+									134,
+									32
+								],
+								"elements": [
+									{
+										"node": "TypeName",
+										"position": [
+											134,
+											32
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											134,
+											34
+										],
+										"name": "B"
+									}
+								]
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								134,
+								37
+							],
+							"name": "Bool"
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeDict",
+				"position": [
+					134,
+					45
+				],
+				"key_type": {
+					"node": "TypeName",
+					"position": [
+						134,
+						46
+					],
+					"name": "A"
+				},
+				"value_type": {
+					"node": "TypeName",
+					"position": [
+						134,
+						48
+					],
+					"name": "B"
+				}
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					134,
+					54
+				],
+				"stmts": [
+					{
+						"node": "StmtReturn",
+						"position": [
+							135,
+							5
+						],
+						"expr": {
+							"node": "ExprComprehension",
+							"position": [
+								135,
+								12
+							],
+							"kind": "dict",
+							"exprs": [
+								{
+									"node": "ExprAttr",
+									"position": [
+										135,
+										13
+									],
+									"expr": {
+										"node": "AtomId",
+										"position": [
+											135,
+											13
+										],
+										"id": "x"
+									},
+									"attr": "a",
+									"safe": false
+								},
+								{
+									"node": "ExprAttr",
+									"position": [
+										135,
+										18
+									],
+									"expr": {
+										"node": "AtomId",
+										"position": [
+											135,
+											18
+										],
+										"id": "x"
+									},
+									"attr": "b",
+									"safe": false
+								}
+							],
+							"comprehensions": [
+								{
+									"node": "ComprehensionGenerator",
+									"position": [
+										135,
+										22
+									],
+									"vars": [
+										{
+											"node": "AtomId",
+											"position": [
+												135,
+												26
+											],
+											"id": "x"
+										}
+									],
+									"iterables": [
+										{
+											"node": "AtomId",
+											"position": [
+												135,
+												31
+											],
+											"id": "a"
+										}
+									],
+									"steps": []
+								},
+								{
+									"node": "ComprehensionFilter",
+									"position": [
+										135,
+										33
+									],
+									"expr": {
+										"node": "ExprCall",
+										"position": [
+											135,
+											36
+										],
+										"expr": {
+											"node": "AtomId",
+											"position": [
+												135,
+												36
+											],
+											"id": "f"
+										},
+										"args": [
+											{
+												"node": "CallArg",
+												"position": [
+													135,
+													38
+												],
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														135,
+														38
+													],
+													"id": "x"
+												}
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				137,
+				1
+			],
+			"id": "Dict_map",
+			"typevars": [
+				"A",
+				"B",
+				"C",
+				"D"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						137,
+						24
+					],
+					"type": {
+						"node": "TypeDict",
+						"position": [
+							137,
+							24
+						],
+						"key_type": {
+							"node": "TypeName",
+							"position": [
+								137,
+								25
+							],
+							"name": "A"
+						},
+						"value_type": {
+							"node": "TypeName",
+							"position": [
+								137,
+								27
+							],
+							"name": "B"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						137,
+						33
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							137,
+							33
+						],
+						"args": [
+							{
+								"node": "TypeTuple",
+								"position": [
+									137,
+									33
+								],
+								"elements": [
+									{
+										"node": "TypeName",
+										"position": [
+											137,
+											33
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											137,
+											35
+										],
+										"name": "B"
+									}
+								]
+							}
+						],
+						"ret": {
+							"node": "TypeTuple",
+							"position": [
+								137,
+								38
+							],
+							"elements": [
+								{
+									"node": "TypeName",
+									"position": [
+										137,
+										38
+									],
+									"name": "C"
+								},
+								{
+									"node": "TypeName",
+									"position": [
+										137,
+										40
+									],
+									"name": "D"
+								}
+							]
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeDict",
+				"position": [
+					137,
+					45
+				],
+				"key_type": {
+					"node": "TypeName",
+					"position": [
+						137,
+						46
+					],
+					"name": "C"
+				},
+				"value_type": {
+					"node": "TypeName",
+					"position": [
+						137,
+						48
+					],
+					"name": "D"
+				}
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					137,
+					54
+				],
+				"stmts": [
+					{
+						"node": "StmtDecl",
+						"position": [
+							138,
+							5
+						],
+						"type": {
+							"node": "TypeDict",
+							"position": [
+								138,
+								5
+							],
+							"key_type": {
+								"node": "TypeName",
+								"position": [
+									138,
+									6
+								],
+								"name": "C"
+							},
+							"value_type": {
+								"node": "TypeName",
+								"position": [
+									138,
+									8
+								],
+								"name": "D"
+							}
+						},
+						"id": "r",
+						"expr": {
+							"node": "ExprCollection",
+							"position": [
+								138,
+								15
+							],
+							"kind": "dict",
+							"exprs": []
+						}
+					},
+					{
+						"node": "StmtFor",
+						"position": [
+							139,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									139,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									139,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								139,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtAssg",
+									"position": [
+										140,
 										9
 									],
 									"lvalues": [
 										{
 											"node": "AtomId",
 											"position": [
-												124,
+												140,
 												9
 											],
-											"id": "r"
+											"id": "y"
 										}
 									],
 									"expr": {
 										"node": "ExprCall",
 										"position": [
-											124,
+											140,
 											13
 										],
 										"expr": {
 											"node": "AtomId",
 											"position": [
-												124,
+												140,
 												13
 											],
 											"id": "f"
@@ -5197,14 +5610,317 @@
 											{
 												"node": "CallArg",
 												"position": [
-													124,
+													140,
 													15
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														124,
+														140,
+														15
+													],
+													"id": "x"
+												}
+											}
+										]
+									}
+								},
+								{
+									"node": "StmtAssg",
+									"position": [
+										141,
+										9
+									],
+									"lvalues": [
+										{
+											"node": "ExprIndex",
+											"position": [
+												141,
+												9
+											],
+											"exprs": [
+												{
+													"node": "AtomId",
+													"position": [
+														141,
+														9
+													],
+													"id": "r"
+												},
+												{
+													"node": "ExprAttr",
+													"position": [
+														141,
+														11
+													],
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															141,
+															11
+														],
+														"id": "y"
+													},
+													"attr": "a",
+													"safe": false
+												}
+											],
+											"safe": false
+										}
+									],
+									"expr": {
+										"node": "ExprAttr",
+										"position": [
+											141,
+											18
+										],
+										"expr": {
+											"node": "AtomId",
+											"position": [
+												141,
+												18
+											],
+											"id": "y"
+										},
+										"attr": "b",
+										"safe": false
+									}
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							142,
+							5
+						],
+						"expr": {
+							"node": "AtomId",
+							"position": [
+								142,
+								12
+							],
+							"id": "r"
+						}
+					}
+				]
+			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				144,
+				1
+			],
+			"id": "Dict_fold",
+			"typevars": [
+				"A",
+				"B",
+				"C"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						144,
+						23
+					],
+					"type": {
+						"node": "TypeDict",
+						"position": [
+							144,
+							23
+						],
+						"key_type": {
+							"node": "TypeName",
+							"position": [
+								144,
+								24
+							],
+							"name": "A"
+						},
+						"value_type": {
+							"node": "TypeName",
+							"position": [
+								144,
+								26
+							],
+							"name": "B"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						144,
+						32
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							144,
+							37
+						],
+						"args": [
+							{
+								"node": "TypeTuple",
+								"position": [
+									144,
+									32
+								],
+								"elements": [
+									{
+										"node": "TypeName",
+										"position": [
+											144,
+											32
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											144,
+											34
+										],
+										"name": "B"
+									}
+								]
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									144,
+									37
+								],
+								"name": "C"
+							}
+						],
+						"ret": {
+							"node": "TypeName",
+							"position": [
+								144,
+								40
+							],
+							"name": "C"
+						}
+					},
+					"name": "f",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						144,
+						45
+					],
+					"type": {
+						"node": "TypeName",
+						"position": [
+							144,
+							45
+						],
+						"name": "C"
+					},
+					"name": "r",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					144,
+					50
+				],
+				"name": "C"
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					144,
+					55
+				],
+				"stmts": [
+					{
+						"node": "StmtFor",
+						"position": [
+							145,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									145,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									145,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"steps": [],
+						"block": {
+							"node": "Block",
+							"position": [
+								145,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtAssg",
+									"position": [
+										146,
+										9
+									],
+									"lvalues": [
+										{
+											"node": "AtomId",
+											"position": [
+												146,
+												9
+											],
+											"id": "r"
+										}
+									],
+									"expr": {
+										"node": "ExprCall",
+										"position": [
+											146,
+											13
+										],
+										"expr": {
+											"node": "AtomId",
+											"position": [
+												146,
+												13
+											],
+											"id": "f"
+										},
+										"args": [
+											{
+												"node": "CallArg",
+												"position": [
+													146,
+													15
+												],
+												"name": null,
+												"expr": {
+													"node": "AtomId",
+													"position": [
+														146,
 														15
 													],
 													"id": "x"
@@ -5213,14 +5929,14 @@
 											{
 												"node": "CallArg",
 												"position": [
-													124,
+													146,
 													18
 												],
 												"name": null,
 												"expr": {
 													"node": "AtomId",
 													"position": [
-														124,
+														146,
 														18
 													],
 													"id": "r"
@@ -5235,13 +5951,13 @@
 					{
 						"node": "StmtReturn",
 						"position": [
-							125,
+							147,
 							5
 						],
 						"expr": {
 							"node": "AtomId",
 							"position": [
-								125,
+								147,
 								12
 							],
 							"id": "r"

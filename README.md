@@ -63,15 +63,15 @@ print fib(10)
 Generic functions, lambda expressions:
 
 ```
-func reduce<A,B>([A] a, A->B->B f, B r) B def
+func fold<A,B>([A] a, A->B->B f, B r) B def
     for x in a do
         r = f(x, r)
     return r
 
-print reduce([2, 3, 4], _*_, 1)  -- 24
+print fold([2, 3, 4], _*_, 1)  -- 24
 
 -- There are built-in methods like this:
-print [0..10 step 2].reduce(_+_, 0)  -- 30
+print [0..10 step 2].reduce(_+_)  -- 30
 ```
 
 Classes, nullable types:

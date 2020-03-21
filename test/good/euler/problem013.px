@@ -1,2 +1,2 @@
 
-print [readRat() for i in 1..100].reduce(_+_, 0^1).toString()[:10]
+print [readRat() for i in 1..100].reduce(_+_).toString()[:10]

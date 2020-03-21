@@ -1,2 +1,2 @@
 
-print (2^1000).toString().reduce(_.toInt()+_, 0/1)
+print (2^1000).toString().fold(_.toInt()+_, 0)
