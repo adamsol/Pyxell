@@ -1,0 +1,9 @@
+
+func f<A>(A a: default(Int)) Float def
+    b = default(A)
+    b += a
+    return b
+
+print f()
+print f(4.2)
+print f(1/8)

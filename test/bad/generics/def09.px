@@ -1,0 +1,5 @@
+
+func f<A>(A x, A y: default(A)) def
+    print x
+
+print f(1)

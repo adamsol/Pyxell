@@ -96,8 +96,8 @@ class Dict(Container):
 
 class Nullable(Value):
 
-    def __init__(self, value=None):
-        super().__init__(t.Nullable(value.type if value else t.Unknown))
+    def __init__(self, value, subtype=None):
+        super().__init__(t.Nullable(subtype or (value.type if value else t.Unknown)))
         self.value = value
 
     def __str__(self):
@@ -105,7 +105,7 @@ class Nullable(Value):
         return f'{self.type}({arg})'
 
 
-null = Nullable()
+null = Nullable(None)
 
 
 class Tuple(Container):
@@ -225,3 +225,13 @@ class Condition(Value):
 
     def __str__(self):
         return f'({self.value1} ? {self.value2} : {self.value3})'
+
+
+class Lambda(Value):
+
+    def __init__(self, type, ret_value):
+        super().__init__(type)
+        self.ret_value = ret_value
+
+    def __str__(self):
+        return f'[]({self.type.args_str()}) {{ return {self.ret_value}; }}'

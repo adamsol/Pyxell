@@ -1,0 +1,14 @@
+
+print default(Int)
+
+b = default(Rat)
+b += 1/2
+print b
+
+print default(Float)
+
+print default(Bool)
+
+print default(Char).code
+
+print default(String).length

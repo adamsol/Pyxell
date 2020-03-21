@@ -111,6 +111,7 @@ atom
   | STRING # AtomString
   | 'null' # AtomNull
   | 'super' # AtomSuper
+  | 'default' '(' typ ')' # AtomDefault
   | ID # AtomId
   ;
 

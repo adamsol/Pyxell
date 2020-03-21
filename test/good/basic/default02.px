@@ -1,0 +1,14 @@
+
+print default([[Bool]])
+
+print default({Char})
+
+print default({String: Rat})
+
+print default(String?)
+
+x = default(Int*(Rat*Float))
+print "{x.a}, {x.b}"
+
+f = default(Char->(Int->[Int]->Bool))('x')
+print not f(1, [])

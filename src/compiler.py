@@ -190,6 +190,34 @@ class PyxellCompiler:
 
         return result
 
+    def default(self, node, type):
+        if type == t.Int:
+            return v.Int(0)
+        elif type == t.Rat:
+            return v.Rat(0)
+        elif type == t.Float:
+            return v.Float(0)
+        elif type == t.Bool:
+            return v.false
+        elif type == t.Char:
+            return v.Char('\0')
+        elif type == t.String:
+            return v.String('')
+        elif type.isArray():
+            return v.Array([], type.subtype)
+        elif type.isSet():
+            return v.Set([], type.subtype)
+        elif type.isDict():
+            return v.Dict([], [], type.key_type, type.value_type)
+        elif type.isNullable():
+            return v.Nullable(None, type.subtype)
+        elif type.isTuple():
+            return v.Tuple([self.default(node, t) for t in type.elements])
+        elif type.isFunc():
+            return v.Lambda(type, self.default(node, type.ret))
+
+        self.throw(node, err.NotDefaultable(type))
+
     def index(self, node, collection, index, lvalue=False):
         if collection.type.isSequence() or collection.type.isDict():
             if lvalue and collection.type == t.String:
@@ -1381,8 +1409,8 @@ class PyxellCompiler:
         if not type.isSequence():
             self.throw(node, err.NotIndexable(type))
 
-        a = v.Nullable(self.cast(slice[0], self.compile(slice[0]), t.Int)) if slice[0] else v.Nullable()
-        b = v.Nullable(self.cast(slice[1], self.compile(slice[1]), t.Int)) if slice[1] else v.Nullable()
+        a = v.Nullable(self.cast(slice[0], self.compile(slice[0]), t.Int)) if slice[0] else v.null
+        b = v.Nullable(self.cast(slice[1], self.compile(slice[1]), t.Int)) if slice[1] else v.null
         step = self.cast(slice[2], self.compile(slice[2]), t.Int) if slice[2] else v.Int(1)
 
         return v.Call('slice', collection, a, b, step, type=type)
@@ -1758,6 +1786,9 @@ class PyxellCompiler:
         if func is None:
             self.throw(node, err.IllegalSuper())
         return func
+
+    def compileAtomDefault(self, node):
+        return self.default(node, self.resolve_type(self.compile(node['type'])))
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])
