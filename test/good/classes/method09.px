@@ -1,0 +1,8 @@
+
+class A def
+    func f() Int def
+        return self.x * 2
+
+    Int x: 5
+
+print A().f()

@@ -1198,9 +1198,8 @@ class PyxellCompiler:
         self.output(c.Struct(cls.name + (f': {base.initializer.name}' if base else ''), fields), toplevel=True)
 
         for member in node['members']:
-            name = member['id']
-
             if member['node'] == 'ClassField':
+                name = member['id']
                 if name in members:
                     self.throw(member, err.RepeatedMember(name))
                 if name == 'toString':
@@ -1210,7 +1209,9 @@ class PyxellCompiler:
                 fields.append(c.Value(field.type, field.name))
                 members[name] = field
 
-            else:
+        for member in node['members']:
+            if member['node'] != 'ClassField':
+                name = member['id']
                 if name in members and name not in base_members:
                     self.throw(member, err.RepeatedMember(name))
 
