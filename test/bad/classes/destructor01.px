@@ -1,0 +1,4 @@
+
+class A def
+    destructor(Int x) def
+        skip

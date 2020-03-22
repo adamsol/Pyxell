@@ -114,6 +114,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#ClassDestructor.
+    def visitClassDestructor(self, ctx:PyxellParser.ClassDestructorContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#block.
     def visitBlock(self, ctx:PyxellParser.BlockContext):
         return self.visitChildren(ctx)

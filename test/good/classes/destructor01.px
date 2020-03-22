@@ -1,0 +1,16 @@
+
+class A def
+    Int x
+
+    destructor() def
+        print "destructor {self.x}"
+
+a = A(0)
+
+if true do
+    A(1)
+else do
+    A(2)
+
+for x in 3..4 do
+    A(x)

@@ -185,6 +185,14 @@ class PyxellASTVisitor(PyxellVisitor):
             'block': self.visit(ctx.block()),
         }
 
+    def visitClassDestructor(self, ctx):
+        return {
+            **_node(ctx, 'ClassDestructor'),
+            'id': '<destructor>',
+            'args': [],
+            'block': self.visit(ctx.block()),
+        }
+
 
     ### Expressions ###
 

@@ -1,0 +1,16 @@
+
+class A def
+    destructor() def
+        print 'A'
+
+
+class B(A) def
+    Int x
+
+
+class C(B) def
+    destructor() def
+        print 'C'
+
+
+[C()] * 5

@@ -1,0 +1,11 @@
+
+class A def
+    Float x
+    A? a1: null
+    A? a2: null
+
+    destructor() def
+        print self.x
+
+
+A(1, A(2, A(3)), A(1.5))

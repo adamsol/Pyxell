@@ -1,0 +1,18 @@
+
+class A def
+    Int x
+
+    destructor() def
+        print "A {self.x}"
+
+
+class B(A) def
+    Float y
+
+    destructor() def
+        print "B {self.x} {self.y}"
+
+
+A a
+a = A(0)
+a = B(1, 2)

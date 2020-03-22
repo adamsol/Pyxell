@@ -1,0 +1,17 @@
+
+class A def
+    Bool x
+
+    destructor() def
+        print self.x
+
+
+func f(A a) A def
+    print 'f'
+    return A(true)
+
+
+A a
+if true do
+    a = f(A(false))
+print

@@ -1249,7 +1249,7 @@ class PyxellCompiler:
 
                 if member['block']:
                     with self.local():
-                        self.env['#super'] = base_methods.get(name)
+                        self.env['#super'] = base_methods.get(name) if member['node'] != 'ClassDestructor' else None
                         methods[name] = func = self.compileStmtFunc(member, class_type=type)
 
                     if member['node'] == 'ClassMethod':
@@ -1267,8 +1267,17 @@ class PyxellCompiler:
                         with self.block(block):
                             self.output(f'return reinterpret_cast<void*>({func})')
 
+                    elif member['node'] == 'ClassDestructor':
+                        block = c.Block()
+                        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('virtual', f'~{cls.name}'), []), block))
+                        with self.block(block):
+                            # To call the destructor function expecting shared_ptr as the argument,
+                            # we create a shared_ptr that points to, but doesn't own, `this`.
+                            # https://stackoverflow.com/a/29709885/
+                            self.output(v.Call(methods['<destructor>'], v.Call(type, v.Call(type), 'this')))
+
         block = c.Block()
-        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))
+        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))  # constructor
         with self.block(block):
             for member in node['members']:
                 name = member['id']
