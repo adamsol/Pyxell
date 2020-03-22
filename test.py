@@ -190,15 +190,18 @@ if args.fast:
     with open(aggregate_cpp_filename, 'w') as file:
         file.write('\n'.join(aggregate_cpp_code))
 
-    run_cpp_compiler(args.cpp_compiler, aggregate_cpp_filename, aggregate_exe_filename, args.opt_level)
+    try:
+        run_cpp_compiler(args.cpp_compiler, aggregate_cpp_filename, aggregate_exe_filename, args.opt_level, disable_warnings=True)
+    except subprocess.CalledProcessError as e:
+        print(f"{R}{e.output.decode()}{E}")
+    else:
+        with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
+            for path in tests_to_compile:
+                executor.submit(test, path, running_aggregate_tests=True)
 
-    with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
-        for path in tests_to_compile:
-            executor.submit(test, path, running_aggregate_tests=True)
-
-    if not args.verbose:
-        os.remove(aggregate_cpp_filename)
-        os.remove(aggregate_exe_filename)
+        if not args.verbose:
+            os.remove(aggregate_cpp_filename)
+            os.remove(aggregate_exe_filename)
 
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"

@@ -45,8 +45,10 @@ def precompile_base_header(cpp_compiler, opt_level):
     subprocess.check_output(command, stderr=subprocess.STDOUT)
 
 
-def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose=False):
+def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose=False, disable_warnings=False):
     command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', f'-O{opt_level}', '-lstdc++']
+    if disable_warnings:
+        command.append('-w')
     if platform.system() != 'Windows':
         command.append('-lm')
 
