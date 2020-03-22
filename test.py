@@ -30,7 +30,7 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='', help="file path pattern (relative to test folder)")
 parser.add_argument('-c', '--cpp-compiler', default='clang', help="C++ compiler command (default: clang)")
-parser.add_argument('-f', '--fast', action='store_true', help="put all tests into one C++ file for faster compilation")
+parser.add_argument('-s', '--separate', action='store_true', help="compile each test individually (instead of putting all the code into one C++ file)")
 parser.add_argument('-O', '--opt-level', default='0', help="compiler optimization level (default: 0)")
 parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16, help="number of threads to use")
 parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help="display all tests and don't remove generated files")
@@ -85,7 +85,7 @@ def test(path, running_aggregate_tests=False):
             if running_aggregate_tests:
                 exe_filename = f'./{aggregate_exe_filename}'
             else:
-                exe_filename = compile(path, args.cpp_compiler if not args.fast else '', args.opt_level)
+                exe_filename = compile(path, args.cpp_compiler if args.separate else '', args.opt_level)
             error = False
         except PyxellError as e:
             error_message = str(e)
@@ -106,7 +106,7 @@ def test(path, running_aggregate_tests=False):
             if expected_error:
                 output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
 
-            elif args.fast and not running_aggregate_tests:
+            elif not args.separate and not running_aggregate_tests:
                 aggregate_cpp_code.extend([
                     f'namespace test{index} {{',
                     re.sub('^', '  ', Path(path.replace('.px', '.cpp')).read_text(), flags=re.MULTILINE),
@@ -176,7 +176,7 @@ with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for path in tests:
         executor.submit(test, path)
 
-if args.fast:
+if not args.separate:
     if args.verbose:
         print(f"Compiling {aggregate_cpp_filename}.")
 

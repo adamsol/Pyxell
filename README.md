@@ -178,16 +178,19 @@ Tests
 -----
 
 ```
-python test.py --verbose --fast
+python test.py [-v]
 ```
 
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
-The script is multi-threaded and uses Clang as the default C++ compiler (contrary to standard compilation, where GCC is the default).
+The script uses Clang as the default C++ compiler (contrary to standard compilation, where GCC is the default).
+All C++ code is merged so that only one C++ file is compiled,
+which is faster than compiling hundreds of files individually, even using multiple threads.
 Total execution time should be around 30 seconds.
 
-If, however, the tests fail with an error like this: `too many sections` / `file too big` (seen with GCC 7.2 on Windows),
-then you might need to drop the `--fast` option, which will increase the execution time significantly.
+If, however, the script fails with an error like this: `too many sections` / `file too big`
+(seen with GCC 7.2 on Windows), or there is another compilation error that is hard to decipher,
+then you might need to add the `-s` option so that each test is compiled separately.
 
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
 
