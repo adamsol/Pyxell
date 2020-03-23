@@ -142,13 +142,12 @@ Usage
 -----
 
 ```
-python pyxell.py [-r] program.px
+python pyxell.py program.px
 ```
 
-If the program is correct, `program.cpp` file and `program.exe` executable will be created in the same folder.
-If not, errors will be displayed, pointing to the erroneous code location.
-
-If `-r` option is given, the compiled program will be run immediately after compilation.
+If the program is correct, `program.cpp` file and `program.exe` executable will be created in the same folder,
+and it will be automatically executed (unless you add `-n` option).
+Otherwise, errors will be displayed, pointing to the erroneous code location.
 
 By default, `gcc` command is used to compile the code.
 You can pick a different command using `-c` option.

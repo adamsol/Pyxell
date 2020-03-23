@@ -108,8 +108,8 @@ def main():
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
     parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
     parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
+    parser.add_argument('-n', '--dont-run', action='store_true', help="don't run the program after compilation")
     parser.add_argument('-O', '--opt-level', default='2', help="compiler optimization level (default: 2)")
-    parser.add_argument('-r', '--run', action='store_true', help="run the program after compilation")
     parser.add_argument('-t', '--time', action='store_true', help="measure time of program compilation and execution")
     parser.add_argument('-v', '--verbose', action='store_true', help="output diagnostic information")
     parser.add_argument('-V', '--version', action='store_true', help="print version number and exit")
@@ -135,7 +135,7 @@ def main():
         print(str(e))
         sys.exit(1)
 
-    if exe_filename and args.run:
+    if exe_filename and not args.dont_run:
         if args.verbose:
             print(f"executing {exe_filename}")
 
@@ -149,5 +149,5 @@ def main():
         print(f"transpilation: {transpilation_time:.3f}s")
         if exe_filename:
             print(f"compilation: {compilation_time:.3f}s")
-            if args.run:
+            if not args.dont_run:
                 print(f"execution: {execution_time:.3f}s")
