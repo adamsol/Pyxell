@@ -1,0 +1,9 @@
+
+func* counter(Int n) Int def
+    for i in 0... do
+        if i >= n do
+            return
+        yield i
+
+for x in counter(3) do
+    print x

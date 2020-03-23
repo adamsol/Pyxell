@@ -154,6 +154,8 @@ class PyxellCompiler:
             return t.Set(self.resolve_type(type.subtype))
         if type.isDict():
             return t.Dict(self.resolve_type(type.key_type), self.resolve_type(type.value_type))
+        if type.isGenerator():
+            return t.Generator(self.resolve_type(type.subtype))
         if type.isNullable():
             return t.Nullable(self.resolve_type(type.subtype))
         if type.isTuple():
@@ -444,8 +446,8 @@ class PyxellCompiler:
         self._var_index += 1
         return var
 
-    def tmp(self, value):
-        if isinstance(value, v.Variable) or isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
+    def tmp(self, value, force_var=False):
+        if isinstance(value, v.Variable) or not force_var and isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
             return value
         tmp = self.var(value.type)
         self.store(tmp, value, decl='auto&&')
@@ -457,7 +459,7 @@ class PyxellCompiler:
         return tmp
 
     def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
-        if type == t.Void:
+        if not type.hasValue():
             self.throw(node, err.InvalidDeclaration(type))
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
@@ -863,7 +865,7 @@ class PyxellCompiler:
 
                     self.compile(body)
 
-                    if func_type.ret != t.Void and '#return' not in self.initialized:
+                    if '#return' not in self.initialized and func_type.ret.hasValue():
                         self.throw(body, err.MissingReturn())
 
         return func
@@ -1034,9 +1036,8 @@ class PyxellCompiler:
         iterables = node['iterables']
 
         types = []
-        indices = []
-        iterators = []
         conditions = []
+        updates = []
         getters = []
 
         def prepare(iterable, step):
@@ -1055,43 +1056,43 @@ class PyxellCompiler:
                 self.cast(node, step, index.type)
 
                 if len(values) == 1:
-                    cond = lambda x: v.true  # infinite range
+                    cond = lambda: v.true  # infinite range
                 else:
                     end = self.freeze(values[1])
                     eq = '=' if iterable['inclusive'] else ''
                     neg = self.tmp(v.BinaryOperation(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
-                    cond = lambda x: f'{neg} ? {x} >{eq} {end} : {x} <{eq} {end}'
+                    cond = lambda: f'{neg} ? {index} >{eq} {end} : {index} <{eq} {end}'
 
-                getter = lambda x: v.Cast(x, type)
+                update = lambda: f'{index} += {step}'
+                getter = lambda: v.Cast(index, type)
 
             else:
                 value = self.tmp(self.compile(iterable))
                 type = value.type
-                if not type.isCollection():
+                if not type.isIterable():
                     self.throw(node, err.NotIterable(type))
 
                 types.append(type.subtype)
-                index = self.var(t.Int)
-                self.store(index, v.Int(0), 'auto')
                 iterator = self.var(None)
                 start = self.tmp(v.Call(v.Attribute(value, 'begin')))
+                end = self.tmp(v.Call(v.Attribute(value, 'end')))
 
                 if type.isSequence():
-                    # The following doesn't work in GCC with non-random access iterators (program crashes or loops forever).
-                    end = self.tmp(v.Call(v.Attribute(value, 'end')))
                     self.output(f'if ({step} < 0 && {start} != {end}) {start} = std::prev({end})')
+                    index = self.tmp(v.Int(0), force_var=True)
+                    length = self.tmp(v.Call(v.Attribute(value, 'size')))
+                    cond = lambda: f'{index} < {length}'
+                    update = lambda: f'{index} += abs({step}), {iterator} += {step}'
                 else:
-                    # But then we don't care about the order anyway.
-                    self.store(step, v.Call('abs', step))
+                    self.store(step, f'abs({step})')
+                    cond = lambda: f'{iterator} != {end}'
+                    update = lambda: f'safe_advance({iterator}, {end}, {step})'
 
-                length = self.tmp(v.Call(v.Attribute(value, 'size')))
-                cond = lambda x: f'abs({x}) < {length}'
-                getter = lambda x: v.UnaryOperation('*', x, type=type.subtype)
+                getter = lambda: v.UnaryOperation('*', iterator, type=type.subtype)
 
             self.store(iterator, start, 'auto')
-            indices.append(index)
-            iterators.append(iterator)
             conditions.append(cond)
+            updates.append(update)
             getters.append(getter)
 
         steps = [self.freeze(self.compile(step)) for step in node.get('steps') or [{'node': 'AtomInt', 'int': 1}]]
@@ -1109,26 +1110,22 @@ class PyxellCompiler:
                 self.env['#loop'] = True
 
                 if len(vars) == 1 and len(types) > 1:
-                    tuple = v.Tuple([getters[i](iterator) for i, iterator in enumerate(iterators)])
+                    tuple = v.Tuple([getter() for getter in getters])
                     self.assign(node, vars[0], tuple)
                 elif len(vars) > 1 and len(types) == 1:
                     for i, var in enumerate(vars):
-                        tuple = getters[0](iterators[0])
+                        tuple = getters[0]()
                         self.assign(node, var, v.Get(tuple, i))
                 elif len(vars) == len(types):
-                    for var, iterator, getter in zip(vars, iterators, getters):
-                        self.assign(node, var, getter(iterator))
+                    for var, getter in zip(vars, getters):
+                        self.assign(node, var, getter())
                 else:
                     self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
 
                 self.compile(node['block'])
 
-        # Advancing iterator beyond the container boundaries is UB (and crashes in practice),
-        # so it must happen after the condition is checked, when we know it is safe.
-        condition = ' && '.join(f'{cond(index)}' + (f' && ({index} == 0 || (std::advance({iterator}, {step}), true))' if iterator.type is None else '')
-                                for index, iterator, cond, step in zip(indices, iterators, conditions, steps))
-        update = ', '.join(f'{index} += {step}' for index, step in zip(indices, steps))
-
+        condition = ' && '.join(str(cond()) for cond in conditions)
+        update = ', '.join(str(update()) for update in updates)
         self.output(c.For('', condition, update, body))
 
     def compileStmtLoopControl(self, node):
@@ -1164,6 +1161,8 @@ class PyxellCompiler:
                 args.append(t.Func.Arg(type, name, default))
 
             ret_type = self.compile(node.get('ret')) or t.Void
+            if node.get('gen'):
+                ret_type = t.Generator(ret_type)
             func_type = t.Func(args, ret_type)
 
             env = self.env.copy()
@@ -1187,6 +1186,9 @@ class PyxellCompiler:
         if expr:
             value = self.compile(expr)
 
+            if type.isGenerator():
+                self.throw(node, err.IllegalAssignment(value.type, type))
+
             # Update unresolved type variables in the return type.
             d = type_variables_assignment(value.type, type)
             if d is None:
@@ -1197,15 +1199,39 @@ class PyxellCompiler:
 
             value = self.cast(node, value, type)
 
-        elif type != t.Void:
+        elif type.hasValue():
             self.throw(node, err.IllegalAssignment(t.Void, type))
 
-        if type == t.Void:
+        if type.isGenerator():
+            self.output('co_return')
+        elif type == t.Void:
             if expr:
+                # Special case for lambdas returning Void.
                 self.output(value)
             self.output('return')
         else:
             self.output(f'return {value}')
+
+    def compileStmtYield(self, node):
+        type = self.env.get('#return')
+        if not type or not type.isGenerator():
+            self.throw(node, err.UnexpectedStatement('yield'))
+
+        type = type.subtype
+        value = self.compile(node['expr'])
+
+        # Update unresolved type variables in the return type.
+        d = type_variables_assignment(value.type, type)
+        if d is None:
+            self.throw(node, err.IllegalAssignment(value.type, type))
+        if d:
+            self.env.update(d)
+            type = self.resolve_type(type)
+            self.env['#return'] = t.Generator(type)
+
+        value = self.cast(node, value, type)
+
+        self.output(f'co_yield {value}')
 
     def compileStmtClass(self, node):
         id = node['id']

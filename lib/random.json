@@ -33,6 +33,7 @@
 				}
 			],
 			"ret": null,
+			"gen": false,
 			"block": null
 		},
 		{
@@ -77,6 +78,7 @@
 				],
 				"name": "Int"
 			},
+			"gen": false,
 			"block": null
 		},
 		{
@@ -121,6 +123,7 @@
 				],
 				"name": "Float"
 			},
+			"gen": false,
 			"block": null
 		}
 	]

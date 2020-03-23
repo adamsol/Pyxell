@@ -25,6 +25,9 @@ class Type:
     def isDict(self):
         return isinstance(self, Dict)
 
+    def isGenerator(self):
+        return isinstance(self, Generator)
+
     def isNullable(self):
         return isinstance(self, Nullable)
 
@@ -62,6 +65,9 @@ class Type:
     def isCollection(self):
         return self.isSequence() or self.isContainer()
 
+    def isIterable(self):
+        return self.isCollection() or self.isGenerator()
+
     def isHashable(self):
         if self.isNumber() or self in {Bool, Char, String, Unknown}:
             return True
@@ -93,6 +99,9 @@ class Type:
 
     def isComparable(self):
         return self.isOrderable() or self.isSet() or self.isDict() or self.isClass()
+
+    def hasValue(self):
+        return self != Void and not self.isGenerator()
 
 
 class PrimitiveType(Type):
@@ -162,6 +171,15 @@ class Dict(Wrapper):
 
     def show(self):
         return f'{{{self.key_type.show()}:{self.value_type.show()}}}'
+
+
+class Generator(Wrapper):
+
+    def __str__(self):
+        return f'cppcoro::generator<{self.subtype}>'
+
+    def show(self):
+        return f'Generator<{self.subtype.show()}>'
 
 
 class Nullable(Wrapper):
@@ -283,6 +301,10 @@ def unify_types(type1, *types):
         value_type = unify_types(type1.value_type, type2.value_type)
         return Dict(key_type, value_type) if key_type and value_type else None
 
+    if type1.isGenerator() and type2.isGenerator():
+        subtype = unify_types(type1.subtype, type2.subtype)
+        return Generator(subtype) if subtype else None
+
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
         return Nullable(subtype) if subtype else None
@@ -330,6 +352,8 @@ def type_variables_assignment(type1, type2, conversion_allowed=True, covariance=
     if type1.isSet() and type2.isSet():
         return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
     if type1.isDict() and type2.isDict():
+        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
+    if type1.isGenerator() and type2.isGenerator():
         return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
 
     if type1.isNullable() and type2.isNullable():

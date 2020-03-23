@@ -1,0 +1,9 @@
+
+func* chain([Rat] a, [Float] b) Float def
+    for x in a do
+        yield x
+    for x in b do
+        yield x
+
+for c, x in 'a'..., chain([1/2], [3]) do
+    print c, x

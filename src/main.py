@@ -38,16 +38,23 @@ def build_libs():
         json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
 
 
+def cpp_flags(cpp_compiler, opt_level):
+    flags = [f'-O{opt_level}', '-std=c++17']
+    if 'clang' in cpp_compiler:
+        flags.append('-fcoroutines-ts')
+    return flags
+
+
 def precompile_base_header(cpp_compiler, opt_level):
     if cpp_compiler.lower() in {'', 'no', 'none'}:
         return
 
-    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), '-std=c++17', f'-O{opt_level}']
+    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), *cpp_flags(cpp_compiler, opt_level)]
     subprocess.check_output(command, stderr=subprocess.STDOUT)
 
 
 def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose=False, disable_warnings=False):
-    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-std=c++17', f'-O{opt_level}', '-lstdc++']
+    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, *cpp_flags(cpp_compiler, opt_level), '-lstdc++']
     if disable_warnings:
         command.append('-w')
     if platform.system() != 'Windows':

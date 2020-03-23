@@ -1,0 +1,7 @@
+
+func* map<A,B>([A] a, A->B f) B def
+    for x in a do
+        yield f(x)
+
+for x in map(["q", "xyz", ""], _.length) do
+    print x

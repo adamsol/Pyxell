@@ -21,11 +21,22 @@
 
 #include "indy256/bigint.hpp"
 
+#ifdef __clang__
+    #include "cppcoro/generator.hpp"
+#endif
+
 
 // https://github.com/godotengine/godot/pull/33376
 #if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900 && defined(_TWO_DIGIT_EXPONENT)) && !defined(_UCRT)
 	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
+
+
+template <typename T, typename U>
+void safe_advance(T& it, const U& end, std::size_t n)
+{
+    for (std::size_t i = 0; i < n && it != end; ++i, ++it);
+}
 
 
 /* Types */

@@ -135,6 +135,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'typevars': self.visit(ctx.typevars) or [],
             'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
+            'gen': bool(ctx.gen),
             'block': self.visit(ctx.block()),
         }
 
@@ -149,6 +150,12 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitStmtReturn(self, ctx):
         return {
             **_node(ctx, 'StmtReturn'),
+            'expr': self.visit(ctx.tuple_expr()),
+        }
+
+    def visitStmtYield(self, ctx):
+        return {
+            **_node(ctx, 'StmtYield'),
             'expr': self.visit(ctx.tuple_expr()),
         }
 

@@ -144,7 +144,7 @@ class Attribute(Value):
         self.attr = attr
 
     def __str__(self):
-        op = '.' if self.value.type.isNullable() else '->'
+        op = '.' if self.value.type.isGenerator() or self.value.type.isNullable() else '->'
         return f'{self.value}{op}{self.attr}'
 
 

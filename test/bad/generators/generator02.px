@@ -1,0 +1,5 @@
+
+func* f() String def
+    yield ""
+
+x = f()

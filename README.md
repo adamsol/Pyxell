@@ -107,6 +107,7 @@ Features
 * Default and named function arguments
 * Lambda expressions
 * Generic functions
+* Generators
 * Classes with safe references
 * Inheritance and virtual methods
 * Nullable types
@@ -116,7 +117,6 @@ Features
 To do:
 
 * Closures
-* Coroutines/generators
 * Exception handling
 * Unicode
 * Generic classes
@@ -136,6 +136,9 @@ python -m pip install -r requirements.txt
 ```
 
 * C++17 compiler (e.g. GCC 7+ or Clang 5+).
+
+Note that generators are currently supported only in Clang
+(since they are based on C++'s coroutines).
 
 
 Usage
