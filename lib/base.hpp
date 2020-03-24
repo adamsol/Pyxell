@@ -2,6 +2,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <ctime>
@@ -636,6 +637,55 @@ template <typename T>
 String asString(const custom_ptr<T>& x)
 {
     return make_string(x->begin(), x->end());
+}
+
+/* String methods */
+
+Array<String> split(const String& x, const String& y)
+{
+    auto r = make_array<String>();
+    std::size_t start = 0;
+    while (true) {
+        auto end = x->find(*y, start);
+        if (y->empty()) {
+            end += 1;
+        } else if (end == std::string::npos) {
+            end = x->size();
+        }
+        r->push_back(make_string(x->substr(start, end-start)));
+        if (end == x->size()) {
+            return r;
+        }
+        start = end + y->size();
+    }
+}
+
+Nullable<Int> find(const String& x, const String& y, Int i)
+{
+    if (i < 0) {
+        i += x->size();
+    }
+    auto p = x->find(*y, i);
+    if (p != std::string::npos) {
+        return Nullable<Int>(p);
+    } else {
+        return Nullable<Int>();
+    }
+}
+
+Int count(const String& x, Char e)
+{
+    return std::count(x->begin(), x->end(), e);
+}
+
+Bool startswith(const String& x, const String& y)
+{
+    return x->rfind(*y, 0) == 0;
+}
+
+Bool endswith(const String& x, const String& y)
+{
+    return x->find(*y, x->size() - y->size()) != std::string::npos;
 }
 
 /* Array methods */

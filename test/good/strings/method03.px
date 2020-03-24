@@ -1,0 +1,10 @@
+
+print "abab".find("b")
+print "abab".find("c")
+
+print "abab".count('b')
+print "abab".count('c')
+
+print "XYZYZXYZ".find("YZ", 4)
+print "XYZYZXYZ".find("Z", -1)
+print "XYZYZXYZ".find("X", -2)

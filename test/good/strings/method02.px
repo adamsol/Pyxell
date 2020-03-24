@@ -1,0 +1,11 @@
+
+s = "abc ghi"
+print s.split(" ")
+print s
+
+print "abc".split("a")
+print "qwerty".split("y")
+print "test".split("tst")
+print "123412341234".split("23")
+print "XYZ".split("")
+print "".split(".").length

@@ -309,7 +309,7 @@ class PyxellCompiler:
             elif attr == 'empty':
                 value = v.Call(v.Attribute(obj, 'empty'), type=t.Bool)
             elif attr == 'join' and type.subtype in {t.Char, t.String}:
-                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default={'node': 'AtomString', 'string': ''})], t.String), attr)
+                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default=v.String(''))], t.String), attr)
             elif attr == '_asString' and type.subtype == t.Char:
                 value = v.Variable(t.Func([type], t.String), 'asString')
 
@@ -320,6 +320,11 @@ class PyxellCompiler:
                     'filter': self.env['String_filter'],
                     'map': self.env['String_map'],
                     'fold': self.env['String_fold'],
+                    'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
+                    'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
+                    'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
+                    'startswith': v.Variable(t.Func([type, type], t.Bool), attr),
+                    'endswith': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
 
             elif type.isArray():
@@ -335,7 +340,7 @@ class PyxellCompiler:
                     'extend': v.Variable(t.Func([type, type]), attr),
                     'get': v.Variable(t.Func([type, t.Int], t.Nullable(type.subtype)), attr),
                     'pop': v.Variable(t.Func([type], type.subtype), attr),
-                    'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default={'node': 'AtomInt', 'int': 1})]), attr),
+                    'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default=v.Int(1))]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'reverse': v.Variable(t.Func([type]), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
@@ -1469,14 +1474,18 @@ class PyxellCompiler:
                         expr = pos_args.pop(i)
 
                     elif func_arg.default:
-                        expr = func_arg.default
-
-                        if expr is True:
+                        if isinstance(func_arg.default, v.Value):
+                            args.append(func_arg.default)
+                            continue
+                        elif func_arg.default is True:
                             # Special case for default class constructors.
                             value = v.Value(type=func_arg.type)
                             value.not_provided = True
                             args.append(value)
                             continue
+                        else:
+                            expr = func_arg.default
+
                     else:
                         self.throw(node, err.TooFewArguments())
 
