@@ -135,7 +135,7 @@ Requirements
 python -m pip install -r requirements.txt
 ```
 
-* C++17 compiler (e.g. GCC 7+ or Clang 5+).
+* C++17 compiler: Clang 5+ or GCC 7+.
 
 Note that generators are currently supported only in Clang
 (since they are based on C++'s coroutines).
@@ -152,7 +152,7 @@ If the program is correct, `program.cpp` file and `program.exe` executable will 
 and it will be automatically executed (unless you add `-n` option).
 Otherwise, errors will be displayed, pointing to the erroneous code location.
 
-By default, `gcc` command is used to compile the code.
+By default, `clang` command is used to compile the code.
 You can pick a different command using `-c` option.
 Write `-c=none` to skip the compilation step (only C++ code will be created).
 
@@ -185,8 +185,7 @@ python test.py [-v]
 
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
-The script uses Clang as the default C++ compiler (contrary to standard compilation, where GCC is the default).
-All C++ code is merged so that only one C++ file is compiled,
+By default, the whole C++ code for correct tests is merged, so that only one file is compiled,
 which is faster than compiling hundreds of files individually, even using multiple threads.
 Total execution time should be around 30 seconds.
 
