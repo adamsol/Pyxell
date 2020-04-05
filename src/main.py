@@ -72,7 +72,7 @@ def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbos
         print(f"command not found: {cpp_compiler}")
 
 
-def compile(filepath, cpp_compiler, opt_level, verbose=False):
+def compile(filepath, cpp_compiler, opt_level, verbose=False, executable=True):
     filepath = Path(filepath)
     filename, ext = os.path.splitext(filepath)
     cpp_filename = f'{filename}.cpp'
@@ -82,7 +82,7 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False):
         print(f"transpiling {filepath} to {cpp_filename}")
 
     t1 = timer()
-    compiler = PyxellCompiler()
+    compiler = PyxellCompiler(cpp_compiler)
 
     for name, ast in units.items():
         compiler.run(ast, name)
@@ -98,7 +98,7 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False):
     global transpilation_time
     transpilation_time = t2 - t1
 
-    if cpp_compiler.lower() in {'', 'no', 'none'}:
+    if not executable:
         return
 
     t1 = timer()
@@ -134,7 +134,8 @@ def main():
         parser.error("filepath is required")
 
     try:
-        exe_filename = compile(args.filepath, args.cpp_compiler, args.opt_level, args.verbose)
+        executable = args.cpp_compiler.lower() not in {'', 'no', 'none'}
+        exe_filename = compile(args.filepath, args.cpp_compiler, args.opt_level, args.verbose, executable)
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)

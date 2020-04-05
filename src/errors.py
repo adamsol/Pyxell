@@ -64,3 +64,7 @@ class PyxellError(Exception):
             text += f", column {column}"
         text += f": {msg}."
         super().__init__(text)
+
+
+class NotSupportedError(Exception):
+    pass

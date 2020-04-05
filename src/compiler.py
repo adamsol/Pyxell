@@ -9,7 +9,7 @@ import cgen as c
 
 from . import values as v
 from . import types as t
-from .errors import PyxellError as err
+from .errors import NotSupportedError, PyxellError as err
 from .parsing import parse_expr
 from .types import can_cast, get_type_variables, type_variables_assignment, unify_types
 from .utils import lmap
@@ -25,7 +25,10 @@ class Unit:
 
 class PyxellCompiler:
 
-    def __init__(self):
+    def __init__(self, cpp_compiler):
+        self.cpp_compiler = cpp_compiler
+
+        self.required = set()
         self.units = {}
         self._unit = None
         self.level = 0
@@ -59,6 +62,8 @@ class PyxellCompiler:
     def run_main(self, ast):
         self.run(ast, 'main')
         self.output('return 0')
+        if 'generators' in self.required and 'clang' not in self.cpp_compiler:
+            raise NotSupportedError(f"Generators require C++ coroutines support (use Clang).")
         return str(self.module)
 
     def compile(self, node):
@@ -72,6 +77,11 @@ class PyxellCompiler:
     def throw(self, node, msg):
         line, column = node.get('position', (1, 1))
         raise err(msg, line, column)
+
+    def require(self, feature):
+        if feature not in {'generators'}:
+            raise ValueError(feature)
+        self.required.add(feature)
 
 
     ### Helpers ###
@@ -1162,6 +1172,7 @@ class PyxellCompiler:
 
             ret_type = self.compile(node.get('ret')) or t.Void
             if node.get('gen'):
+                self.require('generators')
                 ret_type = t.Generator(ret_type)
             func_type = t.Func(args, ret_type)
 

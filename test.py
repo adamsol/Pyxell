@@ -14,7 +14,7 @@ from pathlib import Path
 from timeit import default_timer as timer
 
 from src.main import precompile_base_header, compile, run_cpp_compiler
-from src.errors import PyxellError
+from src.errors import NotSupportedError, PyxellError
 
 # Setup terminal colors.
 R = colorama.Style.BRIGHT + colorama.Fore.RED
@@ -54,6 +54,7 @@ if n == 0:
 print(f"Running {n} tests using {args.thread_count} thread{'s' if args.thread_count > 1 else ''}.")
 
 ok = 0
+skipped = 0
 t0 = timer()
 output_dict = {}
 output_index = 1
@@ -66,6 +67,7 @@ tests_to_compile = set()
 
 def test(path, running_aggregate_tests=False):
     global ok
+    global skipped
     global output_index
 
     index = tests[path]
@@ -78,15 +80,18 @@ def test(path, running_aggregate_tests=False):
         except FileNotFoundError:
             expected_error = None
 
+        error = True
         exe_filename = True
 
         try:
-            error = True
             if running_aggregate_tests:
                 exe_filename = f'./{aggregate_exe_filename}'
             else:
-                exe_filename = compile(path, args.cpp_compiler if args.separate else '', args.opt_level)
+                exe_filename = compile(path, args.cpp_compiler, args.opt_level, executable=args.separate)
             error = False
+        except NotSupportedError as e:
+            skipped += 1
+            output.append(f"{Y}{e}{E}")
         except PyxellError as e:
             error_message = str(e)
             if expected_error:
@@ -205,10 +210,17 @@ if not args.separate:
 
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"
-if ok == n:
-    print(msg + f", {G}all passed{E}.")
+failed = n - ok - skipped
+
+if skipped:
+    msg += f", {Y}{skipped} skipped{E}"
+
+if failed:
+    msg += f", {R}{failed} failed{E}"
 else:
-    print(msg + f", {R}{n-ok} failed{E}.")
+    msg += f", {G}all passed{E}"
+
+print(msg + f".")
 
 try:
     os.remove('lib/base.hpp.gch')
