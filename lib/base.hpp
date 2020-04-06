@@ -28,7 +28,7 @@
 
 // https://github.com/godotengine/godot/pull/33376
 #if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900 && defined(_TWO_DIGIT_EXPONENT)) && !defined(_UCRT)
-	unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
+    unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
 
 
@@ -60,19 +60,19 @@ struct Rat
 
     Rat(const std::string& s): denominator(1)
     {
-    	std::size_t p = s.find('/');
-		numerator = bigint(s.substr(0, p));
-		if (p != s.npos) {
-			denominator = bigint(s.substr(p+1));
-    	}
-    	reduce();
+        std::size_t p = s.find('/');
+        numerator = bigint(s.substr(0, p));
+        if (p != s.npos) {
+            denominator = bigint(s.substr(p+1));
+        }
+        reduce();
     }
 
     void reduce()
     {
-		bigint d = gcd(numerator, denominator);
-		numerator /= d;
-		denominator /= d;
+        bigint d = gcd(numerator, denominator);
+        numerator /= d;
+        denominator /= d;
 
         numerator.sign *= denominator.sign;
         denominator.sign = 1;
@@ -114,7 +114,7 @@ struct Rat
         denominator *= other.denominator;
         reduce();
         return *this;
-	}
+    }
 
     operator double () const
     {
@@ -157,19 +157,19 @@ Rat operator - (Rat a)
 
 namespace std
 {
-	template <>
+    template <>
     struct hash<Rat>
     {
         size_t operator () (const Rat& x) const
         {
-        	std::size_t seed = 0;
-        	for (int e: x.numerator.z) {
-        		seed ^= hash<int>()(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        	}
-        	for (int e: x.denominator.z) {
-        		seed ^= hash<int>()(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        	}
-        	return seed;
+            std::size_t seed = 0;
+            for (int e: x.numerator.z) {
+                seed ^= hash<int>()(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            for (int e: x.denominator.z) {
+                seed ^= hash<int>()(e) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
         }
     };
 }
@@ -303,7 +303,7 @@ Dict<K, V> make_dict(std::initializer_list<std::pair<const K, V>> x)
 {
     auto r = Dict<K, V>(std::make_shared<std::unordered_map<K, V>>());
     for (auto&& p: x) {
-    	r->insert_or_assign(p.first, p.second);
+        r->insert_or_assign(p.first, p.second);
     }
     return r;
 }
@@ -427,10 +427,10 @@ Rat mod(const Rat& a, const Rat& b)
         return -mod(-a, -b);
     }
     Rat r = a % b;
-	if (r.numerator.sign < 0) {
-		r += b;
-	}
-	return r;
+    if (r.numerator.sign < 0) {
+        r += b;
+    }
+    return r;
 }
 
 Int pow(Int b, Int e)
@@ -913,12 +913,12 @@ String toString(Int x)
 
 String toString(const Rat& x)
 {
-	auto r = make_string(x.numerator.to_string());
-	if (x.denominator > 1) {
-		r->append("/");
-		r->append(x.denominator.to_string());
-	}
-	return r;
+    auto r = make_string(x.numerator.to_string());
+    if (x.denominator > 1) {
+        r->append("/");
+        r->append(x.denominator.to_string());
+    }
+    return r;
 }
 
 String toString(Float x)
