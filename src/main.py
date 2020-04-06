@@ -148,7 +148,7 @@ def main():
             print(f"executing {exe_filename}")
 
         t1 = timer()
-        subprocess.call(exe_filename)
+        subprocess.call(f'./{exe_filename}')
         t2 = timer()
         execution_time = t2 - t1
 
