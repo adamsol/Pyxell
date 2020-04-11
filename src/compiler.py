@@ -226,7 +226,7 @@ class PyxellCompiler:
         elif type.isTuple():
             return v.Tuple([self.default(node, t) for t in type.elements])
         elif type.isFunc():
-            return v.Lambda(type, self.default(node, type.ret))
+            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret))
 
         self.throw(node, err.NotDefaultable(type))
 
@@ -844,23 +844,24 @@ class PyxellCompiler:
 
             real_types = tuple(self.env[name] for name in template.typevars)
             func_type = self.resolve_type(template.type)
-
-            func = self.var(func_type, prefix='f')
-            template.compiled[real_types] = func
-
             arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
             block = c.Block()
-            definition = c.FunctionBody(
-                c.FunctionDeclaration(
-                    c.Value(str(func_type.ret), func.name),
-                    [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
-                block)
 
-            self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
-            self.output(definition, toplevel=True)
+            if not template.lambda_:
+                func = self.var(func_type, prefix='f')
+                template.compiled[real_types] = func
+
+                definition = c.FunctionBody(
+                    c.FunctionDeclaration(
+                        c.Value(str(func_type.ret), func.name),
+                        [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
+                    block)
+
+                self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
+                self.output(definition, toplevel=True)
 
             with self.block(block):
-                with self.local(next_level=True):
+                with self.local(next_level=(not template.lambda_)):
                     self.env = template.env.copy()
 
                     for name, type in zip(template.typevars, real_types):
@@ -877,6 +878,9 @@ class PyxellCompiler:
 
                     if '#return' not in self.initialized and func_type.ret.hasValue():
                         self.throw(body, err.MissingReturn())
+
+            if template.lambda_:
+                return v.Lambda(func_type, arg_vars, block)
 
         return func
 
@@ -1177,7 +1181,7 @@ class PyxellCompiler:
             func_type = t.Func(args, ret_type)
 
             env = self.env.copy()
-            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env)
+            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env, lambda_=node.get('lambda'))
 
         if class_type is None:
             self.env[id] = env[id] = func
@@ -1554,6 +1558,7 @@ class PyxellCompiler:
                                 'node': 'StmtReturn',
                                 'expr': expr['expr'],
                             },
+                            'lambda': True,
                         })
                         expr = {
                             'node': 'AtomId',
@@ -1584,6 +1589,7 @@ class PyxellCompiler:
                                 } for arg1, arg2 in zip(func_arg.type.args, value.type.args)],
                                 'ret': func_arg.type.ret,
                                 'block': value.body,
+                                'lambda': True,
                             })
                             expr = {
                                 'node': 'AtomId',

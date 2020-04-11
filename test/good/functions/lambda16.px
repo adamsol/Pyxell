@@ -1,0 +1,13 @@
+
+func id([Float]->[Float] f) [Float]->[Float] def
+    return f
+
+func divider(Float d) [Float]->[Float] def
+    m = 1/d
+    return id(lambda a: a.map(_*m))
+
+print divider(2)([1, -3.5])
+
+f = divider(-3)
+print f([4.5])
+print f([3])

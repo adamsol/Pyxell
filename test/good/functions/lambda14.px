@@ -1,0 +1,5 @@
+
+func call(->String f) def
+    print f()
+
+call(lambda: "lambda")

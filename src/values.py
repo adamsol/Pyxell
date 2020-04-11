@@ -126,13 +126,14 @@ class Object(Value):
 
 class FunctionTemplate(Value):
 
-    def __init__(self, id, typevars, type, body, env):
+    def __init__(self, id, typevars, type, body, env, lambda_=False):
         super().__init__(type)
         self.id = id
         self.final = True  # identifier cannot be redefined
         self.typevars = typevars
         self.body = body
         self.env = env
+        self.lambda_ = lambda_
         self.compiled = {}
 
 
@@ -229,9 +230,15 @@ class Condition(Value):
 
 class Lambda(Value):
 
-    def __init__(self, type, ret_value):
+    def __init__(self, type, arg_vars, body):
         super().__init__(type)
-        self.ret_value = ret_value
+        self.arg_vars = arg_vars
+
+        if isinstance(body, Value):
+            self.body = f'{{ return {body}; }}'
+        else:
+            self.body = str(body).replace('\n', '\n  ')
 
     def __str__(self):
-        return f'[]({self.type.args_str()}) {{ return {self.ret_value}; }}'
+        args = ', '.join([f'{arg.type} {var}' for arg, var in zip(self.type.args, self.arg_vars)])
+        return f'[=]({args}) {self.body}'
