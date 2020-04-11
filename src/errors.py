@@ -14,7 +14,6 @@ class PyxellError(Exception):
 
     AbstractClass = lambda t: f"Cannot instantiate an abstract class `{t.show()}`"
     CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
-    ClosureRequired = lambda id: f"Cannot access a non-global and non-local variable `{id}`"
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
     IllegalLambda = lambda: "Lambda expression cannot be used in this context"

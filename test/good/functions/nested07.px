@@ -1,0 +1,15 @@
+
+func f() def
+    String s = "q"
+    [Bool] a = [false]
+
+    func g() def
+        s += 'w'
+        print s
+        a[0] = true
+
+    g()
+
+    print s, a
+
+f()

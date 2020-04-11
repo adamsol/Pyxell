@@ -1,10 +1,6 @@
 
-func f() def
-    x = 5
+if true do
+    func h() def
+        return
 
-    func g() def
-        print x
-
-    g()
-
-f()
+h()

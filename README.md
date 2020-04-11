@@ -116,7 +116,6 @@ Features
 
 To do:
 
-* Closures
 * Exception handling
 * Unicode
 * Generic classes

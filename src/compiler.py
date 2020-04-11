@@ -20,7 +20,6 @@ class Unit:
     def __init__(self):
         self.env = {}
         self.initialized = set()
-        self.levels = {}
 
 
 class PyxellCompiler:
@@ -31,7 +30,6 @@ class PyxellCompiler:
         self.required = set()
         self.units = {}
         self._unit = None
-        self.level = 0
         self._var_index = 0
 
         self._block = c.Block()
@@ -56,7 +54,6 @@ class PyxellCompiler:
             if unit != 'std':
                 self.env = self.units['std'].env.copy()
                 self.initialized = self.units['std'].initialized.copy()
-                self.levels = self.units['std'].levels.copy()
             self.compile(ast)
 
     def run_main(self, ast):
@@ -102,27 +99,13 @@ class PyxellCompiler:
     def initialized(self, initialized):
         self._unit.initialized = initialized
 
-    @property
-    def levels(self):
-        return self._unit.levels
-
-    @levels.setter
-    def levels(self, levels):
-        self._unit.levels = levels
-
     @contextmanager
-    def local(self, next_level=False):
+    def local(self):
         env = self.env.copy()
         initialized = self.initialized.copy()
-        levels = self.levels.copy()
-        if next_level:
-            self.level += 1
         yield
         self.env = env
         self.initialized = initialized
-        self.levels = levels
-        if next_level:
-            self.level -= 1
 
     @contextmanager
     def unit(self, name):
@@ -180,9 +163,6 @@ class PyxellCompiler:
     def get(self, node, id):
         if id not in self.env:
             self.throw(node, err.UndeclaredIdentifier(id))
-
-        if id in self.levels and self.levels[id] != 0 and self.levels[id] < self.level:
-            self.throw(node, err.ClosureRequired(id))
 
         result = self.env[id]
 
@@ -478,11 +458,10 @@ class PyxellCompiler:
 
         var = self.var(type)
         self.env[id] = var
-        self.output(f'{type} {var.name}', toplevel=(self.level == 0))
+        self.output(f'{type} {var.name}', toplevel=(self.env.get('#return') is None))
 
         if initialize:
             self.initialized.add(id)
-        self.levels[id] = self.level
 
         return self.env[id]
 
@@ -861,7 +840,7 @@ class PyxellCompiler:
                 self.output(definition, toplevel=True)
 
             with self.block(block):
-                with self.local(next_level=(not template.lambda_)):
+                with self.local():
                     self.env = template.env.copy()
 
                     for name, type in zip(template.typevars, real_types):
@@ -880,6 +859,9 @@ class PyxellCompiler:
                         self.throw(body, err.MissingReturn())
 
             if template.lambda_:
+                # The closure is created where the function is used,
+                # so current values of variables are captured,
+                # possibly different than in the moment of definition.
                 return v.Lambda(func_type, arg_vars, block)
 
         return func
@@ -1181,11 +1163,12 @@ class PyxellCompiler:
             func_type = t.Func(args, ret_type)
 
             env = self.env.copy()
-            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env, lambda_=node.get('lambda'))
+
+            lambda_ = node.get('lambda') or self.env.get('#return') is not None
+            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env, lambda_)
 
         if class_type is None:
             self.env[id] = env[id] = func
-            self.levels[id] = self.level
         else:
             return self.function(func)
 

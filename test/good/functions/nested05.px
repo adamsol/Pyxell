@@ -1,0 +1,11 @@
+
+func f(String s) def
+    func g1() String def
+        return s
+
+    func g2() String def
+        return g1() * 2
+
+    print g2()
+
+f("abc")

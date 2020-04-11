@@ -1,0 +1,14 @@
+
+n = 0
+
+func f(Int i) def
+    func g() def
+        n += i
+
+    g()
+
+    for i in 1..10^^8 do
+        g()
+
+f(6)
+print n

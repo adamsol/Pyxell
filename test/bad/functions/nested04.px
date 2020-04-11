@@ -1,6 +1,0 @@
-
-if true do
-    func h() def
-        return
-
-h()

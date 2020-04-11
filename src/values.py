@@ -235,10 +235,9 @@ class Lambda(Value):
         self.arg_vars = arg_vars
 
         if isinstance(body, Value):
-            self.body = f'{{ return {body}; }}'
-        else:
-            self.body = str(body).replace('\n', '\n  ')
+            body = f'{{ return {body}; }}'
+        self.body = body
 
     def __str__(self):
         args = ', '.join([f'{arg.type} {var}' for arg, var in zip(self.type.args, self.arg_vars)])
-        return f'[=]({args}) {self.body}'
+        return f'[=]({args}) mutable {self.body}'
