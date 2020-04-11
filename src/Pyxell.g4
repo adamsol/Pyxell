@@ -64,7 +64,7 @@ expr
   | expr safe='?'? '.' ID # ExprAttr
   | expr safe='?'? '[' tuple_expr ']' # ExprIndex
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice
-  | expr '(' (call_arg ',')* call_arg? ')' # ExprCall
+  | expr partial='@'? '(' (call_arg ',')* call_arg? ')' # ExprCall
   | expr op='!' # ExprUnaryOp
   | <assoc=right> expr op=('^' | '^^') expr # ExprBinaryOp
   | op=('+' | '-' | '~') expr # ExprUnaryOp

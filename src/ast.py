@@ -316,6 +316,7 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ExprCall'),
             'expr': self.visit(ctx.expr()),
             'args': self.visit(ctx.call_arg()),
+            **({'partial': True} if ctx.partial else {}),
         }
 
     def visitCallArg(self, ctx):
