@@ -135,8 +135,8 @@ class PyxellASTVisitor(PyxellVisitor):
             'typevars': self.visit(ctx.typevars) or [],
             'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
-            'gen': bool(ctx.gen),
             'block': self.visit(ctx.block()),
+            **({'gen': True} if ctx.gen else {}),
         }
 
     def visitFuncArg(self, ctx):
@@ -294,14 +294,14 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ExprAttr'),
             'expr': self.visit(ctx.expr()),
             'attr': self.visit(ctx.ID()),
-            'safe': bool(ctx.safe),
+            **({'safe': True} if ctx.safe else {}),
         }
 
     def visitExprIndex(self, ctx):
         return {
             **_node(ctx, 'ExprIndex'),
             'exprs': [self.visit(ctx.expr()), self.visit(ctx.tuple_expr())],
-            'safe': bool(ctx.safe),
+            **({'safe': True} if ctx.safe else {}),
         }
 
     def visitExprSlice(self, ctx):
@@ -351,7 +351,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ExprIsNull'),
             'expr': self.visit(ctx.expr()),
-            'not': bool(ctx.not_),
+            **({'not': True} if ctx.not_ else {}),
         }
 
     def visitExprCmp(self, ctx):

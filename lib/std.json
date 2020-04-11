@@ -33,7 +33,6 @@
 				}
 			],
 			"ret": null,
-			"gen": false,
 			"block": null
 		},
 		{
@@ -53,7 +52,6 @@
 				],
 				"name": "String"
 			},
-			"gen": false,
 			"block": null
 		},
 		{
@@ -73,7 +71,6 @@
 				],
 				"name": "String"
 			},
-			"gen": false,
 			"block": null
 		},
 		{
@@ -93,7 +90,6 @@
 				],
 				"name": "Int"
 			},
-			"gen": false,
 			"block": null
 		},
 		{
@@ -113,7 +109,6 @@
 				],
 				"name": "Rat"
 			},
-			"gen": false,
 			"block": null
 		},
 		{
@@ -133,7 +128,6 @@
 				],
 				"name": "Float"
 			},
-			"gen": false,
 			"block": null
 		},
 		{
@@ -153,7 +147,6 @@
 				],
 				"name": "Char"
 			},
-			"gen": false,
 			"block": null
 		},
 		{
@@ -210,7 +203,6 @@
 				],
 				"name": "T"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -335,7 +327,6 @@
 				],
 				"name": "T"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -477,7 +468,6 @@
 				],
 				"name": "T"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -622,7 +612,6 @@
 				],
 				"name": "T"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -738,7 +727,6 @@
 				],
 				"name": "T"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -931,7 +919,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -1139,7 +1126,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -1339,7 +1325,6 @@
 				],
 				"name": "String"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -1453,8 +1438,7 @@
 										}
 									]
 								},
-								"attr": "_asString",
-								"safe": false
+								"attr": "_asString"
 							},
 							"args": []
 						}
@@ -1531,7 +1515,6 @@
 				],
 				"name": "String"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -1630,8 +1613,7 @@
 										}
 									]
 								},
-								"attr": "_asString",
-								"safe": false
+								"attr": "_asString"
 							},
 							"args": []
 						}
@@ -1735,7 +1717,6 @@
 				],
 				"name": "B"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -1948,7 +1929,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -2171,7 +2151,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -2387,7 +2366,6 @@
 					"name": "A"
 				}
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -2579,7 +2557,6 @@
 					"name": "B"
 				}
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -2774,7 +2751,6 @@
 				],
 				"name": "B"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -2989,7 +2965,6 @@
 				],
 				"name": "A"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -3346,7 +3321,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -3569,7 +3543,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -3785,7 +3758,6 @@
 					"name": "A"
 				}
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -3977,7 +3949,6 @@
 					"name": "B"
 				}
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -4172,7 +4143,6 @@
 				],
 				"name": "B"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -4387,7 +4357,6 @@
 				],
 				"name": "A"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -4764,7 +4733,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -5007,7 +4975,6 @@
 				],
 				"name": "Bool"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -5257,7 +5224,6 @@
 					"name": "B"
 				}
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -5293,8 +5259,7 @@
 										],
 										"id": "x"
 									},
-									"attr": "a",
-									"safe": false
+									"attr": "a"
 								},
 								{
 									"node": "ExprAttr",
@@ -5310,8 +5275,7 @@
 										],
 										"id": "x"
 									},
-									"attr": "b",
-									"safe": false
+									"attr": "b"
 								}
 							],
 							"comprehensions": [
@@ -5527,7 +5491,6 @@
 					"name": "D"
 				}
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [
@@ -5695,11 +5658,9 @@
 														],
 														"id": "y"
 													},
-													"attr": "a",
-													"safe": false
+													"attr": "a"
 												}
-											],
-											"safe": false
+											]
 										}
 									],
 									"expr": {
@@ -5716,8 +5677,7 @@
 											],
 											"id": "y"
 										},
-										"attr": "b",
-										"safe": false
+										"attr": "b"
 									}
 								}
 							]
@@ -5871,7 +5831,6 @@
 				],
 				"name": "C"
 			},
-			"gen": false,
 			"block": {
 				"node": "Block",
 				"position": [

@@ -1338,7 +1338,7 @@ class PyxellCompiler:
         if len(exprs) == 1 and exprs[0]['node'] == 'ExprRange':
             var = {
                 'node': 'AtomId',
-                'id': f'__range_{len(self.env)}',
+                'id': f'$_range_{len(self.env)}',
             }
             return self.compile({
                 'node': 'ExprComprehension',
@@ -1375,7 +1375,7 @@ class PyxellCompiler:
 
         value, collection = [{
             'node': 'AtomId',
-            'id': f'__cpr_{len(self.env)}_{name}',
+            'id': f'$_comprehension_{len(self.env)}_{name}',
         } for name in ['value', 'collection']]
 
         stmt = inner_stmt = {
@@ -1539,7 +1539,7 @@ class PyxellCompiler:
                         if len(ids) > len(type.args):
                             self.throw(node, err.TooManyArguments())
 
-                        id = f'__lambda_{len(self.env)}'
+                        id = f'$_lambda_{len(self.env)}'
                         self.compile({
                             **expr,
                             'node': 'StmtFunc',
@@ -1573,7 +1573,7 @@ class PyxellCompiler:
                             if len(value.type.args) > len(func_arg.type.args):
                                 self.throw(node, err.TooManyArguments())
 
-                            id = f'__lambda_generic_{len(self.env)}'
+                            id = f'$_lambda_generic_{len(self.env)}'
                             self.compile({
                                 **expr,
                                 'node': 'StmtFunc',
