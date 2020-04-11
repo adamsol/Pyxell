@@ -1,0 +1,5 @@
+
+func apply(Int->Int f, Int x) Int def
+    return f(x)
+
+print apply(2*_, apply(_+1, 3))

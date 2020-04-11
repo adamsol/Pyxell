@@ -2,4 +2,4 @@
 func f(String->String g) def
     return
 
-f(write(_))
+f(lambda x: write(x))

@@ -6,4 +6,4 @@ func f(Int a, Bool b, Char c, String d: "---") def
     print a, b, c, d
 
 call(lambda b, d: f(6, b, 'a'))
-call(f(42, _, d=_, c='x'))
+call(lambda b, d: f(42, b, d=d, c='x'))

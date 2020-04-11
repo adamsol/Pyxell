@@ -776,7 +776,7 @@ class PyxellCompiler:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
-                    'args': lmap(convert_expr, expr['args']),
+                    'args': expr['args'],
                 }
             if node == 'AtomString':
                 expr = self.convert_string(expr, expr['string'])
