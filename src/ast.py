@@ -182,6 +182,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
             'block': self.visit(ctx.block()),
+            **({'gen': True} if ctx.gen else {}),
         }
 
     def visitClassConstructor(self, ctx):

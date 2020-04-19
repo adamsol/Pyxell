@@ -1,0 +1,10 @@
+
+class A def
+    Int x
+
+    func* f(Int a) Rat def
+        for i in 1..self.x do
+            yield a/i
+
+
+print [x for x in A(4).f(2)]
