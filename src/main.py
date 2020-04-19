@@ -9,7 +9,7 @@ from pathlib import Path
 from timeit import default_timer as timer
 
 from .compiler import PyxellCompiler
-from .errors import PyxellError
+from .errors import NotSupportedError, PyxellError
 from .indentation import transform_indented_code
 from .parsing import parse_program
 from .version import __version__
@@ -139,7 +139,7 @@ def main():
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)
-    except PyxellError as e:
+    except (NotSupportedError, PyxellError) as e:
         print(str(e))
         sys.exit(1)
 
