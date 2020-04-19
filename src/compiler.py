@@ -723,7 +723,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprIsNull', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
+            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -740,7 +740,7 @@ class PyxellCompiler:
                     'iterables': lmap(convert_expr, expr['iterables']),
                     'steps': lmap(convert_expr, expr['steps']),
                 }
-            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp'}:
+            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
