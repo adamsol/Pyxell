@@ -66,6 +66,7 @@ class PyxellCompiler:
     def compile(self, node):
         if not isinstance(node, dict):
             return node
+        node = self.convert_lambda(node)
         result = getattr(self, 'compile'+node['node'])(node)
         if '_eval' in node:
             node['_eval'] = node['_eval']()
@@ -140,7 +141,7 @@ class PyxellCompiler:
 
     def resolve_type(self, type):
         if type.isVar():
-            return self.env[type.name]
+            return self.env[type.name] if isinstance(self.env.get(type.name), t.Type) else type
         if type.isArray():
             return t.Array(self.resolve_type(type.subtype))
         if type.isSet():
@@ -411,6 +412,14 @@ class PyxellCompiler:
             if isinstance(value, v.Tuple) and type.isTuple() and len(value.elements) == len(type.elements):
                 return v.Tuple([_cast(e, t) for e, t in zip(value.elements, type.elements)])
 
+            # Special case to handle generic functions and lambdas.
+            if value.isTemplate():
+                d = type_variables_assignment(type, value.type)
+                if d is None:
+                    self.throw(node, err.IllegalAssignment(value.type, type))
+                self.env.update(d)
+                return self.function(value)
+
             # This is the only place where containers are not covariant during type checking.
             if not can_cast(value.type, type, covariance=False):
                 self.throw(node, err.IllegalAssignment(value.type, type))
@@ -438,6 +447,8 @@ class PyxellCompiler:
 
     def tmp(self, value, force_var=False):
         if isinstance(value, v.Variable) or not force_var and isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
+            return value
+        if isinstance(value, v.Value) and value.isTemplate():
             return value
         tmp = self.var(value.type)
         self.store(tmp, value, decl='auto&&')
@@ -516,6 +527,10 @@ class PyxellCompiler:
             value = self.tmp(value)
             for i, expr in enumerate(exprs):
                 self.assign(node, expr, v.Get(value, i))
+        elif value.isTemplate() and expr['id'] not in self.env:
+            id = expr['id']
+            self.env[id] = value
+            self.initialized.add(id)
         else:
             var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
             value = self.cast(node, value, var.type)
@@ -858,6 +873,10 @@ class PyxellCompiler:
                     if '#return' not in self.initialized and func_type.ret.hasValue():
                         self.throw(body, err.MissingReturn())
 
+                    ret = self.env['#return']
+
+            self.env.update(type_variables_assignment(ret, func_type.ret))
+
             if template.lambda_:
                 # The closure is created where the function is used,
                 # so current values of variables are captured,
@@ -1188,12 +1207,13 @@ class PyxellCompiler:
                 self.throw(node, err.IllegalAssignment(value.type, type))
 
             # Update unresolved type variables in the return type.
-            d = type_variables_assignment(value.type, type)
-            if d is None:
-                self.throw(node, err.IllegalAssignment(value.type, type))
-            if d:
-                self.env.update(d)
-                type = self.env['#return'] = self.resolve_type(type)
+            if not value.isTemplate():
+                d = type_variables_assignment(value.type, type)
+                if d is None:
+                    self.throw(node, err.IllegalAssignment(value.type, type))
+                if d:
+                    self.env.update(d)
+                    type = self.env['#return'] = self.resolve_type(type)
 
             value = self.cast(node, value, type)
 
@@ -1228,7 +1248,7 @@ class PyxellCompiler:
             self.env['#return'] = t.Generator(type)
 
         value = self.cast(node, value, type)
-
+        
         self.output(f'co_yield {value}')
 
     def compileStmtClass(self, node):
@@ -1513,82 +1533,17 @@ class PyxellCompiler:
                     else:
                         self.throw(node, err.TooFewArguments())
 
-                    expr = self.convert_lambda(expr)
-                    if expr['node'] == 'ExprLambda':
-                        ids = expr['ids']
-                        type = func_arg.type
+                    value = self.compile(expr)
 
-                        if not type.isFunc():
-                            self.throw(node, err.IllegalLambda())
+                    if not value.isTemplate():
+                        d = type_variables_assignment(value.type, func_arg.type)
+                        if d is None:
+                            self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
 
-                        if len(ids) < len(type.args):
-                            self.throw(node, err.TooFewArguments())
-                        if len(ids) > len(type.args):
-                            self.throw(node, err.TooManyArguments())
+                        for name, type in d.items():
+                            type_variables[name].append(type)
 
-                        id = f'$_lambda_{len(self.env)}'
-                        self.compile({
-                            **expr,
-                            'node': 'StmtFunc',
-                            'id': id,
-                            'args': [{
-                                'type': arg.type,
-                                'name': name,
-                            } for arg, name in zip(type.args, ids)],
-                            'ret': type.ret,
-                            'block': {
-                                **expr,
-                                'node': 'StmtReturn',
-                                'expr': expr['expr'],
-                            },
-                            'lambda': True,
-                        })
-                        expr = {
-                            'node': 'AtomId',
-                            'id': id,
-                        }
-                        args.append(expr)
-
-                    else:
-                        value = self.compile(expr)
-
-                        if value.isTemplate():
-                            if not func_arg.type.isFunc():
-                                self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
-
-                            if len(value.type.args) < len(func_arg.type.args):
-                                self.throw(node, err.TooFewArguments())
-                            if len(value.type.args) > len(func_arg.type.args):
-                                self.throw(node, err.TooManyArguments())
-
-                            id = f'$_lambda_generic_{len(self.env)}'
-                            self.compile({
-                                **expr,
-                                'node': 'StmtFunc',
-                                'id': id,
-                                'args': [{
-                                    'type': arg1.type,
-                                    'name': arg2.name,
-                                } for arg1, arg2 in zip(func_arg.type.args, value.type.args)],
-                                'ret': func_arg.type.ret,
-                                'block': value.body,
-                                'lambda': True,
-                            })
-                            expr = {
-                                'node': 'AtomId',
-                                'id': id,
-                            }
-                            args.append(expr)
-
-                        else:
-                            d = type_variables_assignment(value.type, func_arg.type)
-                            if d is None:
-                                self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
-
-                            for name, type in d.items():
-                                type_variables[name].append(type)
-
-                            args.append(value)
+                    args.append(value)
 
                 if obj:
                     for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
@@ -1607,7 +1562,7 @@ class PyxellCompiler:
                     self.throw(node, err.TooManyArguments())
 
                 try:
-                    args = [self.cast(node, self.compile(arg), self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
+                    args = [self.cast(node, arg, self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
                 except KeyError:
                     # Not all type variables have been resolved.
                     self.throw(node, err.UnknownType())
@@ -1789,7 +1744,32 @@ class PyxellCompiler:
         return self.cond(node, self.compile(exprs[0]), lambda: self.compile(exprs[1]), lambda: self.compile(exprs[2]))
 
     def compileExprLambda(self, node):
-        self.throw(node, err.IllegalLambda())
+        id = f'$_lambda_{len(self.env)}'
+        typevars = [f'$T{i}' for i in range(len(node['ids'])+1)]
+        self.compile({
+            **node,
+            'node': 'StmtFunc',
+            'id': id,
+            'typevars': typevars,
+            'args': [{
+                'type': {
+                    'node': 'TypeName',
+                    'name': typevars[i],
+                },
+                'name': name,
+            } for i, name in enumerate(node['ids'], 1)],
+            'ret': {
+                'node': 'TypeName',
+                'name': typevars[0],
+            },
+            'block': {
+                **node,
+                'node': 'StmtReturn',
+                'expr': node['expr'],
+            },
+            'lambda': True,
+        })
+        return self.get(node, id)
 
     def compileExprTuple(self, node):
         elements = lmap(self.compile, node['exprs'])
@@ -1838,9 +1818,6 @@ class PyxellCompiler:
 
     def compileAtomId(self, node):
         return self.get(node, node['id'])
-
-    def compileAtomStub(self, node):
-        self.throw(node, err.IllegalLambda())
 
 
     ### Types ###

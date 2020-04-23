@@ -1,0 +1,6 @@
+
+Int->Float f = 2*_
+print f(5)
+
+f = _/2
+print f(5)

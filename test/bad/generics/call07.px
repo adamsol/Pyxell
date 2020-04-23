@@ -1,5 +1,5 @@
 
-func f<A,B,C>(A->B->C g) def
+func f<A>(A->A->A g) def
     return
 
 f(max)

@@ -1,1 +1,1 @@
-Too many arguments.
+Illegal assignment from `$T1->$T2->$T0` to `Int->Int`.

@@ -1,2 +1,2 @@
 
-f = lambda x: x
+Int->Int f = _/2

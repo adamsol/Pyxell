@@ -1,0 +1,9 @@
+
+func call<T>(->T f) T def
+    print default(T)
+    return f()
+
+->String f = lambda: "qwerty"
+print call(f)
+
+print call(lambda: 4.5)

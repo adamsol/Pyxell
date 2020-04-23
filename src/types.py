@@ -316,6 +316,11 @@ def unify_types(type1, *types):
     if type1.isClass() and type2.isClass():
         return common_superclass(type1, type2)
 
+    if type1.isVar():
+        return type2
+    if type2.isVar():
+        return type1
+
     if type1 == Unknown:
         return type2
     if type2 == Unknown:
@@ -364,18 +369,22 @@ def type_variables_assignment(type1, type2, conversion_allowed=True, covariance=
     if type1.isTuple() and type2.isTuple():
         if len(type1.elements) != len(type2.elements):
             return None
-        result = defaultdict(list)
+        type_lists = defaultdict(list)
         for e1, e2 in zip(type1.elements, type2.elements):
             d = type_variables_assignment(e1, e2, conversion_allowed, covariance)
             if d is None:
                 return None
             for name, type in d.items():
-                result[name].append(type)
-        for name, types in result.items():
+                type_lists[name].append(type)
+        result = {}
+        for name, types in type_lists.items():
             type = unify_types(*types)
             if type is None:
                 return None
             result[name] = type
+            for t in types:
+                if t.isVar():
+                    result[t.name] = type
         return result
 
     if type1.isFunc() and type2.isFunc():
