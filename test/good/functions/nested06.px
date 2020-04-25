@@ -7,7 +7,7 @@ func f(Int i) def
 
     g()
 
-    for i in 1..10^^8 do
+    for i in 1..10^^7 do
         g()
 
 f(6)

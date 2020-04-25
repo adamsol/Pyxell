@@ -838,13 +838,11 @@ class PyxellCompiler:
 
             real_types = tuple(self.env[name] for name in template.typevars)
             func_type = self.resolve_type(template.type)
+            func = self.var(func_type, prefix='f')
             arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
             block = c.Block()
 
             if not template.lambda_:
-                func = self.var(func_type, prefix='f')
-                template.compiled[real_types] = func
-
                 definition = c.FunctionBody(
                     c.FunctionDeclaration(
                         c.Value(str(func_type.ret), func.name),
@@ -853,6 +851,8 @@ class PyxellCompiler:
 
                 self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
                 self.output(definition, toplevel=True)
+
+            template.compiled[real_types] = func
 
             with self.block(block):
                 with self.local():
@@ -878,10 +878,10 @@ class PyxellCompiler:
             self.env.update(type_variables_assignment(ret, func_type.ret))
 
             if template.lambda_:
-                # The closure is created where the function is used,
-                # so current values of variables are captured,
-                # possibly different than in the moment of definition.
-                return v.Lambda(func_type, arg_vars, block)
+                # The closure is created every time the function is used (except for recursive calls),
+                # so current values of variables are captured, possibly different than in the moment of definition.
+                del template.compiled[real_types]
+                self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=self.resolve_type(func_type))
 
         return func
 

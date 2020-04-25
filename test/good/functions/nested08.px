@@ -1,0 +1,9 @@
+
+pow = lambda a, b def
+    func rec(Int c) Rat def
+        if c <= 0 do
+            return 1
+        return a * rec(c-1)
+    return rec(b)
+
+print pow(1000, 10)

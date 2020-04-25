@@ -230,8 +230,9 @@ class Condition(Value):
 
 class Lambda(Value):
 
-    def __init__(self, type, arg_vars, body):
+    def __init__(self, type, arg_vars, body, capture_vars=[]):
         super().__init__(type)
+        self.capture_vars = capture_vars
         self.arg_vars = arg_vars
 
         if isinstance(body, Value):
@@ -239,5 +240,6 @@ class Lambda(Value):
         self.body = body
 
     def __str__(self):
+        capture = '=' + ''.join(f', &{var}' for var in self.capture_vars)
         args = ', '.join([f'{arg.type} {var}' for arg, var in zip(self.type.args, self.arg_vars)])
-        return f'[=]({args}) mutable {self.body}'
+        return f'[{capture}]({args}) mutable {self.body}'
