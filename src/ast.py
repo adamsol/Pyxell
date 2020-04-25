@@ -40,9 +40,6 @@ class PyxellASTVisitor(PyxellVisitor):
             'stmts': self.visit(ctx.stmt()),
         }
 
-    def visitStmt(self, ctx):
-        return self.visit(ctx.simple_stmt() or ctx.compound_stmt())
-
     def visitStmtUse(self, ctx):
         if ctx.only:
             detail = ['only', *self.visit(ctx.only)]
@@ -389,6 +386,7 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ExprLambda'),
             'ids': self.visit(ctx.ID()),
             'expr': self.visit(ctx.expr()),
+            'block': self.visit(ctx.block()),
         }
 
     def visitExprTuple(self, ctx):

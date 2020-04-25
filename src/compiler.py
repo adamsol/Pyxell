@@ -1248,7 +1248,7 @@ class PyxellCompiler:
             self.env['#return'] = t.Generator(type)
 
         value = self.cast(node, value, type)
-        
+
         self.output(f'co_yield {value}')
 
     def compileStmtClass(self, node):
@@ -1746,6 +1746,16 @@ class PyxellCompiler:
     def compileExprLambda(self, node):
         id = f'$_lambda_{len(self.env)}'
         typevars = [f'$T{i}' for i in range(len(node['ids'])+1)]
+
+        if node.get('block'):
+            block = node['block']
+        else:
+            block = {
+                **node,
+                'node': 'StmtReturn',
+                'expr': node['expr'],
+            }
+
         self.compile({
             **node,
             'node': 'StmtFunc',
@@ -1762,13 +1772,10 @@ class PyxellCompiler:
                 'node': 'TypeName',
                 'name': typevars[0],
             },
-            'block': {
-                **node,
-                'node': 'StmtReturn',
-                'expr': node['expr'],
-            },
+            'block': block,
             'lambda': True,
         })
+
         return self.get(node, id)
 
     def compileExprTuple(self, node):

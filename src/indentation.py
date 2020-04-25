@@ -61,7 +61,7 @@ def transform_indented_code(code):
                     break
                 elif indents[-1].startswith(indent):
                     # Add a closing brace to the last non-empty line.
-                    lines[j] += '}'
+                    lines[j] += '};'
                     indents.pop()
                 else:
                     # Indentation must match one of the previous blocks.
@@ -76,6 +76,6 @@ def transform_indented_code(code):
 
     indents.pop()
     if j is not None:
-        lines[-1] += ';' + '}' * len(indents)
+        lines[-1] += ';' + '};' * len(indents)
 
     return '\n'.join(lines)

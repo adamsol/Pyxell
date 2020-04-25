@@ -1,15 +1,14 @@
 grammar Pyxell;
 
 program
-  : stmt* EOF
+  : (stmt ';')* EOF
+  ;
+
+block
+  : '{' (stmt ';')+ '}'
   ;
 
 stmt
-  : simple_stmt ';'
-  | compound_stmt
-  ;
-
-simple_stmt
   : 'use' name=ID ('only' only=id_list | 'hiding' hiding=id_list | 'as' as_=ID)? # StmtUse
   | 'skip' # StmtSkip
   | 'print' tuple_expr? # StmtPrint
@@ -19,15 +18,12 @@ simple_stmt
   | s=('break' | 'continue') # StmtLoopControl
   | 'return' tuple_expr? # StmtReturn
   | 'yield' tuple_expr # StmtYield
-  ;
-
-compound_stmt
-  : 'if' expr 'do' block ('elif' expr 'do' block)* ('else' 'do' block)? # StmtIf
+  | 'if' expr 'do' block (';' 'elif' expr 'do' block)* (';' 'else' 'do' block)? # StmtIf
   | 'while' expr 'do' block # StmtWhile
   | 'until' expr 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? 'do' block # StmtFor
-  | 'func' gen='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern' ';') # StmtFunc
-  | 'class' ID ('(' typ ')')? 'def' '{' class_member+ '}' # StmtClass
+  | 'func' gen='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern') # StmtFunc
+  | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
   ;
 
 func_arg
@@ -39,14 +35,10 @@ func_args
   ;
 
 class_member
-  : typ ID (':' tuple_expr)? ';' # ClassField
-  | 'func' gen='*'? ID args=func_args (ret=typ)? ('def' block | 'abstract' ';') # ClassMethod
-  | 'constructor' args=func_args ('def' block | 'abstract' ';') # ClassConstructor
+  : typ ID (':' tuple_expr)? # ClassField
+  | 'func' gen='*'? ID args=func_args (ret=typ)? ('def' block | 'abstract') # ClassMethod
+  | 'constructor' args=func_args ('def' block | 'abstract') # ClassConstructor
   | 'destructor' '(' ')' 'def' block # ClassDestructor
-  ;
-
-block
-  : '{' stmt+ '}'
   ;
 
 expr
@@ -85,7 +77,7 @@ expr
   | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr op='??' expr # ExprBinaryOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
-  | 'lambda' (ID ',')* ID? ':' expr # ExprLambda
+  | 'lambda' (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
   ;
 
 tuple_expr
