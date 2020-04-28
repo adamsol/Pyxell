@@ -1,0 +1,11 @@
+
+a = ['a'..'c']
+
+join = a.join
+print join(""), join("+")
+
+fold = a.fold
+print fold(_+_, "")
+
+(Char->Int)->[Int] map = a.map
+print map(_.code)

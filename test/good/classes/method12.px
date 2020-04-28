@@ -1,0 +1,10 @@
+
+class Logger def
+    String prefix
+
+    func log(String msg) String def
+        return "{self.prefix} {msg}"
+
+logger = Logger("[log]")
+for s in ["test", "abc"].map(logger.log) do
+    print s

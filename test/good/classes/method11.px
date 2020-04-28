@@ -1,0 +1,17 @@
+
+class A def
+    Int x
+
+    func f() Int def
+        return self.x
+
+a = A(5)
+f = a.f
+print f()
+
+a.x = 3
+print f()
+
+->Int f'
+for f' in [f, A(2).f] do
+    print f'()

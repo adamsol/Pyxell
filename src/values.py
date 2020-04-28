@@ -1,4 +1,6 @@
 
+import copy
+
 from . import types as t
 
 
@@ -9,6 +11,13 @@ class Value:
 
     def isTemplate(value):
         return isinstance(value, FunctionTemplate)
+
+    def bind(self, obj):
+        value = copy.copy(self)
+        if obj is None:
+            return value
+        value.type = t.Func(value.type.args[1:], value.type.ret)
+        return Bind(value, obj)
 
 
 class Literal(Value):
@@ -130,11 +139,19 @@ class FunctionTemplate(Value):
         super().__init__(type)
         self.id = id
         self.final = True  # identifier cannot be redefined
+        self.bound = None
         self.typevars = typevars
         self.body = body
         self.env = env
         self.lambda_ = lambda_
         self.compiled = {}
+
+    def bind(self, obj):
+        template = copy.copy(self)
+        if obj is None:
+            return template
+        template.bound = obj
+        return template
 
 
 class Attribute(Value):
@@ -243,3 +260,15 @@ class Lambda(Value):
         capture = '=' + ''.join(f', &{var}' for var in self.capture_vars)
         args = ', '.join([f'{arg.type} {var}' for arg, var in zip(self.type.args, self.arg_vars)])
         return f'[{capture}]({args}) mutable {self.body}'
+
+
+class Bind(Value):
+
+    def __init__(self, func, obj):
+        super().__init__(func.type)
+        self.func = func
+        self.obj = obj
+
+    def __str__(self):
+        # https://stackoverflow.com/a/57114008
+        return f'[=](auto&& ...args) {{ return {self.func}({self.obj}, args...); }}'

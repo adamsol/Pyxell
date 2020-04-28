@@ -1,0 +1,6 @@
+
+class A def
+    func f() Int def
+        return 0
+
+A->Int f = A().f

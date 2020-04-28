@@ -272,10 +272,10 @@ class PyxellCompiler:
             id = expr['id']
             if id in self.units:
                 with self.unit(id):
-                    return None, self.get(node, attr)
+                    return self.get(node, attr)
 
         obj = self.tmp(self.compile(expr))
-        return obj, self.attr(node, obj, attr)
+        return self.attr(node, obj, attr)
 
     def attr(self, node, obj, attr):
         type = obj.type
@@ -385,6 +385,9 @@ class PyxellCompiler:
         if value is None:
             self.throw(node, err.NoAttribute(type, attr))
 
+        if value.type.isFunc() and (not type.isClass() or attr in type.methods):
+            value = value.bind(obj)
+
         return value
 
     def member(self, node, obj, attr, lvalue=False):
@@ -414,6 +417,8 @@ class PyxellCompiler:
 
             # Special case to handle generic functions and lambdas.
             if value.isTemplate():
+                if value.bound:
+                    type = t.Func([value.bound.type] + type.args, type.ret)
                 d = type_variables_assignment(type, value.type)
                 if d is None:
                     self.throw(node, err.IllegalAssignment(value.type, type))
@@ -801,7 +806,7 @@ class PyxellCompiler:
         real_types = tuple(self.env.get(name) for name in template.typevars)
 
         if real_types in template.compiled:
-            return template.compiled[real_types]
+            return template.compiled[real_types].bind(template.bound)
 
         body = template.body
 
@@ -883,7 +888,7 @@ class PyxellCompiler:
                 del template.compiled[real_types]
                 self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=self.resolve_type(func_type))
 
-        return func
+        return func.bind(template.bound)
 
 
     ### Statements ###
@@ -1449,8 +1454,7 @@ class PyxellCompiler:
             obj = self.tmp(self.compile(expr))
             return self.safe(node, obj, lambda: v.Nullable(self.attr(node, v.Extract(obj), attr)), lambda: v.null)
 
-        obj, value = self.attribute(node, expr, attr)
-        return value
+        return self.attribute(node, expr, attr)
 
     def compileExprIndex(self, node):
         exprs = node['exprs']
@@ -1478,9 +1482,13 @@ class PyxellCompiler:
     def compileExprCall(self, node):
         expr = node['expr']
 
-        def _resolve_args(obj, func):
+        def _resolve_args(func):
             if not func.type.isFunc():
                 self.throw(node, err.NotFunction(func.type))
+
+            obj = None
+            if func.isTemplate() and func.bound:
+                obj = func.bound
 
             func_args = func.type.args[1:] if obj else func.type.args
             func_named_args = {func_arg.name for func_arg in func_args}
@@ -1571,9 +1579,6 @@ class PyxellCompiler:
                         raise
                     self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
-                if obj:
-                    args.insert(0, obj)
-
                 if func.isTemplate():
                     try:
                         func = self.function(func)
@@ -1582,8 +1587,8 @@ class PyxellCompiler:
 
                 return func, args
 
-        def _call(obj, func):
-            func, args = _resolve_args(obj, func)
+        def _call(func):
+            func, args = _resolve_args(func)
 
             return v.Call(func, *args, type=func.type.ret)
 
@@ -1596,7 +1601,7 @@ class PyxellCompiler:
                 def callback():
                     value = self.tmp(v.Extract(obj))
                     func = self.attr(node, value, attr)
-                    result = _call(value, func)
+                    result = _call(func)
 
                     if result.type == t.Void:
                         self.output(result)
@@ -1607,35 +1612,31 @@ class PyxellCompiler:
                 return self.safe(node, obj, callback, lambda: v.null)
 
             else:
-                obj, func = self.attribute(expr, expr['expr'], attr)
-
-                if obj and obj.type.isClass() and attr not in obj.type.methods:
-                    obj = None
+                func = self.attribute(expr, expr['expr'], attr)
 
         else:
             func = self.compile(expr)
 
             if expr['node'] == 'AtomSuper':
                 obj = v.Cast(self.get(expr, 'self'), func.type.args[0].type)
-            else:
-                obj = None
+                func = func.bind(obj)
 
         if isinstance(func, t.Class):
             cls = func
             obj = self.tmp(v.Object(cls))
             method = cls.methods.get('<constructor>')
             if method:
-                self.output(_call(obj, method))
+                self.output(_call(method.bind(obj)))
             else:
                 fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
                 constructor_type = t.Func([t.Func.Arg(field.type, name, default=True) for name, field in fields.items()])
-                args = _resolve_args(None, v.Value(type=constructor_type))[1]
+                args = _resolve_args(v.Value(type=constructor_type))[1]
                 for name, value in zip(fields, args):
                     if not getattr(value, 'not_provided', False):
                         self.store(self.attr(node, obj, name), value)
             return obj
 
-        result = _call(obj, func)
+        result = _call(func)
         if result.type != t.Void:
             result = self.tmp(result)
         return result
