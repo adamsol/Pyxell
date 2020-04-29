@@ -1,0 +1,6 @@
+
+func* f<T>() T def
+    yield ""
+    yield 0
+
+f()

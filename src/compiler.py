@@ -1771,7 +1771,7 @@ class PyxellCompiler:
                 'name': typevars[0],
             },
             'block': block,
-            'lambda': True,
+            'lambda': node.get('block') is None,
         })
 
         return self.get(node, id)

@@ -387,6 +387,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'ids': self.visit(ctx.ID()),
             'expr': self.visit(ctx.expr()),
             'block': self.visit(ctx.block()),
+            **({'gen': True} if ctx.gen else {}),
         }
 
     def visitExprTuple(self, ctx):

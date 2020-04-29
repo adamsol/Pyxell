@@ -1,0 +1,7 @@
+
+gen = lambda* x, y def
+    yield x + y
+    yield x * y
+
+for x in gen(5, 3) do
+    print x

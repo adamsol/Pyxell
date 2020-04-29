@@ -1,0 +1,6 @@
+
+f = lambda* def
+    yield 1
+    yield true
+
+f()
