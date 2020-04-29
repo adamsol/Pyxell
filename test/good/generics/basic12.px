@@ -1,0 +1,7 @@
+
+func f<A, B>(A x) def
+    print x
+
+f(true)
+f(false)
+f(1)

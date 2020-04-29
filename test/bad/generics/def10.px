@@ -1,0 +1,5 @@
+
+func f<T>() def
+    T x
+
+f()

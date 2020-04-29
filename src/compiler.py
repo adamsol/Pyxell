@@ -841,7 +841,7 @@ class PyxellCompiler:
                 # This is safe, since any type assignment errors have been found during the compilation.
                 self.env.update(type_variables_assignment(ret, func_type.ret))
 
-            real_types = tuple(self.env[name] for name in template.typevars)
+            real_types = tuple(self.env.get(name) for name in template.typevars)
             func_type = self.resolve_type(template.type)
             func = self.var(func_type, prefix='f')
             arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
@@ -1571,9 +1571,6 @@ class PyxellCompiler:
 
                 try:
                     args = [self.cast(node, arg, self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
-                except KeyError:
-                    # Not all type variables have been resolved.
-                    self.throw(node, err.UnknownType())
                 except err as e:
                     if not func.isTemplate():
                         raise
