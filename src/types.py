@@ -350,28 +350,25 @@ def common_superclass(type1, type2):
             return None
 
 
-def type_variables_assignment(type1, type2, conversion_allowed=True, covariance=True):
+def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=True):
 
-    if type1.isArray() and type2.isArray():
-        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
-    if type1.isSet() and type2.isSet():
-        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
-    if type1.isDict() and type2.isDict():
-        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
+    if type1.isArray() and type2.isArray() or type1.isSet() and type2.isSet() or type1.isDict() and type2.isDict():
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed=covariance)
+
     if type1.isGenerator() and type2.isGenerator():
-        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed=covariance)
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
 
     if type1.isNullable() and type2.isNullable():
-        return type_variables_assignment(type1.subtype, type2.subtype, conversion_allowed, covariance)
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
     if not type1.isNullable() and type2.isNullable() and conversion_allowed:
-        return type_variables_assignment(type1, type2.subtype, conversion_allowed, covariance)
+        return type_variables_assignment(type1, type2.subtype, covariance, conversion_allowed)
 
     if type1.isTuple() and type2.isTuple():
         if len(type1.elements) != len(type2.elements):
             return None
         type_lists = defaultdict(list)
         for e1, e2 in zip(type1.elements, type2.elements):
-            d = type_variables_assignment(e1, e2, conversion_allowed, covariance)
+            d = type_variables_assignment(e1, e2, covariance, conversion_allowed)
             if d is None:
                 return None
             for name, type in d.items():
@@ -391,7 +388,7 @@ def type_variables_assignment(type1, type2, conversion_allowed=True, covariance=
         return type_variables_assignment(
             Tuple([arg.type for arg in type1.args] + [type1.ret]),
             Tuple([arg.type for arg in type2.args] + [type2.ret]),
-            conversion_allowed)
+            covariance, conversion_allowed)
 
     if type1.isClass() and type2.isClass() and conversion_allowed:
         return {} if common_superclass(type1, type2) == type2 else None
@@ -417,4 +414,4 @@ def get_type_variables(type):
 
 
 def can_cast(type1, type2, covariance=True):
-    return type_variables_assignment(type1, type2, covariance=covariance) == {}
+    return type_variables_assignment(type1, type2, covariance) == {}
