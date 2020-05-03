@@ -2,7 +2,7 @@
 for b in false..true do
     print b
 
-for b in true...false do
+for _ in true...false do
     print "no"
 
 for b in true..false step -1 do

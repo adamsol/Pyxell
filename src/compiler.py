@@ -505,6 +505,9 @@ class PyxellCompiler:
         elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
             return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
 
+        elif expr['node'] == 'AtomPlaceholder':
+            return None
+
         else:
             self.throw(node, err.NotLvalue())
 
@@ -538,6 +541,8 @@ class PyxellCompiler:
             self.initialized.add(id)
         else:
             var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
+            if var is None:
+                return
             value = self.cast(node, value, var.type)
             self.store(var, value)
 
@@ -782,7 +787,7 @@ class PyxellCompiler:
                 if expr['node'] == 'AtomString':
                     return expr
                 return convert_expr(expr)
-            if node == 'AtomStub':
+            if node == 'AtomPlaceholder':
                 id = f'${len(ids)}'
                 ids.append(id)
                 return {
@@ -960,6 +965,8 @@ class PyxellCompiler:
         exprs = node['exprs']
         op = node['op']
         left = self.lvalue(node, exprs[0])
+        if left is None:
+            self.throw(node, err.IllegalPlaceholder())
 
         if op == '??':
             block = c.Block()

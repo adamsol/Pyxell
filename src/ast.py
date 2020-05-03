@@ -456,7 +456,7 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitAtomId(self, ctx):
         id = ctx.getText()
         if id == '_':
-            return _node(ctx, 'AtomStub')
+            return _node(ctx, 'AtomPlaceholder')
         return {
             **_node(ctx, 'AtomId'),
             'id': id,

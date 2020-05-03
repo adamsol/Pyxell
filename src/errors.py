@@ -17,6 +17,7 @@ class PyxellError(Exception):
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
     IllegalAssignment = lambda t1, t2: f"Illegal assignment from `{t1.show()}` to `{t2.show()}`"
     IllegalOverride = lambda t1, t2: f"Cannot override member of type `{t1.show()}` with type `{t2.show()}`"
+    IllegalPlaceholder = lambda: "Cannot use placeholder here"
     IllegalRange = lambda: "Range expression cannot be used in this context"
     IllegalRedefinition = lambda id: f"Illegal redefinition of identifier `{id}`"
     IllegalSuper = lambda: "Cannot use `super` here"

@@ -53,7 +53,7 @@ func fib(Int n) Int def
     if n <= 0 do
         return 0
     a, b = 0, 1
-    for i in 2..n do
+    for _ in 2..n do
         a, b = b, a+b
     return b
         

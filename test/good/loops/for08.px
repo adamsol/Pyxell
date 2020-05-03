@@ -1,5 +1,5 @@
 
 x = 5
-for a, b, c in 1..x, 21...20+x, 'A'... do
+for a, b, c, _ in 1..x, 21...20+x, 'A'..., 0... do
     if b - a == 20 do
         print a, c
