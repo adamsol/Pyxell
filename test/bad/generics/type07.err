@@ -1,1 +1,1 @@
-Illegal assignment from `Char*Int*String` to `A*B*A`.
+Illegal assignment from `Char*Int*Int` to `A*B*A`.

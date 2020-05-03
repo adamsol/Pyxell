@@ -195,26 +195,34 @@ template <typename T> bool operator > (const custom_ptr<T>& lhs, const custom_pt
 template <typename T> bool operator <= (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs <= *rhs; }
 template <typename T> bool operator >= (const custom_ptr<T>& lhs, const custom_ptr<T>& rhs) { return *lhs >= *rhs; }
 
-namespace std
-{
-    template <typename T>
-    struct hash<custom_ptr<T>>
-    {
-        size_t operator () (const custom_ptr<T>& x) const
-        {
-            return hash<T>()(*x);
-        }
-    };
-}
-
 /* String */
 
-using String = custom_ptr<std::string>;
+struct String: public custom_ptr<std::string>
+{
+    using custom_ptr<std::string>::custom_ptr;
+
+    String(Char x)
+    {
+        this->p = std::make_shared<std::string>(1, x);
+    }
+};
 
 template <typename... Args>
 String make_string(Args&&... args)
 {
     return String(std::make_shared<std::string>(std::forward<Args>(args)...));
+}
+
+namespace std
+{
+    template <>
+    struct hash<String>
+    {
+        size_t operator () (const String& x) const
+        {
+            return hash<std::string>()(*x);
+        }
+    };
 }
 
 /* Array */
@@ -471,16 +479,6 @@ Rat pow(Rat b, Int e)
 String concat(const String& a, const String& b)
 {
     return make_string(*a + *b);
-}
-
-String concat(const String& a, Char b)
-{
-    return make_string(*a + b);
-}
-
-String concat(Char a, const String& b)
-{
-    return make_string(a + *b);
 }
 
 template <typename T>

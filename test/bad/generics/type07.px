@@ -2,4 +2,4 @@
 func f<A,B>(A*B*A p) def
     return
 
-f(('$', 7, "$"))
+f(('$', 7, 8))

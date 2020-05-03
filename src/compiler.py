@@ -632,7 +632,7 @@ class PyxellCompiler:
                 return v.BinaryOperation(left, op, right, type=left.type)
 
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
-                return v.Call('concat', left, right, type=t.String)
+                return v.Call('concat', v.Cast(left, t.String), v.Cast(right, t.String), type=t.String)
 
             elif left.type == right.type and left.type.isCollection():
                 return v.Call('concat', left, right, type=left.type)

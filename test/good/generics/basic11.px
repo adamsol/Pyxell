@@ -3,3 +3,4 @@ func f<T>(T x, T y) def
     print x, y
 
 f(0, 1.0)
+f("ab", 'c')

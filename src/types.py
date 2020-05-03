@@ -284,9 +284,10 @@ def unify_types(type1, *types):
 
     if type1 in {Int, Rat} and type2 in {Int, Rat}:
         return Rat
-
     if type1 in {Int, Rat, Float} and type2 in {Int, Rat, Float}:
         return Float
+    if type1 in {Char, String} and type2 in {Char, String}:
+        return String
 
     if type1.isArray() and type2.isArray():
         subtype = unify_types(type1.subtype, type2.subtype)
@@ -398,10 +399,15 @@ def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=
 
     if type1 == Unknown:
         return {}
-    if type1 == Int and type2 == Rat and conversion_allowed:
-        return {}
-    if type1 in {Int, Rat} and type2 == Float and conversion_allowed:
-        return {}
+
+    if conversion_allowed:
+        if type1 == Int and type2 == Rat:
+            return {}
+        if type1 in {Int, Rat} and type2 == Float:
+            return {}
+        if type1 == Char and type2 == String:
+            return {}
+
     if type1 == type2:
         return {}
 

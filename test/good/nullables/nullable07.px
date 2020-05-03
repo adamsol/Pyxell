@@ -7,3 +7,6 @@ print b
 
 [Char?] c = ['a', null]
 print c
+
+[String?] d = ['q', null, "werty"]
+print d

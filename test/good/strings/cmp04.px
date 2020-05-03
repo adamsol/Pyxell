@@ -1,0 +1,4 @@
+
+print 'a' == "a", "b" != 'b'
+print "ab" > 'a', "b" <= 'a'
+print 'a' < "a", 'b' >= "b"
