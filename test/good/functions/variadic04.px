@@ -1,0 +1,8 @@
+
+func str(Char cs...) String def
+    return cs.join()
+
+[Char]->String f = str
+print f([])
+print f(['b', 'n', 'm'])
+print str('x')

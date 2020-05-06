@@ -155,7 +155,7 @@ class PyxellCompiler:
         if type.isTuple():
             return t.Tuple([self.resolve_type(type) for type in type.elements])
         if type.isFunc():
-            return t.Func([t.Func.Arg(self.resolve_type(arg.type), arg.name, arg.default) for arg in type.args], self.resolve_type(type.ret))
+            return t.Func([arg._replace(type=self.resolve_type(arg.type)) for arg in type.args], self.resolve_type(type.ret))
         return type
 
 
@@ -1181,11 +1181,16 @@ class PyxellCompiler:
                 self.declare(arg, type, "", check_only=True)
                 name = arg['name']
                 default = arg.get('default')
+                variadic = arg.get('variadic')
                 if default:
                     expect_default = True
-                elif expect_default:
+                elif expect_default and not variadic:
                     self.throw(arg, err.MissingDefault(name))
-                args.append(t.Func.Arg(type, name, default))
+                if variadic:
+                    if any(arg.variadic for arg in args):
+                        self.throw(arg, err.RepeatedVariadic())
+                    type = t.Array(type)
+                args.append(t.Func.Arg(type, name, default, variadic))
 
             ret_type = self.compile(node.get('ret')) or t.Void
             if node.get('gen'):
@@ -1497,11 +1502,11 @@ class PyxellCompiler:
             if func.isTemplate() and func.bound:
                 obj = func.bound
 
-            func_args = func.type.args[1:] if obj else func.type.args
+            func_args = func.type.args[1:] if obj else func.type.args[:]
             func_named_args = {func_arg.name for func_arg in func_args}
 
             args = []
-            pos_args = {}
+            pos_args = []
             named_args = {}
 
             for i, call_arg in enumerate(node['args']):
@@ -1516,7 +1521,7 @@ class PyxellCompiler:
                 else:
                     if named_args:
                         self.throw(node, err.ExpectedNamedArgument())
-                    pos_args[i] = expr
+                    pos_args.append(expr)
 
             with self.local():
                 type_variables = defaultdict(list)
@@ -1525,12 +1530,21 @@ class PyxellCompiler:
                     name = func_arg.name
 
                     if name in named_args:
-                        if i in pos_args:
+                        if i < len(pos_args):
                             self.throw(node, err.RepeatedArgument(name))
                         expr = named_args.pop(name)
 
-                    elif i in pos_args:
-                        expr = pos_args.pop(i)
+                    elif func_arg.variadic:
+                        expr = {
+                            'node': 'ExprCollection',
+                            'kind': 'array',
+                            'exprs': pos_args[i:],
+                        }
+                        pos_args = []
+
+                    elif i < len(pos_args):
+                        expr = pos_args[i]
+                        pos_args[i] = None
 
                     elif func_arg.default:
                         if isinstance(func_arg.default, v.Value):
@@ -1573,7 +1587,7 @@ class PyxellCompiler:
 
                     self.env[name] = assigned_types[name] = type
 
-                if pos_args:
+                if any(arg is not None for arg in pos_args):
                     self.throw(node, err.TooManyArguments())
 
                 try:

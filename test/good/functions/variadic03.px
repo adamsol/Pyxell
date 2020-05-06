@@ -1,0 +1,8 @@
+
+func f(String s: "?", Int args...) def
+    print s, args.length
+
+f()
+f('q')
+f(args=[])
+f(s="zxcv", args=[2..6])

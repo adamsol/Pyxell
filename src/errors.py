@@ -47,6 +47,7 @@ class PyxellError(Exception):
     RedeclaredIdentifier = lambda id: f"Identifier `{id}` is already declared"
     RepeatedArgument = lambda id: f"Repeated argument `{id}`"
     RepeatedMember = lambda id: f"Repeated member `{id}`"
+    RepeatedVariadic = lambda: f"Function may have only one variadic argument"
     TooFewArguments = lambda: f"Too few arguments"
     TooManyArguments = lambda: f"Too many arguments"
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"

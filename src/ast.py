@@ -142,6 +142,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'type': self.visit(ctx.typ()),
             'name': self.visit(ctx.ID()),
             'default': self.visit(ctx.expr()),
+            **({'variadic': True} if ctx.variadic else {}),
         }
 
     def visitStmtReturn(self, ctx):

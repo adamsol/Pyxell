@@ -27,7 +27,7 @@ stmt
   ;
 
 func_arg
-  : typ ID (':' expr)? # FuncArg
+  : typ ID (variadic='...' | (':' expr))? # FuncArg
   ;
 
 func_args

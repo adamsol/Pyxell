@@ -104,7 +104,7 @@ Features
 * Array/set/dictionary comprehension
 * Native tuples
 * First-class functions
-* Default and named function arguments
+* Default, named, and variadic function arguments
 * Lambda expressions
 * Generic functions
 * Generators

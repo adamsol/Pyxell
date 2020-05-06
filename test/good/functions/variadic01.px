@@ -1,0 +1,7 @@
+
+func sum(Int args...) Int def
+    return args.reduce(_+_)
+
+print sum()
+print sum(2)
+print sum(3, -4, 6)

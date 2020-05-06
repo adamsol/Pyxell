@@ -210,8 +210,8 @@ class Tuple(Type):
 
 class Func(Type):
 
-    Arg = namedtuple('Arg', ['type', 'name', 'default'])
-    Arg.__new__.__defaults__ = (None,) * 3
+    Arg = namedtuple('Arg', ['type', 'name', 'default', 'variadic'])
+    Arg.__new__.__defaults__ = (None,) * 4
 
     def __init__(self, args, ret=Void):
         super().__init__()
@@ -225,6 +225,9 @@ class Func(Type):
         return f'std::function<{self.ret}({self.args_str()})>'
 
     def show(self):
+        # args = [arg.type.show() for arg in self.args[:-1]]
+        # args.append((self.args[-1].subtype.show() + '...') if self.variadic else self.args[-1].show())
+        # return '->'.join([arg.type.show() for arg in args]) + '->' + self.ret.show()
         return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
 
     def eq(self, other):

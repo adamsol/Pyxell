@@ -1,0 +1,7 @@
+
+func f(Char a, String b..., Float c, Int d: 4) def
+    print a, c + d
+    print b.join()
+
+f('x', c=1)
+f('x', 'y', "abc", d=5, c=3.25)
