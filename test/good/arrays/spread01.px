@@ -1,0 +1,6 @@
+
+a = [1..6]
+print [...a].length
+print [...a step 2]
+print [...a step -3]
+print [...[]]

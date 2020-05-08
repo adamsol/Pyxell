@@ -765,7 +765,7 @@ class PyxellCompiler:
                     'iterables': lmap(convert_expr, expr['iterables']),
                     'steps': lmap(convert_expr, expr['steps']),
                 }
-            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull'}:
+            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprSpread', 'ExprIsNull'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -1359,11 +1359,14 @@ class PyxellCompiler:
         exprs = node['exprs']
         kind = node['kind']
 
-        if len(exprs) == 1 and exprs[0]['node'] == 'ExprRange':
+        if len(exprs) == 1 and exprs[0]['node'] in {'ExprRange', 'ExprSpread'}:
             var = {
                 'node': 'AtomId',
                 'id': f'$_range_{len(self.env)}',
             }
+            iterable = exprs[0]
+            if iterable['node'] == 'ExprSpread':
+                iterable = iterable['expr']
             return self.compile({
                 'node': 'ExprComprehension',
                 'kind': kind,
@@ -1371,7 +1374,7 @@ class PyxellCompiler:
                 'comprehensions': [{
                     'node': 'ComprehensionGenerator',
                     'vars': [var],
-                    'iterables': [exprs[0]],
+                    'iterables': [iterable],
                     'steps': [node['step']] if node.get('step') else [],
                 }],
             })
@@ -1686,6 +1689,9 @@ class PyxellCompiler:
 
     def compileExprRange(self, node):
         self.throw(node, err.IllegalRange())
+
+    def compileExprSpread(self, node):
+        self.throw(node, err.IllegalSpread())
 
     def compileExprIsNull(self, node):
         value = self.compile(node['expr'])

@@ -19,6 +19,7 @@ class PyxellError(Exception):
     IllegalOverride = lambda t1, t2: f"Cannot override member of type `{t1.show()}` with type `{t2.show()}`"
     IllegalPlaceholder = lambda: "Cannot use placeholder here"
     IllegalRange = lambda: "Range expression cannot be used in this context"
+    IllegalSpread = lambda: "Spread operator cannot be used in this context"
     IllegalRedefinition = lambda id: f"Illegal redefinition of identifier `{id}`"
     IllegalSuper = lambda: "Cannot use `super` here"
     InvalidArgumentTypes = lambda t: f"Cannot unify argument types for type variable `{t.show()}`"

@@ -346,6 +346,12 @@ class PyxellASTVisitor(PyxellVisitor):
             'inclusive': ctx.dots.text == '..',
         }
 
+    def visitExprSpread(self, ctx):
+        return {
+            **_node(ctx, 'ExprSpread'),
+            'expr': self.visit(ctx.expr()),
+        }
+
     def visitExprIsNull(self, ctx):
         return {
             **_node(ctx, 'ExprIsNull'),

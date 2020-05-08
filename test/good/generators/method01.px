@@ -7,4 +7,4 @@ class A def
             yield a/i
 
 
-print [x for x in A(4).f(2)]
+print [...A(4).f(2)]

@@ -3,5 +3,5 @@ func* range(Int n) Int def
     for x in 0...n do
         yield x
 
-print [x for x in range(0)]
-print [x for x in range(5) step 4]
+print [...range(0)]
+print [...range(5) step 4]

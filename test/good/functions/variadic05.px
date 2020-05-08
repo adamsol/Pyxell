@@ -1,0 +1,9 @@
+
+func output(String s, Int xs...) def
+    print s
+    for x in xs do
+        print x
+
+a = [5..7]
+output("test", ...a)
+output("", 2...4)
