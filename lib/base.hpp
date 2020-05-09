@@ -540,6 +540,7 @@ Set<T> symmetric_difference(const Set<T>& a, const Set<T>& b)
 template <typename T>
 T multiply(const T& v, Int m)
 {
+    m = std::max(m, 0LL);
     auto r = T(v.size()*m, typename T::value_type());
 
     for (std::size_t i = 0; i < v.size(); ++i) {

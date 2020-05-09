@@ -1,0 +1,5 @@
+
+k = 4 - 7
+s = "xy" * k
+print s.length
+print s + 'z'
