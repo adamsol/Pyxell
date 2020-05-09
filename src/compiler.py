@@ -30,7 +30,7 @@ class PyxellCompiler:
         self.required = set()
         self.units = {}
         self._unit = None
-        self._var_index = 0
+        self._seq_number = 0
 
         self._block = c.Block()
         self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
@@ -157,6 +157,10 @@ class PyxellCompiler:
         if type.isFunc():
             return t.Func([arg._replace(type=self.resolve_type(arg.type)) for arg in type.args], self.resolve_type(type.ret))
         return type
+
+    def fake_id(self, prefix='$id'):
+        self._seq_number += 1
+        return f'{prefix}{self._seq_number}'
 
 
     ### Code generation ###
@@ -446,9 +450,7 @@ class PyxellCompiler:
         return [self.cast(node, value, type) for value in values]
 
     def var(self, type, prefix='v'):
-        var = v.Variable(type, f'{prefix}{self._var_index}')
-        self._var_index += 1
-        return var
+        return v.Variable(type, self.fake_id(prefix))
 
     def tmp(self, value, force_var=False):
         if isinstance(value, v.Variable) or not force_var and isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
@@ -1362,7 +1364,7 @@ class PyxellCompiler:
         if len(exprs) == 1 and exprs[0]['node'] in {'ExprRange', 'ExprSpread'}:
             var = {
                 'node': 'AtomId',
-                'id': f'$_range_{len(self.env)}',
+                'id': self.fake_id(),
             }
             iterable = exprs[0]
             if iterable['node'] == 'ExprSpread':
@@ -1402,7 +1404,7 @@ class PyxellCompiler:
 
         value, collection = [{
             'node': 'AtomId',
-            'id': f'$_comprehension_{len(self.env)}_{name}',
+            'id': self.fake_id(),
         } for name in ['value', 'collection']]
 
         stmt = inner_stmt = {
@@ -1769,7 +1771,7 @@ class PyxellCompiler:
         return self.cond(node, self.compile(exprs[0]), lambda: self.compile(exprs[1]), lambda: self.compile(exprs[2]))
 
     def compileExprLambda(self, node):
-        id = f'$_lambda_{len(self.env)}'
+        id = self.fake_id()
         typevars = [f'$T{i}' for i in range(len(node['ids'])+1)]
 
         if node.get('block'):
