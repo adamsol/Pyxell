@@ -339,19 +339,6 @@ class PyxellASTVisitor(PyxellVisitor):
             'op': ctx.op.text,
         }
 
-    def visitExprRange(self, ctx):
-        return {
-            **_node(ctx, 'ExprRange'),
-            'exprs': self.visit(ctx.expr()),
-            'inclusive': ctx.dots.text == '..',
-        }
-
-    def visitExprSpread(self, ctx):
-        return {
-            **_node(ctx, 'ExprSpread'),
-            'expr': self.visit(ctx.expr()),
-        }
-
     def visitExprIsNull(self, ctx):
         return {
             **_node(ctx, 'ExprIsNull'),
@@ -386,6 +373,19 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ExprCond'),
             'exprs': self.visit(ctx.expr()),
+        }
+
+    def visitExprRange(self, ctx):
+        return {
+            **_node(ctx, 'ExprRange'),
+            'exprs': self.visit(ctx.expr()),
+            'inclusive': ctx.dots.text == '..',
+        }
+
+    def visitExprSpread(self, ctx):
+        return {
+            **_node(ctx, 'ExprSpread'),
+            'expr': self.visit(ctx.expr()),
         }
 
     def visitExprLambda(self, ctx):

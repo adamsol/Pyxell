@@ -67,9 +67,6 @@ expr
   | expr op='&&' expr # ExprBinaryOp
   | expr op='##' expr # ExprBinaryOp
   | expr op='||' expr # ExprBinaryOp
-  | expr dots=('..' | '...') expr # ExprRange
-  | expr dots='...' # ExprRange
-  | '...' expr # ExprSpread
   | expr op='|' expr # ExprBinaryOp
   | expr 'is' not_='not'? 'null' # ExprIsNull
   | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
@@ -78,6 +75,9 @@ expr
   | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr op='??' expr # ExprBinaryOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
+  | expr dots=('..' | '...') expr # ExprRange
+  | expr dots='...' # ExprRange
+  | '...' expr # ExprSpread
   | 'lambda' gen='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
   ;
 

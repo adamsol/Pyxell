@@ -750,7 +750,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprRange', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprTuple'}:
+            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -767,7 +767,7 @@ class PyxellCompiler:
                     'iterables': lmap(convert_expr, expr['iterables']),
                     'steps': lmap(convert_expr, expr['steps']),
                 }
-            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprSpread', 'ExprIsNull'}:
+            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -1689,12 +1689,6 @@ class PyxellCompiler:
 
         return self.binaryop(node, op, *map(self.compile, exprs))
 
-    def compileExprRange(self, node):
-        self.throw(node, err.IllegalRange())
-
-    def compileExprSpread(self, node):
-        self.throw(node, err.IllegalSpread())
-
     def compileExprIsNull(self, node):
         value = self.compile(node['expr'])
         if not value.type.isNullable():
@@ -1769,6 +1763,12 @@ class PyxellCompiler:
     def compileExprCond(self, node):
         exprs = node['exprs']
         return self.cond(node, self.compile(exprs[0]), lambda: self.compile(exprs[1]), lambda: self.compile(exprs[2]))
+
+    def compileExprRange(self, node):
+        self.throw(node, err.IllegalRange())
+
+    def compileExprSpread(self, node):
+        self.throw(node, err.IllegalSpread())
 
     def compileExprLambda(self, node):
         id = self.fake_id()

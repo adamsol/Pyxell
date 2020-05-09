@@ -48,8 +48,8 @@ def serializedATN():
         buf.write("\3\b\3\b\3\b\3\b\5\b\u01a1\n\b\3\b\3\b\5\b\u01a5\n\b\3")
         buf.write("\b\3\b\5\b\u01a9\n\b\5\b\u01ab\n\b\3\b\3\b\3\b\5\b\u01b0")
         buf.write("\n\b\3\b\3\b\3\b\3\b\7\b\u01b6\n\b\f\b\16\b\u01b9\13\b")
-        buf.write("\3\b\5\b\u01bc\n\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\5\b")
-        buf.write("\u01c6\n\b\3\b\7\b\u01c9\n\b\f\b\16\b\u01cc\13\b\3\t\3")
+        buf.write("\3\b\5\b\u01bc\n\b\3\b\3\b\3\b\3\b\3\b\3\b\5\b\u01c4\n")
+        buf.write("\b\3\b\3\b\3\b\7\b\u01c9\n\b\f\b\16\b\u01cc\13\b\3\t\3")
         buf.write("\t\3\t\7\t\u01d1\n\t\f\t\16\t\u01d4\13\t\3\t\3\t\3\n\3")
         buf.write("\n\3\n\3\13\3\13\3\13\3\13\3\13\3\13\5\13\u01e1\n\13\3")
         buf.write("\13\3\13\5\13\u01e5\n\13\3\f\3\f\5\f\u01e9\n\f\3\f\3\f")
@@ -61,7 +61,7 @@ def serializedATN():
         buf.write("\17\3\17\3\17\3\17\3\17\7\17\u0225\n\17\f\17\16\17\u0228")
         buf.write("\13\17\3\17\2\4\16\34\20\2\4\6\b\n\f\16\20\22\24\26\30")
         buf.write("\32\34\2\r\3\2\r\34\3\2\35\36\4\2\25\26??\3\2\r\16\3\2")
-        buf.write("\17\23\3\2\25\26\3\2\27\30\4\2\62\62@@\4\2+,EH\3\2QT\3")
+        buf.write("\17\23\3\2\25\26\3\2\27\30\4\2+,DG\4\2\62\62JJ\3\2QT\3")
         buf.write("\2LM\2\u0297\2#\3\2\2\2\4(\3\2\2\2\6\u00ad\3\2\2\2\b\u00af")
         buf.write("\3\2\2\2\n\u00b6\3\2\2\2\f\u00e4\3\2\2\2\16\u015d\3\2")
         buf.write("\2\2\20\u01d2\3\2\2\2\22\u01d7\3\2\2\2\24\u01e4\3\2\2")
@@ -176,8 +176,8 @@ def serializedATN():
         buf.write("\13\2\u013d\u013c\3\2\2\2\u013e\u013f\3\2\2\2\u013f\u013d")
         buf.write("\3\2\2\2\u013f\u0140\3\2\2\2\u0140\u0141\3\2\2\2\u0141")
         buf.write("\u0142\7\5\2\2\u0142\u015e\3\2\2\2\u0143\u0144\t\4\2\2")
-        buf.write("\u0144\u015e\5\16\b\26\u0145\u0146\7\62\2\2\u0146\u015e")
-        buf.write("\5\16\b\f\u0147\u0148\7C\2\2\u0148\u015e\5\16\b\b\u0149")
+        buf.write("\u0144\u015e\5\16\b\26\u0145\u0146\7B\2\2\u0146\u015e")
+        buf.write("\5\16\b\13\u0147\u0148\7\62\2\2\u0148\u015e\5\16\b\4\u0149")
         buf.write("\u014b\7K\2\2\u014a\u014c\7\17\2\2\u014b\u014a\3\2\2\2")
         buf.write("\u014b\u014c\3\2\2\2\u014c\u0151\3\2\2\2\u014d\u014e\7")
         buf.write("X\2\2\u014e\u0150\7\64\2\2\u014f\u014d\3\2\2\2\u0150\u0153")
@@ -202,15 +202,15 @@ def serializedATN():
         buf.write("\u01c9\5\16\b\22\u0171\u0172\f\20\2\2\u0172\u0173\7\32")
         buf.write("\2\2\u0173\u01c9\5\16\b\21\u0174\u0175\f\17\2\2\u0175")
         buf.write("\u0176\7\33\2\2\u0176\u01c9\5\16\b\20\u0177\u0178\f\16")
-        buf.write("\2\2\u0178\u0179\t\t\2\2\u0179\u01c9\5\16\b\17\u017a\u017b")
-        buf.write("\f\13\2\2\u017b\u017c\7A\2\2\u017c\u01c9\5\16\b\f\u017d")
-        buf.write("\u017e\f\t\2\2\u017e\u017f\t\n\2\2\u017f\u01c9\5\16\b")
-        buf.write("\t\u0180\u0181\f\7\2\2\u0181\u0182\7I\2\2\u0182\u01c9")
-        buf.write("\5\16\b\7\u0183\u0184\f\6\2\2\u0184\u0185\7J\2\2\u0185")
-        buf.write("\u01c9\5\16\b\6\u0186\u0187\f\5\2\2\u0187\u0188\7\34\2")
-        buf.write("\2\u0188\u01c9\5\16\b\5\u0189\u018a\f\4\2\2\u018a\u018b")
-        buf.write("\7;\2\2\u018b\u018c\5\16\b\2\u018c\u018d\7\63\2\2\u018d")
-        buf.write("\u018e\5\16\b\4\u018e\u01c9\3\2\2\2\u018f\u0191\f\34\2")
+        buf.write("\2\2\u0178\u0179\7@\2\2\u0179\u01c9\5\16\b\17\u017a\u017b")
+        buf.write("\f\f\2\2\u017b\u017c\t\t\2\2\u017c\u01c9\5\16\b\f\u017d")
+        buf.write("\u017e\f\n\2\2\u017e\u017f\7H\2\2\u017f\u01c9\5\16\b\n")
+        buf.write("\u0180\u0181\f\t\2\2\u0181\u0182\7I\2\2\u0182\u01c9\5")
+        buf.write("\16\b\t\u0183\u0184\f\b\2\2\u0184\u0185\7\34\2\2\u0185")
+        buf.write("\u01c9\5\16\b\b\u0186\u0187\f\7\2\2\u0187\u0188\7;\2\2")
+        buf.write("\u0188\u0189\5\16\b\2\u0189\u018a\7\63\2\2\u018a\u018b")
+        buf.write("\5\16\b\7\u018b\u01c9\3\2\2\2\u018c\u018d\f\6\2\2\u018d")
+        buf.write("\u018e\t\n\2\2\u018e\u01c9\5\16\b\7\u018f\u0191\f\34\2")
         buf.write("\2\u0190\u0192\7;\2\2\u0191\u0190\3\2\2\2\u0191\u0192")
         buf.write("\3\2\2\2\u0192\u0193\3\2\2\2\u0193\u0194\7<\2\2\u0194")
         buf.write("\u01c9\7X\2\2\u0195\u0197\f\33\2\2\u0196\u0198\7;\2\2")
@@ -232,19 +232,19 @@ def serializedATN():
         buf.write("\2\2\2\u01b9\u01b7\3\2\2\2\u01ba\u01bc\5\26\f\2\u01bb")
         buf.write("\u01ba\3\2\2\2\u01bb\u01bc\3\2\2\2\u01bc\u01bd\3\2\2\2")
         buf.write("\u01bd\u01c9\7\61\2\2\u01be\u01bf\f\30\2\2\u01bf\u01c9")
-        buf.write("\7>\2\2\u01c0\u01c1\f\r\2\2\u01c1\u01c9\7\62\2\2\u01c2")
-        buf.write("\u01c3\f\n\2\2\u01c3\u01c5\7B\2\2\u01c4\u01c6\7C\2\2\u01c5")
-        buf.write("\u01c4\3\2\2\2\u01c5\u01c6\3\2\2\2\u01c6\u01c7\3\2\2\2")
-        buf.write("\u01c7\u01c9\7D\2\2\u01c8\u015f\3\2\2\2\u01c8\u0162\3")
-        buf.write("\2\2\2\u01c8\u0165\3\2\2\2\u01c8\u0168\3\2\2\2\u01c8\u016b")
-        buf.write("\3\2\2\2\u01c8\u016e\3\2\2\2\u01c8\u0171\3\2\2\2\u01c8")
-        buf.write("\u0174\3\2\2\2\u01c8\u0177\3\2\2\2\u01c8\u017a\3\2\2\2")
-        buf.write("\u01c8\u017d\3\2\2\2\u01c8\u0180\3\2\2\2\u01c8\u0183\3")
-        buf.write("\2\2\2\u01c8\u0186\3\2\2\2\u01c8\u0189\3\2\2\2\u01c8\u018f")
-        buf.write("\3\2\2\2\u01c8\u0195\3\2\2\2\u01c8\u019d\3\2\2\2\u01c8")
-        buf.write("\u01ad\3\2\2\2\u01c8\u01be\3\2\2\2\u01c8\u01c0\3\2\2\2")
-        buf.write("\u01c8\u01c2\3\2\2\2\u01c9\u01cc\3\2\2\2\u01ca\u01c8\3")
-        buf.write("\2\2\2\u01ca\u01cb\3\2\2\2\u01cb\17\3\2\2\2\u01cc\u01ca")
+        buf.write("\7>\2\2\u01c0\u01c1\f\r\2\2\u01c1\u01c3\7A\2\2\u01c2\u01c4")
+        buf.write("\7B\2\2\u01c3\u01c2\3\2\2\2\u01c3\u01c4\3\2\2\2\u01c4")
+        buf.write("\u01c5\3\2\2\2\u01c5\u01c9\7C\2\2\u01c6\u01c7\f\5\2\2")
+        buf.write("\u01c7\u01c9\7\62\2\2\u01c8\u015f\3\2\2\2\u01c8\u0162")
+        buf.write("\3\2\2\2\u01c8\u0165\3\2\2\2\u01c8\u0168\3\2\2\2\u01c8")
+        buf.write("\u016b\3\2\2\2\u01c8\u016e\3\2\2\2\u01c8\u0171\3\2\2\2")
+        buf.write("\u01c8\u0174\3\2\2\2\u01c8\u0177\3\2\2\2\u01c8\u017a\3")
+        buf.write("\2\2\2\u01c8\u017d\3\2\2\2\u01c8\u0180\3\2\2\2\u01c8\u0183")
+        buf.write("\3\2\2\2\u01c8\u0186\3\2\2\2\u01c8\u018c\3\2\2\2\u01c8")
+        buf.write("\u018f\3\2\2\2\u01c8\u0195\3\2\2\2\u01c8\u019d\3\2\2\2")
+        buf.write("\u01c8\u01ad\3\2\2\2\u01c8\u01be\3\2\2\2\u01c8\u01c0\3")
+        buf.write("\2\2\2\u01c8\u01c6\3\2\2\2\u01c9\u01cc\3\2\2\2\u01ca\u01c8")
+        buf.write("\3\2\2\2\u01ca\u01cb\3\2\2\2\u01cb\17\3\2\2\2\u01cc\u01ca")
         buf.write("\3\2\2\2\u01cd\u01ce\5\16\b\2\u01ce\u01cf\7\64\2\2\u01cf")
         buf.write("\u01d1\3\2\2\2\u01d0\u01cd\3\2\2\2\u01d1\u01d4\3\2\2\2")
         buf.write("\u01d2\u01d0\3\2\2\2\u01d2\u01d3\3\2\2\2\u01d3\u01d5\3")
@@ -259,7 +259,7 @@ def serializedATN():
         buf.write("\2\2\u01e8\u01e6\3\2\2\2\u01e8\u01e9\3\2\2\2\u01e9\u01ea")
         buf.write("\3\2\2\2\u01ea\u01eb\5\16\b\2\u01eb\27\3\2\2\2\u01ec\u01fa")
         buf.write("\t\13\2\2\u01ed\u01fa\7U\2\2\u01ee\u01fa\t\f\2\2\u01ef")
-        buf.write("\u01fa\7V\2\2\u01f0\u01fa\7W\2\2\u01f1\u01fa\7D\2\2\u01f2")
+        buf.write("\u01fa\7V\2\2\u01f0\u01fa\7W\2\2\u01f1\u01fa\7C\2\2\u01f2")
         buf.write("\u01fa\7N\2\2\u01f3\u01f4\7O\2\2\u01f4\u01f5\7\60\2\2")
         buf.write("\u01f5\u01f6\5\34\17\2\u01f6\u01f7\7\61\2\2\u01f7\u01fa")
         buf.write("\3\2\2\2\u01f8\u01fa\7X\2\2\u01f9\u01ec\3\2\2\2\u01f9")
@@ -291,7 +291,7 @@ def serializedATN():
         buf.write("\u00cc\u00d1\u00d6\u00dd\u00e4\u00f2\u00f6\u00ff\u0103")
         buf.write("\u010e\u0115\u012b\u0134\u013f\u014b\u0151\u0155\u015b")
         buf.write("\u015d\u0191\u0197\u01a0\u01a4\u01a8\u01aa\u01af\u01b7")
-        buf.write("\u01bb\u01c5\u01c8\u01ca\u01d2\u01e0\u01e4\u01e8\u01f9")
+        buf.write("\u01bb\u01c3\u01c8\u01ca\u01d2\u01e0\u01e4\u01e8\u01f9")
         buf.write("\u01ff\u021a\u0224\u0226")
         return buf.getvalue()
 
@@ -316,8 +316,8 @@ class PyxellParser ( Parser ):
                      "'def'", "'extern'", "'class'", "'('", "')'", "'...'", 
                      "':'", "','", "'abstract'", "'constructor'", "'destructor'", 
                      "'['", "']'", "'{:}'", "'?'", "'.'", "'@'", "'!'", 
-                     "'~'", "'..'", "'|'", "'is'", "'not'", "'null'", "'=='", 
-                     "'!='", "'<='", "'>='", "'and'", "'or'", "'lambda'", 
+                     "'~'", "'|'", "'is'", "'not'", "'null'", "'=='", "'!='", 
+                     "'<='", "'>='", "'and'", "'or'", "'..'", "'lambda'", 
                      "'true'", "'false'", "'super'", "'default'", "'->'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
@@ -499,7 +499,7 @@ class PyxellParser ( Parser ):
             self.state = 33
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__26) | (1 << PyxellParser.T__27) | (1 << PyxellParser.T__28) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__34) | (1 << PyxellParser.T__35) | (1 << PyxellParser.T__36) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__44) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.T__77 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__26) | (1 << PyxellParser.T__27) | (1 << PyxellParser.T__28) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__34) | (1 << PyxellParser.T__35) | (1 << PyxellParser.T__36) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__44) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.T__77 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                 self.state = 28
                 self.stmt()
                 self.state = 29
@@ -564,7 +564,7 @@ class PyxellParser ( Parser ):
                 self.state = 44 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__26) | (1 << PyxellParser.T__27) | (1 << PyxellParser.T__28) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__34) | (1 << PyxellParser.T__35) | (1 << PyxellParser.T__36) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__44) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.T__77 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__26) | (1 << PyxellParser.T__27) | (1 << PyxellParser.T__28) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__34) | (1 << PyxellParser.T__35) | (1 << PyxellParser.T__36) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__44) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.T__77 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0)):
                     break
 
             self.state = 46
@@ -968,7 +968,7 @@ class PyxellParser ( Parser ):
                 self.state = 61
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                     self.state = 60
                     self.tuple_expr()
 
@@ -1054,7 +1054,7 @@ class PyxellParser ( Parser ):
                 self.state = 86
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                     self.state = 85
                     self.tuple_expr()
 
@@ -2205,7 +2205,7 @@ class PyxellParser ( Parser ):
                 self.state = 244
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                     self.state = 243
                     self.expr(0)
 
@@ -2236,7 +2236,7 @@ class PyxellParser ( Parser ):
                 self.state = 257
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                     self.state = 256
                     self.expr(0)
 
@@ -2419,23 +2419,23 @@ class PyxellParser ( Parser ):
                 pass
 
             elif la_ == 13:
-                localctx = PyxellParser.ExprSpreadContext(self, localctx)
-                self._ctx = localctx
-                _prevctx = localctx
-                self.state = 323
-                self.match(PyxellParser.T__47)
-                self.state = 324
-                self.expr(10)
-                pass
-
-            elif la_ == 14:
                 localctx = PyxellParser.ExprUnaryOpContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
+                self.state = 323
+                localctx.op = self.match(PyxellParser.T__63)
+                self.state = 324
+                self.expr(9)
+                pass
+
+            elif la_ == 14:
+                localctx = PyxellParser.ExprSpreadContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
                 self.state = 325
-                localctx.op = self.match(PyxellParser.T__64)
+                self.match(PyxellParser.T__47)
                 self.state = 326
-                self.expr(6)
+                self.expr(2)
                 pass
 
             elif la_ == 15:
@@ -2635,110 +2635,110 @@ class PyxellParser ( Parser ):
                         pass
 
                     elif la_ == 9:
-                        localctx = PyxellParser.ExprRangeContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprBinaryOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 373
                         if not self.precpred(self._ctx, 12):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 12)")
                         self.state = 374
-                        localctx.dots = self._input.LT(1)
-                        _la = self._input.LA(1)
-                        if not(_la==PyxellParser.T__47 or _la==PyxellParser.T__61):
-                            localctx.dots = self._errHandler.recoverInline(self)
-                        else:
-                            self._errHandler.reportMatch(self)
-                            self.consume()
+                        localctx.op = self.match(PyxellParser.T__61)
                         self.state = 375
                         self.expr(13)
                         pass
 
                     elif la_ == 10:
-                        localctx = PyxellParser.ExprBinaryOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprCmpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 376
-                        if not self.precpred(self._ctx, 9):
+                        if not self.precpred(self._ctx, 10):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 9)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 10)")
                         self.state = 377
-                        localctx.op = self.match(PyxellParser.T__62)
+                        localctx.op = self._input.LT(1)
+                        _la = self._input.LA(1)
+                        if not(((((_la - 41)) & ~0x3f) == 0 and ((1 << (_la - 41)) & ((1 << (PyxellParser.T__40 - 41)) | (1 << (PyxellParser.T__41 - 41)) | (1 << (PyxellParser.T__65 - 41)) | (1 << (PyxellParser.T__66 - 41)) | (1 << (PyxellParser.T__67 - 41)) | (1 << (PyxellParser.T__68 - 41)))) != 0)):
+                            localctx.op = self._errHandler.recoverInline(self)
+                        else:
+                            self._errHandler.reportMatch(self)
+                            self.consume()
                         self.state = 378
                         self.expr(10)
                         pass
 
                     elif la_ == 11:
-                        localctx = PyxellParser.ExprCmpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprLogicalOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 379
-                        if not self.precpred(self._ctx, 7):
+                        if not self.precpred(self._ctx, 8):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
                         self.state = 380
-                        localctx.op = self._input.LT(1)
-                        _la = self._input.LA(1)
-                        if not(((((_la - 41)) & ~0x3f) == 0 and ((1 << (_la - 41)) & ((1 << (PyxellParser.T__40 - 41)) | (1 << (PyxellParser.T__41 - 41)) | (1 << (PyxellParser.T__66 - 41)) | (1 << (PyxellParser.T__67 - 41)) | (1 << (PyxellParser.T__68 - 41)) | (1 << (PyxellParser.T__69 - 41)))) != 0)):
-                            localctx.op = self._errHandler.recoverInline(self)
-                        else:
-                            self._errHandler.reportMatch(self)
-                            self.consume()
+                        localctx.op = self.match(PyxellParser.T__69)
                         self.state = 381
-                        self.expr(7)
+                        self.expr(8)
                         pass
 
                     elif la_ == 12:
                         localctx = PyxellParser.ExprLogicalOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 382
-                        if not self.precpred(self._ctx, 5):
+                        if not self.precpred(self._ctx, 7):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
                         self.state = 383
                         localctx.op = self.match(PyxellParser.T__70)
                         self.state = 384
-                        self.expr(5)
+                        self.expr(7)
                         pass
 
                     elif la_ == 13:
-                        localctx = PyxellParser.ExprLogicalOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprBinaryOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 385
-                        if not self.precpred(self._ctx, 4):
+                        if not self.precpred(self._ctx, 6):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
                         self.state = 386
-                        localctx.op = self.match(PyxellParser.T__71)
+                        localctx.op = self.match(PyxellParser.T__25)
                         self.state = 387
-                        self.expr(4)
+                        self.expr(6)
                         pass
 
                     elif la_ == 14:
-                        localctx = PyxellParser.ExprBinaryOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprCondContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 388
-                        if not self.precpred(self._ctx, 3):
+                        if not self.precpred(self._ctx, 5):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
                         self.state = 389
-                        localctx.op = self.match(PyxellParser.T__25)
+                        self.match(PyxellParser.T__56)
                         self.state = 390
-                        self.expr(3)
+                        self.expr(0)
+                        self.state = 391
+                        self.match(PyxellParser.T__48)
+                        self.state = 392
+                        self.expr(5)
                         pass
 
                     elif la_ == 15:
-                        localctx = PyxellParser.ExprCondContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprRangeContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 391
-                        if not self.precpred(self._ctx, 2):
-                            from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 392
-                        self.match(PyxellParser.T__56)
-                        self.state = 393
-                        self.expr(0)
                         self.state = 394
-                        self.match(PyxellParser.T__48)
+                        if not self.precpred(self._ctx, 4):
+                            from antlr4.error.Errors import FailedPredicateException
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
                         self.state = 395
-                        self.expr(2)
+                        localctx.dots = self._input.LT(1)
+                        _la = self._input.LA(1)
+                        if not(_la==PyxellParser.T__47 or _la==PyxellParser.T__71):
+                            localctx.dots = self._errHandler.recoverInline(self)
+                        else:
+                            self._errHandler.reportMatch(self)
+                            self.consume()
+                        self.state = 396
+                        self.expr(5)
                         pass
 
                     elif la_ == 16:
@@ -2797,7 +2797,7 @@ class PyxellParser ( Parser ):
                         self.state = 414
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                             self.state = 413
                             localctx.e1 = self.expr(0)
 
@@ -2807,7 +2807,7 @@ class PyxellParser ( Parser ):
                         self.state = 418
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                             self.state = 417
                             localctx.e2 = self.expr(0)
 
@@ -2821,7 +2821,7 @@ class PyxellParser ( Parser ):
                             self.state = 422
                             self._errHandler.sync(self)
                             _la = self._input.LA(1)
-                            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                                 self.state = 421
                                 localctx.e3 = self.expr(0)
 
@@ -2865,7 +2865,7 @@ class PyxellParser ( Parser ):
                         self.state = 441
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
-                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__65 - 65)) | (1 << (PyxellParser.T__72 - 65)) | (1 << (PyxellParser.T__73 - 65)) | (1 << (PyxellParser.T__74 - 65)) | (1 << (PyxellParser.T__75 - 65)) | (1 << (PyxellParser.T__76 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+                        if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__47) | (1 << PyxellParser.T__53) | (1 << PyxellParser.T__55) | (1 << PyxellParser.T__60))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (PyxellParser.T__63 - 64)) | (1 << (PyxellParser.T__64 - 64)) | (1 << (PyxellParser.T__72 - 64)) | (1 << (PyxellParser.T__73 - 64)) | (1 << (PyxellParser.T__74 - 64)) | (1 << (PyxellParser.T__75 - 64)) | (1 << (PyxellParser.T__76 - 64)) | (1 << (PyxellParser.INT_DEC - 64)) | (1 << (PyxellParser.INT_BIN - 64)) | (1 << (PyxellParser.INT_OCT - 64)) | (1 << (PyxellParser.INT_HEX - 64)) | (1 << (PyxellParser.FLOAT - 64)) | (1 << (PyxellParser.CHAR - 64)) | (1 << (PyxellParser.STRING - 64)) | (1 << (PyxellParser.ID - 64)))) != 0):
                             self.state = 440
                             self.call_arg()
 
@@ -2886,35 +2886,35 @@ class PyxellParser ( Parser ):
                         pass
 
                     elif la_ == 21:
-                        localctx = PyxellParser.ExprRangeContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprIsNullContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 446
                         if not self.precpred(self._ctx, 11):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
                         self.state = 447
-                        localctx.dots = self.match(PyxellParser.T__47)
+                        self.match(PyxellParser.T__62)
+                        self.state = 449
+                        self._errHandler.sync(self)
+                        _la = self._input.LA(1)
+                        if _la==PyxellParser.T__63:
+                            self.state = 448
+                            localctx.not_ = self.match(PyxellParser.T__63)
+
+
+                        self.state = 451
+                        self.match(PyxellParser.T__64)
                         pass
 
                     elif la_ == 22:
-                        localctx = PyxellParser.ExprIsNullContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprRangeContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 448
-                        if not self.precpred(self._ctx, 8):
+                        self.state = 452
+                        if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
-                        self.state = 449
-                        self.match(PyxellParser.T__63)
-                        self.state = 451
-                        self._errHandler.sync(self)
-                        _la = self._input.LA(1)
-                        if _la==PyxellParser.T__64:
-                            self.state = 450
-                            localctx.not_ = self.match(PyxellParser.T__64)
-
-
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
                         self.state = 453
-                        self.match(PyxellParser.T__65)
+                        localctx.dots = self.match(PyxellParser.T__47)
                         pass
 
              
@@ -3435,11 +3435,11 @@ class PyxellParser ( Parser ):
                 self.state = 494
                 self.match(PyxellParser.STRING)
                 pass
-            elif token in [PyxellParser.T__65]:
+            elif token in [PyxellParser.T__64]:
                 localctx = PyxellParser.AtomNullContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
                 self.state = 495
-                self.match(PyxellParser.T__65)
+                self.match(PyxellParser.T__64)
                 pass
             elif token in [PyxellParser.T__75]:
                 localctx = PyxellParser.AtomSuperContext(self, localctx)
@@ -3918,27 +3918,27 @@ class PyxellParser ( Parser ):
          
 
             if predIndex == 9:
-                return self.precpred(self._ctx, 9)
+                return self.precpred(self._ctx, 10)
          
 
             if predIndex == 10:
-                return self.precpred(self._ctx, 7)
+                return self.precpred(self._ctx, 8)
          
 
             if predIndex == 11:
-                return self.precpred(self._ctx, 5)
+                return self.precpred(self._ctx, 7)
          
 
             if predIndex == 12:
-                return self.precpred(self._ctx, 4)
+                return self.precpred(self._ctx, 6)
          
 
             if predIndex == 13:
-                return self.precpred(self._ctx, 3)
+                return self.precpred(self._ctx, 5)
          
 
             if predIndex == 14:
-                return self.precpred(self._ctx, 2)
+                return self.precpred(self._ctx, 4)
          
 
             if predIndex == 15:
@@ -3966,7 +3966,7 @@ class PyxellParser ( Parser ):
          
 
             if predIndex == 21:
-                return self.precpred(self._ctx, 8)
+                return self.precpred(self._ctx, 3)
          
 
     def typ_sempred(self, localctx:TypContext, predIndex:int):
