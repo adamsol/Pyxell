@@ -1,7 +1,7 @@
 
-T' = 'T'
+func f<A, B>(A x) def
+    print x
 
-func f'<T'>(T' t') T' def
-    return t'
-
-print f'(T')
+f(true)
+f(false)
+f(1)

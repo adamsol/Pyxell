@@ -426,8 +426,7 @@ class PyxellCompiler:
                 d = type_variables_assignment(type, value.type)
                 if d is None:
                     self.throw(node, err.IllegalAssignment(value.type, type))
-                self.env.update(d)
-                return self.function(value)
+                return self.function(value, d)
 
             # This is the only place where containers are not covariant during type checking.
             if not can_cast(value.type, type, covariance=False):
@@ -466,13 +465,11 @@ class PyxellCompiler:
         self.store(tmp, value, decl='auto')
         return tmp
 
-    def declare(self, node, type, id, redeclare=False, initialize=False, check_only=False):
-        if not type.hasValue():
+    def declare(self, node, type, id, redeclare=False, initialize=False):
+        if not type.hasValue() or type.isVar():
             self.throw(node, err.InvalidDeclaration(type))
         if id in self.env and not redeclare:
             self.throw(node, err.RedeclaredIdentifier(id))
-        if check_only:
-            return
 
         var = self.var(type)
         self.env[id] = var
@@ -809,8 +806,8 @@ class PyxellCompiler:
             }
         return expr
 
-    def function(self, template):
-        real_types = tuple(self.env.get(name) for name in template.typevars)
+    def function(self, template, assigned_types={}):
+        real_types = tuple(assigned_types.get(name) for name in template.typevars)
 
         if real_types in template.compiled:
             return template.compiled[real_types].bind(template.bound)
@@ -822,57 +819,19 @@ class PyxellCompiler:
             template.compiled[real_types] = func
 
         else:
-            unknown_ret_type_variables = {name: t.Var(name) for name in get_type_variables(template.type.ret) if not isinstance(self.env.get(name), t.Type)}
-
-            # Try to resolve any unresolved type variables in the return type by fake-compiling the function.
-            if unknown_ret_type_variables:
-                for name in unknown_ret_type_variables:
-                    self.env[name] = t.Var(name)
+            with self.local():
+                self.env = template.env.copy()
+                self.env.update(assigned_types)
 
                 func_type = self.resolve_type(template.type)
 
-                with self.local():
-                    with self.no_output():
-                        self.env = template.env.copy()
+                func = self.var(func_type, prefix='f')
+                template.compiled[real_types] = func
 
-                        self.env['#return'] = func_type.ret
+                arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
+                block = c.Block()
 
-                        for arg in func_type.args:
-                            ptr = self.declare(body, arg.type, arg.name, redeclare=True, initialize=True)
-                            self.env[arg.name] = ptr
-
-                        self.compile(body)
-
-                    ret = self.env['#return']
-
-                # This is safe, since any type assignment errors have been found during the compilation.
-                self.env.update(type_variables_assignment(ret, func_type.ret))
-
-            real_types = tuple(self.env.get(name) for name in template.typevars)
-            func_type = self.resolve_type(template.type)
-            func = self.var(func_type, prefix='f')
-            arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
-            block = c.Block()
-
-            if not template.lambda_:
-                definition = c.FunctionBody(
-                    c.FunctionDeclaration(
-                        c.Value(str(func_type.ret), func.name),
-                        [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
-                    block)
-
-                self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
-                self.output(definition, toplevel=True)
-
-            template.compiled[real_types] = func
-
-            with self.block(block):
-                with self.local():
-                    self.env = template.env.copy()
-
-                    for name, type in zip(template.typevars, real_types):
-                        self.env[name] = type
-
+                with self.block(block):
                     self.env['#return'] = func_type.ret
                     self.env.pop('#loop', None)
 
@@ -885,15 +844,21 @@ class PyxellCompiler:
                     if '#return' not in self.initialized and func_type.ret.hasValue():
                         self.throw(body, err.MissingReturn())
 
-                    ret = self.env['#return']
-
-            self.env.update(type_variables_assignment(ret, func_type.ret))
+                    func_type.ret = self.env['#return']
 
             if template.lambda_:
                 # The closure is created every time the function is used (except for recursive calls),
                 # so current values of variables are captured, possibly different than in the moment of definition.
                 del template.compiled[real_types]
-                self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=self.resolve_type(func_type))
+                self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=func_type)
+            else:
+                definition = c.FunctionBody(
+                    c.FunctionDeclaration(
+                        c.Value(str(func_type.ret), func.name),
+                        [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
+                    block)
+                self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
+                self.output(definition, toplevel=True)
 
         return func.bind(template.bound)
 
@@ -1180,7 +1145,8 @@ class PyxellCompiler:
             expect_default = False
             for arg in node['args']:
                 type = self.compile(arg['type'])
-                self.declare(arg, type, "", check_only=True)
+                if not type.hasValue():
+                    self.throw(node, err.InvalidDeclaration(type))
                 name = arg['name']
                 default = arg.get('default')
                 variadic = arg.get('variadic')
@@ -1596,7 +1562,12 @@ class PyxellCompiler:
                     self.throw(node, err.TooManyArguments())
 
                 try:
-                    args = [self.cast(node, arg, self.resolve_type(func_arg.type)) for arg, func_arg in zip(args, func_args)]
+                    for i in range(len(args)):
+                        type = self.resolve_type(func_args[i].type)
+                        args[i] = self.cast(node, args[i], type)
+                        d = type_variables_assignment(args[i].type, func_args[i].type)
+                        assigned_types.update(d)
+                        self.env.update(d)
                 except err as e:
                     if not func.isTemplate():
                         raise
@@ -1604,7 +1575,7 @@ class PyxellCompiler:
 
                 if func.isTemplate():
                     try:
-                        func = self.function(func)
+                        func = self.function(func, assigned_types)
                     except err as e:
                         self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 

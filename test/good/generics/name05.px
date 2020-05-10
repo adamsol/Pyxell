@@ -1,0 +1,15 @@
+
+func call1<A,B,C>(A->B f, A x) C def
+    A x' = x
+    B r = f(x')
+    return r
+
+func call2<A,B,C>(B x, B->A f) C def
+    B->A f' = f
+    r = call1(f', x)
+    A r' = r
+    return r'
+
+print call2(4.5, _.toString())
+print call1(_.toString(), null)
+print call2(['$'], _[0])

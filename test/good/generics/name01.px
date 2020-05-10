@@ -1,7 +1,7 @@
 
-A = 'A'
+T' = 'T'
 
-func f<A>(A x) A def
-    return x
+func f'<T'>(T' t') T' def
+    return t'
 
-print f(A)
+print f'(T')

@@ -1,0 +1,13 @@
+
+func id<T>(T x) T def
+    return x
+
+func f<T>() T def
+    return id([id('?')])
+
+func g<T>(T x) T def
+    s = f()
+    T y = id(x)
+    return s.length + y
+
+print g(5)

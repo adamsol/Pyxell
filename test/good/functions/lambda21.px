@@ -1,0 +1,10 @@
+
+negate = lambda n def
+    return -n
+
+positive = lambda n def
+    return negate(n) < 0
+
+print positive(3)
+print positive(negate(1))
+print not positive(0)

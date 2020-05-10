@@ -383,9 +383,6 @@ def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=
             if type is None:
                 return None
             result[name] = type
-            for t in types:
-                if t.isVar():
-                    result[t.name] = type
         return result
 
     if type1.isFunc() and type2.isFunc():
