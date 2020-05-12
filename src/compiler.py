@@ -636,6 +636,9 @@ class PyxellCompiler:
             if left.type == right.type and left.type.isNumber():
                 return v.BinaryOperation(left, op, right, type=left.type)
 
+            elif left.type != right.type and left.type in {t.Char, t.Int} and right.type in {t.Char, t.Int}:
+                return v.Cast(v.BinaryOperation(left, op, right), t.Char)
+
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.Call('concat', v.Cast(left, t.String), v.Cast(right, t.String), type=t.String)
 
@@ -648,6 +651,12 @@ class PyxellCompiler:
         elif op == '-':
             if left.type == right.type and left.type.isNumber():
                 return v.BinaryOperation(left, op, right, type=left.type)
+
+            elif left.type == right.type and left.type == t.Char:
+                return v.BinaryOperation(v.Cast(left, t.Int), op, v.Cast(right, t.Int), type=t.Int)
+
+            elif left.type == t.Char and right.type == t.Int:
+                return v.Cast(v.BinaryOperation(left, op, right), t.Char)
 
             elif left.type == right.type and left.type.isSet():
                 return v.Call('difference', left, right, type=left.type)

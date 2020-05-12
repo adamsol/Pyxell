@@ -1,1 +1,1 @@
-No binary operator `+` defined for `Int` and `Char`.
+Illegal assignment from `Char` to `Int`.

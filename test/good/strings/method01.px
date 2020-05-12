@@ -2,6 +2,6 @@
 print "".all(_=='a'), "1259".all('0'<_<'9')
 print "".any(_>'a'), "0123".any(_>='3')
 print "abcadeab".filter(_<'c')
-print "1420".map((_.code+5).char)
+print "1420".map(_+5)
 print "XYZ".fold(_.code+_, 0)
 print "qwerty".reduce(min)
