@@ -48,6 +48,17 @@ func String_fold<B>(String s, Char->B->B f, B r) B def
         r = f(c, r)
     return r
 
+func String_reduce(String s, Char->Char->Char f) Char def
+    r = default(Char)
+    b = true
+    for c in s do
+        if b do
+            r = c
+            b = false
+        else do
+            r = f(c, r)
+    return r
+
 
 func Array_all<A>([A] a, A->Bool f: _) Bool def
     for x in a do

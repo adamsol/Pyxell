@@ -317,6 +317,7 @@ class PyxellCompiler:
                     'filter': self.env['String_filter'],
                     'map': self.env['String_map'],
                     'fold': self.env['String_fold'],
+                    'reduce': self.env['String_reduce'],
                     'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
                     'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
