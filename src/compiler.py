@@ -11,7 +11,7 @@ from . import values as v
 from . import types as t
 from .errors import NotSupportedError, PyxellError as err
 from .parsing import parse_expr
-from .types import can_cast, get_type_variables, type_variables_assignment, unify_types
+from .types import can_cast, has_type_variables, type_variables_assignment, unify_types
 from .utils import lmap
 
 
@@ -839,6 +839,24 @@ class PyxellCompiler:
                         self.env[arg.name] = var
                         self.initialized.add(arg.name)
 
+                    # Try to resolve any unresolved type variables in the return type.
+                    if has_type_variables(template.type.ret):
+                        with self.local():
+                            self.env['#return-types'] = []
+
+                            with self.no_output():
+                                self.compile(body)
+
+                            if self.env['#return-types']:
+                                ret = unify_types(*self.env['#return-types'])
+                                if ret is not None:
+                                    d = type_variables_assignment(ret, self.env['#return'])
+                                    if d is not None:
+                                        self.env.update(d)
+                                        func_type.ret = self.resolve_type(func_type.ret)
+
+                        self.env['#return'] = func_type.ret
+
                     self.compile(body)
 
                     if '#return' not in self.initialized and func_type.ret.hasValue():
@@ -1191,16 +1209,10 @@ class PyxellCompiler:
             if type.isGenerator():
                 self.throw(node, err.IllegalAssignment(value.type, type))
 
-            # Update unresolved type variables in the return type.
-            if not value.isTemplate():
-                d = type_variables_assignment(value.type, type)
-                if d is None:
-                    self.throw(node, err.IllegalAssignment(value.type, type))
-                if d:
-                    self.env.update(d)
-                    type = self.env['#return'] = self.resolve_type(type)
-
-            value = self.cast(node, value, type)
+            if '#return-types' in self.env:
+                self.env['#return-types'].append(value.type)
+            else:
+                value = self.cast(node, value, type)
 
         elif type.hasValue():
             self.throw(node, err.IllegalAssignment(t.Void, type))
@@ -1223,16 +1235,10 @@ class PyxellCompiler:
         type = type.subtype
         value = self.compile(node['expr'])
 
-        # Update unresolved type variables in the return type.
-        d = type_variables_assignment(value.type, type)
-        if d is None:
-            self.throw(node, err.IllegalAssignment(value.type, type))
-        if d:
-            self.env.update(d)
-            type = self.resolve_type(type)
-            self.env['#return'] = t.Generator(type)
-
-        value = self.cast(node, value, type)
+        if '#return-types' in self.env:
+            self.env['#return-types'].append(t.Generator(value.type))
+        else:
+            value = self.cast(node, value, type)
 
         self.output(f'co_yield {value}')
 

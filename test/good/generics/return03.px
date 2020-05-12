@@ -1,0 +1,8 @@
+
+func f<A,B,C>(A x) B*[C] def
+    while x > 0 do
+        return "abc", []
+    return '@', [null]
+
+print f(-1/2)
+print f(3)

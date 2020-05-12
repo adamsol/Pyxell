@@ -1,0 +1,8 @@
+
+func f<T>(Bool b) T def
+    if b do
+        return 1.0
+    else do
+        return 2
+
+print f(true), f(false)

@@ -414,9 +414,9 @@ def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=
     return None
 
 
-def get_type_variables(type):
+def has_type_variables(type):
     # For this to work properly, the condition `type1 == type2` in `type_variables_assignment` must be at the bottom.
-    return type_variables_assignment(type, type).keys()
+    return bool(type_variables_assignment(type, type))
 
 
 def can_cast(type1, type2, covariance=True):

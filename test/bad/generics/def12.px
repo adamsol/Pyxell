@@ -1,0 +1,6 @@
+
+func f<T>() T def
+    return false
+    return 0
+
+print f()

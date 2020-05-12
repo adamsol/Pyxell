@@ -1,0 +1,8 @@
+
+func* f<T>() T def
+    yield 5
+    yield 7/2
+    yield -3.0
+
+for x in f() do
+    print x

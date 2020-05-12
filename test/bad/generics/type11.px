@@ -2,4 +2,5 @@
 func f<A,B>(A x) B*B def
     return x, 2
 
+f(1)
 f(true)
