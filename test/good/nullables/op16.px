@@ -1,0 +1,4 @@
+
+a = [[], null]
+print a[0]?.length
+print a[1]?[0] ?? ['x']

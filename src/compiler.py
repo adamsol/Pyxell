@@ -1660,6 +1660,8 @@ class PyxellCompiler:
         if op == '??':
             left = self.tmp(self.compile(exprs[0]))
             try:
+                if left.type == t.Nullable(t.Unknown):
+                    return self.compile(exprs[1])
                 return self.safe(node, left, lambda: v.Extract(left), lambda: self.compile(exprs[1]))
             except err:
                 self.throw(node, err.NoBinaryOperator(op, left.type, self.compile(exprs[1]).type))

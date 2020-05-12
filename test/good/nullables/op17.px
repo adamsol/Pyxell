@@ -1,0 +1,12 @@
+
+f = lambda def
+    print 'f'
+    return [null]
+
+a = null
+print a ?? "??"
+
+b = f()[0] ?? 6.5
+print b + 1
+
+print false ? f()[1]! : null
