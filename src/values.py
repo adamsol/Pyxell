@@ -9,8 +9,8 @@ class Value:
     def __init__(self, type=None):
         self.type = type
 
-    def isTemplate(value):
-        return isinstance(value, FunctionTemplate)
+    def isTemplate(self):
+        return isinstance(self, FunctionTemplate)
 
     def bind(self, obj):
         value = copy.copy(self)

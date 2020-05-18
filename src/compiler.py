@@ -850,7 +850,7 @@ class PyxellCompiler:
                         self.initialized.add(arg.name)
 
                     # Try to resolve any unresolved type variables in the return type.
-                    if has_type_variables(template.type.ret):
+                    if has_type_variables(func_type.ret):
                         with self.local():
                             self.env['#return-types'] = []
 

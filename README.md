@@ -46,20 +46,6 @@ b.add(4.0)
 c['7'] = "8"
 ```
 
-Functions, tuples:
-
-```
-func fib(Int n) Int def
-    if n <= 0 do
-        return 0
-    a, b = 0, 1
-    for _ in 2..n do
-        a, b = b, a+b
-    return b
-        
-print fib(10)
-```
-
 Generic functions, lambda expressions:
 
 ```
@@ -72,6 +58,21 @@ print fold([2, 3, 4], _*_, 1)  -- 24
 
 -- There are built-in methods like this:
 print [0..10 step 2].reduce(_+_)  -- 30
+```
+
+Generators, tuples:
+
+```
+fib = lambda* n def
+    if n <= 0 do
+        return
+    a, b = 0, 1
+    yield a
+    for _ in 2..n do
+        yield b
+        a, b = b, a+b
+
+print [...fib(10)]
 ```
 
 Classes, nullable types:

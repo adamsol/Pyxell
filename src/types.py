@@ -225,9 +225,6 @@ class Func(Type):
         return f'std::function<{self.ret}({self.args_str()})>'
 
     def show(self):
-        # args = [arg.type.show() for arg in self.args[:-1]]
-        # args.append((self.args[-1].subtype.show() + '...') if self.variadic else self.args[-1].show())
-        # return '->'.join([arg.type.show() for arg in args]) + '->' + self.ret.show()
         return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
 
     def eq(self, other):
