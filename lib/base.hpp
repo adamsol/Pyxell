@@ -764,6 +764,16 @@ Void reverse(const Array<T>& x)
     std::reverse(x->begin(), x->end());
 }
 
+template <typename T, typename K>
+Void sort(const Array<T>& v, Bool reverse, std::function<K(T)> key)
+{
+    if (reverse) {
+        std::stable_sort(v->begin(), v->end(), [&](const T& x, const T& y) { return key(x) > key(y); });
+    } else {
+        std::stable_sort(v->begin(), v->end(), [&](const T& x, const T& y) { return key(x) < key(y); });
+    }
+}
+
 template <typename T>
 Array<T> copy(const Array<T>& x)
 {

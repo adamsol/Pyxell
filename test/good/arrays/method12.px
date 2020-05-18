@@ -1,0 +1,11 @@
+
+a = ["abc", "a", "bc"]
+
+a.sort()
+print a
+
+a.sort(reverse=true)
+print a
+
+a.sort(key=_.length)
+print a

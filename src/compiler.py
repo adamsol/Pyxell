@@ -341,6 +341,7 @@ class PyxellCompiler:
                     'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default=v.Int(1))]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'reverse': v.Variable(t.Func([type]), attr),
+                    'sort': v.Variable(t.Func([type, t.Func.Arg(t.Bool, 'reverse', default=v.false), t.Func.Arg(t.Func([type.subtype], t.Var('K')), 'key', default={'node': 'AtomPlaceholder'})]), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
                     'find': v.Variable(t.Func([type, type.subtype], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
