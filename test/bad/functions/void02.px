@@ -1,5 +1,2 @@
 
-func f() def
-    return
-
-x = f()
+Void x

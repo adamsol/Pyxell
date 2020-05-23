@@ -2,4 +2,4 @@
 func f() def
     return
 
-x = f()
+0, f()

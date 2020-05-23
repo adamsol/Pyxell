@@ -28,6 +28,7 @@ class PyxellError(Exception):
     InvalidLoopStep = lambda: f"Incompatible number of loop variables and step expressions"
     InvalidMember = lambda id: f"Invalid type signature of member `{id}`"
     InvalidModule = lambda id: f"Could not find module `{id}`"
+    InvalidReturnType = lambda t: f"`{t.show()}` is not a valid return type"
     MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     MissingReturn = lambda: f"Not all code paths return a value"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
@@ -55,6 +56,7 @@ class PyxellError(Exception):
     UninitializedIdentifier = lambda id: f"Identifier `{id}` might not have been initialized"
     UnexpectedArgument = lambda id: f"Unexpected argument `{id}`"
     UnexpectedStatement = lambda s: f"Unexpected `{s}` statement"
+    UnexpectedVoid = lambda: f"Function without return value cannot be called here"
     UnknownType = lambda: f"Cannot settle type of the expression"
 
     def __init__(self, msg, line, column=None):

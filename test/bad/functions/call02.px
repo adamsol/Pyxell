@@ -1,5 +1,5 @@
 
-func f(Int x) def
-    return
+func f(Int x) Bool def
+    return x > 0
 
 f(f(5))

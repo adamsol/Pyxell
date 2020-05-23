@@ -63,11 +63,13 @@ class PyxellCompiler:
             raise NotSupportedError(f"Generators require C++ coroutines support (use Clang).")
         return str(self.module)
 
-    def compile(self, node):
+    def compile(self, node, void_allowed=False):
         if not isinstance(node, dict):
             return node
         node = self.convert_lambda(node)
         result = getattr(self, 'compile'+node['node'])(node)
+        if isinstance(result, v.Value) and result.type == t.Void and not void_allowed:
+            self.throw(node, err.UnexpectedVoid())
         if '_eval' in node:
             node['_eval'] = node['_eval']()
         return result
@@ -871,12 +873,13 @@ class PyxellCompiler:
 
                         self.env['#return'] = func_type.ret
 
+                    if not func_type.ret.hasValue() and not func_type.ret.isGenerator() and func_type.ret != t.Void:
+                        self.throw(body, err.InvalidReturnType(func_type.ret))
+
                     self.compile(body)
 
                     if '#return' not in self.initialized and func_type.ret.hasValue():
                         self.throw(body, err.MissingReturn())
-
-                    func_type.ret = self.env['#return']
 
             if template.lambda_:
                 # The closure is created every time the function is used (except for recursive calls),
@@ -950,7 +953,7 @@ class PyxellCompiler:
             self.store(var, value)
 
     def compileStmtAssg(self, node):
-        value = self.compile(node['expr'])
+        value = self.compile(node['expr'], void_allowed=(len(node['lvalues']) == 0))
 
         if value.type == t.Void:
             self.output(value)
@@ -1218,7 +1221,7 @@ class PyxellCompiler:
 
         expr = node['expr']
         if expr:
-            value = self.compile(expr)
+            value = self.compile(expr, void_allowed=True)
 
             if type.isGenerator():
                 self.throw(node, err.IllegalAssignment(value.type, type))

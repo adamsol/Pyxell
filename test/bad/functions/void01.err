@@ -1,1 +1,1 @@
-Illegal assignment from `Void` to `Int`.
+Function without return value cannot be called here.

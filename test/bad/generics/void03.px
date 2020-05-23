@@ -1,0 +1,6 @@
+
+func f<T>() T def
+    return
+    return null
+
+f()

@@ -1,0 +1,5 @@
+
+func f<T>(T x) def
+    return
+
+f(f(0))

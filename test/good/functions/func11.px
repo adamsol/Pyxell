@@ -1,0 +1,10 @@
+
+func f() def
+    print 'f'
+    return
+
+func g() def
+    print 'g'
+    return f()
+
+g()

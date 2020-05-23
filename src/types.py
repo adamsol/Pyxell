@@ -46,9 +46,7 @@ class Type:
     def isUnknown(self):
         if self == Unknown:
             return True
-        if self.isContainer():
-            return self.subtype.isUnknown()
-        if self.isNullable():
+        if self.isContainer() or self.isNullable():
             return self.subtype.isUnknown()
         if self.isTuple():
             return any(elem.isUnknown() for elem in self.elements)
@@ -84,9 +82,7 @@ class Type:
     def isPrintable(self):
         if self.isNumber() or self in {Bool, Char, String, Unknown}:
             return True
-        if self.isContainer():
-            return self.subtype.isPrintable()
-        if self.isNullable():
+        if self.isContainer() or self.isNullable():
             return self.subtype.isPrintable()
         if self.isTuple():
             return all(elem.isPrintable() for elem in self.elements)
@@ -101,6 +97,10 @@ class Type:
         return self.isOrderable() or self.isSet() or self.isDict() or self.isClass()
 
     def hasValue(self):
+        if self.isContainer() or self.isNullable():
+            return self.subtype.hasValue()
+        if self.isTuple():
+            return all(elem.hasValue() for elem in self.elements)
         return self != Void and not self.isGenerator()
 
 
