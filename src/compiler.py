@@ -1090,7 +1090,7 @@ class PyxellCompiler:
                     end = self.freeze(values[1])
                     eq = '=' if iterable['inclusive'] else ''
                     neg = self.tmp(v.BinaryOperation(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
-                    cond = lambda: f'{neg} ? {index} >{eq} {end} : {index} <{eq} {end}'
+                    cond = lambda: f'({neg} ? {index} >{eq} {end} : {index} <{eq} {end})'
 
                 update = lambda: f'{index} += {step}'
                 getter = lambda: v.Cast(index, type)
@@ -1124,14 +1124,14 @@ class PyxellCompiler:
             updates.append(update)
             getters.append(getter)
 
-        steps = [self.freeze(self.compile(step)) for step in node.get('steps') or [{'node': 'AtomInt', 'int': 1}]]
+        steps = node.get('steps') or [v.Int(1)]
         if len(steps) == 1:
             steps *= len(iterables)
         elif len(steps) != len(iterables):
             self.throw(node, err.InvalidLoopStep())
 
         for iterable, step in zip(iterables, steps):
-            prepare(iterable, step)
+            prepare(iterable, self.freeze(self.compile(step)))
 
         body = c.Block()
         with self.block(body):

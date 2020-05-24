@@ -1,0 +1,4 @@
+
+a = ['a', 'q', 'x']
+for x, y in a, 1..10 step -2, 3 do
+    print x, y
