@@ -860,11 +860,14 @@ class PyxellCompiler:
 
                             if self.env['#return-types']:
                                 ret = unify_types(*self.env['#return-types'])
-                                if ret is not None:
-                                    d = type_variables_assignment(ret, self.env['#return'])
-                                    if d is not None:
-                                        self.env.update(d)
-                                        func_type.ret = self.resolve_type(func_type.ret)
+                            else:
+                                ret = t.Void
+
+                            if ret is not None:
+                                d = type_variables_assignment(ret, self.env['#return'])
+                                if d is not None:
+                                    self.env.update(d)
+                                    func_type.ret = self.resolve_type(func_type.ret)
 
                         self.env['#return'] = func_type.ret
 
@@ -1226,7 +1229,11 @@ class PyxellCompiler:
                 value = self.cast(node, value, type)
 
         elif type.hasValue():
-            self.throw(node, err.IllegalAssignment(t.Void, type))
+            if '#return-types' in self.env:
+                type = t.Void
+                self.env['#return-types'].append(type)
+            else:
+                self.throw(node, err.IllegalAssignment(t.Void, type))
 
         if type.isGenerator():
             self.output('co_return')

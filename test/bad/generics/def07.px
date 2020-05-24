@@ -1,5 +1,5 @@
 
-func f<V>() V def
+func f<V>(V v) V def
     skip
 
-f()
+f(0)
