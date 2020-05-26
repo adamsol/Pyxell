@@ -1,6 +1,6 @@
 
-for t in "abcdefg", "ABCDE", "123456789" step 2 do
+for t in "abcdefg" step -2, "ABC", "123456789" step 2 do
     x, y, z = t
     print "" + z + y + x
-    if y >= 'D' do
+    if y >= 'C' do
         break

@@ -48,8 +48,6 @@ expr
   | '{' (expr ',')* expr? '}' # ExprSet
   | '{' (expr ':' expr ',')* expr ':' expr ','? '}' # ExprDict
   | '{:}' # ExprEmptyDict
-  | '[' expr 'step' expr ']' # ExprArrayRangeStep
-  | '{' expr 'step' expr '}' # ExprSetRangeStep
   | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' expr comprehension+ '}' # ExprSetComprehension
   | '{' expr ':' expr comprehension+ '}' # ExprDictComprehension
@@ -77,6 +75,7 @@ expr
   | <assoc=right> expr '?' expr ':' expr # ExprCond
   | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange
+  | expr 'step' expr # ExprStep
   | '...' expr # ExprSpread
   | 'lambda' gen='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
   ;
@@ -90,7 +89,7 @@ interpolation_expr
   ;
 
 comprehension
-  : 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? # ComprehensionGenerator
+  : 'for' tuple_expr 'in' tuple_expr # ComprehensionGenerator
   | 'if' expr # ComprehensionFilter
   ;
 

@@ -1,0 +1,2 @@
+
+print [t for t in 0... step -1, 'w'..'z' step 2]

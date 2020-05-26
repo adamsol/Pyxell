@@ -1393,8 +1393,7 @@
 													],
 													"id": "s"
 												}
-											],
-											"steps": []
+											]
 										},
 										{
 											"node": "ComprehensionFilter",
@@ -1608,8 +1607,7 @@
 													],
 													"id": "s"
 												}
-											],
-											"steps": []
+											]
 										}
 									]
 								},
@@ -2771,8 +2769,7 @@
 											],
 											"id": "a"
 										}
-									],
-									"steps": []
+									]
 								},
 								{
 									"node": "ComprehensionFilter",
@@ -2987,8 +2984,7 @@
 											],
 											"id": "a"
 										}
-									],
-									"steps": []
+									]
 								}
 							]
 						}
@@ -4163,8 +4159,7 @@
 											],
 											"id": "a"
 										}
-									],
-									"steps": []
+									]
 								},
 								{
 									"node": "ComprehensionFilter",
@@ -4379,8 +4374,7 @@
 											],
 											"id": "a"
 										}
-									],
-									"steps": []
+									]
 								}
 							]
 						}
@@ -5653,8 +5647,7 @@
 											],
 											"id": "a"
 										}
-									],
-									"steps": []
+									]
 								},
 								{
 									"node": "ComprehensionFilter",

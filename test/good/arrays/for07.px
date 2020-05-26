@@ -1,6 +1,7 @@
 
 a = [1, 2, 3]
 b = ['C', 'A']
-
-for x, y in a, b step 2, -1 do
+for x, y in a step 2, b step -1 do
     print x, y
+for t in a step -2, b step 2 do
+    print t

@@ -760,7 +760,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprTuple'}:
+            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprStep', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -775,7 +775,6 @@ class PyxellCompiler:
                 return {
                     **expr,
                     'iterables': lmap(convert_expr, expr['iterables']),
-                    'steps': lmap(convert_expr, expr['steps']),
                 }
             if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread'}:
                 return {
@@ -1069,8 +1068,14 @@ class PyxellCompiler:
         updates = []
         getters = []
 
-        def prepare(iterable, step):
+        def prepare(iterable):
             # It must be a function so that there are separate scopes of variables to use in lambdas.
+
+            if iterable['node'] == 'ExprStep':
+                step = self.freeze(self.compile(iterable['exprs'][1]))
+                iterable = iterable['exprs'][0]
+            else:
+                step = self.freeze(v.Int(1))
 
             if iterable['node'] == 'ExprRange':
                 values = lmap(self.compile, iterable['exprs'])
@@ -1124,14 +1129,8 @@ class PyxellCompiler:
             updates.append(update)
             getters.append(getter)
 
-        steps = node.get('steps') or [v.Int(1)]
-        if len(steps) == 1:
-            steps *= len(iterables)
-        elif len(steps) != len(iterables):
-            self.throw(node, err.InvalidLoopStep())
-
-        for iterable, step in zip(iterables, steps):
-            prepare(iterable, self.freeze(self.compile(step)))
+        for iterable in iterables:
+            prepare(iterable)
 
         body = c.Block()
         with self.block(body):
@@ -1354,14 +1353,18 @@ class PyxellCompiler:
         exprs = node['exprs']
         kind = node['kind']
 
-        if len(exprs) == 1 and exprs[0]['node'] in {'ExprRange', 'ExprSpread'}:
+        if len(exprs) == 1 and exprs[0]['node'] in {'ExprRange', 'ExprSpread', 'ExprStep'}:
+            iterable = exprs[0]
+            if iterable['node'] == 'ExprStep' and iterable['exprs'][0]['node'] != 'ExprRange':
+                self.throw(node, err.IllegalStep())
+            if iterable['node'] == 'ExprSpread':
+                if iterable['expr']['node'] == 'ExprRange':
+                    self.throw(node, err.IllegalRange())
+                iterable = iterable['expr']
             var = {
                 'node': 'AtomId',
                 'id': self.fake_id(),
             }
-            iterable = exprs[0]
-            if iterable['node'] == 'ExprSpread':
-                iterable = iterable['expr']
             return self.compile({
                 'node': 'ExprComprehension',
                 'kind': kind,
@@ -1370,11 +1373,8 @@ class PyxellCompiler:
                     'node': 'ComprehensionGenerator',
                     'vars': [var],
                     'iterables': [iterable],
-                    'steps': [node['step']] if node.get('step') else [],
                 }],
             })
-        elif node.get('step'):
-            self.throw(node, err.InvalidSyntax())
 
         if kind == 'array':
             result = v.Array(self.unify(node, *map(self.compile, exprs)))
@@ -1398,7 +1398,7 @@ class PyxellCompiler:
         value, collection = [{
             'node': 'AtomId',
             'id': self.fake_id(),
-        } for name in ['value', 'collection']]
+        } for _ in range(2)]
 
         stmt = inner_stmt = {
             'node': 'StmtAssg',
@@ -1769,6 +1769,9 @@ class PyxellCompiler:
 
     def compileExprSpread(self, node):
         self.throw(node, err.IllegalSpread())
+
+    def compileExprStep(self, node):
+        self.throw(node, err.IllegalStep())
 
     def compileExprLambda(self, node):
         id = self.fake_id()

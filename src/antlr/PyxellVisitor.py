@@ -144,11 +144,6 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprArrayRangeStep.
-    def visitExprArrayRangeStep(self, ctx:PyxellParser.ExprArrayRangeStepContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by PyxellParser#ExprAtom.
     def visitExprAtom(self, ctx:PyxellParser.ExprAtomContext):
         return self.visitChildren(ctx)
@@ -161,6 +156,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprParentheses.
     def visitExprParentheses(self, ctx:PyxellParser.ExprParenthesesContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#ExprStep.
+    def visitExprStep(self, ctx:PyxellParser.ExprStepContext):
         return self.visitChildren(ctx)
 
 
@@ -211,11 +211,6 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#ExprCond.
     def visitExprCond(self, ctx:PyxellParser.ExprCondContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by PyxellParser#ExprSetRangeStep.
-    def visitExprSetRangeStep(self, ctx:PyxellParser.ExprSetRangeStepContext):
         return self.visitChildren(ctx)
 
 
