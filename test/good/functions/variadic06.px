@@ -1,0 +1,7 @@
+
+func product(Int args...) Int def
+    return args.reduce(_*_)
+
+a = [4..6]
+print product(2, ...a)
+print product(...a, -1, ...a)

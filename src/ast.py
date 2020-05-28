@@ -221,16 +221,26 @@ class PyxellASTVisitor(PyxellVisitor):
 
     def visitExprDict(self, ctx):
         return {
-            **_node(ctx, 'ExprCollection'),
-            'kind': 'dict',
-            'exprs': self.visit(ctx.expr()),
+            **_node(ctx, 'ExprDict'),
+            'items': self.visit(ctx.dict_item()),
         }
 
     def visitExprEmptyDict(self, ctx):
         return {
-            **_node(ctx, 'ExprCollection'),
-            'kind': 'dict',
-            'exprs': [],
+            **_node(ctx, 'ExprDict'),
+            'items': [],
+        }
+
+    def visitDictPair(self, ctx):
+        return {
+            **_node(ctx, 'DictPair'),
+            'exprs': self.visit(ctx.expr()),
+        }
+
+    def visitDictSpread(self, ctx):
+        return {
+            **_node(ctx, 'DictSpread'),
+            'expr': self.visit(ctx.expr()),
         }
 
     def visitExprArrayComprehension(self, ctx):

@@ -239,6 +239,16 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#DictPair.
+    def visitDictPair(self, ctx:PyxellParser.DictPairContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#DictSpread.
+    def visitDictSpread(self, ctx:PyxellParser.DictSpreadContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#ExprTuple.
     def visitExprTuple(self, ctx:PyxellParser.ExprTupleContext):
         return self.visitChildren(ctx)

@@ -1,0 +1,3 @@
+
+print {'a'..'z', 'A'..'Z', '.'}.length
+print {0...0, 1..1 step -1, 2...2 step 0}

@@ -760,10 +760,15 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprStep', 'ExprTuple'}:
+            if node in {'ExprCollection', 'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprStep', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
+                }
+            if node == 'ExprDict':
+                return {
+                    **expr,
+                    'items': lmap(convert_expr, expr['items']),
                 }
             if node == 'ExprComprehension':
                 return {
@@ -776,7 +781,7 @@ class PyxellCompiler:
                     **expr,
                     'iterables': lmap(convert_expr, expr['iterables']),
                 }
-            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread'}:
+            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread', 'DictSpread'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -988,6 +993,8 @@ class PyxellCompiler:
         # Special instruction for array/set/dict comprehension.
         collection = self.compile(node['collection'])
         values = lmap(self.compile, node['exprs'])
+        if any(value.type == t.Unknown for value in values):
+            return
 
         if collection.type.isArray():
             self.output(v.Call(v.Attribute(collection, 'push_back'), *values))
@@ -1352,42 +1359,141 @@ class PyxellCompiler:
     def compileExprCollection(self, node):
         exprs = node['exprs']
         kind = node['kind']
+        types = []
 
-        if len(exprs) == 1 and exprs[0]['node'] in {'ExprRange', 'ExprSpread', 'ExprStep'}:
-            iterable = exprs[0]
-            if iterable['node'] == 'ExprStep' and iterable['exprs'][0]['node'] != 'ExprRange':
-                self.throw(node, err.IllegalStep())
-            if iterable['node'] == 'ExprSpread':
-                if iterable['expr']['node'] == 'ExprRange':
-                    self.throw(node, err.IllegalRange())
-                iterable = iterable['expr']
-            var = {
-                'node': 'AtomId',
-                'id': self.fake_id(),
-            }
-            return self.compile({
-                'node': 'ExprComprehension',
-                'kind': kind,
-                'exprs': [var],
-                'comprehensions': [{
-                    'node': 'ComprehensionGenerator',
-                    'vars': [var],
-                    'iterables': [iterable],
-                }],
-            })
+        with self.no_output():
+            for expr in exprs:
+                if expr['node'] in {'ExprRange', 'ExprStep'}:
+                    if expr['node'] == 'ExprStep':
+                        if expr['exprs'][0]['node'] != 'ExprRange':
+                            self.throw(node, err.IllegalStep())
+                        expr = expr['exprs'][0]
+                    values = lmap(self.compile, expr['exprs'])
+                    types.extend(value.type for value in values)
+
+                elif expr['node'] == 'ExprSpread':
+                    expr = expr['expr']
+                    if expr['node'] == 'ExprStep':
+                        expr = expr['exprs'][0]
+                    value = self.compile(expr)
+                    if not value.type.isIterable():
+                        self.throw(node, err.NotIterable(value.type))
+                    types.append(value.type.subtype)
+
+                else:
+                    value = self.compile(expr)
+                    types.append(value.type)
+
+        type = t.Unknown
+        if types:
+            type = unify_types(*types)
+            if type is None:
+                self.throw(node, err.UnknownType())
 
         if kind == 'array':
-            result = v.Array(self.unify(node, *map(self.compile, exprs)))
+            if not any(expr['node'] in {'ExprRange', 'ExprStep', 'ExprSpread'} for expr in exprs):
+                return v.Array(self.unify(node, *map(self.compile, exprs)))
+
+            result = self.tmp(v.Array([], type))
+
         elif kind == 'set':
-            result = v.Set(self.unify(node, *map(self.compile, exprs)))
-            if not result.type.subtype.isHashable():
-                self.throw(node, err.NotHashable(result.type.subtype))
-        elif kind == 'dict':
-            keys = self.unify(node, *map(self.compile, exprs[0::2]))
-            values = self.unify(node, *map(self.compile, exprs[1::2]))
-            if keys and not keys[0].type.isHashable():
-                self.throw(node, err.NotHashable(keys[0].type))
-            result = v.Dict(keys, values)
+            if not type.isHashable():
+                self.throw(node, err.NotHashable(type))
+
+            if not any(expr['node'] in {'ExprRange', 'ExprStep', 'ExprSpread'} for expr in exprs):
+                return v.Set(self.unify(node, *map(self.compile, exprs)))
+
+            result = self.tmp(v.Set([], type))
+
+        for expr in exprs:
+            if expr['node'] in {'ExprRange', 'ExprSpread', 'ExprStep'}:
+                if expr['node'] == 'ExprSpread':
+                    expr = expr['expr']
+
+                var = {
+                    'node': 'AtomId',
+                    'id': self.fake_id(),
+                }
+                self.compile({
+                    'node': 'StmtFor',
+                    'vars': [var],
+                    'iterables': [expr],
+                    'block': {
+                        'node': 'StmtAppend',
+                        'collection': result,
+                        'exprs': [var],
+                    },
+                })
+            else:
+                self.compile({
+                    'node': 'StmtAppend',
+                    'collection': result,
+                    'exprs': [expr],
+                })
+
+        return result
+
+    def compileExprDict(self, node):
+        items = node['items']
+        types = [], []
+
+        with self.no_output():
+            for item in items:
+                if item['node'] == 'DictSpread':
+                    expr = item['expr']
+                    if expr['node'] == 'ExprStep':
+                        expr = expr['exprs'][0]
+                    value = self.compile(expr)
+                    if not value.type.isDict():
+                        self.throw(node, err.NotDictionary(value.type))
+                    types[0].append(value.type.key_type)
+                    types[1].append(value.type.value_type)
+
+                elif item['node'] == 'DictPair':
+                    values = lmap(self.compile, item['exprs'])
+                    for i in range(2):
+                        types[i].append(values[i].type)
+
+        key_type = value_type = t.Unknown
+        if types[0]:
+            key_type = unify_types(*types[0])
+            value_type = unify_types(*types[1])
+            if key_type is None or value_type is None:
+                self.throw(node, err.UnknownType())
+
+        if not key_type.isHashable():
+            self.throw(node, err.NotHashable(key_type))
+
+        if all(item['node'] == 'DictPair' for item in items):
+            keys = self.unify(node, *[self.compile(item['exprs'][0]) for item in items])
+            values = self.unify(node, *[self.compile(item['exprs'][1]) for item in items])
+            return v.Dict(keys, values)
+
+        result = self.tmp(v.Dict([], [], key_type, value_type))
+
+        for item in items:
+            if item['node'] == 'DictSpread':
+                vars = [{
+                    'node': 'AtomId',
+                    'id': self.fake_id(),
+                } for _ in range(2)]
+
+                self.compile({
+                    'node': 'StmtFor',
+                    'vars': vars,
+                    'iterables': [item['expr']],
+                    'block': {
+                        'node': 'StmtAppend',
+                        'collection': result,
+                        'exprs': vars,
+                    },
+                })
+            elif item['node'] == 'DictPair':
+                self.compile({
+                    'node': 'StmtAppend',
+                    'collection': result,
+                    'exprs': item['exprs'],
+                })
 
         return result
 

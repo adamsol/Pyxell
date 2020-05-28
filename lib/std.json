@@ -5871,13 +5871,12 @@
 						},
 						"id": "r",
 						"expr": {
-							"node": "ExprCollection",
+							"node": "ExprDict",
 							"position": [
 								149,
 								15
 							],
-							"kind": "dict",
-							"exprs": []
+							"items": []
 						}
 					},
 					{

@@ -1,5 +1,5 @@
 
 d = {"abc": 3/4}
-print {...d}
-
+print {...:d}
+print {...d step -7}
 print [...{:}]

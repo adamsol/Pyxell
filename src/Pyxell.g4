@@ -46,7 +46,7 @@ expr
   | '(' tuple_expr ')' # ExprParentheses
   | '[' (expr ',')* expr? ']' # ExprArray
   | '{' (expr ',')* expr? '}' # ExprSet
-  | '{' (expr ':' expr ',')* expr ':' expr ','? '}' # ExprDict
+  | '{' (dict_item ',')* dict_item ','? '}' # ExprDict
   | '{:}' # ExprEmptyDict
   | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' expr comprehension+ '}' # ExprSetComprehension
@@ -78,6 +78,11 @@ expr
   | expr 'step' expr # ExprStep
   | '...' expr # ExprSpread
   | 'lambda' gen='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
+  ;
+
+dict_item
+  : expr ':' expr # DictPair
+  | '...:' expr # DictSpread
   ;
 
 tuple_expr
