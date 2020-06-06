@@ -47,7 +47,7 @@ expr
   | '[' (expr ',')* expr? ']' # ExprArray
   | '{' (expr ',')* expr? '}' # ExprSet
   | '{' (dict_item ',')* dict_item ','? '}' # ExprDict
-  | '{:}' # ExprEmptyDict
+  | '{' ':' '}' # ExprDict
   | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' expr comprehension+ '}' # ExprSetComprehension
   | '{' expr ':' expr comprehension+ '}' # ExprDictComprehension

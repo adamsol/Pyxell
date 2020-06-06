@@ -225,12 +225,6 @@ class PyxellASTVisitor(PyxellVisitor):
             'items': self.visit(ctx.dict_item()),
         }
 
-    def visitExprEmptyDict(self, ctx):
-        return {
-            **_node(ctx, 'ExprDict'),
-            'items': [],
-        }
-
     def visitDictPair(self, ctx):
         return {
             **_node(ctx, 'DictPair'),

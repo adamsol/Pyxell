@@ -174,11 +174,6 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ExprEmptyDict.
-    def visitExprEmptyDict(self, ctx:PyxellParser.ExprEmptyDictContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by PyxellParser#ExprLogicalOp.
     def visitExprLogicalOp(self, ctx:PyxellParser.ExprLogicalOpContext):
         return self.visitChildren(ctx)
