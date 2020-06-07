@@ -1,0 +1,5 @@
+
+func f({String} s: {'x'..'z', 'X'..'Z'}) def
+    print s.pop().length
+
+f()

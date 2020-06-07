@@ -1,0 +1,8 @@
+
+Int? x = null
+
+{Float?:[Bool?]} d = {x: [true]}
+print d[null][0] ?? false
+
+d = {0: [null]}
+print d[0.0]

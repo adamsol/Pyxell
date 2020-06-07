@@ -1,0 +1,4 @@
+
+{Float:Float} d
+d = {x: x+2 for x in 0...1 step 3}
+print d

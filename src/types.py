@@ -4,6 +4,9 @@ from collections import defaultdict, namedtuple
 
 class Type:
 
+    def __init__(self):
+        self.literal = False
+
     def __eq__(self, other):
         return type(self) == type(other) and self.eq(other)
 
@@ -107,6 +110,7 @@ class Type:
 class PrimitiveType(Type):
 
     def __init__(self, pyxell_name, c_name=None):
+        super().__init__()
         self.pyxell_name = pyxell_name
         self.c_name = c_name or pyxell_name
 
@@ -162,9 +166,9 @@ class Set(Wrapper):
 class Dict(Wrapper):
 
     def __init__(self, key_type, value_type):
+        super().__init__(Tuple([key_type, value_type]))
         self.key_type = key_type
         self.value_type = value_type
-        super().__init__(Tuple([self.key_type, self.value_type]))
 
     def __str__(self):
         return f'Dict<{self.key_type}, {self.value_type}>'
@@ -354,7 +358,7 @@ def common_superclass(type1, type2):
 def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=True):
 
     if type1.isArray() and type2.isArray() or type1.isSet() and type2.isSet() or type1.isDict() and type2.isDict():
-        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed=covariance)
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed=(conversion_allowed and (covariance or type1.literal)))
 
     if type1.isGenerator() and type2.isGenerator():
         return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)

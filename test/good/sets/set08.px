@@ -1,0 +1,6 @@
+
+s = {"abc"}
+print s
+
+s = {'x'}
+print s

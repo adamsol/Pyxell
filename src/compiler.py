@@ -413,16 +413,6 @@ class PyxellCompiler:
 
     def cast(self, node, value, type):
         def _cast(value, type):
-            # Special cases to allow implicit type coercion of container literals.
-            if isinstance(value, v.Array) and type.isArray():
-                return v.Array([_cast(e, type.subtype) for e in value.elements], type.subtype)
-            if isinstance(value, v.Set) and type.isSet():
-                return v.Set([_cast(e, type.subtype) for e in value.elements], type.subtype)
-            if isinstance(value, v.Dict) and type.isDict():
-                return v.Dict([_cast(e, type.key_type) for e in value.keys], [_cast(e, type.value_type) for e in value.values], type.key_type, type.value_type)
-            if isinstance(value, v.Tuple) and type.isTuple() and len(value.elements) == len(type.elements):
-                return v.Tuple([_cast(e, t) for e, t in zip(value.elements, type.elements)])
-
             # Special case to handle generic functions and lambdas.
             if value.isTemplate():
                 if value.bound:
@@ -548,6 +538,7 @@ class PyxellCompiler:
                 return
             value = self.cast(node, value, var.type)
             self.store(var, value)
+            type.literal = False
 
     def unaryop(self, node, op, value):
         if op in {'+', '-'}:
@@ -1385,25 +1376,20 @@ class PyxellCompiler:
                     types.append(value.type)
 
         type = t.Unknown
+        type.literal = True
         if types:
             type = unify_types(*types)
             if type is None:
                 self.throw(node, err.UnknownType())
+            type.literal = all(t.literal for t in types)
 
         if kind == 'array':
-            if not any(expr['node'] in {'ExprRange', 'ExprStep', 'ExprSpread'} for expr in exprs):
-                return v.Array(self.unify(node, *map(self.compile, exprs)))
-
             result = self.tmp(v.Array([], type))
-
         elif kind == 'set':
             if not type.isHashable():
                 self.throw(node, err.NotHashable(type))
-
-            if not any(expr['node'] in {'ExprRange', 'ExprStep', 'ExprSpread'} for expr in exprs):
-                return v.Set(self.unify(node, *map(self.compile, exprs)))
-
             result = self.tmp(v.Set([], type))
+        result.type.literal = True
 
         for expr in exprs:
             if expr['node'] in {'ExprRange', 'ExprSpread', 'ExprStep'}:
@@ -1455,21 +1441,19 @@ class PyxellCompiler:
                         types[i].append(values[i].type)
 
         key_type = value_type = t.Unknown
+        key_type.literal = value_type.literal = True
         if types[0]:
             key_type = unify_types(*types[0])
             value_type = unify_types(*types[1])
             if key_type is None or value_type is None:
                 self.throw(node, err.UnknownType())
+            key_type.literal = all(t.literal for t in types[0])
+            value_type.literal = all(t.literal for t in types[1])
 
         if not key_type.isHashable():
             self.throw(node, err.NotHashable(key_type))
-
-        if all(item['node'] == 'DictPair' for item in items):
-            keys = self.unify(node, *[self.compile(item['exprs'][0]) for item in items])
-            values = self.unify(node, *[self.compile(item['exprs'][1]) for item in items])
-            return v.Dict(keys, values)
-
         result = self.tmp(v.Dict([], [], key_type, value_type))
+        result.type.literal = True
 
         for item in items:
             if item['node'] == 'DictSpread':
@@ -1560,6 +1544,7 @@ class PyxellCompiler:
 
             result = self.compile(collection)
 
+        result.type.literal = True
         return result
 
     def compileExprAttr(self, node):

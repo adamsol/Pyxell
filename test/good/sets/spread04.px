@@ -1,0 +1,7 @@
+
+a = [4]
+
+class A def
+    {Float?} x: {...a}
+
+print A().x.pop() ?? 0

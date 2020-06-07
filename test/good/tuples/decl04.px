@@ -1,0 +1,4 @@
+
+[[{Float?}]]*[Bool] t
+t = [[{0}]], []
+print t

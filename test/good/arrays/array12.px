@@ -1,0 +1,9 @@
+
+a = [2.5]
+print a
+
+a = [3, 4]
+print a
+
+a = [-1/4]
+print a

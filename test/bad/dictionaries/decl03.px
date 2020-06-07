@@ -1,0 +1,3 @@
+
+d1 = {0: ""}
+{Float:String} d2 = d1

@@ -1,1 +1,1 @@
-Illegal assignment from `[Int]` to `[Rat]`.
+Illegal assignment from `[[Int]]` to `[[Rat]]`.
