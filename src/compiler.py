@@ -988,10 +988,13 @@ class PyxellCompiler:
             return
 
         if collection.type.isArray():
-            self.output(v.Call(v.Attribute(collection, 'push_back'), *values))
+            value = self.cast(node, values[0], collection.type.subtype)
+            self.output(v.Call(v.Attribute(collection, 'push_back'), value))
         elif collection.type.isSet():
-            self.output(v.Call(v.Attribute(collection, 'insert'), *values))
+            value = self.cast(node, values[0], collection.type.subtype)
+            self.output(v.Call(v.Attribute(collection, 'insert'), value))
         elif collection.type.isDict():
+            values = [self.cast(node, values[0], collection.type.key_type), self.cast(node, values[1], collection.type.value_type)]
             self.output(v.Call(v.Attribute(collection, 'insert_or_assign'), *values))
 
     def compileStmtIf(self, node):
