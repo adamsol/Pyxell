@@ -26,6 +26,8 @@
     #include "cppcoro/generator.hpp"
 #endif
 
+using namespace std::literals::string_literals;
+
 
 // https://github.com/godotengine/godot/pull/33376
 #if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900 && defined(_TWO_DIGIT_EXPONENT)) && !defined(_UCRT)

@@ -54,7 +54,7 @@ def Char(x):
     return Literal(str(x), "'{}'", type=t.Char)
 
 def String(x):
-    return Literal(str(x), 'make_string("{}")', type=t.String)
+    return Literal(str(x), 'make_string("{}"s)', type=t.String)
 
 
 class Variable(Value):

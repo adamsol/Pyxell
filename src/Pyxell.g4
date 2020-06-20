@@ -135,8 +135,8 @@ INT_BIN : '0' [bB] NUMBER_BIN_CONT+ ;
 INT_OCT : '0' [oO] NUMBER_OCT_CONT+ ;
 INT_HEX : '0' [xX] NUMBER_HEX_CONT+ ;
 FLOAT : DIGIT NUMBER_DEC_CONT* ('.' NUMBER_DEC_CONT+)? ([eE] [-+]? NUMBER_DEC_CONT+)? ;
-CHAR : '\'' (~[\\'] | ('\\' ['\\nt])) '\'' ;
-STRING : '"' (~[\\"] | ('\\' ["\\nt]))* '"' ;
+CHAR : '\'' (~[\\'] | ('\\' (['] | ESCAPE_CHAR))) '\'' ;
+STRING : '"' (~[\\"] | ('\\' (["] | ESCAPE_CHAR)))* '"' ;
 ID : ID_START ID_CONT* ;
 
 fragment DIGIT : [0-9] ;
@@ -144,6 +144,7 @@ fragment NUMBER_DEC_CONT : DIGIT | [_] ;
 fragment NUMBER_BIN_CONT : [01_] ;
 fragment NUMBER_OCT_CONT : [0-7_] ;
 fragment NUMBER_HEX_CONT : [0-9a-fA-F_] ;
+fragment ESCAPE_CHAR : [\\abfnrt] | 'x' [0-9a-fA-F]+ ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | ['] ;
 

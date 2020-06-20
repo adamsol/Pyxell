@@ -1,0 +1,6 @@
+
+s = "\\'\"\a\b\f\n\r\t\x0\xb\x7F"
+c = ['\\', '\'', '"', '\a', '\b', '\f', '\n', '\r', '\t', '\x00', '\xB', '\x7f']
+print s.length
+print s == c.join()
+print c.map(_.code)
