@@ -675,10 +675,6 @@ class PyxellCompiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
-    def write(self, format, *values):
-        args = ''.join(f', {value}' for value in values)
-        self.output(f'printf("{format}"{args})')
-
     def print(self, node, value):
         type = value.type
 
@@ -935,7 +931,7 @@ class PyxellCompiler:
         if expr:
             value = self.compile(expr)
             self.print(expr, value)
-        self.write('\\n')
+        self.output('std::cout << "\\n"')  # std::endl is very slow
 
     def compileStmtDecl(self, node):
         type = self.resolve_type(self.compile(node['type']))

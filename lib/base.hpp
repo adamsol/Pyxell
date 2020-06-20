@@ -8,6 +8,7 @@
 #include <ctime>
 #include <limits>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <memory>
 #include <optional>
@@ -1135,7 +1136,7 @@ Float toFloat(Char x)
 template <typename T>
 void write(const T& x)
 {
-    printf("%s", toString(x)->c_str());
+    std::cout << *toString(x);
 }
 
 /* Standard input */

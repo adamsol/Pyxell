@@ -1,0 +1,3 @@
+
+s = "abc" + 0.char
+print s + "xy\nz"
