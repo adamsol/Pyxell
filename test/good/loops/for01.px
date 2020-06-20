@@ -5,5 +5,5 @@ i = 0
 for i in 3..6 do
     if not 4|i do
         print i
-for j in i..3 step -2 do
+for j in i..3 by -2 do
     print j

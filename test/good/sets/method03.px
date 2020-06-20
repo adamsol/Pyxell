@@ -4,7 +4,7 @@ a = {1..5}
 a.union({8..14})
 print a == {1..5} + {8..14}
 
-a.subtract({3..9 step 2})
+a.subtract({3..9 by 2})
 print a == {1..4} + {8..14} - {3, 9}
 
 a.intersect({2..11})

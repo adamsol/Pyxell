@@ -2,5 +2,5 @@
 a = [("A", 3), ("B", 2), ("C", 1)]
 for x in a do
     print x
-for s, i in a step -2 do
+for s, i in a by -2 do
     print i, s

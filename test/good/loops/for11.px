@@ -1,3 +1,3 @@
 
-for t in 0.0..5.0 step 5/2, 'z'..'a' step -2, 0.0... do
+for t in 0.0..5.0 by 5/2, 'z'..'a' by -2, 0.0... do
     print t

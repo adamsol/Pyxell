@@ -747,7 +747,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprStep', 'ExprTuple'}:
+            if node in {'ExprCollection', 'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -1068,7 +1068,7 @@ class PyxellCompiler:
         def prepare(iterable):
             # It must be a function so that there are separate scopes of variables to use in lambdas.
 
-            if iterable['node'] == 'ExprStep':
+            if iterable['node'] == 'ExprBy':
                 step = self.freeze(self.compile(iterable['exprs'][1]))
                 iterable = iterable['exprs'][0]
             else:
@@ -1353,17 +1353,17 @@ class PyxellCompiler:
 
         with self.no_output():
             for expr in exprs:
-                if expr['node'] in {'ExprRange', 'ExprStep'}:
-                    if expr['node'] == 'ExprStep':
+                if expr['node'] in {'ExprRange', 'ExprBy'}:
+                    if expr['node'] == 'ExprBy':
                         if expr['exprs'][0]['node'] != 'ExprRange':
-                            self.throw(node, err.IllegalStep())
+                            self.throw(node, err.IllegalBy())
                         expr = expr['exprs'][0]
                     values = lmap(self.compile, expr['exprs'])
                     types.extend(value.type for value in values)
 
                 elif expr['node'] == 'ExprSpread':
                     expr = expr['expr']
-                    if expr['node'] == 'ExprStep':
+                    if expr['node'] == 'ExprBy':
                         expr = expr['exprs'][0]
                     value = self.compile(expr)
                     if not value.type.isIterable():
@@ -1391,7 +1391,7 @@ class PyxellCompiler:
         result.type.literal = True
 
         for expr in exprs:
-            if expr['node'] in {'ExprRange', 'ExprSpread', 'ExprStep'}:
+            if expr['node'] in {'ExprRange', 'ExprSpread', 'ExprBy'}:
                 if expr['node'] == 'ExprSpread':
                     expr = expr['expr']
 
@@ -1426,7 +1426,7 @@ class PyxellCompiler:
             for item in items:
                 if item['node'] == 'DictSpread':
                     expr = item['expr']
-                    if expr['node'] == 'ExprStep':
+                    if expr['node'] == 'ExprBy':
                         expr = expr['exprs'][0]
                     value = self.compile(expr)
                     if not value.type.isDict():
@@ -1860,8 +1860,8 @@ class PyxellCompiler:
     def compileExprSpread(self, node):
         self.throw(node, err.IllegalSpread())
 
-    def compileExprStep(self, node):
-        self.throw(node, err.IllegalStep())
+    def compileExprBy(self, node):
+        self.throw(node, err.IllegalBy())
 
     def compileExprLambda(self, node):
         id = self.fake_id()

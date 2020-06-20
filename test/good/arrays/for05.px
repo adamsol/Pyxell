@@ -2,5 +2,5 @@
 a = ["test", "A", "42"]
 for i, s in 0..., a do
     print s, i
-for t in a step -2, 1... do
+for t in a by -2, 1... do
     print t

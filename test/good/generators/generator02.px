@@ -5,7 +5,7 @@ func* fib() Int def
         yield a
         a, b = b, a+b
 
-for x in fib() step 2 do
+for x in fib() by 2 do
     if x > 100 do
         break
     print x

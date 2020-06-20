@@ -21,7 +21,7 @@ stmt
   | 'if' expr 'do' block (';' 'elif' expr 'do' block)* (';' 'else' 'do' block)? # StmtIf
   | 'while' expr 'do' block # StmtWhile
   | 'until' expr 'do' block # StmtUntil
-  | 'for' tuple_expr 'in' tuple_expr ('step' tuple_expr)? 'do' block # StmtFor
+  | 'for' tuple_expr 'in' tuple_expr 'do' block # StmtFor
   | 'func' gen='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern') # StmtFunc
   | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
   ;
@@ -75,7 +75,7 @@ expr
   | <assoc=right> expr '?' expr ':' expr # ExprCond
   | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange
-  | expr 'step' expr # ExprStep
+  | expr 'by' expr # ExprBy
   | '...' expr # ExprSpread
   | 'lambda' gen='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
   ;

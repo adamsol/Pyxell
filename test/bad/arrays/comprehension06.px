@@ -1,2 +1,2 @@
 
-[x for x in 0...10 step true]
+[x for x in 0...10 by true]

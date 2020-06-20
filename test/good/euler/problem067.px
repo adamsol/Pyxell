@@ -2,7 +2,7 @@
 s = 100
 a = [[readInt() for j in 0..i] for i in 0...s]
 
-for i in s-2..0 step -1 do
+for i in s-2..0 by -1 do
     for j in 0..i do
         a[i][j] += max(a[i+1][j], a[i+1][j+1])
 

@@ -6,7 +6,7 @@ a = [true] * n
 i = 2
 while i * i <= n do
     if a[i] do
-        for j in i*2...n step i do
+        for j in i*2...n by i do
             a[j] = false
     i += 1
 

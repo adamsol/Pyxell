@@ -4,5 +4,5 @@ func* range(Int n) Int def
         yield x
 
 print [...range(0)]
-print [...range(5) step 4]
-print [...range(10^^7) step 2].length
+print [...range(5) by 4]
+print [...range(10^^7) by 2].length

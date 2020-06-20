@@ -1,2 +1,2 @@
 
-print ({146..7832 step 6} - {152}).length
+print ({146..7832 by 6} - {152}).length

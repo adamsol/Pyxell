@@ -3,7 +3,7 @@ c = 2
 n = 10
 x = 5
 
-for x in 0...n step c do
+for x in 0...n by c do
     c += 1
     n -= x
     x *= 3

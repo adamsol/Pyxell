@@ -1,4 +1,4 @@
 
 a = [""]
-a = ['a'..'c' step 2]
+a = ['a'..'c' by 2]
 print a[1] + 'x'

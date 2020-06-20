@@ -1,4 +1,4 @@
 
 a = ['a', 'q', 'x']
-for x, y in a step -2, 1..10 step 3 do
+for x, y in a by -2, 1..10 by 3 do
     print x, y

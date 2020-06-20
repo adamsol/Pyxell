@@ -1,2 +1,2 @@
 
-print {"{i}{c}" for c, i in 'Z'..'A' step -2, 0... if c == 'C' or c == 'D'}
+print {"{i}{c}" for c, i in 'Z'..'A' by -2, 0... if c == 'C' or c == 'D'}

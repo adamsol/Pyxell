@@ -1,4 +1,4 @@
 
-d = {i.toString()[:1]: c+1 for i, c in 10..21 step 2, 'a'... if i >= 20 or 11 < i < 16}
+d = {i.toString()[:1]: c+1 for i, c in 10..21 by 2, 'a'... if i >= 20 or 11 < i < 16}
 print d["1"], d["2"]
 print d.length

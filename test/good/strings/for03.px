@@ -1,5 +1,5 @@
 
-for t in "abcdefg" step -2, "ABC", "123456789" step 2 do
+for t in "abcdefg" by -2, "ABC", "123456789" by 2 do
     x, y, z = t
     print "" + z + y + x
     if y >= 'C' do

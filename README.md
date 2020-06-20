@@ -29,7 +29,7 @@ Range literals, string interpolation:
 
 ```
 a = ['A'..'Z']
-for x, i in a, 0... step 5 do
+for x, i in a, 0... by 5 do
     print "a[{i}] = {x}" 
 ```
 
@@ -57,7 +57,7 @@ func fold<A,B>([A] a, A->B->B f, B r) B def
 print fold([2, 3, 4], _*_, 1)  -- 24
 
 -- There are built-in methods like this:
-print [0..10 step 2].reduce(_+_)  -- 30
+print [0..10 by 2].reduce(_+_)  -- 30
 ```
 
 Generators, tuples:

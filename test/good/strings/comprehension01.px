@@ -1,4 +1,4 @@
 
-a = [(c, c') for c in "AB" for c' in "CCD" step 2]
+a = [(c, c') for c in "AB" for c' in "CCD" by 2]
 for x in a do
     print x

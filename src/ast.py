@@ -115,7 +115,6 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'StmtFor'),
             'vars': self.visit(exprs[0].expr()),
             'iterables': self.visit(exprs[1].expr()),
-            'steps': self.visit(exprs[2].expr()) if len(exprs) > 2 else [],
             'block': self.visit(ctx.block()),
         }
 
@@ -375,9 +374,9 @@ class PyxellASTVisitor(PyxellVisitor):
             'expr': self.visit(ctx.expr()),
         }
 
-    def visitExprStep(self, ctx):
+    def visitExprBy(self, ctx):
         return {
-            **_node(ctx, 'ExprStep'),
+            **_node(ctx, 'ExprBy'),
             'exprs': self.visit(ctx.expr()),
         }
 

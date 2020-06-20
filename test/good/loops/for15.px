@@ -2,9 +2,9 @@
 for x in 2/7..1+2/7 do
     print x
 
-for x in 16/2..-1 step -13/6 do
+for x in 16/2..-1 by -13/6 do
     print x
 
-for x in 0...3^2 step 3 do
+for x in 0...3^2 by 3 do
     x /= 4
     print x

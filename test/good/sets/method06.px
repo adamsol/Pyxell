@@ -2,9 +2,9 @@
 n = 10^^6
 s = 5
 
-x = {1..n step s}
+x = {1..n by s}
 
-for i in {3..n step s} do
+for i in {3..n by s} do
     x.add(i)
 
 c = 0
