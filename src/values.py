@@ -1,6 +1,7 @@
 
 import copy
 
+from . import codegen as c
 from . import types as t
 
 
@@ -253,7 +254,7 @@ class Lambda(Value):
         self.arg_vars = arg_vars
 
         if isinstance(body, Value):
-            body = f'{{ return {body}; }}'
+            body = c.Block(c.Statement('return', body))
         self.body = body
 
     def __str__(self):
@@ -271,4 +272,5 @@ class Bind(Value):
 
     def __str__(self):
         # https://stackoverflow.com/a/57114008
-        return f'[=](auto&& ...args) {{ return {self.func}({self.obj}, args...); }}'
+        block = c.Block(c.Statement('return', Call(self.func, self.obj, 'args...')))
+        return f'[=](auto&& ...args) {block}'

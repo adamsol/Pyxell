@@ -13,6 +13,7 @@ import threading
 from pathlib import Path
 from timeit import default_timer as timer
 
+from src.codegen import INDENT
 from src.main import precompile_base_header, compile, run_cpp_compiler
 from src.errors import NotSupportedError, PyxellError
 
@@ -114,7 +115,7 @@ def test(path, running_aggregate_tests=False):
             elif not args.separate and not running_aggregate_tests:
                 aggregate_cpp_code.extend([
                     f'namespace test{index} {{',
-                    re.sub('^', '  ', Path(path.replace('.px', '.cpp')).read_text(), flags=re.MULTILINE),
+                    re.sub('^', INDENT, Path(path.replace('.px', '.cpp')).read_text(), flags=re.MULTILINE),
                     '}\n',
                 ])
                 tests_to_compile.add(path)
@@ -187,8 +188,8 @@ if not args.separate:
 
     aggregate_cpp_code.extend([
         'int main(int argc, char **argv) {',
-        '  std::string path = argv[1];',
-        *[f'  if (path == "{path}") test{tests[path]}::main();' for path in tests_to_compile],
+        INDENT + 'std::string path = argv[1];',
+        *[INDENT + f'if (path == "{path}") test{tests[path]}::main();' for path in tests_to_compile],
         '}',
     ])
 

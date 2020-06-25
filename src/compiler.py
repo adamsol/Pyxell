@@ -5,10 +5,9 @@ from collections import defaultdict
 from contextlib import contextmanager
 from itertools import zip_longest
 
-import cgen as c
-
-from . import values as v
+from . import codegen as c
 from . import types as t
+from . import values as v
 from .errors import NotSupportedError, PyxellError as err
 from .parsing import parse_expr
 from .types import can_cast, has_type_variables, type_variables_assignment, unify_types
@@ -31,22 +30,17 @@ class PyxellCompiler:
         self.units = {}
         self._unit = None
         self._seq_number = 0
-
         self._block = c.Block()
-        self.main = c.FunctionBody(c.FunctionDeclaration(c.Value('int', 'main'), []), self._block)
 
         self.module_declarations = c.Collection()
         self.module_definitions = c.Collection()
-        
-        self.module = c.Module([
-            c.Line(),
+        self.main = c.Function('int', 'main', [], self._block)
+
+        self.module = c.Collection(
             self.module_declarations,
-            c.Line(),
             self.module_definitions,
-            c.Line(),
             self.main,
-            c.Line(),
-        ])
+        )
 
     def run(self, ast, unit):
         self.units[unit] = Unit()
@@ -58,7 +52,7 @@ class PyxellCompiler:
 
     def run_main(self, ast):
         self.run(ast, 'main')
-        self.output('return 0')
+        self.output(c.Statement('return 0'))
         if 'generators' in self.required and 'clang' not in self.cpp_compiler:
             raise NotSupportedError(f"Generators require C++ coroutines support (use Clang).")
         return str(self.module)
@@ -130,11 +124,11 @@ class PyxellCompiler:
             yield
 
     def output(self, stmt, toplevel=False):
-        if isinstance(stmt, (str, v.Value)):
-            stmt = c.Statement(str(stmt))
+        if isinstance(stmt, (v.Value, c.Var)):
+            stmt = c.Statement(stmt)
 
         if toplevel:
-            if isinstance(stmt, (c.FunctionBody, c.Struct)):
+            if isinstance(stmt, (c.Function, c.Struct)):
                 self.module_definitions.append(stmt)
             else:
                 self.module_declarations.append(stmt)
@@ -256,7 +250,7 @@ class PyxellCompiler:
             self.throw(node, err.UnknownType())
 
         result = self.var(type)
-        self.output(f'{type} {result.name}')
+        self.output(c.Var(result))
 
         with self.block(block_true):
             self.store(result, value_true)
@@ -406,7 +400,7 @@ class PyxellCompiler:
         if lvalue and attr in obj.type.methods:
             self.throw(node, err.NotLvalue())
 
-        value = v.Attribute(obj, obj.type.members[attr].name, type=obj.type.members[attr].type)
+        value = v.Attribute(obj, obj.type.members[attr], type=obj.type.members[attr].type)
         if attr in obj.type.methods:
             value = v.Call(f'reinterpret_cast<{value.type.ret} (*)({value.type.args_str()})>', v.Call(value), type=value.type)
         return value
@@ -467,7 +461,7 @@ class PyxellCompiler:
 
         var = self.var(type)
         self.env[id] = var
-        self.output(f'{type} {var.name}', toplevel=(self.env.get('#return') is None))
+        self.output(c.Var(var), toplevel=(self.env.get('#return') is None))
 
         if initialize:
             self.initialized.add(id)
@@ -505,8 +499,7 @@ class PyxellCompiler:
             self.throw(node, err.NotLvalue())
 
     def store(self, left, right, decl=None):
-        decl = str(decl) + ' ' if decl else ''
-        self.output(f'{decl}{left} = {right}')
+        self.output(c.Statement(decl, left, '=', right))
 
     def assign(self, node, expr, value):
         type = value.type
@@ -878,13 +871,8 @@ class PyxellCompiler:
                 del template.compiled[real_types]
                 self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=func_type)
             else:
-                definition = c.FunctionBody(
-                    c.FunctionDeclaration(
-                        c.Value(str(func_type.ret), func.name),
-                        [c.Value(str(arg.type), arg.name) for arg in arg_vars]),
-                    block)
-                self.output(f'{func_type.ret} {func}({func_type.args_str()})', toplevel=True)
-                self.output(definition, toplevel=True)
+                self.output(c.Statement(func_type.ret, f'{func}({func_type.args_str()})'), toplevel=True)
+                self.output(c.Function(func_type.ret, func, arg_vars, block), toplevel=True)
 
         return func.bind(template.bound)
 
@@ -931,7 +919,7 @@ class PyxellCompiler:
         if expr:
             value = self.compile(expr)
             self.print(expr, value)
-        self.output('std::cout << "\\n"')  # std::endl is very slow
+        self.output(c.Statement('std::cout << "\\n"'))  # std::endl is very slow
 
     def compileStmtDecl(self, node):
         type = self.resolve_type(self.compile(node['type']))
@@ -1030,7 +1018,7 @@ class PyxellCompiler:
             with self.block(body):
                 cond = self.cast(expr, self.compile(expr), t.Bool)
                 cond = v.UnaryOperation('!', cond)
-                self.output(c.If(cond, c.Block([c.Statement('break')])))
+                self.output(c.If(cond, c.Statement('break')))
 
                 self.compile(node['block'])
 
@@ -1049,7 +1037,7 @@ class PyxellCompiler:
             with self.block(body):
                 cond = self.cast(expr, self.compile(expr), t.Bool)
                 cond = v.BinaryOperation(second_iteration, '&&', cond)
-                self.output(c.If(cond, c.Block([c.Statement('break')])))
+                self.output(c.If(cond, c.Statement('break')))
                 self.store(second_iteration, v.true)
 
                 self.compile(node['block'])
@@ -1092,9 +1080,9 @@ class PyxellCompiler:
                     end = self.freeze(values[1])
                     eq = '=' if iterable['inclusive'] else ''
                     neg = self.tmp(v.BinaryOperation(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
-                    cond = lambda: f'({neg} ? {index} >{eq} {end} : {index} <{eq} {end})'
+                    cond = lambda: v.Condition(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
 
-                update = lambda: f'{index} += {step}'
+                update = lambda: v.BinaryOperation(index, '+=', step)
                 getter = lambda: v.Cast(index, type)
 
             else:
@@ -1109,7 +1097,7 @@ class PyxellCompiler:
                 end = self.tmp(v.Call(v.Attribute(value, 'end')))
 
                 if type.isSequence():
-                    self.output(f'if ({step} < 0 && {start} != {end}) {start} = std::prev({end})')
+                    self.output(c.If(f'{step} < 0 && {start} != {end}', c.Statement(start, '=', v.Call('std::prev', end))))
                     index = self.tmp(v.Int(0), force_var=True)
                     length = self.tmp(v.Call(v.Attribute(value, 'size')))
                     cond = lambda: f'{index} < {length}'
@@ -1159,7 +1147,7 @@ class PyxellCompiler:
         if not self.env.get('#loop'):
             self.throw(node, err.UnexpectedStatement(stmt))
 
-        self.output(stmt)
+        self.output(c.Statement(stmt))
 
     def compileStmtFunc(self, node, class_type=None):
         id = node['id']
@@ -1235,14 +1223,14 @@ class PyxellCompiler:
                 self.throw(node, err.IllegalAssignment(t.Void, type))
 
         if type.isGenerator():
-            self.output('co_return')
+            self.output(c.Statement('co_return'))
         elif type == t.Void:
             if expr:
                 # Special case for lambdas returning Void.
                 self.output(value)
-            self.output('return')
+            self.output(c.Statement('return'))
         else:
-            self.output(f'return {value}')
+            self.output(c.Statement('return', value))
 
     def compileStmtYield(self, node):
         type = self.env.get('#return')
@@ -1257,7 +1245,7 @@ class PyxellCompiler:
         else:
             value = self.cast(node, value, type)
 
-        self.output(f'co_yield {value}')
+        self.output(c.Statement('co_yield', value))
 
     def compileStmtClass(self, node):
         id = node['id']
@@ -1280,9 +1268,9 @@ class PyxellCompiler:
         cls = self.var(t.Func([], type), prefix='c')
         type.initializer = cls
 
-        fields = []
-        self.output(f'struct {cls.name}', toplevel=True)
-        self.output(c.Struct(cls.name + (f': {base.initializer.name}' if base else ''), fields), toplevel=True)
+        fields = c.Block()
+        self.output(c.Statement('struct', cls), toplevel=True)
+        self.output(c.Struct(cls, fields, base=(base.initializer if base else None)), toplevel=True)
 
         for member in node['members']:
             if member['node'] == 'ClassField':
@@ -1293,7 +1281,7 @@ class PyxellCompiler:
                     self.throw(member, err.InvalidMember(name))
 
                 field = self.var(self.compile(member['type']), prefix='m')
-                fields.append(c.Value(field.type, field.name))
+                fields.append(c.Statement(c.Var(field)))
                 members[name] = field
 
         for member in node['members']:
@@ -1320,13 +1308,13 @@ class PyxellCompiler:
                             members[name] = self.var(func.type, prefix='m')
 
                         block = c.Block()
-                        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value(f'virtual void*', members[name].name), []), block))
+                        fields.append(c.Function('virtual void*', members[name], [], block))
                         with self.block(block):
-                            self.output(f'return reinterpret_cast<void*>({func})')
+                            self.output(c.Statement('return', v.Call('reinterpret_cast<void*>', func)))
 
                     elif member['node'] == 'ClassDestructor':
                         block = c.Block()
-                        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('virtual', f'~{cls.name}'), []), block))
+                        fields.append(c.Function('virtual', f'~{cls}', [], block))
                         with self.block(block):
                             # To call the destructor function expecting shared_ptr as the argument,
                             # we create a shared_ptr that points to, but doesn't own, `this`.
@@ -1334,14 +1322,14 @@ class PyxellCompiler:
                             self.output(v.Call(methods['<destructor>'], v.Call(type, v.Call(type), 'this')))
 
         block = c.Block()
-        fields.append(c.FunctionBody(c.FunctionDeclaration(c.Value('', cls.name), []), block))  # constructor
+        fields.append(c.Function('', cls, [], block))  # constructor
         with self.block(block):
             for member in node['members']:
                 name = member['id']
                 default = member.get('default')
                 if default:
                     value = self.cast(member, self.compile(default), members[name].type)
-                    self.store(f'this->{members[name].name}', value)
+                    self.store(f'this->{members[name]}', value)
 
 
     ### Expressions ###
