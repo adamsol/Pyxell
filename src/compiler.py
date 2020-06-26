@@ -220,9 +220,9 @@ class PyxellCompiler:
 
             if collection.type.isSequence():
                 index = self.tmp(self.cast(node, index, t.Int))
-                index = v.Condition(
-                    v.BinaryOperation(index, '<', v.Int(0)),
-                    v.BinaryOperation(self.attr(node, collection, 'length'), '+', index),
+                index = v.TernaryOp(
+                    v.BinaryOp(index, '<', v.Int(0)),
+                    v.BinaryOp(self.attr(node, collection, 'length'), '+', index),
                     index)
                 type = collection.type.subtype
 
@@ -548,7 +548,7 @@ class PyxellCompiler:
             'not': '!',
         }.get(op, op)
 
-        return v.UnaryOperation(op, value, type=value.type)
+        return v.UnaryOp(op, value, type=value.type)
 
     def binaryop(self, node, op, left, right):
         if op != '^' and left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat} and t.Rat in {left.type, right.type}:
@@ -576,7 +576,7 @@ class PyxellCompiler:
 
         elif op == '*':
             if left.type == right.type and left.type.isNumber():
-                return v.BinaryOperation(left, op, right, type=left.type)
+                return v.BinaryOp(left, op, right, type=left.type)
 
             elif left.type.isSequence() and right.type == t.Int:
                 return v.Call('multiply', left, right, type=left.type)
@@ -589,9 +589,9 @@ class PyxellCompiler:
 
         elif op == '/':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
-                return v.BinaryOperation(v.Cast(left, t.Rat), op, v.Cast(right, t.Rat), type=t.Rat)
+                return v.BinaryOp(v.Cast(left, t.Rat), op, v.Cast(right, t.Rat), type=t.Rat)
             elif left.type == right.type == t.Float:
-                return v.BinaryOperation(left, op, right, type=t.Float)
+                return v.BinaryOp(left, op, right, type=t.Float)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -621,10 +621,10 @@ class PyxellCompiler:
 
         elif op == '+':
             if left.type == right.type and left.type.isNumber():
-                return v.BinaryOperation(left, op, right, type=left.type)
+                return v.BinaryOp(left, op, right, type=left.type)
 
             elif left.type != right.type and left.type in {t.Char, t.Int} and right.type in {t.Char, t.Int}:
-                return v.Cast(v.BinaryOperation(left, op, right), t.Char)
+                return v.Cast(v.BinaryOp(left, op, right), t.Char)
 
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.Call('concat', v.Cast(left, t.String), v.Cast(right, t.String), type=t.String)
@@ -637,13 +637,13 @@ class PyxellCompiler:
 
         elif op == '-':
             if left.type == right.type and left.type.isNumber():
-                return v.BinaryOperation(left, op, right, type=left.type)
+                return v.BinaryOp(left, op, right, type=left.type)
 
             elif left.type == right.type and left.type == t.Char:
-                return v.BinaryOperation(v.Cast(left, t.Int), op, v.Cast(right, t.Int), type=t.Int)
+                return v.BinaryOp(v.Cast(left, t.Int), op, v.Cast(right, t.Int), type=t.Int)
 
             elif left.type == t.Char and right.type == t.Int:
-                return v.Cast(v.BinaryOperation(left, op, right), t.Char)
+                return v.Cast(v.BinaryOp(left, op, right), t.Char)
 
             elif left.type == right.type and left.type.isSet():
                 return v.Call('difference', left, right, type=left.type)
@@ -653,7 +653,7 @@ class PyxellCompiler:
 
         elif op == '|':
             if left.type == right.type == t.Int:
-                return v.BinaryOperation(v.BinaryOperation(right, '%', left), '==', v.Int(0), type=t.Bool)
+                return v.BinaryOp(v.BinaryOp(right, '%', left), '==', v.Int(0), type=t.Bool)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -664,7 +664,7 @@ class PyxellCompiler:
                     '##': '^',
                     '||': '|',
                 }.get(op, op)
-                return v.BinaryOperation(left, op, right, type=t.Int)
+                return v.BinaryOp(left, op, right, type=t.Int)
             else:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
@@ -756,12 +756,12 @@ class PyxellCompiler:
                     'exprs': lmap(convert_expr, expr['exprs']),
                     'comprehensions': lmap(convert_expr, expr['comprehensions']),
                 }
-            if node == 'ComprehensionGenerator':
+            if node == 'ComprehensionIteration':
                 return {
                     **expr,
                     'iterables': lmap(convert_expr, expr['iterables']),
                 }
-            if node in {'ComprehensionFilter', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread', 'DictSpread'}:
+            if node in {'ComprehensionPredicate', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread', 'DictSpread'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -1017,7 +1017,7 @@ class PyxellCompiler:
             body = c.Block()
             with self.block(body):
                 cond = self.cast(expr, self.compile(expr), t.Bool)
-                cond = v.UnaryOperation('!', cond)
+                cond = v.UnaryOp('!', cond)
                 self.output(c.If(cond, c.Statement('break')))
 
                 self.compile(node['block'])
@@ -1036,7 +1036,7 @@ class PyxellCompiler:
             body = c.Block()
             with self.block(body):
                 cond = self.cast(expr, self.compile(expr), t.Bool)
-                cond = v.BinaryOperation(second_iteration, '&&', cond)
+                cond = v.BinaryOp(second_iteration, '&&', cond)
                 self.output(c.If(cond, c.Statement('break')))
                 self.store(second_iteration, v.true)
 
@@ -1079,10 +1079,10 @@ class PyxellCompiler:
                 else:
                     end = self.freeze(values[1])
                     eq = '=' if iterable['inclusive'] else ''
-                    neg = self.tmp(v.BinaryOperation(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
-                    cond = lambda: v.Condition(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
+                    neg = self.tmp(v.BinaryOp(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
+                    cond = lambda: v.TernaryOp(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
 
-                update = lambda: v.BinaryOperation(index, '+=', step)
+                update = lambda: v.BinaryOp(index, '+=', step)
                 getter = lambda: v.Cast(index, type)
 
             else:
@@ -1107,7 +1107,7 @@ class PyxellCompiler:
                     cond = lambda: f'{iterator} != {end}'
                     update = lambda: f'safe_advance({iterator}, {end}, {step})'
 
-                getter = lambda: v.UnaryOperation('*', iterator, type=type.subtype)
+                getter = lambda: v.UnaryOp('*', iterator, type=type.subtype)
 
             self.store(iterator, start, 'auto')
             conditions.append(cond)
@@ -1180,7 +1180,7 @@ class PyxellCompiler:
                 args.append(t.Func.Arg(type, name, default, variadic))
 
             ret_type = self.compile(node.get('ret')) or t.Void
-            if node.get('gen'):
+            if node.get('generator'):
                 self.require('generators')
                 ret_type = t.Generator(ret_type)
             func_type = t.Func(args, ret_type)
@@ -1487,14 +1487,14 @@ class PyxellCompiler:
         }
 
         for i, cpr in reversed(list(enumerate(node['comprehensions']))):
-            if cpr['node'] == 'ComprehensionGenerator':
+            if cpr['node'] == 'ComprehensionIteration':
                 stmt = {
                     **cpr,
                     'node': 'StmtFor',
                     'vars': [{**var, 'override': True} for var in cpr['vars']],
                     'block': stmt,
                 }
-            elif cpr['node'] == 'ComprehensionFilter':
+            elif cpr['node'] == 'ComprehensionPredicate':
                 if i == 0:
                     self.throw(cpr, err.InvalidSyntax())
                 stmt = {
@@ -1802,7 +1802,7 @@ class PyxellCompiler:
             if not left.type.isOrderable() and op not in {'==', '!='}:
                 self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
 
-            cond = v.BinaryOperation(left, op, right, type=t.Bool)
+            cond = v.BinaryOp(left, op, right, type=t.Bool)
             left = right
 
             if index == len(exprs) - 1:
@@ -1826,7 +1826,7 @@ class PyxellCompiler:
 
         cond1 = self.compile(exprs[0])
         if op == 'or':
-            cond1 = v.UnaryOperation('!', cond1, type=t.Bool)
+            cond1 = v.UnaryOp('!', cond1, type=t.Bool)
 
         block = c.Block()
         self.output(c.If(cond1, block))

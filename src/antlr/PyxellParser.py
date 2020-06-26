@@ -802,7 +802,7 @@ class PyxellParser ( Parser ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.StmtContext
             super().__init__(parser)
-            self.gen = None # Token
+            self.generator = None # Token
             self.typevars = None # Id_listContext
             self.args = None # Func_argsContext
             self.ret = None # TypContext
@@ -1165,7 +1165,7 @@ class PyxellParser ( Parser ):
                 _la = self._input.LA(1)
                 if _la==PyxellParser.T__12:
                     self.state = 131
-                    localctx.gen = self.match(PyxellParser.T__12)
+                    localctx.generator = self.match(PyxellParser.T__12)
 
 
                 self.state = 134
@@ -1441,7 +1441,7 @@ class PyxellParser ( Parser ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.Class_memberContext
             super().__init__(parser)
-            self.gen = None # Token
+            self.generator = None # Token
             self.args = None # Func_argsContext
             self.ret = None # TypContext
             self.copyFrom(ctx)
@@ -1546,7 +1546,7 @@ class PyxellParser ( Parser ):
                 _la = self._input.LA(1)
                 if _la==PyxellParser.T__12:
                     self.state = 199
-                    localctx.gen = self.match(PyxellParser.T__12)
+                    localctx.generator = self.match(PyxellParser.T__12)
 
 
                 self.state = 202
@@ -2078,7 +2078,7 @@ class PyxellParser ( Parser ):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.ExprContext
             super().__init__(parser)
-            self.gen = None # Token
+            self.generator = None # Token
             self.copyFrom(ctx)
 
         def expr(self):
@@ -2365,7 +2365,7 @@ class PyxellParser ( Parser ):
                 _la = self._input.LA(1)
                 if _la==PyxellParser.T__12:
                     self.state = 312
-                    localctx.gen = self.match(PyxellParser.T__12)
+                    localctx.generator = self.match(PyxellParser.T__12)
 
 
                 self.state = 319
@@ -3092,7 +3092,7 @@ class PyxellParser ( Parser ):
 
 
 
-    class ComprehensionGeneratorContext(ComprehensionContext):
+    class ComprehensionIterationContext(ComprehensionContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.ComprehensionContext
             super().__init__(parser)
@@ -3106,13 +3106,13 @@ class PyxellParser ( Parser ):
 
 
         def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitComprehensionGenerator" ):
-                return visitor.visitComprehensionGenerator(self)
+            if hasattr( visitor, "visitComprehensionIteration" ):
+                return visitor.visitComprehensionIteration(self)
             else:
                 return visitor.visitChildren(self)
 
 
-    class ComprehensionFilterContext(ComprehensionContext):
+    class ComprehensionPredicateContext(ComprehensionContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.ComprehensionContext
             super().__init__(parser)
@@ -3123,8 +3123,8 @@ class PyxellParser ( Parser ):
 
 
         def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitComprehensionFilter" ):
-                return visitor.visitComprehensionFilter(self)
+            if hasattr( visitor, "visitComprehensionPredicate" ):
+                return visitor.visitComprehensionPredicate(self)
             else:
                 return visitor.visitChildren(self)
 
@@ -3139,7 +3139,7 @@ class PyxellParser ( Parser ):
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [PyxellParser.T__36]:
-                localctx = PyxellParser.ComprehensionGeneratorContext(self, localctx)
+                localctx = PyxellParser.ComprehensionIterationContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
                 self.state = 467
                 self.match(PyxellParser.T__36)
@@ -3151,7 +3151,7 @@ class PyxellParser ( Parser ):
                 self.tuple_expr()
                 pass
             elif token in [PyxellParser.T__30]:
-                localctx = PyxellParser.ComprehensionFilterContext(self, localctx)
+                localctx = PyxellParser.ComprehensionPredicateContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
                 self.state = 472
                 self.match(PyxellParser.T__30)

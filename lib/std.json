@@ -1367,7 +1367,7 @@
 									],
 									"comprehensions": [
 										{
-											"node": "ComprehensionGenerator",
+											"node": "ComprehensionIteration",
 											"position": [
 												41,
 												15
@@ -1394,7 +1394,7 @@
 											]
 										},
 										{
-											"node": "ComprehensionFilter",
+											"node": "ComprehensionPredicate",
 											"position": [
 												41,
 												26
@@ -1581,7 +1581,7 @@
 									],
 									"comprehensions": [
 										{
-											"node": "ComprehensionGenerator",
+											"node": "ComprehensionIteration",
 											"position": [
 												44,
 												18
@@ -2739,7 +2739,7 @@
 							],
 							"comprehensions": [
 								{
-									"node": "ComprehensionGenerator",
+									"node": "ComprehensionIteration",
 									"position": [
 										76,
 										15
@@ -2766,7 +2766,7 @@
 									]
 								},
 								{
-									"node": "ComprehensionFilter",
+									"node": "ComprehensionPredicate",
 									"position": [
 										76,
 										26
@@ -2954,7 +2954,7 @@
 							],
 							"comprehensions": [
 								{
-									"node": "ComprehensionGenerator",
+									"node": "ComprehensionIteration",
 									"position": [
 										79,
 										18
@@ -4125,7 +4125,7 @@
 							],
 							"comprehensions": [
 								{
-									"node": "ComprehensionGenerator",
+									"node": "ComprehensionIteration",
 									"position": [
 										111,
 										15
@@ -4152,7 +4152,7 @@
 									]
 								},
 								{
-									"node": "ComprehensionFilter",
+									"node": "ComprehensionPredicate",
 									"position": [
 										111,
 										26
@@ -4340,7 +4340,7 @@
 							],
 							"comprehensions": [
 								{
-									"node": "ComprehensionGenerator",
+									"node": "ComprehensionIteration",
 									"position": [
 										114,
 										18
@@ -5609,7 +5609,7 @@
 							],
 							"comprehensions": [
 								{
-									"node": "ComprehensionGenerator",
+									"node": "ComprehensionIteration",
 									"position": [
 										146,
 										22
@@ -5636,7 +5636,7 @@
 									]
 								},
 								{
-									"node": "ComprehensionFilter",
+									"node": "ComprehensionPredicate",
 									"position": [
 										146,
 										33

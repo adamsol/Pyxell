@@ -132,7 +132,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
             'block': self.visit(ctx.block()),
-            **({'gen': True} if ctx.gen else {}),
+            **({'generator': True} if ctx.generator else {}),
         }
 
     def visitFuncArg(self, ctx):
@@ -179,7 +179,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'args': self.visit(ctx.args.func_arg()),
             'ret': self.visit(ctx.ret),
             'block': self.visit(ctx.block()),
-            **({'gen': True} if ctx.gen else {}),
+            **({'generator': True} if ctx.generator else {}),
         }
 
     def visitClassConstructor(self, ctx):
@@ -260,17 +260,17 @@ class PyxellASTVisitor(PyxellVisitor):
             'comprehensions': self.visit(ctx.comprehension()),
         }
 
-    def visitComprehensionGenerator(self, ctx):
+    def visitComprehensionIteration(self, ctx):
         exprs = ctx.tuple_expr()
         return {
-            **_node(ctx, 'ComprehensionGenerator'),
+            **_node(ctx, 'ComprehensionIteration'),
             'vars': self.visit(exprs[0].expr()),
             'iterables': self.visit(exprs[1].expr()),
         }
 
-    def visitComprehensionFilter(self, ctx):
+    def visitComprehensionPredicate(self, ctx):
         return {
-            **_node(ctx, 'ComprehensionFilter'),
+            **_node(ctx, 'ComprehensionPredicate'),
             'expr': self.visit(ctx.expr()),
         }
 
@@ -386,7 +386,7 @@ class PyxellASTVisitor(PyxellVisitor):
             'ids': self.visit(ctx.ID()),
             'expr': self.visit(ctx.expr()),
             'block': self.visit(ctx.block()),
-            **({'gen': True} if ctx.gen else {}),
+            **({'generator': True} if ctx.generator else {}),
         }
 
     def visitExprTuple(self, ctx):

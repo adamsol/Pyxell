@@ -22,7 +22,7 @@ stmt
   | 'while' expr 'do' block # StmtWhile
   | 'until' expr 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr 'do' block # StmtFor
-  | 'func' gen='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern') # StmtFunc
+  | 'func' generator='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern') # StmtFunc
   | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
   ;
 
@@ -36,7 +36,7 @@ func_args
 
 class_member
   : typ ID (':' tuple_expr)? # ClassField
-  | 'func' gen='*'? ID args=func_args (ret=typ)? ('def' block | 'abstract') # ClassMethod
+  | 'func' generator='*'? ID args=func_args (ret=typ)? ('def' block | 'abstract') # ClassMethod
   | 'constructor' args=func_args ('def' block | 'abstract') # ClassConstructor
   | 'destructor' '(' ')' 'def' block # ClassDestructor
   ;
@@ -77,7 +77,7 @@ expr
   | expr dots='...' # ExprRange
   | expr 'by' expr # ExprBy
   | '...' expr # ExprSpread
-  | 'lambda' gen='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
+  | 'lambda' generator='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
   ;
 
 dict_item
@@ -94,8 +94,8 @@ interpolation_expr
   ;
 
 comprehension
-  : 'for' tuple_expr 'in' tuple_expr # ComprehensionGenerator
-  | 'if' expr # ComprehensionFilter
+  : 'for' tuple_expr 'in' tuple_expr # ComprehensionIteration
+  | 'if' expr # ComprehensionPredicate
   ;
 
 call_arg

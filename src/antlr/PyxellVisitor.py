@@ -254,13 +254,13 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ComprehensionGenerator.
-    def visitComprehensionGenerator(self, ctx:PyxellParser.ComprehensionGeneratorContext):
+    # Visit a parse tree produced by PyxellParser#ComprehensionIteration.
+    def visitComprehensionIteration(self, ctx:PyxellParser.ComprehensionIterationContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#ComprehensionFilter.
-    def visitComprehensionFilter(self, ctx:PyxellParser.ComprehensionFilterContext):
+    # Visit a parse tree produced by PyxellParser#ComprehensionPredicate.
+    def visitComprehensionPredicate(self, ctx:PyxellParser.ComprehensionPredicateContext):
         return self.visitChildren(ctx)
 
 

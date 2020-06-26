@@ -199,7 +199,7 @@ def Get(tuple, index):
     return Call(f'std::get<{index}>', tuple, type=tuple.type.elements[index])
 
 def Dereference(value, type=None):
-    return UnaryOperation('*', value, type=type)
+    return UnaryOp('*', value, type=type)
 
 def Extract(value):
     return Dereference(value, type=value.type.subtype)
@@ -208,10 +208,10 @@ def IsNotNull(value):
     return Call(Attribute(value, 'has_value'), type=t.Bool)
 
 def IsNull(value):
-    return UnaryOperation('!', IsNotNull(value), type=t.Bool)
+    return UnaryOp('!', IsNotNull(value), type=t.Bool)
 
 
-class UnaryOperation(Value):
+class UnaryOp(Value):
 
     def __init__(self, op, value, **kwargs):
         super().__init__(**kwargs)
@@ -222,7 +222,7 @@ class UnaryOperation(Value):
         return f'({self.op}{self.value})'
 
 
-class BinaryOperation(Value):
+class BinaryOp(Value):
 
     def __init__(self, value1, op, value2, **kwargs):
         super().__init__(**kwargs)
@@ -234,7 +234,7 @@ class BinaryOperation(Value):
         return f'({self.value1} {self.op} {self.value2})'
 
 
-class Condition(Value):
+class TernaryOp(Value):
 
     def __init__(self, value1, value2, value3, **kwargs):
         super().__init__(**kwargs)
