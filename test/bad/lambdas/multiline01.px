@@ -1,0 +1,6 @@
+
+f = lambda def
+    return 0
+    return ""
+
+f()
