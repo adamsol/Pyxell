@@ -1,1 +1,1 @@
-Illegal assignment from `{Int:[Char]}` to `{Int:[String]}`.
+No implicit conversion from `{Int:[Char]}` to `{Int:[String]}`.

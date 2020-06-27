@@ -1,1 +1,1 @@
-Illegal assignment from `{Rat}` to `{Float}`.
+No implicit conversion from `{Rat}` to `{Float}`.

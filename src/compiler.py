@@ -413,12 +413,12 @@ class PyxellCompiler:
                     type = t.Func([value.bound.type] + type.args, type.ret)
                 d = type_variables_assignment(type, value.type)
                 if d is None:
-                    self.throw(node, err.IllegalAssignment(value.type, type))
+                    self.throw(node, err.NoConversion(value.type, type))
                 return self.function(value, d)
 
             # This is the only place where containers are not covariant during type checking.
             if not can_cast(value.type, type, covariance=False):
-                self.throw(node, err.IllegalAssignment(value.type, type))
+                self.throw(node, err.NoConversion(value.type, type))
 
             if not value.type.isNullable() and type.isNullable():
                 return v.Nullable(v.Cast(value, type.subtype))
@@ -479,7 +479,7 @@ class PyxellCompiler:
             elif override:
                 self.declare(node, declare, id, redeclare=True)
             elif not isinstance(self.env[id], v.Value) or getattr(self.env[id], 'final', False):
-                self.throw(node, err.IllegalRedefinition(id))
+                self.throw(node, err.RedefinedIdentifier(id))
 
             if initialize:
                 self.initialized.add(id)
@@ -947,7 +947,7 @@ class PyxellCompiler:
         op = node['op']
         left = self.lvalue(node, exprs[0])
         if left is None:
-            self.throw(node, err.IllegalPlaceholder())
+            self.throw(node, err.InvalidUsage('_'))
 
         if op == '??':
             block = c.Block()
@@ -961,7 +961,7 @@ class PyxellCompiler:
             right = self.compile(exprs[1])
             value = self.binaryop(node, op, left, right)
             if value.type != left.type:
-                self.throw(node, err.IllegalAssignment(value.type, left.type))
+                self.throw(node, err.NoConversion(value.type, left.type))
             self.store(left, value)
 
     def compileStmtAppend(self, node):
@@ -1145,7 +1145,7 @@ class PyxellCompiler:
         stmt = node['stmt']  # `break` / `continue`
 
         if not self.env.get('#loop'):
-            self.throw(node, err.UnexpectedStatement(stmt))
+            self.throw(node, err.InvalidUsage(stmt))
 
         self.output(c.Statement(stmt))
 
@@ -1199,7 +1199,7 @@ class PyxellCompiler:
         try:
             type = self.env['#return']
         except KeyError:
-            self.throw(node, err.UnexpectedStatement('return'))
+            self.throw(node, err.InvalidUsage('return'))
 
         self.initialized.add('#return')
 
@@ -1208,7 +1208,7 @@ class PyxellCompiler:
             value = self.compile(expr, void_allowed=True)
 
             if type.isGenerator():
-                self.throw(node, err.IllegalAssignment(value.type, type))
+                self.throw(node, err.NoConversion(value.type, type))
 
             if '#return-types' in self.env:
                 self.env['#return-types'].append(value.type)
@@ -1220,7 +1220,7 @@ class PyxellCompiler:
                 type = t.Void
                 self.env['#return-types'].append(type)
             else:
-                self.throw(node, err.IllegalAssignment(t.Void, type))
+                self.throw(node, err.NoConversion(t.Void, type))
 
         if type.isGenerator():
             self.output(c.Statement('co_return'))
@@ -1235,7 +1235,7 @@ class PyxellCompiler:
     def compileStmtYield(self, node):
         type = self.env.get('#return')
         if not type or not type.isGenerator():
-            self.throw(node, err.UnexpectedStatement('yield'))
+            self.throw(node, err.InvalidUsage('yield'))
 
         type = type.subtype
         value = self.compile(node['expr'])
@@ -1344,7 +1344,7 @@ class PyxellCompiler:
                 if expr['node'] in {'ExprRange', 'ExprBy'}:
                     if expr['node'] == 'ExprBy':
                         if expr['exprs'][0]['node'] != 'ExprRange':
-                            self.throw(node, err.IllegalBy())
+                            self.throw(node, err.InvalidSyntax())
                         expr = expr['exprs'][0]
                     values = lmap(self.compile, expr['exprs'])
                     types.extend(value.type for value in values)
@@ -1643,7 +1643,7 @@ class PyxellCompiler:
                     if not value.isTemplate():
                         d = type_variables_assignment(value.type, func_arg.type)
                         if d is None:
-                            self.throw(node, err.IllegalAssignment(value.type, func_arg.type))
+                            self.throw(node, err.NoConversion(value.type, func_arg.type))
 
                         for name, type in d.items():
                             type_variables[name].append(type)
@@ -1843,13 +1843,13 @@ class PyxellCompiler:
         return self.cond(node, self.compile(exprs[0]), lambda: self.compile(exprs[1]), lambda: self.compile(exprs[2]))
 
     def compileExprRange(self, node):
-        self.throw(node, err.IllegalRange())
+        self.throw(node, err.InvalidSyntax())
 
     def compileExprSpread(self, node):
-        self.throw(node, err.IllegalSpread())
+        self.throw(node, err.InvalidSyntax())
 
     def compileExprBy(self, node):
-        self.throw(node, err.IllegalBy())
+        self.throw(node, err.InvalidSyntax())
 
     def compileExprLambda(self, node):
         id = self.fake_id()
@@ -1925,7 +1925,7 @@ class PyxellCompiler:
     def compileAtomSuper(self, node):
         func = self.env.get('#super')
         if func is None:
-            self.throw(node, err.IllegalSuper())
+            self.throw(node, err.InvalidUsage('super'))
         return func
 
     def compileAtomDefault(self, node):

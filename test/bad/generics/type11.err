@@ -1,1 +1,1 @@
-Illegal assignment from `Bool*Int` to `B*B`.
+No implicit conversion from `Bool*Int` to `B*B`.

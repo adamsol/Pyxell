@@ -1,1 +1,1 @@
-Illegal assignment from `String` to `[Char]`.
+No implicit conversion from `String` to `[Char]`.

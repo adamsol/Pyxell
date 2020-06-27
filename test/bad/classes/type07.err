@@ -1,1 +1,1 @@
-Illegal assignment from `[[[B]]]*Int` to `[[[A]]]*Int`.
+No implicit conversion from `[[[B]]]*Int` to `[[[A]]]*Int`.

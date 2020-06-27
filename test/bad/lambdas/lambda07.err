@@ -1,1 +1,1 @@
-Illegal assignment from `$T1->$T0` to `Int->Int->Int`.
+No implicit conversion from `$T1->$T0` to `Int->Int->Int`.

@@ -1,1 +1,1 @@
-Illegal assignment from `String` to `Float`.
+No implicit conversion from `String` to `Float`.

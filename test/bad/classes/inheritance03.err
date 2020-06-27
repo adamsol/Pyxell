@@ -1,1 +1,1 @@
-Illegal assignment from `Base` to `Sub`.
+No implicit conversion from `Base` to `Sub`.

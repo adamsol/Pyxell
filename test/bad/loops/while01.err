@@ -1,1 +1,1 @@
-Illegal assignment from `String` to `Bool`.
+No implicit conversion from `String` to `Bool`.

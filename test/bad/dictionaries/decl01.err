@@ -1,1 +1,1 @@
-Illegal assignment from `{String:Int}` to `{Int:String}`.
+No implicit conversion from `{String:Int}` to `{Int:String}`.

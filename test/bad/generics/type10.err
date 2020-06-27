@@ -1,1 +1,1 @@
-Illegal assignment from `Int->Bool` to `A->A`.
+No implicit conversion from `Int->Bool` to `A->A`.

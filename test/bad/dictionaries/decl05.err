@@ -1,1 +1,1 @@
-Illegal assignment from `{Bool:[Int]}` to `{Bool:[Float]}`.
+No implicit conversion from `{Bool:[Int]}` to `{Bool:[Float]}`.

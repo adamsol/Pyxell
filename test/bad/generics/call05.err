@@ -1,1 +1,1 @@
-Illegal assignment from `T->T` to `A->A->A`.
+No implicit conversion from `T->T` to `A->A->A`.

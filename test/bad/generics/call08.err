@@ -1,1 +1,1 @@
-Illegal assignment from `Rat` to `Int`.
+No implicit conversion from `Rat` to `Int`.

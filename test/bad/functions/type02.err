@@ -1,1 +1,1 @@
-Illegal assignment from `String->Void` to `String->Char`.
+No implicit conversion from `String->Void` to `String->Char`.

@@ -1,1 +1,1 @@
-Illegal assignment from `Bool` to `Void`.
+No implicit conversion from `Bool` to `Void`.

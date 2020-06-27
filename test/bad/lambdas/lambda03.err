@@ -1,1 +1,1 @@
-Illegal assignment from `->$T0` to `Char->Char`.
+No implicit conversion from `->$T0` to `Char->Char`.

@@ -1,1 +1,1 @@
-Illegal assignment from `String` to `T`.
+No implicit conversion from `String` to `T`.

@@ -1,1 +1,1 @@
-Illegal assignment from `[Int*Int]` to `[A*B*C]`.
+No implicit conversion from `[Int*Int]` to `[A*B*C]`.

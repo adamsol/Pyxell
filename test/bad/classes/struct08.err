@@ -1,1 +1,1 @@
-Illegal assignment from `Float` to `Rat`.
+No implicit conversion from `Float` to `Rat`.

@@ -1,1 +1,1 @@
-Illegal assignment from `[Int]` to `[Rat]`.
+No implicit conversion from `[Int]` to `[Rat]`.

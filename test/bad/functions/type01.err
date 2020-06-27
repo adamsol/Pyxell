@@ -1,1 +1,1 @@
-Illegal assignment from `String->Void` to `Int->Void`.
+No implicit conversion from `String->Void` to `Int->Void`.

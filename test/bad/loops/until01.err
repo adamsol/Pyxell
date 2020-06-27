@@ -1,1 +1,1 @@
-Illegal assignment from `Int` to `Bool`.
+No implicit conversion from `Int` to `Bool`.
