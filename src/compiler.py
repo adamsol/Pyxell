@@ -1296,6 +1296,7 @@ class PyxellCompiler:
 
                 if member['block']:
                     with self.local():
+                        self.env['#self'] = True
                         self.env['#super'] = base_methods.get(name) if member['node'] != 'ClassDestructor' else None
                         methods[name] = func = self.compileStmtFunc(member, class_type=type)
 
@@ -1923,6 +1924,11 @@ class PyxellCompiler:
 
     def compileAtomNull(self, node):
         return v.null
+
+    def compileAtomSelf(self, node):
+        if not self.env.get('#self'):
+            self.throw(node, err.InvalidUsage('self'))
+        return self.get(node, 'self')
 
     def compileAtomSuper(self, node):
         func = self.env.get('#super')

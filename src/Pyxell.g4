@@ -109,6 +109,7 @@ atom
   | CHAR # AtomChar
   | STRING # AtomString
   | 'null' # AtomNull
+  | 'self' # AtomSelf
   | 'super' # AtomSuper
   | 'default' '(' typ ')' # AtomDefault
   | ID # AtomId

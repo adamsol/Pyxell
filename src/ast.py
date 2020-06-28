@@ -441,6 +441,11 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'AtomNull'),
         }
 
+    def visitAtomSelf(self, ctx):
+        return {
+            **_node(ctx, 'AtomSelf'),
+        }
+
     def visitAtomSuper(self, ctx):
         return {
             **_node(ctx, 'AtomSuper'),

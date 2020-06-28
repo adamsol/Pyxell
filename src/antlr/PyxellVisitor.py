@@ -299,6 +299,11 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by PyxellParser#AtomSelf.
+    def visitAtomSelf(self, ctx:PyxellParser.AtomSelfContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by PyxellParser#AtomSuper.
     def visitAtomSuper(self, ctx:PyxellParser.AtomSuperContext):
         return self.visitChildren(ctx)
