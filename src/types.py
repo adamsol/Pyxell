@@ -16,6 +16,12 @@ class Type:
     def eq(self, other):
         return False
 
+    def show_with_precedence(self, other):
+        s = self.show()
+        if other.PRECEDENCE <= self.PRECEDENCE:
+            s = f'({s})'
+        return s
+
     def isNumber(self):
         return self in {Int, Rat, Float}
 
@@ -108,6 +114,7 @@ class Type:
 
 
 class PrimitiveType(Type):
+    PRECEDENCE = 0
 
     def __init__(self, pyxell_name, c_name=None):
         super().__init__()
@@ -146,6 +153,7 @@ class Wrapper(Type):
 
 
 class Array(Wrapper):
+    PRECEDENCE = 0
 
     def __str__(self):
         return f'Array<{self.subtype}>'
@@ -155,6 +163,7 @@ class Array(Wrapper):
 
 
 class Set(Wrapper):
+    PRECEDENCE = 0
 
     def __str__(self):
         return f'Set<{self.subtype}>'
@@ -164,6 +173,7 @@ class Set(Wrapper):
 
 
 class Dict(Wrapper):
+    PRECEDENCE = 0
 
     def __init__(self, key_type, value_type):
         super().__init__(Tuple([key_type, value_type]))
@@ -178,6 +188,7 @@ class Dict(Wrapper):
 
 
 class Generator(Wrapper):
+    PRECEDENCE = 0
 
     def __str__(self):
         return f'cppcoro::generator<{self.subtype}>'
@@ -187,15 +198,17 @@ class Generator(Wrapper):
 
 
 class Nullable(Wrapper):
+    PRECEDENCE = 1
 
     def __str__(self):
         return f'Nullable<{self.subtype}>'
 
     def show(self):
-        return f'{self.subtype.show()}?'
+        return f'{self.subtype.show_with_precedence(self)}?'
 
 
 class Tuple(Type):
+    PRECEDENCE = 2
 
     def __init__(self, elements):
         super().__init__()
@@ -206,13 +219,14 @@ class Tuple(Type):
         return f'Tuple<{elems}>'
 
     def show(self):
-        return '*'.join([t.show() for t in self.elements])
+        return '*'.join([t.show_with_precedence(self) for t in self.elements])
 
     def eq(self, other):
         return self.elements == other.elements
 
 
 class Func(Type):
+    PRECEDENCE = 3
 
     Arg = namedtuple('Arg', ['type', 'name', 'default', 'variadic'])
     Arg.__new__.__defaults__ = (None,) * 4
@@ -229,13 +243,14 @@ class Func(Type):
         return f'std::function<{self.ret}({self.args_str()})>'
 
     def show(self):
-        return '->'.join([arg.type.show() for arg in self.args]) + '->' + self.ret.show()
+        return '->'.join([arg.type.show_with_precedence(self) for arg in self.args]) + '->' + self.ret.show_with_precedence(self)
 
     def eq(self, other):
         return [arg.type for arg in self.args] == [arg.type for arg in other.args] and self.ret == other.ret
 
 
 class Class(Type):
+    PRECEDENCE = 0
 
     def __init__(self, name, base, members, methods):
         super().__init__()
@@ -257,6 +272,7 @@ class Class(Type):
 
 
 class Var(Type):
+    PRECEDENCE = 0
 
     def __init__(self, name):
         super().__init__()
