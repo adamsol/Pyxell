@@ -551,6 +551,8 @@ class PyxellCompiler:
         return v.UnaryOp(op, value, type=value.type)
 
     def binaryop(self, node, op, left, right):
+        types = [left.type, right.type]
+
         if op != '^' and left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat} and t.Rat in {left.type, right.type}:
             left = self.cast(node, left, t.Rat)
             right = self.cast(node, right, t.Rat)
@@ -566,13 +568,13 @@ class PyxellCompiler:
             elif left.type == right.type == t.Float:
                 return v.Call('pow', left, right, type=t.Float)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '^^':
             if left.type == right.type == t.Int:
                 return v.Call('pow', left, right, type=t.Int)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '*':
             if left.type == right.type and left.type.isNumber():
@@ -585,7 +587,7 @@ class PyxellCompiler:
                 return self.binaryop(node, op, right, left)
 
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '/':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
@@ -593,31 +595,31 @@ class PyxellCompiler:
             elif left.type == right.type == t.Float:
                 return v.BinaryOp(left, op, right, type=t.Float)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '//':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.Call('floordiv', left, right, type=t.Int)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '%':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.Call('mod', left, right, type=left.type)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '&':
             if left.type == right.type and left.type.isSet():
                 return v.Call('intersection', left, right, type=left.type)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '#':
             if left.type == right.type and left.type.isSet():
                 return v.Call('symmetric_difference', left, right, type=left.type)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '+':
             if left.type == right.type and left.type.isNumber():
@@ -633,7 +635,7 @@ class PyxellCompiler:
                 return v.Call('concat', left, right, type=left.type)
 
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '-':
             if left.type == right.type and left.type.isNumber():
@@ -649,13 +651,13 @@ class PyxellCompiler:
                 return v.Call('difference', left, right, type=left.type)
 
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '|':
             if left.type == right.type == t.Int:
                 return v.BinaryOp(v.BinaryOp(right, '%', left), '==', v.Int(0), type=t.Bool)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
         else:
             if left.type == right.type == t.Int:
@@ -666,7 +668,7 @@ class PyxellCompiler:
                 }.get(op, op)
                 return v.BinaryOp(left, op, right, type=t.Int)
             else:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node, err.NoBinaryOperator(op, *types))
 
     def print(self, node, value):
         type = value.type
