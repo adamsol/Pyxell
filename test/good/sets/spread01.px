@@ -1,5 +1,5 @@
 
 a = [1...10].map(_//2)
 b = {...a}
-print b
+print b == {0..4}
 print {...b by 2}.length
