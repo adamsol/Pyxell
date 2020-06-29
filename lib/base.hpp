@@ -908,8 +908,6 @@ Dict<K, V> copy(const Dict<K, V>& x)
 
 /* Conversion to String */
 
-char buffer[25];
-
 template <typename T> String toString(const Array<T>& x);
 template <typename T> String toString(const Set<T>& x);
 template <typename K, typename V> String toString(const Dict<K, V>& x);
@@ -919,8 +917,7 @@ template <typename T> String toString(const Object<T>& x);
 
 String toString(Int x)
 {
-    sprintf(buffer, "%lld", x);
-    return make_string(buffer);
+    return make_string(std::to_string(x));
 }
 
 String toString(const Rat& x)
@@ -935,6 +932,7 @@ String toString(const Rat& x)
 
 String toString(Float x)
 {
+    static char buffer[25];
     sprintf(buffer, "%.15g", x);
     auto r = make_string(buffer);
     if (std::all_of(r->begin(), r->end(), [](Char c) { return ('0' <= c && c <= '9') || c == '-'; })) {
@@ -1061,9 +1059,7 @@ Int toInt(Bool x)
 
 Int toInt(const String& x)
 {
-    Int r;
-    sscanf(x->c_str(), "%lld", &r);
-    return r;
+    return std::stoll(*x);
 }
 
 Int toInt(Char x)
@@ -1122,9 +1118,7 @@ Float toFloat(Bool x)
 
 Float toFloat(const String& x)
 {
-    Float r;
-    sscanf(x->c_str(), "%lg", &r);
-    return r;
+    return std::stod(*x);
 }
 
 Float toFloat(Char x)
@@ -1143,24 +1137,24 @@ void write(const T& x)
 
 /* Standard input */
 
-char input[1024];
-
 String read()
 {
-    scanf("%1023s", input);
-    return make_string(input);
+    auto r = make_string();
+    std::cin >> *r;
+    return r;
 }
 
 String readLine()
 {
-    scanf("%1023[^\n]%*c", input);
-    return make_string(input);
+    auto r = make_string();
+    std::getline(std::cin, *r);
+    return r;
 }
 
 Int readInt()
 {
     Int r;
-    scanf("%lld", &r);
+    std::cin >> r;
     return r;
 }
 
@@ -1172,14 +1166,14 @@ Rat readRat()
 Float readFloat()
 {
     Float r;
-    scanf("%lg", &r);
+    std::cin >> r;
     return r;
 }
 
 Char readChar()
 {
     Char r;
-    scanf("%c", &r);
+    std::cin >> r;
     return r;
 }
 

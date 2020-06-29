@@ -1,4 +1,4 @@
 
 s = readLine()
 print s.length
-print s[::500]
+print s[::1250]
