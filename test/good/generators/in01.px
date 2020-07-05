@@ -1,0 +1,7 @@
+
+func* f() Float*Bool def
+    yield 0.0, false
+    yield 1.0, true
+
+print (0, false) in f(), (1, true) not in f()
+print (0, true) in f(), (1, false) not in f()

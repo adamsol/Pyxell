@@ -1,0 +1,4 @@
+
+print 0 in {1, 2}
+print null in {null}
+print null not in {}

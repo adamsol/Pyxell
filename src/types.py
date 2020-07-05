@@ -191,7 +191,7 @@ class Generator(Wrapper):
     PRECEDENCE = 0
 
     def __str__(self):
-        return f'cppcoro::generator<{self.subtype}>'
+        return f'Generator<{self.subtype}>'
 
     def show(self):
         return f'Generator<{self.subtype.show()}>'

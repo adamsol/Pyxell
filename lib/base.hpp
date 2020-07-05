@@ -22,7 +22,9 @@
 
 #include "indy256/bigint.hpp"
 
-#ifdef __clang__
+#define GENERATORS __clang__
+
+#ifdef GENERATORS
     #include "cppcoro/generator.hpp"
 #endif
 
@@ -325,6 +327,13 @@ Dict<K, V> make_dict(Args&&... args)
     return Dict<K, V>(std::make_shared<std::unordered_map<K, V>>(std::forward<Args>(args)...));
 }
 
+/* Generator */
+
+#ifdef GENERATORS
+    template <typename T>
+    using Generator = cppcoro::generator<T>;
+#endif
+
 /* Nullable */
 
 template <typename T>
@@ -616,6 +625,36 @@ Array<T> slice(const Array<T>& x, const Nullable<Int>& a, const Nullable<Int>& b
 {
     return make_array<T>(slice(*x, a, b, c));
 }
+
+bool contains(const String& x, const String& y)
+{
+    return x->find(*y) != std::string::npos;
+}
+
+template <typename T>
+bool contains(const Array<T>& x, const T& e)
+{
+    return std::find(x->begin(), x->end(), e) != x->end();
+}
+
+template <typename K, typename V>
+bool contains(const Dict<K, V>& x, const K& k)
+{
+    return x->find(k) != x->end();
+}
+
+#ifdef GENERATORS
+    template <typename T>
+    bool contains(Generator<T>& x, const T& e)
+    {
+        for (auto&& v: x) {
+            if (v == e) {
+                return true;
+            }
+        }
+        return false;
+    }
+#endif
 
 
 /* Container methods */

@@ -1,0 +1,6 @@
+
+s = {1...1e5}
+
+for i in 1..10^^5 do
+    if i not in s do
+        print i

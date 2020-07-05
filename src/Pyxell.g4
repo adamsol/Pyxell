@@ -67,6 +67,7 @@ expr
   | expr op='||' expr # ExprBinaryOp
   | expr op='|' expr # ExprBinaryOp
   | expr 'is' not_='not'? 'null' # ExprIsNull
+  | expr not_='not'? 'in' expr # ExprIn
   | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
   | op='not' expr # ExprUnaryOp
   | <assoc=right> expr op='and' expr # ExprLogicalOp

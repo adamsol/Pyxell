@@ -742,7 +742,7 @@ class PyxellCompiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
+            if node in {'ExprCollection', 'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprIn', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -1775,10 +1775,31 @@ class PyxellCompiler:
         if not value.type.isNullable():
             self.throw(node, err.NotNullable(value.type))
 
-        if value.type.isUnknown():  # for the `null is null` case
+        if value.type == t.Unknown:  # for the `null is null` case
             return v.Bool(not node.get('not'))
 
         return v.IsNotNull(value) if node.get('not') else v.IsNull(value)
+
+    def compileExprIn(self, node):
+        exprs = node['exprs']
+
+        element = self.compile(exprs[0])
+        iterable = self.compile(exprs[1])
+        if not iterable.type.isIterable():
+            self.throw(node, err.NotIterable(iterable.type))
+
+        if iterable.type.subtype == t.Unknown:  # for the case of empty container
+            return v.Bool(node.get('not'))
+
+        if iterable.type == t.String:
+            element = self.cast(node, element, iterable.type)
+        elif iterable.type.isDict():
+            element = self.cast(node, element, iterable.type.key_type)
+        else:
+            element = self.cast(node, element, iterable.type.subtype)
+
+        result = v.Call('contains', iterable, element, type=t.Bool)
+        return v.UnaryOp('!', result, type=t.Bool) if node.get('not') else result
 
     def compileExprCmp(self, node):
         exprs = node['exprs']

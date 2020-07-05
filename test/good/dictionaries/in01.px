@@ -1,0 +1,5 @@
+
+d = {"x": 1, "yz": 5}
+print 'x' in d
+print "yz" not in d
+print "xyz" in d

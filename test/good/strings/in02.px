@@ -1,0 +1,7 @@
+
+print "abc" in "aAbBcC"
+print "abc" in "abcd"
+print "xy" in "XYxyZ"
+print "xyz" not in "xyz"
+print "" in "."
+print "" not in ""

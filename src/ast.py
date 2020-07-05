@@ -332,6 +332,13 @@ class PyxellASTVisitor(PyxellVisitor):
             **({'not': True} if ctx.not_ else {}),
         }
 
+    def visitExprIn(self, ctx):
+        return {
+            **_node(ctx, 'ExprIn'),
+            'exprs': self.visit(ctx.expr()),
+            **({'not': True} if ctx.not_ else {}),
+        }
+
     def visitExprCmp(self, ctx):
         exprs = []
         ops = []

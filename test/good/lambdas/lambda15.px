@@ -1,0 +1,6 @@
+
+func call(Int->Bool f, Int n) Bool def
+    return f(n)
+
+print call(_ in [3], 3)
+print call(0 not in {_}, 3)
