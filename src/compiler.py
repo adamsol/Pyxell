@@ -1918,7 +1918,11 @@ class PyxellCompiler:
     ### Atoms ###
 
     def compileAtomInt(self, node):
-        return v.Int(node['int'])
+        value = node['int']
+        if value < 2**63:
+            return v.Int(value)
+        else:
+            return v.Rat(value)
 
     def compileAtomFloat(self, node):
         return v.Float(node['float'])
