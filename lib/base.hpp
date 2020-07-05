@@ -962,12 +962,7 @@ String toString(Int x)
 
 String toString(const Rat& x)
 {
-    auto r = make_string(x.numerator.to_string());
-    if (x.denominator > 1) {
-        r->append("/");
-        r->append(x.denominator.to_string());
-    }
-    return r;
+    return make_string(x.numerator.to_string() + '/' + x.denominator.to_string());
 }
 
 String toString(Float x)
