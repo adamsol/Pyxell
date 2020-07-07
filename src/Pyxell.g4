@@ -11,7 +11,7 @@ block
 stmt
   : 'use' name=ID ('only' only=id_list | 'hiding' hiding=id_list | 'as' as_=ID)? # StmtUse
   | 'skip' # StmtSkip
-  | 'print' tuple_expr? # StmtPrint
+  | 'print' (expr ',')* expr? # StmtPrint
   | typ ID ('=' tuple_expr)? # StmtDecl
   | (tuple_expr '=')* tuple_expr # StmtAssg
   | expr op=('^' | '^^' | '*' | '/' | '//' | '%' | '&' | '#' | '+' | '-' | '<<' | '>>' | '&&' | '##' | '||' | '??') '=' expr # StmtAssgExpr

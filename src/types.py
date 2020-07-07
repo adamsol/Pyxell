@@ -89,14 +89,12 @@ class Type:
         return False
 
     def isPrintable(self):
-        if self.isNumber() or self in {Bool, Char, String, Unknown}:
+        if self.isNumber() or self in {Bool, Char, String, Unknown} or self.isClass():
             return True
         if self.isContainer() or self.isNullable():
             return self.subtype.isPrintable()
         if self.isTuple():
             return all(elem.isPrintable() for elem in self.elements)
-        if self.isClass():
-            return 'toString' in self.methods
         return False
 
     def isOrderable(self):

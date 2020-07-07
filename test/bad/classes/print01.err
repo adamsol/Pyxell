@@ -1,1 +1,1 @@
-Variable of type `Test` cannot be printed.
+Type `Test` has no attribute `toString`.

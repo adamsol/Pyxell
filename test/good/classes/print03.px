@@ -8,4 +8,4 @@ print "{Test(), Test().toString()}"
 
 Test? t = null
 t = Test()
-print t
+print t, t!

@@ -983,12 +983,12 @@ String toString(Bool x)
 
 String toString(Char x)
 {
-    return make_string(1, x);
+    return make_string("'" + std::string(1, x) + "'");
 }
 
 String toString(const String& x)
 {
-    return x;
+    return make_string('"' + *x + '"');
 }
 
 template <typename T>
@@ -1056,10 +1056,15 @@ String toString(const Tuple<T...>& x)
 {
     // https://stackoverflow.com/a/54225452
     auto r = make_string();
+    if constexpr(I == 0) {
+        r->append("(");
+    }
     r->append(*toString(std::get<I>(x)));
     if constexpr(I+1 < sizeof...(T)) {
-        r->append(" ");
+        r->append(", ");
         r->append(*toString<I+1>(x));
+    } else {
+        r->append(")");
     }
     return r;
 }
@@ -1067,7 +1072,7 @@ String toString(const Tuple<T...>& x)
 template <typename T>
 String toString(const Object<T>& x)
 {
-    return reinterpret_cast<String (*)(Object<T>)>(x->toString())(x);
+    return make_string("<" + x->name() + " object>");
 }
 
 /* Conversion to Int */
@@ -1099,7 +1104,7 @@ Int toInt(const String& x)
 
 Int toInt(Char x)
 {
-    return toInt(toString(x));
+    return toInt(static_cast<String>(x));
 }
 
 /* Conversion to Rat */
@@ -1126,7 +1131,7 @@ Rat toRat(const String& x)
 
 Rat toRat(Char x)
 {
-    return toRat(toString(x));
+    return toRat(static_cast<String>(x));
 }
 
 /* Conversion to Float */
@@ -1158,16 +1163,15 @@ Float toFloat(const String& x)
 
 Float toFloat(Char x)
 {
-    return toFloat(toString(x));
+    return toFloat(static_cast<String>(x));
 }
 
 
 /* Standard output */
 
-template <typename T>
-void write(const T& x)
+void write(const String& x)
 {
-    std::cout << *toString(x);
+    std::cout << *x;
 }
 
 /* Standard input */

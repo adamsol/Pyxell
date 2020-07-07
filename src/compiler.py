@@ -282,7 +282,12 @@ class PyxellCompiler:
         value = None
 
         if attr == 'toString' and type.isPrintable():
-            value = v.Variable(t.Func([type], t.String), 'toString')
+            if type in {t.Char, t.String}:
+                value = v.Lambda(t.Func([], t.String), [], v.Cast(obj, t.String))  # value shouldn't be wrapped in quotes
+            elif type.isClass():
+                value = self.member(node, obj, 'toString')
+            else:
+                value = v.Variable(t.Func([type], t.String), 'toString')
 
         elif attr in 'toInt' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
             value = v.Variable(t.Func([type], t.Int), 'toInt')
@@ -387,7 +392,7 @@ class PyxellCompiler:
         if value is None:
             self.throw(node, err.NoAttribute(type, attr))
 
-        if value.type.isFunc() and (not type.isClass() or attr in type.methods):
+        if value.type.isFunc() and not isinstance(value, v.Lambda) and (not type.isClass() or attr in type.methods):
             value = value.bind(obj)
 
         return value
@@ -670,15 +675,6 @@ class PyxellCompiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
-    def print(self, node, value):
-        type = value.type
-
-        if type.isPrintable():
-            self.output(v.Call('write', value))
-
-        elif type != t.Unknown:
-            self.throw(node, err.NotPrintable(type))
-
     def convert_string(self, node, string):
         string = re.sub('{{', '\\\\u007B', string)
         string = re.sub('}}', '\\\\u007D'[::-1], string[::-1])[::-1]
@@ -917,11 +913,17 @@ class PyxellCompiler:
         pass
 
     def compileStmtPrint(self, node):
-        expr = node['expr']
-        if expr:
-            value = self.compile(expr)
-            self.print(expr, value)
-        self.output(c.Statement('std::cout << "\\n"'))  # std::endl is very slow
+        values = lmap(self.compile, node['exprs'])
+
+        for i, value in enumerate(values):
+            if not value.type.isPrintable():
+                self.throw(node, err.NotPrintable(value.type))
+
+            if i > 0:
+                self.output(c.Statement(v.Call('write', v.String(' '))))
+            self.output(c.Statement(v.Call('write', v.Call(self.attr(node, value, 'toString')))))
+
+        self.output(c.Statement(v.Call('write', v.String('\\n'))))  # std::endl is very slow
 
     def compileStmtDecl(self, node):
         type = self.resolve_type(self.compile(node['type']))
@@ -1271,6 +1273,7 @@ class PyxellCompiler:
         type.initializer = cls
 
         fields = c.Block()
+        fields.append(c.Statement(c.Function('virtual std::string', 'name', [], c.Block(c.Statement('return', f'"{id}"')))))
         self.output(c.Statement('struct', cls), toplevel=True)
         self.output(c.Struct(cls, fields, base=(base.initializer if base else None)), toplevel=True)
 

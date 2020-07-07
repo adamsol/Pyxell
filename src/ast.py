@@ -63,7 +63,7 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitStmtPrint(self, ctx):
         return {
             **_node(ctx, 'StmtPrint'),
-            'expr': self.visit(ctx.tuple_expr()),
+            'exprs': self.visit(ctx.expr()),
         }
 
     def visitStmtDecl(self, ctx):

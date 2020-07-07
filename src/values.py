@@ -273,4 +273,4 @@ class Bind(Value):
     def __str__(self):
         # https://stackoverflow.com/a/57114008
         block = c.Block(c.Statement('return', Call(self.func, self.obj, 'args...')))
-        return f'[=](auto&& ...args) {block}'
+        return f'[&](auto&& ...args) {block}'

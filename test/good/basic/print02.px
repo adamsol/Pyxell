@@ -1,0 +1,6 @@
+
+func f(Int n) Int def
+    print n
+    return n
+
+print f(1), f(2)

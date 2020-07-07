@@ -11,4 +11,4 @@ class B(A) def
 func f([A] a) [A] def
     return [a[0], B()]
 
-print f([B()])
+print f([B()]).map(_.toString())

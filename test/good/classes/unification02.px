@@ -12,4 +12,4 @@ class Sub2(Base) def
         return "Sub2"
 
 a = [Sub1(), Sub2()]
-print a
+print a.map("{_}")
