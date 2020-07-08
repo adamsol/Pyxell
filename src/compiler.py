@@ -137,7 +137,7 @@ class PyxellCompiler:
 
     def resolve_type(self, type):
         if type.isVar():
-            return self.env[type.name] if isinstance(self.env.get(type.name), t.Type) else type
+            return self.env.get(type.name, type)
         if type.isArray():
             return t.Array(self.resolve_type(type.subtype))
         if type.isSet():
@@ -1659,6 +1659,10 @@ class PyxellCompiler:
                 if obj:
                     for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
                         type_variables[name].append(type)
+
+                if func.isTemplate():
+                    for name in func.typevars:
+                        self.env.pop(name, None)  # to avoid name conflicts
 
                 assigned_types = {}
 
