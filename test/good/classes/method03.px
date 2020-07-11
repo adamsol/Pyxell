@@ -8,8 +8,7 @@ class Test def
     func multiply(Int v: 1) def
         self.value *= v
 
-t = Test()
-t.value = 3
+t = Test(3)
 t.add()
 t.add(1)
 t.multiply()

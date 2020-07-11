@@ -5,6 +5,5 @@ class Test def
     func toString() String def
         return self.s
 
-obj = Test()
-obj.s = "test"
+obj = Test("test")
 print obj

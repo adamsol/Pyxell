@@ -1,6 +1,6 @@
 
 class Struct def
-    Int n
+    Int n: 0
 
 r = Struct()
 r.n = 1.0

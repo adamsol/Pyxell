@@ -1,0 +1,6 @@
+
+class Test def
+    Bool b
+    Char c: '-'
+
+Test(c='.')

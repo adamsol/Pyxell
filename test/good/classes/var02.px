@@ -1,12 +1,12 @@
 
 class A def
-    Int x
+    Int x: 0
 
 class B def
     A a
 
-b = B()
-b.a = b.a = A()
+b = B(A())
+b.a = b.a
 b.a.x = 3
 
 b = b

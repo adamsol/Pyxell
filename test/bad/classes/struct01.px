@@ -2,5 +2,5 @@
 class Struct def
     Int n
 
-r = Struct()
+r = Struct(0)
 print r.x

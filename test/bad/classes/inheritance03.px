@@ -1,11 +1,9 @@
 
 class Base def
-    Int x
+    Int x: 3
 
 class Sub(Base) def
     Int y: 3
 
 sub = Sub()
 sub = Base()
-print sub.x
-

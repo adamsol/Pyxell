@@ -3,8 +3,6 @@ class A def
     Char c: '~'
     String->Int f
 
-print A('q').c
-
 a = A('r', _.length)
 print a.c
 print a.f("zxcvb")

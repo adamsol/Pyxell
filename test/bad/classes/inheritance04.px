@@ -12,4 +12,4 @@ class Sub2(Base) def
 func f(Sub1 obj) def
     skip
 
-f(Sub2())
+f(Sub2(1, 2))

@@ -1286,6 +1286,7 @@ class PyxellCompiler:
                     self.throw(member, err.InvalidMember(name))
 
                 field = self.var(self.compile(member['type']), prefix='m')
+                field.has_default = bool(member.get('default'))
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field
 
@@ -1743,6 +1744,8 @@ class PyxellCompiler:
                 for name, value in zip(fields, args):
                     if not getattr(value, 'not_provided', False):
                         self.store(self.attr(node, obj, name), value)
+                    elif not getattr(fields[name], 'has_default', False):
+                        self.throw(node, err.TooFewArguments())
             return obj
 
         result = _call(func)

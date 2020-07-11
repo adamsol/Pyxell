@@ -2,4 +2,4 @@
 class A def
     Int x
 
-"{A()}"
+"{A(5)}"

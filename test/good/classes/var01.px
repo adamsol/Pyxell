@@ -2,8 +2,6 @@
 class A def
     Char x
 
-a = A()
-a.x = 'x'
-
+a = A('x')
 a' = a
 print a'.x
