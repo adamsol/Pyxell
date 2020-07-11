@@ -1,3 +1,4 @@
+
 #include <complex>
 #include <vector>
 
@@ -7,8 +8,7 @@
 
 using cpx = std::complex<double>;
 const double PI = acos(-1);
-std::vector<cpx> roots = {{0, 0},
-                     {1, 0}};
+std::vector<cpx> roots = {{0, 0}, {1, 0}};
 
 void ensure_capacity(int min_capacity) {
     for (int len = roots.size(); len < min_capacity; len *= 2) {
@@ -51,7 +51,8 @@ void fft(std::vector<cpx> &z, bool inverse) {
 std::vector<int> multiply_bigint(const std::vector<int> &a, const std::vector<int> &b, int base) {
     int need = a.size() + b.size();
     int n = 1;
-    while (n < need) n <<= 1;
+    while (n < need)
+        n <<= 1;
     std::vector<cpx> p(n);
     for (size_t i = 0; i < n; i++) {
         p[i] = cpx(i < a.size() ? a[i] : 0, i < b.size() ? b[i] : 0);
@@ -69,7 +70,7 @@ std::vector<int> multiply_bigint(const std::vector<int> &a, const std::vector<in
     std::vector<int> result(need);
     long long carry = 0;
     for (int i = 0; i < need; i++) {
-        long long d = (long long) (ab[i].real() + 0.5) + carry;
+        long long d = (long long)(ab[i].real() + 0.5) + carry;
         carry = d / base;
         result[i] = d % base;
     }

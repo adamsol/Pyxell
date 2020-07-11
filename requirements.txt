@@ -1,2 +1,2 @@
-antlr4-python3-runtime==4.7.2
-colorama==0.4.1
+antlr4-python3-runtime==4.8
+colorama==0.4.3
