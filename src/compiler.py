@@ -26,15 +26,15 @@ class PyxellCompiler:
     def __init__(self, cpp_compiler):
         self.cpp_compiler = cpp_compiler
 
-        self.required = set()
+        self.required_features = set()
         self.units = {}
-        self._unit = None
-        self._seq_number = 0
-        self._block = c.Block()
+        self.current_unit = None
+        self.sequence_number = 0
+        self.current_block = c.Block()
 
         self.module_declarations = c.Collection()
         self.module_definitions = c.Collection()
-        self.main = c.Function('int', 'main', [], self._block)
+        self.main = c.Function('int', 'main', [], self.current_block)
 
         self.module = c.Collection(
             self.module_declarations,
@@ -53,8 +53,8 @@ class PyxellCompiler:
     def run_main(self, ast):
         self.run(ast, 'main')
         self.output(c.Statement('return 0'))
-        if 'generators' in self.required and 'clang' not in self.cpp_compiler:
-            raise NotSupportedError(f"Generators require C++ coroutines support (use Clang).")
+        if 'generators' in self.required_features and 'clang' not in self.cpp_compiler:
+            raise NotSupportedError(f"Generators require C++ coroutines support; use Clang.")
         return str(self.module)
 
     def compile(self, node, void_allowed=False):
@@ -75,26 +75,26 @@ class PyxellCompiler:
     def require(self, feature):
         if feature not in {'generators'}:
             raise ValueError(feature)
-        self.required.add(feature)
+        self.required_features.add(feature)
 
 
     ### Helpers ###
 
     @property
     def env(self):
-        return self._unit.env
+        return self.current_unit.env
 
     @env.setter
     def env(self, env):
-        self._unit.env = env
+        self.current_unit.env = env
 
     @property
     def initialized(self):
-        return self._unit.initialized
+        return self.current_unit.initialized
 
     @initialized.setter
     def initialized(self, initialized):
-        self._unit.initialized = initialized
+        self.current_unit.initialized = initialized
 
     @contextmanager
     def local(self):
@@ -106,17 +106,17 @@ class PyxellCompiler:
 
     @contextmanager
     def unit(self, name):
-        _unit = self._unit
-        self._unit = self.units[name]
+        _unit = self.current_unit
+        self.current_unit = self.units[name]
         yield
-        self._unit = _unit
+        self.current_unit = _unit
 
     @contextmanager
     def block(self, block):
-        _block = self._block
-        self._block = block
+        _block = self.current_block
+        self.current_block = block
         yield
-        self._block = _block
+        self.current_block = _block
 
     @contextmanager
     def no_output(self):
@@ -133,7 +133,7 @@ class PyxellCompiler:
             else:
                 self.module_declarations.append(stmt)
         else:
-            self._block.append(stmt)
+            self.current_block.append(stmt)
 
     def resolve_type(self, type):
         if type.isVar():
@@ -155,8 +155,8 @@ class PyxellCompiler:
         return type
 
     def fake_id(self, prefix='$id'):
-        self._seq_number += 1
-        return f'{prefix}{self._seq_number}'
+        self.sequence_number += 1
+        return f'{prefix}{self.sequence_number}'
 
 
     ### Code generation ###
@@ -1667,6 +1667,9 @@ class PyxellCompiler:
 
                     args.append(value)
 
+                if any(arg is not None for arg in pos_args):
+                    self.throw(node, err.TooManyArguments())
+
                 if obj:
                     for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
                         type_variables[name].append(type)
@@ -1683,9 +1686,6 @@ class PyxellCompiler:
                         self.throw(node, err.InvalidArgumentTypes(t.Var(name)))
 
                     self.env[name] = assigned_types[name] = type
-
-                if any(arg is not None for arg in pos_args):
-                    self.throw(node, err.TooManyArguments())
 
                 try:
                     for i in range(len(args)):

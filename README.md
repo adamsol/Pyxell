@@ -11,7 +11,7 @@ The project aims to combine the best features of different programming languages
 pack them into a clean and consistent syntax,
 and provide the execution speed of native machine code.
 
-It draws mainly from Python, Haskell, C#, and C++,
+It draws mainly from Python, C++, C#, and Haskell,
 and tries to avoid common design flaws that have been nicely described
 [in this blog post](https://eev.ee/blog/2016/12/01/lets-stop-copying-c/).
 
@@ -25,7 +25,7 @@ Rational numbers:
 print 1/10 + 5^-1  -- 3/10
 ```
 
-Range literals, string interpolation:
+Range literals, for-loops, string interpolation:
 
 ```
 a = ['A'..'Z']
@@ -60,7 +60,7 @@ print fold([2, 3, 4], _*_, 1)  -- 24
 print [0..10 by 2].reduce(_+_)  -- 30
 ```
 
-Generators, tuples:
+Generators, tuples, spread syntax:
 
 ```
 fib = lambda* n def
@@ -79,10 +79,7 @@ Classes, nullable types:
 
 ```
 class C def
-    String? s
-
-    constructor(String? s: null) def
-        self.s = s 
+    String? s: null
 
 c = C()
 print c.s?.length
@@ -112,7 +109,7 @@ Features
 * Classes with safe references
 * Inheritance and virtual methods
 * Nullable types
-* Full transpilation to C++17 and compilation to machine code
+* Full transpilation to C++ and compilation to machine code
 * Automatic memory management (utilizing C++'s smart pointers)
 
 To do:
@@ -137,8 +134,8 @@ python -m pip install -r requirements.txt
 
 * C++17 compiler: Clang 5+ or GCC 7+.
 
-Note that generators are currently supported only in Clang
-(since they are based on C++'s coroutines).
+Note that generators are currently supported only in Clang, since they are based on C++'s coroutines
+(GCC 10 also supports coroutines, but as of version 10.1 the implementation is buggy, so it is not yet supported by Pyxell).
 
 
 Usage
@@ -187,7 +184,7 @@ Tests are divided into good (supposed to compile and run properly) and bad (shou
 
 By default, the whole C++ code for correct tests is merged, so that only one file is compiled,
 which is faster than compiling hundreds of files individually, even using multiple threads.
-Total execution time should be around 30 seconds.
+Total execution time should be around 30-60 seconds.
 
 If, however, the script fails with an error like this: `too many sections` / `file too big`
 (seen with GCC 7.2 on Windows), or there is another compilation error that is hard to decipher,
