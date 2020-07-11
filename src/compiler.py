@@ -1301,7 +1301,14 @@ class PyxellCompiler:
                 if member['block']:
                     with self.local():
                         self.env['#self'] = True
-                        self.env['#super'] = base_methods.get(name) if member['node'] != 'ClassDestructor' else None
+
+                        if member['node'] == 'ClassConstructor':
+                            self.env['#super'] = base_methods.get(name, base)
+                        elif member['node'] == 'ClassDestructor':
+                            self.env['#super'] = None
+                        else:
+                            self.env['#super'] = base_methods.get(name)
+
                         methods[name] = func = self.compileStmtFunc(member, class_type=type)
 
                     if member['node'] == 'ClassMethod':
@@ -1705,6 +1712,16 @@ class PyxellCompiler:
 
             return v.Call(func, *args, type=func.type.ret)
 
+        def _default_constructor(obj, cls):
+            fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
+            constructor_type = t.Func([t.Func.Arg(field.type, name, default=True) for name, field in fields.items()])
+            args = _resolve_args(v.Value(type=constructor_type))[1]
+            for name, value in zip(fields, args):
+                if not getattr(value, 'not_provided', False):
+                    self.store(self.attr(node, obj, name), value)
+                elif not getattr(fields[name], 'has_default', False):
+                    self.throw(node, err.MissingArgument(name))
+
         if expr['node'] == 'ExprAttr':
             attr = expr['attr']
 
@@ -1731,8 +1748,13 @@ class PyxellCompiler:
             func = self.compile(expr)
 
             if expr['node'] == 'AtomSuper':
-                obj = v.Cast(self.get(expr, 'self'), func.type.args[0].type)
-                func = func.bind(obj)
+                if isinstance(func, t.Class):
+                    base = func
+                    obj = v.Cast(self.get(expr, 'self'), base)
+                    _default_constructor(obj, base)
+                else:
+                    obj = v.Cast(self.get(expr, 'self'), func.type.args[0].type)
+                    func = func.bind(obj)
 
         if isinstance(func, t.Class):
             cls = func
@@ -1741,14 +1763,7 @@ class PyxellCompiler:
             if method:
                 self.output(_call(method.bind(obj)))
             else:
-                fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
-                constructor_type = t.Func([t.Func.Arg(field.type, name, default=True) for name, field in fields.items()])
-                args = _resolve_args(v.Value(type=constructor_type))[1]
-                for name, value in zip(fields, args):
-                    if not getattr(value, 'not_provided', False):
-                        self.store(self.attr(node, obj, name), value)
-                    elif not getattr(fields[name], 'has_default', False):
-                        self.throw(node, err.MissingArgument(name))
+                _default_constructor(obj, cls)
             return obj
 
         result = _call(func)

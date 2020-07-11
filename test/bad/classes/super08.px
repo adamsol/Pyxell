@@ -1,0 +1,9 @@
+
+class A def
+    Bool b: false
+    Int n
+    String s
+
+class B(A) def
+    constructor() def
+        super(n=0)

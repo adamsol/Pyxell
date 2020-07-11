@@ -1,0 +1,14 @@
+
+class A def
+    Int n
+    Bool b: false
+
+class B(A) def
+    String s
+
+    constructor(String s) def
+        super(s.length)
+        self.s = s
+
+b = B("test")
+print b.n, b.s
