@@ -22,6 +22,7 @@ class PyxellError(Exception):
     InvalidModule = lambda id: f"Could not find module `{id}`"
     InvalidReturnType = lambda t: f"`{t.show()}` is not a valid return type"
     InvalidUsage = lambda s: f"`{s}` cannot be used here"
+    MissingArgument = lambda id: f"Missing required argument `{id}`"
     MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     MissingReturn = lambda: f"Not all code paths return a value"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"

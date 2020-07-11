@@ -1643,7 +1643,10 @@ class PyxellCompiler:
                             expr = func_arg.default
 
                     else:
-                        self.throw(node, err.TooFewArguments())
+                        if name is None:
+                            self.throw(node, err.TooFewArguments())
+                        else:
+                            self.throw(node, err.MissingArgument(name))
 
                     value = self.compile(expr)
 
@@ -1745,7 +1748,7 @@ class PyxellCompiler:
                     if not getattr(value, 'not_provided', False):
                         self.store(self.attr(node, obj, name), value)
                     elif not getattr(fields[name], 'has_default', False):
-                        self.throw(node, err.TooFewArguments())
+                        self.throw(node, err.MissingArgument(name))
             return obj
 
         result = _call(func)
