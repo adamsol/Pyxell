@@ -22,7 +22,9 @@
 
 #include "indy256/bigint.hpp"
 
-#define GENERATORS __clang__
+#ifdef __clang__
+    #define GENERATORS
+#endif
 
 #ifdef GENERATORS
     #include "cppcoro/generator.hpp"
