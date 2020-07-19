@@ -1,1 +1,1 @@
-Not all code paths return a value.
+No implicit conversion from `Void` to `Int`.

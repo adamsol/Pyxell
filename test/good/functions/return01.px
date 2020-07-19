@@ -1,11 +1,6 @@
 
 func f(Int x) Bool def
-    if x >= 0 do
-        if x > 0 do
-            return true
-        else do
-            return false
-    else do
-        return false
+    if x == 42 do
+        return true
 
-print f(2), f(-1)
+print f(42)

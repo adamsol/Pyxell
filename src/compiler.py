@@ -18,7 +18,6 @@ class Unit:
 
     def __init__(self):
         self.env = {}
-        self.initialized = set()
 
 
 class PyxellCompiler:
@@ -47,7 +46,6 @@ class PyxellCompiler:
         with self.unit(unit):
             if unit != 'std':
                 self.env = self.units['std'].env.copy()
-                self.initialized = self.units['std'].initialized.copy()
             self.compile(ast)
 
     def run_main(self, ast):
@@ -88,21 +86,11 @@ class PyxellCompiler:
     def env(self, env):
         self.current_unit.env = env
 
-    @property
-    def initialized(self):
-        return self.current_unit.initialized
-
-    @initialized.setter
-    def initialized(self, initialized):
-        self.current_unit.initialized = initialized
-
     @contextmanager
     def local(self):
         env = self.env.copy()
-        initialized = self.initialized.copy()
         yield
         self.env = env
-        self.initialized = initialized
 
     @contextmanager
     def unit(self, name):
@@ -174,9 +162,6 @@ class PyxellCompiler:
 
         if not isinstance(result, v.Value):
             self.throw(node, err.NotVariable(id))
-
-        if id not in self.initialized:
-            self.throw(node, err.UninitializedIdentifier(id))
 
         if result.isTemplate() and not result.typevars:
             result = self.function(result)
@@ -458,7 +443,7 @@ class PyxellCompiler:
         self.store(tmp, value, decl='auto')
         return tmp
 
-    def declare(self, node, type, id, redeclare=False, initialize=False):
+    def declare(self, node, type, id, redeclare=False):
         if not type.hasValue() or type.isVar():
             self.throw(node, err.InvalidDeclaration(type))
         if id in self.env and not redeclare:
@@ -468,12 +453,9 @@ class PyxellCompiler:
         self.env[id] = var
         self.output(c.Var(var), toplevel=(self.env.get('#return') is None))
 
-        if initialize:
-            self.initialized.add(id)
-
         return self.env[id]
 
-    def lvalue(self, node, expr, declare=None, override=False, initialize=False):
+    def lvalue(self, node, expr, declare=None, override=False):
         if expr['node'] == 'AtomId':
             id = expr['id']
 
@@ -485,9 +467,6 @@ class PyxellCompiler:
                 self.declare(node, declare, id, redeclare=True)
             elif not isinstance(self.env[id], v.Value) or getattr(self.env[id], 'final', False):
                 self.throw(node, err.RedefinedIdentifier(id))
-
-            if initialize:
-                self.initialized.add(id)
 
             return self.env[id]
 
@@ -529,9 +508,8 @@ class PyxellCompiler:
         elif value.isTemplate() and expr['id'] not in self.env:
             id = expr['id']
             self.env[id] = value
-            self.initialized.add(id)
         else:
-            var = self.lvalue(node, expr, declare=type, override=expr.get('override', False), initialize=True)
+            var = self.lvalue(node, expr, declare=type, override=expr.get('override', False))
             if var is None:
                 return
             value = self.cast(node, value, var.type)
@@ -832,7 +810,6 @@ class PyxellCompiler:
 
                     for arg, var in zip(func_type.args, arg_vars):
                         self.env[arg.name] = var
-                        self.initialized.add(arg.name)
 
                     # Try to resolve any unresolved type variables in the return type.
                     if has_type_variables(func_type.ret):
@@ -859,9 +836,6 @@ class PyxellCompiler:
                         self.throw(body, err.InvalidReturnType(func_type.ret))
 
                     self.compile(body)
-
-                    if '#return' not in self.initialized and func_type.ret.hasValue():
-                        self.throw(body, err.MissingReturn())
 
             if template.lambda_:
                 # The closure is created every time the function is used (except for recursive calls),
@@ -893,8 +867,6 @@ class PyxellCompiler:
                 if id not in unit.env:
                     self.throw(node, err.UndeclaredIdentifier(id))
                 self.env[id] = unit.env[id]
-                if id in unit.initialized:
-                    self.initialized.add(id)
         elif kind == 'hiding':
             hidden = set()
             for id in ids:
@@ -902,12 +874,10 @@ class PyxellCompiler:
                     self.throw(node, err.UndeclaredIdentifier(id))
                 hidden.add(id)
             self.env.update({x: unit.env[x] for x in unit.env.keys() - hidden})
-            self.initialized.update(unit.initialized - hidden)
         elif kind == 'as':
             self.units[ids[0]] = unit
         else:
             self.env.update(unit.env)
-            self.initialized.update(unit.initialized)
 
     def compileStmtSkip(self, node):
         pass
@@ -929,7 +899,7 @@ class PyxellCompiler:
         type = self.resolve_type(self.compile(node['type']))
         id = node['id']
         expr = node['expr']
-        var = self.declare(node, type, id, initialize=bool(expr))
+        var = self.declare(node, type, id)
 
         if expr:
             value = self.cast(node, self.compile(expr), type)
@@ -989,7 +959,6 @@ class PyxellCompiler:
         exprs = node['exprs']
         blocks = node['blocks']
 
-        initialized_vars = []
         stmt = None
 
         for expr, block in reversed(list(zip_longest(exprs, blocks))):
@@ -1000,7 +969,6 @@ class PyxellCompiler:
             with self.block(then):
                 with self.local():
                     self.compile(block)
-                    initialized_vars.append(self.initialized)
 
             if expr:
                 stmt = c.If(cond, then, stmt)
@@ -1008,9 +976,6 @@ class PyxellCompiler:
                 stmt = then
 
         self.output(stmt)
-
-        if len(blocks) > len(exprs):  # there is an `else` statement
-            self.initialized.update(set.intersection(*initialized_vars))
 
     def compileStmtWhile(self, node):
         expr = node['expr']
@@ -1156,9 +1121,6 @@ class PyxellCompiler:
     def compileStmtFunc(self, node, class_type=None):
         id = node['id']
 
-        if class_type is None:
-            self.initialized.add(id)
-
         with self.local():
             typevars = node.get('typevars', [])
             for name in typevars:
@@ -1204,8 +1166,6 @@ class PyxellCompiler:
             type = self.env['#return']
         except KeyError:
             self.throw(node, err.InvalidUsage('return'))
-
-        self.initialized.add('#return')
 
         expr = node['expr']
         if expr:
@@ -1255,7 +1215,6 @@ class PyxellCompiler:
         id = node['id']
         if id in self.env:
             self.throw(node, err.RedeclaredIdentifier(id))
-        self.initialized.add(id)
 
         base = self.compile(node['base'])
         if base and not base.isClass():

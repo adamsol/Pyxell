@@ -1,5 +1,5 @@
 
 func f<V>(V v) V def
-    skip
+    return
 
 f(0)

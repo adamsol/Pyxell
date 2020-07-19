@@ -1,7 +1,0 @@
-
-Char c
-if false do
-    skip
-else do
-    c = '.'
-print c

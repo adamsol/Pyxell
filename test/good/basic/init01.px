@@ -1,9 +1,0 @@
-
-Int x
-if false do
-    x = 0
-elif not true do
-    x = 0
-else do
-    x = 1
-print x
