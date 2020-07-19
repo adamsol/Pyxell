@@ -144,11 +144,14 @@ def main():
         sys.exit(1)
 
     if exe_filename and not args.dont_run:
+        if '/' not in exe_filename and '\\' not in exe_filename:
+            exe_filename = './' + exe_filename
+
         if args.verbose:
             print(f"executing {exe_filename}")
 
         t1 = timer()
-        subprocess.call(f'./{exe_filename}')
+        subprocess.call(exe_filename)
         t2 = timer()
         execution_time = t2 - t1
 
