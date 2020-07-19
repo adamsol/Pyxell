@@ -133,9 +133,9 @@ typ
   ;
 
 INT_DEC : DIGIT NUMBER_DEC_CONT* ;
-INT_BIN : '0' [bB] NUMBER_BIN_CONT+ ;
-INT_OCT : '0' [oO] NUMBER_OCT_CONT+ ;
-INT_HEX : '0' [xX] NUMBER_HEX_CONT+ ;
+INT_BIN : '0b' NUMBER_BIN_CONT+ ;
+INT_OCT : '0o' NUMBER_OCT_CONT+ ;
+INT_HEX : '0x' NUMBER_HEX_CONT+ ;
 FLOAT : DIGIT NUMBER_DEC_CONT* ('.' NUMBER_DEC_CONT+)? ([eE] [-+]? NUMBER_DEC_CONT+)? ;
 CHAR : '\'' (~[\\'] | ('\\' (['] | ESCAPE_CHAR))) '\'' ;
 STRING : '"' (~[\\"] | ('\\' (["] | ESCAPE_CHAR)))* '"' ;
