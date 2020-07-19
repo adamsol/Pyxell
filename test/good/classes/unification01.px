@@ -4,11 +4,11 @@ class Base def
 
 class Sub1(Base) def
     constructor() def
-        self.x = 1
+        this.x = 1
 
 class Sub2(Base) def
     constructor() def
-        self.x = 2
+        this.x = 2
 
 obj = Sub1().x == Sub2().x ? Sub1() : Sub2()
 print obj.x

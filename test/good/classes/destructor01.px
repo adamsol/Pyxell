@@ -3,7 +3,7 @@ class A def
     Int x
 
     destructor() def
-        print "destructor {self.x}"
+        print "destructor {this.x}"
 
 a = A(0)
 

@@ -7,14 +7,14 @@ class Base def
 
 class Sub1(Base) def
     constructor() def
-        self.x = 1
+        this.x = 1
 
     func f() def
         print "Sub1"
 
 class Sub2(Base) def
     constructor() def
-        self.x = 2
+        this.x = 2
 
 
 [Base] a = [Sub2()]

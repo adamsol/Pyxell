@@ -325,7 +325,7 @@ class PyxellParser ( Parser ):
                      "'['", "']'", "'?'", "'.'", "'@'", "'!'", "'~'", "'|'", 
                      "'is'", "'not'", "'null'", "'=='", "'!='", "'<='", 
                      "'>='", "'and'", "'or'", "'..'", "'by'", "'lambda'", 
-                     "'...:'", "'true'", "'false'", "'self'", "'super'", 
+                     "'...:'", "'true'", "'false'", "'this'", "'super'", 
                      "'default'", "'->'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
@@ -3405,20 +3405,6 @@ class PyxellParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-    class AtomSelfContext(AtomContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.AtomContext
-            super().__init__(parser)
-            self.copyFrom(ctx)
-
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAtomSelf" ):
-                return visitor.visitAtomSelf(self)
-            else:
-                return visitor.visitChildren(self)
-
-
     class AtomIdContext(AtomContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.AtomContext
@@ -3481,6 +3467,20 @@ class PyxellParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
+    class AtomThisContext(AtomContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.AtomContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitAtomThis" ):
+                return visitor.visitAtomThis(self)
+            else:
+                return visitor.visitChildren(self)
+
+
 
     def atom(self):
 
@@ -3538,7 +3538,7 @@ class PyxellParser ( Parser ):
                 self.match(PyxellParser.T__62)
                 pass
             elif token in [PyxellParser.T__75]:
-                localctx = PyxellParser.AtomSelfContext(self, localctx)
+                localctx = PyxellParser.AtomThisContext(self, localctx)
                 self.enterOuterAlt(localctx, 7)
                 self.state = 502
                 self.match(PyxellParser.T__75)

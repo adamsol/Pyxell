@@ -3,10 +3,10 @@ class A def
     Char x
 
     constructor() def
-        self.x = 'A'
+        this.x = 'A'
 
     func f() def
-        print self.x
+        print this.x
 
 class B(A) def
     Int y

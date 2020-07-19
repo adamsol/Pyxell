@@ -215,8 +215,8 @@ def serializedATN():
         buf.write("\7t\2\2\u01db\u01dc\7w\2\2\u01dc\u01dd\7g\2\2\u01dd\u0096")
         buf.write("\3\2\2\2\u01de\u01df\7h\2\2\u01df\u01e0\7c\2\2\u01e0\u01e1")
         buf.write("\7n\2\2\u01e1\u01e2\7u\2\2\u01e2\u01e3\7g\2\2\u01e3\u0098")
-        buf.write("\3\2\2\2\u01e4\u01e5\7u\2\2\u01e5\u01e6\7g\2\2\u01e6\u01e7")
-        buf.write("\7n\2\2\u01e7\u01e8\7h\2\2\u01e8\u009a\3\2\2\2\u01e9\u01ea")
+        buf.write("\3\2\2\2\u01e4\u01e5\7v\2\2\u01e5\u01e6\7j\2\2\u01e6\u01e7")
+        buf.write("\7k\2\2\u01e7\u01e8\7u\2\2\u01e8\u009a\3\2\2\2\u01e9\u01ea")
         buf.write("\7u\2\2\u01ea\u01eb\7w\2\2\u01eb\u01ec\7r\2\2\u01ec\u01ed")
         buf.write("\7g\2\2\u01ed\u01ee\7t\2\2\u01ee\u009c\3\2\2\2\u01ef\u01f0")
         buf.write("\7f\2\2\u01f0\u01f1\7g\2\2\u01f1\u01f2\7h\2\2\u01f2\u01f3")
@@ -394,7 +394,7 @@ class PyxellLexer(Lexer):
             "'destructor'", "'['", "']'", "'?'", "'.'", "'@'", "'!'", "'~'", 
             "'|'", "'is'", "'not'", "'null'", "'=='", "'!='", "'<='", "'>='", 
             "'and'", "'or'", "'..'", "'by'", "'lambda'", "'...:'", "'true'", 
-            "'false'", "'self'", "'super'", "'default'", "'->'" ]
+            "'false'", "'this'", "'super'", "'default'", "'->'" ]
 
     symbolicNames = [ "<INVALID>",
             "INT_DEC", "INT_BIN", "INT_OCT", "INT_HEX", "FLOAT", "CHAR", 

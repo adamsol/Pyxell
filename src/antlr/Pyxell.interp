@@ -75,7 +75,7 @@ null
 '...:'
 'true'
 'false'
-'self'
+'this'
 'super'
 'default'
 '->'

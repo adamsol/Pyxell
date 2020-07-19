@@ -8,7 +8,7 @@ class B(A) def
     String s
 
     func* f() String def
-        yield self.s
+        yield this.s
 
 
 A a

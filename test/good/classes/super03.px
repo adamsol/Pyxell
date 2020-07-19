@@ -4,8 +4,8 @@ class A def
 
     func add(Int v, Char c: 'A') Int def
         print c
-        self.x += v
-        return self.x
+        this.x += v
+        return this.x
 
 class B(A) def
     func add(Int v: 0, Char c: 'B') Int def
@@ -16,7 +16,7 @@ class B'(B) def
         if c != 'B' do
             print c
         super(v=v)
-        return self.x + 100
+        return this.x + 100
 
 b = B()
 b = B'()

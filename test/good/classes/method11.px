@@ -3,7 +3,7 @@ class A def
     Int x
 
     func f() Int def
-        return self.x
+        return this.x
 
 a = A(5)
 f = a.f

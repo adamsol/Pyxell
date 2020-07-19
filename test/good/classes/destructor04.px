@@ -3,14 +3,14 @@ class A def
     Int x
 
     destructor() def
-        print "A {self.x}"
+        print "A {this.x}"
 
 
 class B(A) def
     Float y
 
     destructor() def
-        print "B {self.x} {self.y}"
+        print "B {this.x} {this.y}"
 
 
 A a

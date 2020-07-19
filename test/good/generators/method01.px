@@ -3,7 +3,7 @@ class A def
     Int x
 
     func* f(Int a) Rat def
-        for i in 1..self.x do
+        for i in 1..this.x do
             yield a/i
 
 

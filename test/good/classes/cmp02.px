@@ -3,7 +3,7 @@ class A def
     Int n
 
     constructor(Int n) def
-        self.n = n
+        this.n = n
 
 
 a = [A(i) for i in 0..4]

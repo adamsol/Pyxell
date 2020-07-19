@@ -1164,7 +1164,7 @@ class PyxellCompiler:
             for name in typevars:
                 self.env[name] = t.Var(name)
 
-            args = [] if class_type is None else [t.Func.Arg(class_type, 'self')]
+            args = [] if class_type is None else [t.Func.Arg(class_type, 'this')]
             expect_default = False
             for arg in node['args']:
                 type = self.compile(arg['type'])
@@ -1300,7 +1300,7 @@ class PyxellCompiler:
 
                 if member['block']:
                     with self.local():
-                        self.env['#self'] = True
+                        self.env['#this'] = True
 
                         if member['node'] == 'ClassConstructor':
                             self.env['#super'] = base_methods.get(name, base)
@@ -1750,10 +1750,10 @@ class PyxellCompiler:
             if expr['node'] == 'AtomSuper':
                 if isinstance(func, t.Class):
                     base = func
-                    obj = v.Cast(self.get(expr, 'self'), base)
+                    obj = v.Cast(self.get(expr, 'this'), base)
                     _default_constructor(obj, base)
                 else:
-                    obj = v.Cast(self.get(expr, 'self'), func.type.args[0].type)
+                    obj = v.Cast(self.get(expr, 'this'), func.type.args[0].type)
                     func = func.bind(obj)
 
         if isinstance(func, t.Class):
@@ -1978,10 +1978,10 @@ class PyxellCompiler:
     def compileAtomNull(self, node):
         return v.null
 
-    def compileAtomSelf(self, node):
-        if not self.env.get('#self'):
-            self.throw(node, err.InvalidUsage('self'))
-        return self.get(node, 'self')
+    def compileAtomThis(self, node):
+        if not self.env.get('#this'):
+            self.throw(node, err.InvalidUsage('this'))
+        return self.get(node, 'this')
 
     def compileAtomSuper(self, node):
         func = self.env.get('#super')

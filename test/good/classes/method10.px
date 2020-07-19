@@ -3,7 +3,7 @@ class A def
     Int x
 
     func f() Int*Float def
-        return self.x, self.y
+        return this.x, this.y
 
     Float y
 

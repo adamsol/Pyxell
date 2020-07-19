@@ -6,7 +6,7 @@ class A def
         func g(Int? y: null) Int def
             if y is null do
                 return 0
-            return self.x + x + y! + g()
+            return this.x + x + y! + g()
         print g(2)
 
 A(8).f(3)

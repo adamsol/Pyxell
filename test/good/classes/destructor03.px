@@ -3,7 +3,7 @@ class A def
     Bool x
 
     destructor() def
-        print self.x
+        print this.x
 
 
 func f(A a) A def

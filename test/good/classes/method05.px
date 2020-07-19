@@ -3,9 +3,9 @@ class Counter def
     Int n: 0
 
     func next() Counter def
-        print self.n
-        self.n += 1
-        return self
+        print this.n
+        this.n += 1
+        return this
 
 c = Counter().next().next()
 print c.n

@@ -3,21 +3,21 @@ class A def
     Char c: '*'
 
     constructor(Char c) def
-        print self.c
-        self.c = c
+        print this.c
+        this.c = c
 
     func toString() String def
-        return self.c.toString()
+        return this.c.toString()
 
 class B(A) def
     Bool b
 
     constructor(Char c, Bool b: false) def
-        self.c = c
-        self.b = b
+        this.c = c
+        this.b = b
 
     func toString() String def
-        return "{self.c} {self.b}"
+        return "{this.c} {this.b}"
 
 class C(B) def
     Int x
@@ -26,10 +26,10 @@ class D(A) def
     Int x: 42
 
     constructor() def
-        self.c = '?'
+        this.c = '?'
 
     func toString() String def
-        return "{self.c} {self.x}"
+        return "{this.c} {this.x}"
 
 
 func f(A a) def

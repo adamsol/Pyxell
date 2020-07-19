@@ -3,7 +3,7 @@ class Test def
     Bool b: false
 
     func toString() String def
-        return self.b.toString()
+        return this.b.toString()
 
 obj = Test()
 print "obj={obj}"

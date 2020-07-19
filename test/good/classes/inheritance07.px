@@ -4,11 +4,11 @@ class A def
 
 class B(A) def
     constructor() def
-        self.x = 'B'
+        this.x = 'B'
 
 class C(B) def
     constructor() def
-        self.x = 'C'
+        this.x = 'C'
 
 b = B()
 print b.x

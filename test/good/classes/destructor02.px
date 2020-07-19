@@ -5,7 +5,7 @@ class A def
     A? a2: null
 
     destructor() def
-        print self.x
+        print this.x
 
 
 A(1, A(2, A(3)), A(1.5))

@@ -3,10 +3,10 @@ class Test def
     Int value
 
     func add(Int v: 0) def
-        self.value += v
+        this.value += v
 
     func multiply(Int v: 1) def
-        self.value *= v
+        this.value *= v
 
 t = Test(3)
 t.add()

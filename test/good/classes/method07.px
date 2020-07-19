@@ -3,7 +3,7 @@ class A def
     Int x: 3
 
     func f() [A] def
-        return [self] * self.x
+        return [this] * this.x
 
 
 o = A()

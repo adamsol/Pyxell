@@ -3,18 +3,18 @@ class A def
     Char x: 'A'
 
     func f() def
-        print self.x
+        print this.x
 
 class B(A) def
     constructor() def
-        self.x = 'B'
+        this.x = 'B'
 
 class C(A) def
     constructor() def
-        self.x = 'C'
+        this.x = 'C'
 
     func f() def
-        print "{self.x}" * 3
+        print "{this.x}" * 3
 
 
 func get<T>(T*T a) T def
