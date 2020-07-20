@@ -88,7 +88,7 @@ def test(path, running_aggregate_tests=False):
             if running_aggregate_tests:
                 exe_filename = f'./{aggregate_exe_filename}'
             else:
-                exe_filename = compile(path, args.cpp_compiler, args.opt_level, executable=args.separate)
+                exe_filename = compile(path, args.cpp_compiler, args.opt_level, mode=('executable' if args.separate else 'cpp'))
             error = False
         except NotSupportedError as e:
             skipped += 1
