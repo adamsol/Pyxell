@@ -1070,9 +1070,9 @@ class PyxellCompiler:
                     index = self.tmp(v.Int(0), force_var=True)
                     length = self.tmp(v.Call(v.Attribute(value, 'size')))
                     cond = lambda: f'{index} < {length}'
-                    update = lambda: f'{index} += abs({step}), {iterator} += {step}'
+                    update = lambda: f'{index} += std::abs({step}), {iterator} += {step}'
                 else:
-                    self.store(step, f'abs({step})')
+                    self.store(step, f'std::abs({step})')
                     cond = lambda: f'{iterator} != {end}'
                     update = lambda: f'safe_advance({iterator}, {end}, {step})'
 
@@ -1291,8 +1291,13 @@ class PyxellCompiler:
                         with self.block(block):
                             # To call the destructor function expecting shared_ptr as the argument,
                             # we create a shared_ptr that points to, but doesn't own, `this`.
-                            # https://stackoverflow.com/a/29709885/
+                            # https://stackoverflow.com/a/29709885
                             self.output(v.Call(methods['<destructor>'], v.Call(type, v.Call(type), 'this')))
+
+        if not any(member['node'] == 'ClassDestructor' for member in node['members']):
+            # Empty virtual destructor as recommended by C++.
+            # https://stackoverflow.com/a/10024812
+            fields.append(c.Function('virtual', f'~{cls}', [], c.Block()))
 
         block = c.Block()
         fields.append(c.Function('', cls, [], block))  # constructor
