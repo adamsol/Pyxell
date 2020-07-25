@@ -9,10 +9,10 @@ import sys
 from pathlib import Path
 from timeit import default_timer as timer
 
-from .compiler import PyxellCompiler
 from .errors import NotSupportedError, PyxellError
 from .indentation import transform_indented_code
 from .parsing import parse_program
+from .transpiler import PyxellTranspiler
 from .version import __version__
 
 abspath = Path(__file__).parents[1]
@@ -92,13 +92,13 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False, mode='executable')
         print(f"transpiling {filepath} to {cpp_filename}")
 
     t1 = timer()
-    compiler = PyxellCompiler(cpp_compiler)
+    transpiler = PyxellTranspiler(cpp_compiler)
 
     for name, ast in units.items():
-        compiler.run(ast, name)
+        transpiler.run(ast, name)
 
     ast = build_ast(filepath)
-    code = compiler.run_main(ast)
+    code = transpiler.run_main(ast)
 
     with open(cpp_filename, 'w') as file:
         file.write(f"/*\n"

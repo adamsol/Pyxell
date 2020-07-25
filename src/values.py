@@ -145,7 +145,7 @@ class FunctionTemplate(Value):
         self.body = body
         self.env = env
         self.lambda_ = lambda_
-        self.compiled = {}
+        self.cache = {}
 
     def bind(self, obj):
         template = copy.copy(self)

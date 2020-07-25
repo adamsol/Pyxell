@@ -20,7 +20,7 @@ class Unit:
         self.env = {}
 
 
-class PyxellCompiler:
+class PyxellTranspiler:
 
     def __init__(self, cpp_compiler):
         self.cpp_compiler = cpp_compiler
@@ -46,7 +46,7 @@ class PyxellCompiler:
         with self.unit(unit):
             if unit != 'std':
                 self.env = self.units['std'].env.copy()
-            self.compile(ast)
+            self.transpile(ast)
 
     def run_main(self, ast):
         self.run(ast, 'main')
@@ -55,11 +55,11 @@ class PyxellCompiler:
             raise NotSupportedError(f"Generators require C++ coroutines support; use Clang.")
         return str(self.module)
 
-    def compile(self, node, void_allowed=False):
+    def transpile(self, node, void_allowed=False):
         if not isinstance(node, dict):
             return node
         node = self.convert_lambda(node)
-        result = getattr(self, 'compile'+node['node'])(node)
+        result = getattr(self, 'transpile'+node['node'])(node)
         if isinstance(result, v.Value) and result.type == t.Void and not void_allowed:
             self.throw(node, err.UnexpectedVoid())
         if '_eval' in node:
@@ -259,7 +259,7 @@ class PyxellCompiler:
                 with self.unit(id):
                     return self.get(node, attr)
 
-        obj = self.tmp(self.compile(expr))
+        obj = self.tmp(self.transpile(expr))
         return self.attr(node, obj, attr)
 
     def attr(self, node, obj, attr):
@@ -471,10 +471,10 @@ class PyxellCompiler:
             return self.env[id]
 
         elif expr['node'] == 'ExprAttr' and not expr.get('safe'):
-            return self.member(node, self.compile(expr['expr']), expr['attr'], lvalue=True)
+            return self.member(node, self.transpile(expr['expr']), expr['attr'], lvalue=True)
 
         elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
-            return self.index(node, *map(self.compile, expr['exprs']), lvalue=True)
+            return self.index(node, *map(self.transpile, expr['exprs']), lvalue=True)
 
         elif expr['node'] == 'AtomPlaceholder':
             return None
@@ -782,14 +782,14 @@ class PyxellCompiler:
     def function(self, template, assigned_types={}):
         real_types = tuple(assigned_types.get(name) for name in template.typevars)
 
-        if real_types in template.compiled:
-            return template.compiled[real_types].bind(template.bound)
+        if real_types in template.cache:
+            return template.cache[real_types].bind(template.bound)
 
         body = template.body
 
         if not body:  # `extern`
             func = v.Variable(template.type, template.id)
-            template.compiled[real_types] = func
+            template.cache[real_types] = func
 
         else:
             with self.local():
@@ -799,7 +799,7 @@ class PyxellCompiler:
                 func_type = self.resolve_type(template.type)
 
                 func = self.var(func_type, prefix='f')
-                template.compiled[real_types] = func
+                template.cache[real_types] = func
 
                 arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
                 block = c.Block()
@@ -817,7 +817,7 @@ class PyxellCompiler:
                             self.env['#return-types'] = []
 
                             with self.no_output():
-                                self.compile(body)
+                                self.transpile(body)
 
                             if self.env['#return-types']:
                                 ret = unify_types(*self.env['#return-types'])
@@ -835,12 +835,12 @@ class PyxellCompiler:
                     if not func_type.ret.hasValue() and not func_type.ret.isGenerator() and func_type.ret != t.Void:
                         self.throw(body, err.InvalidReturnType(func_type.ret))
 
-                    self.compile(body)
+                    self.transpile(body)
 
             if template.lambda_:
                 # The closure is created every time the function is used (except for recursive calls),
                 # so current values of variables are captured, possibly different than in the moment of definition.
-                del template.compiled[real_types]
+                del template.cache[real_types]
                 self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=func_type)
             else:
                 self.output(c.Statement(func_type.ret, f'{func}({func_type.args_str()})'), toplevel=True)
@@ -851,11 +851,11 @@ class PyxellCompiler:
 
     ### Statements ###
 
-    def compileBlock(self, node):
+    def transpileBlock(self, node):
         for stmt in node['stmts']:
-            self.compile(stmt)
+            self.transpile(stmt)
 
-    def compileStmtUse(self, node):
+    def transpileStmtUse(self, node):
         name = node['name']
         if name not in self.units:
             self.throw(node, err.InvalidModule(name))
@@ -879,11 +879,11 @@ class PyxellCompiler:
         else:
             self.env.update(unit.env)
 
-    def compileStmtSkip(self, node):
+    def transpileStmtSkip(self, node):
         pass
 
-    def compileStmtPrint(self, node):
-        values = lmap(self.compile, node['exprs'])
+    def transpileStmtPrint(self, node):
+        values = lmap(self.transpile, node['exprs'])
 
         for i, value in enumerate(values):
             if not value.type.isPrintable():
@@ -895,18 +895,18 @@ class PyxellCompiler:
 
         self.output(c.Statement(v.Call('write', v.String('\\n'))))  # std::endl is very slow
 
-    def compileStmtDecl(self, node):
-        type = self.resolve_type(self.compile(node['type']))
+    def transpileStmtDecl(self, node):
+        type = self.resolve_type(self.transpile(node['type']))
         id = node['id']
         expr = node['expr']
         var = self.declare(node, type, id)
 
         if expr:
-            value = self.cast(node, self.compile(expr), type)
+            value = self.cast(node, self.transpile(expr), type)
             self.store(var, value)
 
-    def compileStmtAssg(self, node):
-        value = self.compile(node['expr'], void_allowed=(len(node['lvalues']) == 0))
+    def transpileStmtAssg(self, node):
+        value = self.transpile(node['expr'], void_allowed=(len(node['lvalues']) == 0))
 
         if value.type == t.Void:
             self.output(value)
@@ -916,7 +916,7 @@ class PyxellCompiler:
         for lvalue in node['lvalues']:
             self.assign(lvalue, lvalue, value)
 
-    def compileStmtAssgExpr(self, node):
+    def transpileStmtAssgExpr(self, node):
         exprs = node['exprs']
         op = node['op']
         left = self.lvalue(node, exprs[0])
@@ -927,21 +927,21 @@ class PyxellCompiler:
             block = c.Block()
             self.output(c.If(v.IsNull(left), block))
             with self.block(block):
-                right = self.compile(exprs[1])
+                right = self.transpile(exprs[1])
                 if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
                     self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
                 self.store(left, v.Nullable(self.cast(node, right, left.type.subtype)))
         else:
-            right = self.compile(exprs[1])
+            right = self.transpile(exprs[1])
             value = self.binaryop(node, op, left, right)
             if value.type != left.type:
                 self.throw(node, err.NoConversion(value.type, left.type))
             self.store(left, value)
 
-    def compileStmtAppend(self, node):
+    def transpileStmtAppend(self, node):
         # Special instruction for array/set/dict comprehension.
-        collection = self.compile(node['collection'])
-        values = lmap(self.compile, node['exprs'])
+        collection = self.transpile(node['collection'])
+        values = lmap(self.transpile, node['exprs'])
         if any(value.type == t.Unknown for value in values):
             return
 
@@ -955,7 +955,7 @@ class PyxellCompiler:
             values = [self.cast(node, values[0], collection.type.key_type), self.cast(node, values[1], collection.type.value_type)]
             self.output(v.Call(v.Attribute(collection, 'insert_or_assign'), *values))
 
-    def compileStmtIf(self, node):
+    def transpileStmtIf(self, node):
         exprs = node['exprs']
         blocks = node['blocks']
 
@@ -963,12 +963,12 @@ class PyxellCompiler:
 
         for expr, block in reversed(list(zip_longest(exprs, blocks))):
             if expr:
-                cond = self.cast(expr, self.compile(expr), t.Bool)
+                cond = self.cast(expr, self.transpile(expr), t.Bool)
 
             then = c.Block()
             with self.block(then):
                 with self.local():
-                    self.compile(block)
+                    self.transpile(block)
 
             if expr:
                 stmt = c.If(cond, then, stmt)
@@ -977,7 +977,7 @@ class PyxellCompiler:
 
         self.output(stmt)
 
-    def compileStmtWhile(self, node):
+    def transpileStmtWhile(self, node):
         expr = node['expr']
 
         with self.local():
@@ -985,15 +985,15 @@ class PyxellCompiler:
 
             body = c.Block()
             with self.block(body):
-                cond = self.cast(expr, self.compile(expr), t.Bool)
+                cond = self.cast(expr, self.transpile(expr), t.Bool)
                 cond = v.UnaryOp('!', cond)
                 self.output(c.If(cond, c.Statement('break')))
 
-                self.compile(node['block'])
+                self.transpile(node['block'])
 
         self.output(c.While(v.true, body))
 
-    def compileStmtUntil(self, node):
+    def transpileStmtUntil(self, node):
         expr = node['expr']
 
         with self.local():
@@ -1004,16 +1004,16 @@ class PyxellCompiler:
 
             body = c.Block()
             with self.block(body):
-                cond = self.cast(expr, self.compile(expr), t.Bool)
+                cond = self.cast(expr, self.transpile(expr), t.Bool)
                 cond = v.BinaryOp(second_iteration, '&&', cond)
                 self.output(c.If(cond, c.Statement('break')))
                 self.store(second_iteration, v.true)
 
-                self.compile(node['block'])
+                self.transpile(node['block'])
 
         self.output(c.While(v.true, body))
 
-    def compileStmtFor(self, node):
+    def transpileStmtFor(self, node):
         vars = node['vars']
         iterables = node['iterables']
 
@@ -1026,13 +1026,13 @@ class PyxellCompiler:
             # It must be a function so that there are separate scopes of variables to use in lambdas.
 
             if iterable['node'] == 'ExprBy':
-                step = self.freeze(self.compile(iterable['exprs'][1]))
+                step = self.freeze(self.transpile(iterable['exprs'][1]))
                 iterable = iterable['exprs'][0]
             else:
                 step = self.freeze(v.Int(1))
 
             if iterable['node'] == 'ExprRange':
-                values = lmap(self.compile, iterable['exprs'])
+                values = lmap(self.transpile, iterable['exprs'])
                 values = self.unify(iterable, *values)
                 type = values[0].type
                 if type not in {t.Int, t.Rat, t.Float, t.Bool, t.Char}:
@@ -1055,7 +1055,7 @@ class PyxellCompiler:
                 getter = lambda: v.Cast(index, type)
 
             else:
-                value = self.tmp(self.compile(iterable))
+                value = self.tmp(self.transpile(iterable))
                 type = value.type
                 if not type.isIterable():
                     self.throw(node, err.NotIterable(type))
@@ -1104,13 +1104,13 @@ class PyxellCompiler:
                 else:
                     self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
 
-                self.compile(node['block'])
+                self.transpile(node['block'])
 
         condition = ' && '.join(str(cond()) for cond in conditions)
         update = ', '.join(str(update()) for update in updates)
         self.output(c.For('', condition, update, body))
 
-    def compileStmtLoopControl(self, node):
+    def transpileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`
 
         if not self.env.get('#loop'):
@@ -1118,7 +1118,7 @@ class PyxellCompiler:
 
         self.output(c.Statement(stmt))
 
-    def compileStmtFunc(self, node, class_type=None):
+    def transpileStmtFunc(self, node, class_type=None):
         id = node['id']
 
         with self.local():
@@ -1129,7 +1129,7 @@ class PyxellCompiler:
             args = [] if class_type is None else [t.Func.Arg(class_type, 'this')]
             expect_default = False
             for arg in node['args']:
-                type = self.compile(arg['type'])
+                type = self.transpile(arg['type'])
                 if not type.hasValue():
                     self.throw(node, err.InvalidDeclaration(type))
                 name = arg['name']
@@ -1145,7 +1145,7 @@ class PyxellCompiler:
                     type = t.Array(type)
                 args.append(t.Func.Arg(type, name, default, variadic))
 
-            ret_type = self.compile(node.get('ret')) or t.Void
+            ret_type = self.transpile(node.get('ret')) or t.Void
             if node.get('generator'):
                 self.require('generators')
                 ret_type = t.Generator(ret_type)
@@ -1161,7 +1161,7 @@ class PyxellCompiler:
         else:
             return self.function(func)
 
-    def compileStmtReturn(self, node):
+    def transpileStmtReturn(self, node):
         try:
             type = self.env['#return']
         except KeyError:
@@ -1169,7 +1169,7 @@ class PyxellCompiler:
 
         expr = node['expr']
         if expr:
-            value = self.compile(expr, void_allowed=True)
+            value = self.transpile(expr, void_allowed=True)
 
             if type.isGenerator():
                 self.throw(node, err.NoConversion(value.type, type))
@@ -1196,13 +1196,13 @@ class PyxellCompiler:
         else:
             self.output(c.Statement('return', value))
 
-    def compileStmtYield(self, node):
+    def transpileStmtYield(self, node):
         type = self.env.get('#return')
         if not type or not type.isGenerator():
             self.throw(node, err.InvalidUsage('yield'))
 
         type = type.subtype
-        value = self.compile(node['expr'])
+        value = self.transpile(node['expr'])
 
         if '#return-types' in self.env:
             self.env['#return-types'].append(t.Generator(value.type))
@@ -1211,12 +1211,12 @@ class PyxellCompiler:
 
         self.output(c.Statement('co_yield', value))
 
-    def compileStmtClass(self, node):
+    def transpileStmtClass(self, node):
         id = node['id']
         if id in self.env:
             self.throw(node, err.RedeclaredIdentifier(id))
 
-        base = self.compile(node['base'])
+        base = self.transpile(node['base'])
         if base and not base.isClass():
             self.throw(node, err.NotClass(base))
 
@@ -1244,7 +1244,7 @@ class PyxellCompiler:
                 if name == 'toString':
                     self.throw(member, err.InvalidMember(name))
 
-                field = self.var(self.compile(member['type']), prefix='m')
+                field = self.var(self.transpile(member['type']), prefix='m')
                 field.has_default = bool(member.get('default'))
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field
@@ -1268,7 +1268,7 @@ class PyxellCompiler:
                         else:
                             self.env['#super'] = base_methods.get(name)
 
-                        methods[name] = func = self.compileStmtFunc(member, class_type=type)
+                        methods[name] = func = self.transpileStmtFunc(member, class_type=type)
 
                     if member['node'] == 'ClassMethod':
                         if name == 'toString':
@@ -1306,13 +1306,13 @@ class PyxellCompiler:
                 name = member['id']
                 default = member.get('default')
                 if default:
-                    value = self.cast(member, self.compile(default), members[name].type)
+                    value = self.cast(member, self.transpile(default), members[name].type)
                     self.store(f'this->{members[name]}', value)
 
 
     ### Expressions ###
 
-    def compileExprCollection(self, node):
+    def transpileExprCollection(self, node):
         exprs = node['exprs']
         kind = node['kind']
         types = []
@@ -1324,20 +1324,20 @@ class PyxellCompiler:
                         if expr['exprs'][0]['node'] != 'ExprRange':
                             self.throw(node, err.InvalidSyntax())
                         expr = expr['exprs'][0]
-                    values = lmap(self.compile, expr['exprs'])
+                    values = lmap(self.transpile, expr['exprs'])
                     types.extend(value.type for value in values)
 
                 elif expr['node'] == 'ExprSpread':
                     expr = expr['expr']
                     if expr['node'] == 'ExprBy':
                         expr = expr['exprs'][0]
-                    value = self.compile(expr)
+                    value = self.transpile(expr)
                     if not value.type.isIterable():
                         self.throw(node, err.NotIterable(value.type))
                     types.append(value.type.subtype)
 
                 else:
-                    value = self.compile(expr)
+                    value = self.transpile(expr)
                     types.append(value.type)
 
         type = t.Unknown
@@ -1365,7 +1365,7 @@ class PyxellCompiler:
                     'node': 'AtomId',
                     'id': self.fake_id(),
                 }
-                self.compile({
+                self.transpile({
                     'node': 'StmtFor',
                     'vars': [var],
                     'iterables': [expr],
@@ -1376,7 +1376,7 @@ class PyxellCompiler:
                     },
                 })
             else:
-                self.compile({
+                self.transpile({
                     'node': 'StmtAppend',
                     'collection': result,
                     'exprs': [expr],
@@ -1384,7 +1384,7 @@ class PyxellCompiler:
 
         return result
 
-    def compileExprDict(self, node):
+    def transpileExprDict(self, node):
         items = node['items']
         types = [], []
 
@@ -1394,14 +1394,14 @@ class PyxellCompiler:
                     expr = item['expr']
                     if expr['node'] == 'ExprBy':
                         expr = expr['exprs'][0]
-                    value = self.compile(expr)
+                    value = self.transpile(expr)
                     if not value.type.isDict():
                         self.throw(node, err.NotDictionary(value.type))
                     types[0].append(value.type.key_type)
                     types[1].append(value.type.value_type)
 
                 elif item['node'] == 'DictPair':
-                    values = lmap(self.compile, item['exprs'])
+                    values = lmap(self.transpile, item['exprs'])
                     for i in range(2):
                         types[i].append(values[i].type)
 
@@ -1427,7 +1427,7 @@ class PyxellCompiler:
                     'id': self.fake_id(),
                 } for _ in range(2)]
 
-                self.compile({
+                self.transpile({
                     'node': 'StmtFor',
                     'vars': vars,
                     'iterables': [item['expr']],
@@ -1438,7 +1438,7 @@ class PyxellCompiler:
                     },
                 })
             elif item['node'] == 'DictPair':
-                self.compile({
+                self.transpile({
                     'node': 'StmtAppend',
                     'collection': result,
                     'exprs': item['exprs'],
@@ -1446,7 +1446,7 @@ class PyxellCompiler:
 
         return result
 
-    def compileExprComprehension(self, node):
+    def transpileExprComprehension(self, node):
         exprs = node['exprs']
         kind = node['kind']
 
@@ -1485,8 +1485,8 @@ class PyxellCompiler:
         # A small hack to obtain type of the expression.
         with self.local():
             with self.no_output():
-                inner_stmt['_eval'] = lambda: self.compile(value).type.elements
-                self.compile(stmt)
+                inner_stmt['_eval'] = lambda: self.transpile(value).type.elements
+                self.transpile(stmt)
                 types = inner_stmt.pop('_eval')
 
         with self.local():
@@ -1505,47 +1505,47 @@ class PyxellCompiler:
             inner_stmt['collection'] = collection
             inner_stmt['exprs'] = exprs
 
-            self.compile(stmt)
+            self.transpile(stmt)
 
-            result = self.compile(collection)
+            result = self.transpile(collection)
 
         result.type.literal = True
         return result
 
-    def compileExprAttr(self, node):
+    def transpileExprAttr(self, node):
         expr = node['expr']
         attr = node['attr']
 
         if node.get('safe'):
-            obj = self.tmp(self.compile(expr))
+            obj = self.tmp(self.transpile(expr))
             return self.safe(node, obj, lambda: v.Nullable(self.attr(node, v.Extract(obj), attr)), lambda: v.null)
 
         return self.attribute(node, expr, attr)
 
-    def compileExprIndex(self, node):
+    def transpileExprIndex(self, node):
         exprs = node['exprs']
 
         if node.get('safe'):
-            collection = self.tmp(self.compile(exprs[0]))
-            return self.safe(node, collection, lambda: v.Nullable(self.index(node, v.Extract(collection), self.compile(exprs[1]))), lambda: v.null)
+            collection = self.tmp(self.transpile(exprs[0]))
+            return self.safe(node, collection, lambda: v.Nullable(self.index(node, v.Extract(collection), self.transpile(exprs[1]))), lambda: v.null)
 
-        return self.index(node, *map(self.compile, exprs))
+        return self.index(node, *map(self.transpile, exprs))
 
-    def compileExprSlice(self, node):
+    def transpileExprSlice(self, node):
         slice = node['slice']
 
-        collection = self.compile(node['expr'])
+        collection = self.transpile(node['expr'])
         type = collection.type
         if not type.isSequence():
             self.throw(node, err.NotIndexable(type))
 
-        a = v.Nullable(self.cast(slice[0], self.compile(slice[0]), t.Int)) if slice[0] else v.null
-        b = v.Nullable(self.cast(slice[1], self.compile(slice[1]), t.Int)) if slice[1] else v.null
-        step = self.cast(slice[2], self.compile(slice[2]), t.Int) if slice[2] else v.Int(1)
+        a = v.Nullable(self.cast(slice[0], self.transpile(slice[0]), t.Int)) if slice[0] else v.null
+        b = v.Nullable(self.cast(slice[1], self.transpile(slice[1]), t.Int)) if slice[1] else v.null
+        step = self.cast(slice[2], self.transpile(slice[2]), t.Int) if slice[2] else v.Int(1)
 
         return v.Call('slice', collection, a, b, step, type=type)
 
-    def compileExprCall(self, node):
+    def transpileExprCall(self, node):
         expr = node['expr']
 
         def _resolve_args(func):
@@ -1619,7 +1619,7 @@ class PyxellCompiler:
                         else:
                             self.throw(node, err.MissingArgument(name))
 
-                    value = self.compile(expr)
+                    value = self.transpile(expr)
 
                     if not value.isTemplate():
                         d = type_variables_assignment(value.type, func_arg.type)
@@ -1690,7 +1690,7 @@ class PyxellCompiler:
             attr = expr['attr']
 
             if expr.get('safe'):
-                obj = self.tmp(self.compile(expr['expr']))
+                obj = self.tmp(self.transpile(expr['expr']))
 
                 def callback():
                     value = self.tmp(v.Extract(obj))
@@ -1709,7 +1709,7 @@ class PyxellCompiler:
                 func = self.attribute(expr, expr['expr'], attr)
 
         else:
-            func = self.compile(expr)
+            func = self.transpile(expr)
 
             if expr['node'] == 'AtomSuper':
                 if isinstance(func, t.Class):
@@ -1735,9 +1735,9 @@ class PyxellCompiler:
             result = self.tmp(result)
         return result
 
-    def compileExprUnaryOp(self, node):
+    def transpileExprUnaryOp(self, node):
         op = node['op']
-        value = self.compile(node['expr'])
+        value = self.transpile(node['expr'])
 
         if op == '!':
             if not value.type.isNullable():
@@ -1747,23 +1747,23 @@ class PyxellCompiler:
 
         return self.unaryop(node, op, value)
 
-    def compileExprBinaryOp(self, node):
+    def transpileExprBinaryOp(self, node):
         op = node['op']
         exprs = node['exprs']
 
         if op == '??':
-            left = self.tmp(self.compile(exprs[0]))
+            left = self.tmp(self.transpile(exprs[0]))
             try:
                 if left.type == t.Nullable(t.Unknown):
-                    return self.compile(exprs[1])
-                return self.safe(node, left, lambda: v.Extract(left), lambda: self.compile(exprs[1]))
+                    return self.transpile(exprs[1])
+                return self.safe(node, left, lambda: v.Extract(left), lambda: self.transpile(exprs[1]))
             except err:
-                self.throw(node, err.NoBinaryOperator(op, left.type, self.compile(exprs[1]).type))
+                self.throw(node, err.NoBinaryOperator(op, left.type, self.transpile(exprs[1]).type))
 
-        return self.binaryop(node, op, *map(self.compile, exprs))
+        return self.binaryop(node, op, *map(self.transpile, exprs))
 
-    def compileExprIsNull(self, node):
-        value = self.compile(node['expr'])
+    def transpileExprIsNull(self, node):
+        value = self.transpile(node['expr'])
         if not value.type.isNullable():
             self.throw(node, err.NotNullable(value.type))
 
@@ -1772,11 +1772,11 @@ class PyxellCompiler:
 
         return v.IsNotNull(value) if node.get('not') else v.IsNull(value)
 
-    def compileExprIn(self, node):
+    def transpileExprIn(self, node):
         exprs = node['exprs']
 
-        element = self.compile(exprs[0])
-        iterable = self.compile(exprs[1])
+        element = self.transpile(exprs[0])
+        iterable = self.transpile(exprs[1])
         if not iterable.type.isIterable():
             self.throw(node, err.NotIterable(iterable.type))
 
@@ -1793,18 +1793,18 @@ class PyxellCompiler:
         result = v.Call('contains', iterable, element, type=t.Bool)
         return v.UnaryOp('!', result, type=t.Bool) if node.get('not') else result
 
-    def compileExprCmp(self, node):
+    def transpileExprCmp(self, node):
         exprs = node['exprs']
         ops = node['ops']
 
         result = self.var(t.Bool)
         self.store(result, v.false, 'auto')
 
-        left = self.compile(exprs[0])
+        left = self.transpile(exprs[0])
 
         def emitIf(index):
             nonlocal left
-            right = self.compile(exprs[index])
+            right = self.transpile(exprs[index])
             op = ops[index-1]
 
             try:
@@ -1833,41 +1833,41 @@ class PyxellCompiler:
 
         return result
 
-    def compileExprLogicalOp(self, node):
+    def transpileExprLogicalOp(self, node):
         exprs = node['exprs']
         op = node['op']
 
         result = self.var(t.Bool)
         self.store(result, v.Bool(op == 'or'), 'auto')
 
-        cond1 = self.compile(exprs[0])
+        cond1 = self.transpile(exprs[0])
         if op == 'or':
             cond1 = v.UnaryOp('!', cond1, type=t.Bool)
 
         block = c.Block()
         self.output(c.If(cond1, block))
         with self.block(block):
-            cond2 = self.compile(exprs[1])
+            cond2 = self.transpile(exprs[1])
             if not cond1.type == cond2.type == t.Bool:
                 self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
             self.store(result, cond2)
 
         return result
 
-    def compileExprCond(self, node):
+    def transpileExprCond(self, node):
         exprs = node['exprs']
-        return self.cond(node, self.compile(exprs[0]), lambda: self.compile(exprs[1]), lambda: self.compile(exprs[2]))
+        return self.cond(node, self.transpile(exprs[0]), lambda: self.transpile(exprs[1]), lambda: self.transpile(exprs[2]))
 
-    def compileExprRange(self, node):
+    def transpileExprRange(self, node):
         self.throw(node, err.InvalidSyntax())
 
-    def compileExprSpread(self, node):
+    def transpileExprSpread(self, node):
         self.throw(node, err.InvalidSyntax())
 
-    def compileExprBy(self, node):
+    def transpileExprBy(self, node):
         self.throw(node, err.InvalidSyntax())
 
-    def compileExprLambda(self, node):
+    def transpileExprLambda(self, node):
         id = self.fake_id()
         typevars = [f'$T{i}' for i in range(len(node['ids'])+1)]
 
@@ -1880,7 +1880,7 @@ class PyxellCompiler:
                 'expr': node['expr'],
             }
 
-        self.compile({
+        self.transpile({
             **node,
             'node': 'StmtFunc',
             'id': id,
@@ -1902,67 +1902,67 @@ class PyxellCompiler:
 
         return self.get(node, id)
 
-    def compileExprTuple(self, node):
-        elements = lmap(self.compile, node['exprs'])
+    def transpileExprTuple(self, node):
+        elements = lmap(self.transpile, node['exprs'])
         return v.Tuple(elements)
 
 
     ### Atoms ###
 
-    def compileAtomInt(self, node):
+    def transpileAtomInt(self, node):
         value = node['int']
         if value < 2**63:
             return v.Int(value)
         else:
             return v.Rat(value)
 
-    def compileAtomFloat(self, node):
+    def transpileAtomFloat(self, node):
         return v.Float(node['float'])
 
-    def compileAtomBool(self, node):
+    def transpileAtomBool(self, node):
         return v.Bool(node['bool'])
 
-    def compileAtomChar(self, node):
+    def transpileAtomChar(self, node):
         return v.Char(node['char'])
 
-    def compileAtomString(self, node):
+    def transpileAtomString(self, node):
         expr = self.convert_string(node, node['string'])
 
         if expr['node'] == 'AtomString':
             return v.String(expr['string'])
         
         try:
-            return self.compile(expr)
+            return self.transpile(expr)
         except err as e:
             self.throw({
                 **node,
                 'position': [e.line+node['position'][0]-1, e.column+node['position'][1]+1],
             }, str(e).partition(': ')[2][:-1])
 
-    def compileAtomNull(self, node):
+    def transpileAtomNull(self, node):
         return v.null
 
-    def compileAtomThis(self, node):
+    def transpileAtomThis(self, node):
         if not self.env.get('#this'):
             self.throw(node, err.InvalidUsage('this'))
         return self.get(node, 'this')
 
-    def compileAtomSuper(self, node):
+    def transpileAtomSuper(self, node):
         func = self.env.get('#super')
         if func is None:
             self.throw(node, err.InvalidUsage('super'))
         return func
 
-    def compileAtomDefault(self, node):
-        return self.default(node, self.resolve_type(self.compile(node['type'])))
+    def transpileAtomDefault(self, node):
+        return self.default(node, self.resolve_type(self.transpile(node['type'])))
 
-    def compileAtomId(self, node):
+    def transpileAtomId(self, node):
         return self.get(node, node['id'])
 
 
     ### Types ###
 
-    def compileTypeName(self, node):
+    def transpileTypeName(self, node):
         name = node['name']
 
         type = {
@@ -1983,20 +1983,20 @@ class PyxellCompiler:
 
         return type
 
-    def compileTypeArray(self, node):
-        return t.Array(self.compile(node['subtype']))
+    def transpileTypeArray(self, node):
+        return t.Array(self.transpile(node['subtype']))
 
-    def compileTypeSet(self, node):
-        return t.Set(self.compile(node['subtype']))
+    def transpileTypeSet(self, node):
+        return t.Set(self.transpile(node['subtype']))
 
-    def compileTypeDict(self, node):
-        return t.Dict(self.compile(node['key_type']), self.compile(node['value_type']))
+    def transpileTypeDict(self, node):
+        return t.Dict(self.transpile(node['key_type']), self.transpile(node['value_type']))
 
-    def compileTypeNullable(self, node):
-        return t.Nullable(self.compile(node['subtype']))
+    def transpileTypeNullable(self, node):
+        return t.Nullable(self.transpile(node['subtype']))
 
-    def compileTypeTuple(self, node):
-        return t.Tuple(lmap(self.compile, node['elements']))
+    def transpileTypeTuple(self, node):
+        return t.Tuple(lmap(self.transpile, node['elements']))
 
-    def compileTypeFunc(self, node):
-        return t.Func(lmap(self.compile, node['args']), self.compile(node['ret']) or t.Void)
+    def transpileTypeFunc(self, node):
+        return t.Func(lmap(self.transpile, node['args']), self.transpile(node['ret']) or t.Void)
