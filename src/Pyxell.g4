@@ -66,18 +66,18 @@ expr
   | expr op='##' expr # ExprBinaryOp
   | expr op='||' expr # ExprBinaryOp
   | expr op='|' expr # ExprBinaryOp
-  | expr 'is' not_='not'? 'null' # ExprIsNull
-  | expr not_='not'? 'in' expr # ExprIn
-  | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
-  | op='not' expr # ExprUnaryOp
-  | <assoc=right> expr op='and' expr # ExprLogicalOp
-  | <assoc=right> expr op='or' expr # ExprLogicalOp
   | <assoc=right> expr op='??' expr # ExprBinaryOp
-  | <assoc=right> expr '?' expr ':' expr # ExprCond
   | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange
   | expr 'by' expr # ExprBy
   | '...' expr # ExprSpread
+  | <assoc=right> expr op=('==' | '!=' | '<' | '<=' | '>' | '>=') expr # ExprCmp
+  | expr not_='not'? 'in' expr # ExprIn
+  | expr 'is' not_='not'? 'null' # ExprIsNull
+  | op='not' expr # ExprUnaryOp
+  | <assoc=right> expr op='and' expr # ExprLogicalOp
+  | <assoc=right> expr op='or' expr # ExprLogicalOp
+  | <assoc=right> expr '?' expr ':' expr # ExprCond
   | 'lambda' generator='*'? (ID ',')* ID? (':' expr | 'def' block) # ExprLambda
   ;
 

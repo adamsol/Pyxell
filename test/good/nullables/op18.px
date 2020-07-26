@@ -1,0 +1,6 @@
+
+Bool? x = null
+print false or x ?? 3|12 and true
+
+Int? a = 0
+print a ?? 1+2 == 0
