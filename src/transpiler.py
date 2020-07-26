@@ -1095,8 +1095,10 @@ class PyxellTranspiler:
                     tuple = v.Tuple([getter() for getter in getters])
                     self.assign(node, vars[0], tuple)
                 elif len(vars) > 1 and len(types) == 1:
+                    if not types[0].isTuple():
+                        self.throw(node, err.CannotUnpack(types[0], len(vars)))
+                    tuple = getters[0]()
                     for i, var in enumerate(vars):
-                        tuple = getters[0]()
                         self.assign(node, var, v.Get(tuple, i))
                 elif len(vars) == len(types):
                     for var, getter in zip(vars, getters):
