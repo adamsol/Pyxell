@@ -46,14 +46,6 @@ def cpp_flags(cpp_compiler, opt_level):
     return flags
 
 
-def precompile_base_header(cpp_compiler, opt_level):
-    if cpp_compiler.lower() in {'', 'no', 'none'}:
-        return
-
-    command = [cpp_compiler, '-c', str(abspath/'lib/base.hpp'), *cpp_flags(cpp_compiler, opt_level)]
-    subprocess.check_output(command, stderr=subprocess.STDOUT)
-
-
 def resolve_local_includes(path):
     code = path.read_text().replace('#pragma once', '')
 
@@ -80,6 +72,7 @@ def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbos
             subprocess.check_output(command, stderr=subprocess.STDOUT)
     except FileNotFoundError:
         print(f"command not found: {cpp_compiler}")
+        sys.exit(1)
 
 
 def compile(filepath, cpp_compiler, opt_level, verbose=False, mode='executable'):

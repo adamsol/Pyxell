@@ -14,7 +14,7 @@ from pathlib import Path
 from timeit import default_timer as timer
 
 from src.codegen import INDENT
-from src.main import precompile_base_header, compile, run_cpp_compiler
+from src.main import compile, run_cpp_compiler
 from src.errors import NotSupportedError, PyxellError
 
 # Setup terminal colors.
@@ -169,15 +169,6 @@ def test(path, running_aggregate_tests=False):
                 os.remove(path.replace('.px', '.cpp'))
                 os.remove(path.replace('.px', '.exe'))
 
-try:
-    precompile_base_header(args.cpp_compiler, args.opt_level)
-except FileNotFoundError:
-    print(f"command not found: {args.cpp_compiler}")
-    sys.exit(1)
-except subprocess.CalledProcessError as e:
-    print(e.output.decode())
-    sys.exit(1)
-
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for path in tests:
         executor.submit(test, path)
@@ -222,8 +213,3 @@ else:
     msg += f", {G}all passed{E}"
 
 print(msg + f".")
-
-try:
-    os.remove('lib/base.hpp.gch')
-except OSError:
-    pass
