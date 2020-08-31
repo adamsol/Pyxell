@@ -1,0 +1,9 @@
+
+Int a
+Rat b
+Float c
+Char d
+Bool e
+String f
+
+print a, b, c, d.code, e, f.length

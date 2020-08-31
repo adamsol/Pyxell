@@ -1,4 +1,4 @@
 
-String? s = null
+String? s
 s ??= "?"
 print s ?? ""

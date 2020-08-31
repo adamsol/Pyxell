@@ -1,0 +1,10 @@
+
+func f(Float x) [Float] def
+    if false do
+        return [x]
+
+func g() Int*String def
+    skip
+
+print f(1)
+print g()

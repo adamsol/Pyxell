@@ -1,0 +1,7 @@
+
+func f<T>(T x) T*[T] def
+    while true do
+        break
+
+print f(true)
+print f({})

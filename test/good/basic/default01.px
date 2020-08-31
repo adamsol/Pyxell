@@ -1,9 +1,7 @@
 
 print default(Int)
 
-b = default(Rat)
-b += 1/2
-print b
+print default(Rat)
 
 print default(Float)
 

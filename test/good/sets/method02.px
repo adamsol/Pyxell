@@ -1,5 +1,5 @@
 
-{String} a = {}
+{String} a
 
 a.add("xyz")
 a.add("xyz")

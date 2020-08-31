@@ -1,5 +1,5 @@
 
-[Bool] a = []
+[Bool] a
 for i in 1..10^^6 do
     a.push(2|i)
 

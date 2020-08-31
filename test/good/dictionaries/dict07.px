@@ -1,5 +1,5 @@
 
-Int? x = null
+Int? x
 
 {Float?:[Bool?]} d = {x: [true]}
 print d[null][0] ?? false

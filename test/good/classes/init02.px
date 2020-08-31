@@ -1,0 +1,11 @@
+
+class A def
+    Int a
+    String*Bool b
+    Float->{Char} c
+
+    constructor() def
+        print this.c(0.0)
+
+a = A()
+print a.a, a.b, a.c(1)

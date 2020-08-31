@@ -14,7 +14,7 @@ print c
 c = ('C', null)
 print c
 
-(String*[Int])? d = null
+(String*[Int])? d
 print d
 
 d = ("abc", [])

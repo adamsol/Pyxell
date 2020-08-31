@@ -1,5 +1,5 @@
 
-Bool? x = null
+Bool? x
 print false or x ?? 3|12 and true
 
 Int? a = 0

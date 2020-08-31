@@ -168,7 +168,7 @@ class PyxellTranspiler:
 
         return result
 
-    def default(self, node, type):
+    def default(self, node, type, nullptr_allowed=False):
         if type == t.Int:
             return v.Int(0)
         elif type == t.Rat:
@@ -190,9 +190,11 @@ class PyxellTranspiler:
         elif type.isNullable():
             return v.Nullable(None, type.subtype)
         elif type.isTuple():
-            return v.Tuple([self.default(node, t) for t in type.elements])
+            return v.Tuple([self.default(node, t, nullptr_allowed) for t in type.elements])
         elif type.isFunc():
-            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret))
+            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret, nullptr_allowed))
+        elif type.isClass() and nullptr_allowed:
+            return v.Literal('nullptr', type=type)
 
         self.throw(node, err.NotDefaultable(type))
 
@@ -837,6 +839,9 @@ class PyxellTranspiler:
 
                     self.transpile(body)
 
+                    if func_type.ret.hasValue():
+                        self.output(c.Statement('return', self.default(body, func_type.ret, nullptr_allowed=True)))
+
             if template.lambda_:
                 # The closure is created every time the function is used (except for recursive calls),
                 # so current values of variables are captured, possibly different than in the moment of definition.
@@ -903,7 +908,10 @@ class PyxellTranspiler:
 
         if expr:
             value = self.cast(node, self.transpile(expr), type)
-            self.store(var, value)
+        else:
+            value = self.default(node, type, nullptr_allowed=True)
+
+        self.store(var, value)
 
     def transpileStmtAssg(self, node):
         value = self.transpile(node['expr'], void_allowed=(len(node['lvalues']) == 0))
@@ -1305,11 +1313,15 @@ class PyxellTranspiler:
         fields.append(c.Function('', cls, [], block))  # constructor
         with self.block(block):
             for member in node['members']:
+                if member['node'] != 'ClassField':
+                    continue
                 name = member['id']
                 default = member.get('default')
                 if default:
                     value = self.cast(member, self.transpile(default), members[name].type)
-                    self.store(f'this->{members[name]}', value)
+                else:
+                    value = self.default(member, members[name].type, nullptr_allowed=True)
+                self.store(f'this->{members[name]}', value)
 
 
     ### Expressions ###

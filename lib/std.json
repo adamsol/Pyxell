@@ -1925,36 +1925,21 @@
 				],
 				"stmts": [
 					{
-						"node": "StmtAssg",
+						"node": "StmtDecl",
 						"position": [
 							52,
 							5
 						],
-						"lvalues": [
-							{
-								"node": "AtomId",
-								"position": [
-									52,
-									5
-								],
-								"id": "r"
-							}
-						],
-						"expr": {
-							"node": "AtomDefault",
+						"type": {
+							"node": "TypeName",
 							"position": [
 								52,
-								9
+								5
 							],
-							"type": {
-								"node": "TypeName",
-								"position": [
-									52,
-									17
-								],
-								"name": "Char"
-							}
-						}
+							"name": "Char"
+						},
+						"id": "r",
+						"expr": null
 					},
 					{
 						"node": "StmtAssg",
@@ -3311,36 +3296,21 @@
 				],
 				"stmts": [
 					{
-						"node": "StmtAssg",
+						"node": "StmtDecl",
 						"position": [
 							87,
 							5
 						],
-						"lvalues": [
-							{
-								"node": "AtomId",
-								"position": [
-									87,
-									5
-								],
-								"id": "r"
-							}
-						],
-						"expr": {
-							"node": "AtomDefault",
+						"type": {
+							"node": "TypeName",
 							"position": [
 								87,
-								9
+								5
 							],
-							"type": {
-								"node": "TypeName",
-								"position": [
-									87,
-									17
-								],
-								"name": "A"
-							}
-						}
+							"name": "A"
+						},
+						"id": "r",
+						"expr": null
 					},
 					{
 						"node": "StmtAssg",
@@ -4697,36 +4667,21 @@
 				],
 				"stmts": [
 					{
-						"node": "StmtAssg",
+						"node": "StmtDecl",
 						"position": [
 							122,
 							5
 						],
-						"lvalues": [
-							{
-								"node": "AtomId",
-								"position": [
-									122,
-									5
-								],
-								"id": "r"
-							}
-						],
-						"expr": {
-							"node": "AtomDefault",
+						"type": {
+							"node": "TypeName",
 							"position": [
 								122,
-								9
+								5
 							],
-							"type": {
-								"node": "TypeName",
-								"position": [
-									122,
-									17
-								],
-								"name": "A"
-							}
-						}
+							"name": "A"
+						},
+						"id": "r",
+						"expr": null
 					},
 					{
 						"node": "StmtAssg",
@@ -5856,14 +5811,7 @@
 							}
 						},
 						"id": "r",
-						"expr": {
-							"node": "ExprDict",
-							"position": [
-								149,
-								15
-							],
-							"items": []
-						}
+						"expr": null
 					},
 					{
 						"node": "StmtFor",

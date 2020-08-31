@@ -5,7 +5,7 @@ class A def
     constructor() def
         print "A"
 
-A? a = null
+A? a
 print a?.x
 
 a ??= A()

@@ -1,0 +1,16 @@
+
+class A def
+    [String] s
+
+    func f() def
+        skip
+
+class B(A) def
+    Float x
+    A a
+
+    constructor() def
+        print this.s.length
+
+b = B()
+print b.s, b.x

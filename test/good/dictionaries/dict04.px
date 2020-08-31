@@ -2,7 +2,7 @@
 class A def
     Int x: 0
 
-A? a1 = null
+A? a1
 A? a2 = A()
 
 d = {

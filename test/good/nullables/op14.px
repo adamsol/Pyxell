@@ -8,7 +8,7 @@ class A def
         print 'g'
 
 
-A? a = null
+A? a
 print a?.f()
 
 a = A()

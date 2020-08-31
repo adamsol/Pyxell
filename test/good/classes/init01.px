@@ -1,0 +1,6 @@
+
+class A def
+    Int n
+
+A*[Float] x
+print x.b

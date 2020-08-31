@@ -49,7 +49,7 @@ func String_fold<B>(String s, Char->B->B f, B r) B def
     return r
 
 func String_reduce(String s, Char->Char->Char f) Char def
-    r = default(Char)
+    Char r
     b = true
     for c in s do
         if b do
@@ -84,7 +84,7 @@ func Array_fold<A,B>([A] a, A->B->B f, B r) B def
     return r
 
 func Array_reduce<A>([A] a, A->A->A f) A def
-    r = default(A)
+    A r
     b = true
     for x in a do
         if b do
@@ -119,7 +119,7 @@ func Set_fold<A,B>({A} a, A->B->B f, B r) B def
     return r
 
 func Set_reduce<A>({A} a, A->A->A f) A def
-    r = default(A)
+    A r
     b = true
     for x in a do
         if b do
@@ -146,7 +146,7 @@ func Dict_filter<A,B>({A:B} a, A*B->Bool f) {A:B} def
     return {x.a: x.b for x in a if f(x)}
 
 func Dict_map<A,B,C,D>({A:B} a, A*B->C*D f) {C:D} def
-    {C:D} r = {:}
+    {C:D} r
     for x in a do
         y = f(x)
         r[y.a] = y.b

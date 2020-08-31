@@ -1,4 +1,4 @@
 
-Bool? b = null
-Char? c = null
+Bool? b
+Char? c
 b is c

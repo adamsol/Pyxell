@@ -1,5 +1,5 @@
 
-[Int] a = []
+[Int] a
 print [] == a
 print a != []
 
