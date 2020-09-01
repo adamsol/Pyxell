@@ -10,5 +10,5 @@ print default(String?)
 x = default(Int*(Rat*Float))
 print "{x.a}, {x.b}"
 
-f = default(Char->(Int->[Int]->Bool))('x')
-print not f(1, [])
+f = default(Char->(Int->[Int]->Void))('x')
+f(1, [])

@@ -192,7 +192,7 @@ class PyxellTranspiler:
         elif type.isTuple():
             return v.Tuple([self.default(node, t, nullptr_allowed) for t in type.elements])
         elif type.isFunc():
-            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret, nullptr_allowed))
+            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret, nullptr_allowed) if type.ret != t.Void else c.Block())
         elif type.isClass() and nullptr_allowed:
             return v.Literal('nullptr', type=type)
 

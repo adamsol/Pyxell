@@ -6,5 +6,9 @@ func f(Float x) [Float] def
 func g() Int*String def
     skip
 
+func h() Bool->Void def
+    skip
+
 print f(1)
 print g()
+h()(false)
