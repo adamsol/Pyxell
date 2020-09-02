@@ -1,0 +1,2 @@
+
+print default({String: Float})

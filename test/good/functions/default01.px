@@ -1,0 +1,3 @@
+
+f = default(Int->Float)
+print f(0), f(1)

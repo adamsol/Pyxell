@@ -1,6 +1,5 @@
 
 String? s
-s = null
 print s?[-1]
 
 s = "abc"

@@ -1,12 +1,6 @@
 
 print default(Int)
-
 print default(Rat)
-
 print default(Float)
-
 print default(Bool)
-
 print default(Char).code
-
-print default(String).length

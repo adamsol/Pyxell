@@ -1,0 +1,2 @@
+
+print default(Rat*[{Char}]*(Bool?*String))

@@ -2,8 +2,7 @@
 Int a
 Rat b
 Float c
-Char d
-Bool e
-String f
+Bool d
+Char e
 
-print a, b, c, d.code, e, f.length
+print a, b, c, d, e.code
