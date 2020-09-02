@@ -37,18 +37,14 @@ def transform_indented_code(code):
             continue
         indent = match.group(1)
 
-        if len(set(indent)) > 1:
-            # Mixing different whitespace characters is not allowed.
-            raise PyxellError(PyxellError.InvalidSyntax(), i+1, 1)
-
         if new_block:
-            if not (indent.startswith(indents[-1]) and len(indent) > len(indents[-1])):
+            if len(indent) <= len(indents[-1]):
                 # New block must be indented more than the previous one.
                 raise PyxellError(PyxellError.InvalidSyntax(), i+1, len(indent)+1)
             indents.append(indent)
             new_block = False
 
-        elif indents[-1].startswith(indent):
+        elif len(indent) <= len(indents[-1]):
             # If the line isn't indented more than the current block and doesn't start with a closing parenthesis or bracket,
             # put a semicolon at the end of the previous line.
             # Otherwise, assume it is continuation of the previous expression.
@@ -59,7 +55,7 @@ def transform_indented_code(code):
             while indents:
                 if indent == indents[-1]:
                     break
-                elif indents[-1].startswith(indent):
+                elif len(indent) < len(indents[-1]):
                     # Add a closing brace to the last non-empty line.
                     lines[j] += '};'
                     indents.pop()

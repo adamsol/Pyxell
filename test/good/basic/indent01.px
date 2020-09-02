@@ -1,5 +1,0 @@
-
-if true do
-	print true
-else do
-    print false

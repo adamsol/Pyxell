@@ -150,5 +150,5 @@ fragment ESCAPE_CHAR : [\\abfnrt] | 'x' [0-9a-fA-F]+ ;
 fragment ID_START : [a-zA-Z_] ;
 fragment ID_CONT : ID_START | DIGIT | ['] ;
 
-WS : [ \n\r\t]+ -> skip ;
+WS : [ \n\r]+ -> skip ;
 ERR : . ;
