@@ -1,16 +1,18 @@
 
 class A def
-    constructor(Float x) def
-        print x
+    Int x
+
+    func f() def
+        print this.x
 
 class B(A) def
-    constructor(String x) def
-        super(x.toFloat()+0.5)
-        print x
+    func f() def
+        print this.x.toFloat() + 0.5
+        super()
 
 class C(B) def
-    constructor(Int x) def
-        print x
-        super(x.toString()+'.')
+    func f() def
+        super()
+        print this.x.toString() + '.'
 
-C(7)
+C(7).f()

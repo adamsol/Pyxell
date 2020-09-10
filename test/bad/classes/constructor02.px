@@ -1,7 +1,5 @@
 
 class Test def
-    Int x
-
     constructor() def
         skip
 

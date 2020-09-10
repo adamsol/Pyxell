@@ -1,14 +1,10 @@
 
 class C def
-    Int x
-    String s
+    constructor() def
+        print "constructor"
 
-    constructor(Int x, String s: ".") def
-        this.x = x
-        this.s = s
+    func f(Int x) Int def
+        print x
+        return 0
 
-c = C(8)
-print c.x, c.s
-
-c = C(s="abc", x=-3)
-print c.x, c.s
+([C().f(1)][0], C()).b.f(2)

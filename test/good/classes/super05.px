@@ -1,14 +1,10 @@
 
 class A def
-    Int n
-    [Bool] a
+    func f(Int x) [Int] def
+        return [x*2]
 
 class B(A) def
-    String s
+    func f(Int x) [Int] def
+        return [super(i) for i in x..x+1][1]
 
-    constructor(String s) def
-        super(s.length)
-        this.s = s
-
-b = B("test")
-print b.n, b.a, b.s
+print(B().f(2))

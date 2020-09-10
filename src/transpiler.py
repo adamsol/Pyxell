@@ -1255,6 +1255,13 @@ class PyxellTranspiler:
                     self.throw(member, err.InvalidMember(name))
 
                 field = self.var(self.transpile(member['type']), prefix='m')
+
+                default = member.get('default')
+                if default:
+                    field.default = self.cast(member, self.transpile(default), field.type)
+                else:
+                    field.default = self.default(member, field.type, nullptr_allowed=True)
+
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field
 
@@ -1270,9 +1277,7 @@ class PyxellTranspiler:
                     with self.local():
                         self.env['#this'] = True
 
-                        if member['node'] == 'ClassConstructor':
-                            self.env['#super'] = base_methods.get(name, base)
-                        elif member['node'] == 'ClassDestructor':
+                        if member['node'] in {'ClassConstructor', 'ClassDestructor'}:
                             self.env['#super'] = None
                         else:
                             self.env['#super'] = base_methods.get(name)
@@ -1307,20 +1312,6 @@ class PyxellTranspiler:
             # Empty virtual destructor as recommended by C++.
             # https://stackoverflow.com/a/10024812
             fields.append(c.Function('virtual', f'~{cls}', [], c.Block()))
-
-        block = c.Block()
-        fields.append(c.Function('', cls, [], block))  # constructor
-        with self.block(block):
-            for member in node['members']:
-                if member['node'] != 'ClassField':
-                    continue
-                name = member['id']
-                default = member.get('default')
-                if default:
-                    value = self.cast(member, self.transpile(default), members[name].type)
-                else:
-                    value = self.default(member, members[name].type, nullptr_allowed=True)
-                self.store(f'this->{members[name]}', value)
 
 
     ### Expressions ###
@@ -1617,12 +1608,6 @@ class PyxellTranspiler:
                         if isinstance(func_arg.default, v.Value):
                             args.append(func_arg.default)
                             continue
-                        elif func_arg.default is True:
-                            # Special case for default class constructors.
-                            value = v.Value(type=func_arg.type)
-                            value.not_provided = True
-                            args.append(value)
-                            continue
                         else:
                             expr = func_arg.default
 
@@ -1689,14 +1674,6 @@ class PyxellTranspiler:
 
             return v.Call(func, *args, type=func.type.ret)
 
-        def _default_constructor(obj, cls):
-            fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
-            constructor_type = t.Func([t.Func.Arg(field.type, name, default=True) for name, field in fields.items()])
-            args = _resolve_args(v.Value(type=constructor_type))[1]
-            for name, value in zip(fields, args):
-                if not getattr(value, 'not_provided', False):
-                    self.store(self.attr(node, obj, name), value)
-
         if expr['node'] == 'ExprAttr':
             attr = expr['attr']
 
@@ -1723,22 +1700,30 @@ class PyxellTranspiler:
             func = self.transpile(expr)
 
             if expr['node'] == 'AtomSuper':
-                if isinstance(func, t.Class):
-                    base = func
-                    obj = v.Cast(self.get(expr, 'this'), base)
-                    _default_constructor(obj, base)
-                else:
-                    obj = v.Cast(self.get(expr, 'this'), func.type.args[0].type)
-                    func = func.bind(obj)
+                obj = v.Cast(self.get(expr, 'this'), func.type.args[0].type)
+                func = func.bind(obj)
 
         if isinstance(func, t.Class):
             cls = func
             obj = self.tmp(v.Object(cls))
-            method = cls.methods.get('<constructor>')
-            if method:
-                self.output(_call(method.bind(obj)))
-            else:
-                _default_constructor(obj, cls)
+
+            fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
+            constructor_type = t.Func([t.Func.Arg(field.type, name, field.default) for name, field in fields.items()])
+            args = _resolve_args(v.Value(type=constructor_type))[1]
+            for name, value in zip(fields, args):
+                self.store(self.attr(node, obj, name), value)
+
+            constructors = []
+            while cls:
+                constructors.append(cls.methods.get('<constructor>'))
+                cls = cls.base
+
+            constructors.reverse()
+            for i, constructor in enumerate(constructors):
+                if constructor and constructors.index(constructor) == i:
+                    func = constructor.bind(obj)
+                    self.output(v.Call(func, type=func.type.ret))
+
             return obj
 
         result = _call(func)

@@ -1,7 +1,9 @@
 
 class A def
-    constructor(String s: "A") def
-        print s
+    String s: "A"
+
+    constructor() def
+        print this.s
 
 class B(A) def
     Int x

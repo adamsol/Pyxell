@@ -4,6 +4,6 @@ class A def
 
 class B(A) def
     func f() def
-        skip
+        print 'B'
 
-B()
+B().f()

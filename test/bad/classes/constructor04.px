@@ -1,6 +1,4 @@
 
-class Test def
-    constructor(Char x: 0) def
-        skip
-
-Test()
+class A def
+    constructor() def
+        print this.y

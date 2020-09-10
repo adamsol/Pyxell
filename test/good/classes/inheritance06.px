@@ -2,19 +2,11 @@
 class A def
     Char c: '*'
 
-    constructor(Char c) def
-        print this.c
-        this.c = c
-
     func toString() String def
         return this.c.toString()
 
 class B(A) def
     Bool b
-
-    constructor(Char c, Bool b: false) def
-        this.c = c
-        this.b = b
 
     func toString() String def
         return "{this.c} {this.b}"
@@ -24,9 +16,6 @@ class C(B) def
 
 class D(A) def
     Int x: 42
-
-    constructor() def
-        this.c = '?'
 
     func toString() String def
         return "{this.c} {this.x}"

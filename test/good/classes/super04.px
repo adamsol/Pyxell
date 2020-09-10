@@ -12,9 +12,6 @@ class B(A) def
     Int y
 
 class C(B) def
-    constructor() def
-        super()
-
     func f() def
         print 'C'
         super()

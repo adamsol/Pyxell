@@ -1,4 +1,3 @@
 
 class A def
-    constructor() def
-        print this.y
+    constructor() abstract

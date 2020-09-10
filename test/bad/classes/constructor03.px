@@ -1,6 +1,6 @@
 
 class Test def
-    constructor(Int b: 0) def
+    constructor() def
         skip
-
-Test(a=3)
+    constructor() def
+        skip

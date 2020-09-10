@@ -1,10 +1,17 @@
 
-class C def
+class A def
+    Int x
+
     constructor() def
-        print "constructor"
+        print this.x
 
-    func f(Int x) Int def
-        print x
-        return 0
 
-([C().f(1)][0], C()).b.f(2)
+class B(A) def
+    Float y
+
+    constructor() def
+        print this.y
+
+
+a = A()
+a = B(1, 2)

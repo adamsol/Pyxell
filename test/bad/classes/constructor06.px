@@ -1,8 +1,8 @@
 
-class Test def
-    Int x
-
-    constructor(Int x) def
+class A def
+    constructor() def
         skip
 
-Test()
+class B(A) def
+    constructor() def
+        super()

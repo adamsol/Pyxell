@@ -1,13 +1,17 @@
 
 class A def
     constructor() def
-        skip
+        print 'A'
+
 
 class B(A) def
-    constructor() abstract
+    Int x
+
 
 class C(B) def
     constructor() def
-        super()
+        print 'C'
 
+
+B()
 C()

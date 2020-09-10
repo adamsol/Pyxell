@@ -186,7 +186,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ClassConstructor'),
             'id': '<constructor>',
-            'args': self.visit(ctx.args.func_arg()),
+            'args': [],
             'block': self.visit(ctx.block()),
         }
 

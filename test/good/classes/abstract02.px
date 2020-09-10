@@ -1,9 +1,0 @@
-
-class A def
-    constructor() abstract
-
-class B(A) def
-    constructor() def
-        print "B"
-
-B()
