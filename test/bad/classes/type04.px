@@ -9,5 +9,5 @@ class B(A) def
 func f({A} a) def
     return
 
-b = {B(1, 2)}
+b = {B()}
 f(b)

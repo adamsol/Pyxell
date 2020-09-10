@@ -2,4 +2,4 @@
 class Test def
     Int x
 
-print Test(1)
+print Test()

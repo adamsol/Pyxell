@@ -1,9 +1,0 @@
-
-class A def
-    Int x: 0
-
-class B(A) def
-    Int y: 0
-    Float? z
-
-B(1, 2)

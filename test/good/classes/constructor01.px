@@ -1,6 +1,6 @@
 
 class C def
-    Bool x: false
+    Bool x
 
     constructor() def
         this.x = true

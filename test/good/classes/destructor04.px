@@ -14,5 +14,5 @@ class B(A) def
 
 
 A a
-a = A(0)
+a = A()
 a = B(1, 2)

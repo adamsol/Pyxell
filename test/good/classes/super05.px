@@ -1,7 +1,7 @@
 
 class A def
     Int n
-    Bool b: false
+    [Bool] a
 
 class B(A) def
     String s
@@ -11,4 +11,4 @@ class B(A) def
         this.s = s
 
 b = B("test")
-print b.n, b.s
+print b.n, b.a, b.s

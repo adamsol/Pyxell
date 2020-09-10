@@ -5,7 +5,7 @@ class A def
     destructor() def
         print "destructor {this.x}"
 
-a = A(0)
+a = A()
 
 if true do
     A(1)

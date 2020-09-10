@@ -1,5 +1,14 @@
 
 class A def
-    Int x
+    Char c: '~'
+    String->Int f
 
-print A(7).x
+a = A('r', _.length)
+print a.c
+print a.f("zxcvb")
+
+a = A(f=_[-1].code)
+print a.c
+print a.f("XY")
+
+print A().f(".")

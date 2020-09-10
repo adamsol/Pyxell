@@ -13,4 +13,4 @@ class C(B) def
         print 'C'
 
 
-[C(0)] * 5
+[C()] * 5

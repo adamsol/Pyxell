@@ -12,6 +12,10 @@ class C(B) def
     String z
 
 
-B(true).f()
-print B(false, 'y').y
-print C(z="xyz", x=false).z
+B().f()
+
+b = B(true, 'y')
+print b.x, b.y
+
+c = C(z="xyz")
+print c.x, c.y, c.z

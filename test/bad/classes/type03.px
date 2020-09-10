@@ -1,6 +1,6 @@
 
 class A def
-    Int x: 0
+    Int x
 
 class B(A) def
     Int y

@@ -1,6 +1,6 @@
 
 class A def
-    Int x: 0
+    Int x
 
 A? a = A()
 a?.y

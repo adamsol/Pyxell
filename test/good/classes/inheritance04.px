@@ -4,7 +4,7 @@ class Z def
         print x
 
 class Y(Z) def
-    Int x: 0
+    Int x
 
 Y().f('Y')
 Y().f(x='Y')

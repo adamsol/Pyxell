@@ -2,7 +2,7 @@
 z = -2.0
 
 class Point def
-    Float x: 0.0
+    Float x
     Float y: 1.0
     Float z: z
 

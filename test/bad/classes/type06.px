@@ -5,5 +5,5 @@ class A def
 class B(A) def
     Int y
 
-{B}? b = {B(1, 2)}
+{B}? b = {B()}
 {A}? a = b
