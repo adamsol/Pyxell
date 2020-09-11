@@ -2,7 +2,7 @@
 class A def
     Int x
 
-    destructor() def
+    destructor def
         print "destructor {this.x}"
 
 a = A()

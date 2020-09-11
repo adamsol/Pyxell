@@ -1,4 +1,4 @@
 
 class A def
-    constructor() def
+    constructor def
         print this.y

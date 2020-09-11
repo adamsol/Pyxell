@@ -1,4 +1,4 @@
 
 class Test def
-    constructor() def
+    constructor def
         return this

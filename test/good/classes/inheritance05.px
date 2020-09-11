@@ -2,7 +2,7 @@
 class A def
     String s: "A"
 
-    constructor() def
+    constructor def
         print this.s
 
 class B(A) def

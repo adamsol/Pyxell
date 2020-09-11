@@ -6,11 +6,11 @@ class A def
         print this.x
 
 class B(A) def
-    constructor() def
+    constructor def
         this.x = 'B'
 
 class C(A) def
-    constructor() def
+    constructor def
         this.x = 'C'
 
     func f() def

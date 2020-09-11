@@ -1,6 +1,6 @@
 
 class C def
-    constructor() def
+    constructor def
         print "constructor"
 
     func f(Int x) Int def

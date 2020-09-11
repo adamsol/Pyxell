@@ -2,7 +2,7 @@
 class C def
     Bool x
 
-    constructor() def
+    constructor def
         this.x = true
         print "constructor"
 

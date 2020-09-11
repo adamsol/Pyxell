@@ -6,14 +6,14 @@ class Base def
         print "Base"
 
 class Sub1(Base) def
-    constructor() def
+    constructor def
         this.x = 1
 
     func f() def
         print "Sub1"
 
 class Sub2(Base) def
-    constructor() def
+    constructor def
         this.x = 2
 
 

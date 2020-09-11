@@ -2,7 +2,7 @@
 class A def
     Int x: 0
 
-    constructor() def
+    constructor def
         print "A"
 
 A? a

@@ -1,8 +1,8 @@
 
 class A def
-    constructor() def
+    constructor def
         skip
 
 class B(A) def
-    constructor() def
+    constructor def
         super()

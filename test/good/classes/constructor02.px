@@ -2,7 +2,7 @@
 class C def
     [Int] a
 
-    constructor() def
+    constructor def
         this.a[0] = 0
 
 a = [3, 4]

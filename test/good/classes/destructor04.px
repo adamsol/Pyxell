@@ -2,14 +2,14 @@
 class A def
     Int x
 
-    destructor() def
+    destructor def
         print "A {this.x}"
 
 
 class B(A) def
     Float y
 
-    destructor() def
+    destructor def
         print "B {this.x} {this.y}"
 
 

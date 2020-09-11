@@ -4,7 +4,7 @@ class A def
 
 
 class B(A) def
-    destructor() def
+    destructor def
         print this.x
 
 

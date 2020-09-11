@@ -1,8 +1,8 @@
 
 class A def
-    destructor() def
+    destructor def
         skip
 
 class B(A) def
-    destructor() def
+    destructor def
         super()

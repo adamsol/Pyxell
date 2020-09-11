@@ -9,7 +9,7 @@ class B(A) def
     Float x
     A a
 
-    constructor() def
+    constructor def
         print this.s.length
 
 b = B()

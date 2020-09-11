@@ -2,7 +2,7 @@
 class A def
     Bool x
 
-    destructor() def
+    destructor def
         print this.x
 
 

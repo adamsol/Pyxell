@@ -3,11 +3,11 @@ class A def
     Char x: 'A'
 
 class B(A) def
-    constructor() def
+    constructor def
         this.x = 'B'
 
 class C(B) def
-    constructor() def
+    constructor def
         this.x = 'C'
 
 b = B()

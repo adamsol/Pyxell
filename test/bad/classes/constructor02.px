@@ -1,6 +1,6 @@
 
 class Test def
-    constructor() def
+    constructor def
         skip
 
 Test(3)

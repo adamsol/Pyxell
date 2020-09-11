@@ -1,6 +1,6 @@
 
 class A def
-    destructor() def
+    destructor def
         print 'A'
 
 
@@ -9,7 +9,7 @@ class B(A) def
 
 
 class C(B) def
-    destructor() def
+    destructor def
         print 'C'
 
 

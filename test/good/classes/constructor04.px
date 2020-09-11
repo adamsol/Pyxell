@@ -2,14 +2,14 @@
 class A def
     Int x
 
-    constructor() def
+    constructor def
         print this.x
 
 
 class B(A) def
     Float y
 
-    constructor() def
+    constructor def
         print this.y
 
 
