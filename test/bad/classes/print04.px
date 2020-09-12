@@ -1,5 +1,0 @@
-
-class Test def
-    String toString
-
-print Test()

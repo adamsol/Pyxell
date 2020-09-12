@@ -1,5 +1,5 @@
 
 class Test def
-    Int x
+    String toString
 
 print Test()

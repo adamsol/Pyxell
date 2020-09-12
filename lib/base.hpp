@@ -1074,7 +1074,7 @@ String toString(const Tuple<T...>& x)
 template <typename T>
 String toString(const Object<T>& x)
 {
-    return make_string("<" + x->name() + " object>");
+    return make_string("<" + *reinterpret_cast<String (*)(Object<T>)>(x->toString())(x) + ">");
 }
 
 /* Conversion to Int */

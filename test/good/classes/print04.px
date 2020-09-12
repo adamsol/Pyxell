@@ -1,9 +1,11 @@
 
 class A def
-    Int x: 0
+    Int x
 
 class B(A) def
-    Float y: 0
+    Float y
 
-A a = B()
-print {a}
+print A()
+
+A b = B()
+print {b}

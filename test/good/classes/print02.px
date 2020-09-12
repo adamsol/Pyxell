@@ -1,6 +1,6 @@
 
 class Test def
-    Bool b: false
+    Bool b
 
     func toString() String def
         return this.b.toString()

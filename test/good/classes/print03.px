@@ -6,6 +6,6 @@ class Test def
 print [Test()]
 print "{Test(), Test().toString()}"
 
-Test? t = null
+Test? t
 t = Test()
 print t, t!

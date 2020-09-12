@@ -1247,7 +1247,6 @@ class PyxellTranspiler:
         type.initializer = cls
 
         fields = c.Block()
-        fields.append(c.Statement(c.Function('virtual std::string', 'name', [], c.Block(c.Statement('return', f'"{id}"')))))
         self.output(c.Statement('struct', cls), toplevel=True)
         self.output(c.Struct(cls, fields, base=(base.initializer if base else None)), toplevel=True)
 
@@ -1269,6 +1268,19 @@ class PyxellTranspiler:
 
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field
+
+        if not any(member['id'] == 'toString' for member in node['members']) and (not base or 'toString' in base.default_methods):
+            node['members'].append({
+                'node': 'ClassMethod',
+                'id': 'toString',
+                'args': [],
+                'ret': t.String,
+                'block': {
+                    'node': 'StmtReturn',
+                    'expr': v.String(f'{id} object'),
+                },
+            })
+            type.default_methods.add('toString')
 
         for member in node['members']:
             if member['node'] != 'ClassField':

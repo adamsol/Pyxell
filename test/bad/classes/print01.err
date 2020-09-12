@@ -1,1 +1,1 @@
-Type `Test` has no attribute `toString`.
+Invalid type signature of member `toString`.
