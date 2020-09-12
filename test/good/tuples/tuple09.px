@@ -1,0 +1,9 @@
+
+x = 1, false
+y = x
+
+x.b = true
+print x, y
+
+y.a += 2
+print x, y

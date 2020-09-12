@@ -385,8 +385,6 @@ class PyxellTranspiler:
         return value
 
     def member(self, node, obj, attr, lvalue=False):
-        if lvalue and not obj.type.isClass():
-            self.throw(node, err.NotLvalue())
         if attr not in obj.type.members:
             self.throw(node, err.NoAttribute(obj.type, attr))
         if lvalue and attr in obj.type.methods:
@@ -473,7 +471,14 @@ class PyxellTranspiler:
             return self.env[id]
 
         elif expr['node'] == 'ExprAttr' and not expr.get('safe'):
-            return self.member(node, self.transpile(expr['expr']), expr['attr'], lvalue=True)
+            obj = self.transpile(expr['expr'])
+            attr = expr['attr']
+            if obj.type.isTuple():
+                return self.attr(node, obj, attr)
+            elif obj.type.isClass():
+                return self.member(node, obj, attr, lvalue=True)
+            else:
+                self.throw(node, err.NotLvalue())
 
         elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
             return self.index(node, *map(self.transpile, expr['exprs']), lvalue=True)
