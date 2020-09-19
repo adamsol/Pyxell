@@ -150,8 +150,16 @@ and it will be automatically executed (unless you add `-n` option).
 Otherwise, errors will be displayed, pointing to the erroneous code location.
 
 By default, `clang` command is used to compile the code.
-You can pick a different command using `-c` option.
-Write `-c=none` to skip the compilation step (only C++ code will be created).
+You can pick a different compiler using `-c` option.
+
+Use `-s` to skip the compilation step and obtain transpiled C++ code with all headers included,
+ready for manual compilation (with -std=c++17 option, and with -fcoroutines-ts in the case of Clang).
+
+The executable is not optimized by default.
+You can set the optimization level with `-O` option, e.g. `-O2`.
+This will make the program run faster, but also make the compilation slower.
+
+To see all options, use `-h`.
 
 
 PyInstaller
