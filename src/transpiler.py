@@ -526,8 +526,6 @@ class PyxellTranspiler:
     def unaryop(self, node, op, value):
         if op in {'+', '-'}:
             types = {t.Int, t.Rat, t.Float}
-        elif op == '~':
-            types = {t.Int}
         elif op == 'not':
             types = {t.Bool}
 
@@ -650,15 +648,7 @@ class PyxellTranspiler:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
         else:
-            if left.type == right.type == t.Int:
-                op = {
-                    '&&': '&',
-                    '##': '^',
-                    '||': '|',
-                }.get(op, op)
-                return v.BinaryOp(left, op, right, type=t.Int)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
+            self.throw(node, err.NoBinaryOperator(op, *types))
 
     def convert_string(self, node, string):
         string = re.sub('{{', '\\\\u007B', string)

@@ -6,7 +6,7 @@ for n in 1...10^^6 do
     l = 0
     while i > 1 do
         if 2|i do
-            i >>= 1
+            i = bitShift(i, -1)
         else do
             i *= 3
             i += 1

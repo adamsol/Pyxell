@@ -10,13 +10,7 @@ print fold(_+_, 0, t)
 print fold(_-_, 5, t)
 print fold(_*_, 1, t)
 print fold(_//-_, 360, t)
-
-print fold(_<<_, 1, t)
-print fold(_>>_, 1<<16, t)
-print fold(_&&_, -1, t)
-print fold(_||_, 8, t)
-print fold(_##_, 0, t)
-print fold(_+~+_, 0, t)
+print fold(_^^_, -1, t)
 
 
 func fold2(Float->Int->Float f, Float a, [Int] t) Float def
@@ -25,3 +19,4 @@ func fold2(Float->Int->Float f, Float a, [Int] t) Float def
     return a
 
 print fold2(_/_, 30.0, t)
+print fold2(_^_, 2, t)

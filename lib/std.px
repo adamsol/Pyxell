@@ -1,4 +1,10 @@
 
+func bitNot(Int a) Int extern
+func bitShift(Int a, Int b) Int extern
+func bitAnd(Int a, Int b) Int extern
+func bitXor(Int a, Int b) Int extern
+func bitOr(Int a, Int b) Int extern
+
 func write(String s) extern
 
 func read() String extern

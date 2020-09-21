@@ -488,6 +488,31 @@ Rat pow(Rat b, Int e)
     return r;
 }
 
+Int bitNot(Int a)
+{
+    return ~a;
+}
+
+Int bitShift(Int a, Int b)
+{
+    return b >= 0 ? a << b : a >> -b;
+}
+
+Int bitAnd(Int a, Int b)
+{
+    return a & b;
+}
+
+Int bitXor(Int a, Int b)
+{
+    return a ^ b;
+}
+
+Int bitOr(Int a, Int b)
+{
+    return a | b;
+}
+
 /* Container operators */
 
 String concat(const String& a, const String& b)

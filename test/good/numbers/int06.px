@@ -1,18 +1,11 @@
 
-print ~17, ~~~-645
+print bitNot(17), bitNot(bitNot(bitNot(-645)))
 
-x = 5 << 26
-print x, x >> 27
-print -1 << 9, (-1) << 10, -60 >> 2, (-732) >> 4
+x = bitShift(5, 26)
+print x, bitShift(x, -27)
+print bitShift(-1, 9), bitShift(-732, -4)
+print bitShift(3, -2), bitShift(-4, -10)
 
-print 13 && -312689 && 20
-print -64 || 18 || -15
-print 7 ## -4 ## -74 ## 18
-
-y = 579
-y ##= 530
-y ||= 126
-y &&= 254
-y >>= 2
-y <<= 4
-print y
+print bitAnd(bitAnd(13, -312689), 20)
+print bitOr(-64, bitOr(18, -15))
+print bitXor(bitXor(7, -4), bitXor(-74, 18))
