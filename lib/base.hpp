@@ -566,17 +566,6 @@ Set<T> intersection(const Set<T>& a, const Set<T>& b)
 }
 
 template <typename T>
-Set<T> symmetric_difference(const Set<T>& a, const Set<T>& b)
-{
-    auto r = make_set<T>();
-    std::copy_if(a->begin(), a->end(), std::inserter(*r, r->begin()),
-                 [&b](const T& e) { return b->find(e) == b->end(); });
-    std::copy_if(b->begin(), b->end(), std::inserter(*r, r->begin()),
-                 [&a](const T& e) { return a->find(e) == a->end(); });
-    return r;
-}
-
-template <typename T>
 T multiply(const T& v, Int m)
 {
     m = std::max(m, 0LL);

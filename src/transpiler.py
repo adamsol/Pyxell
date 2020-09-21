@@ -607,12 +607,6 @@ class PyxellTranspiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '#':
-            if left.type == right.type and left.type.isSet():
-                return v.Call('symmetric_difference', left, right, type=left.type)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
-
         elif op == '+':
             if left.type == right.type and left.type.isNumber():
                 return v.BinaryOp(left, op, right, type=left.type)
