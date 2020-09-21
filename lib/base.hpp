@@ -587,8 +587,9 @@ T slice(const T& v, const Nullable<Int>& a, const Nullable<Int>& b, Int step)
         if (start < 0) {
             start += length;
         }
+        start += step > 0 ? 0 : 1;
     } else {
-        start = step > 0 ? 0LL : length;
+        start = step > 0 ? 0 : length;
     }
     start = std::clamp(start, 0LL, length);
 
@@ -598,20 +599,21 @@ T slice(const T& v, const Nullable<Int>& a, const Nullable<Int>& b, Int step)
         if (end < 0) {
             end += length;
         }
+        end += step > 0 ? 0 : 1;
     } else {
-        end = step > 0 ? length : 0LL;
+        end = step > 0 ? length : 0;
     }
     end = std::clamp(end, 0LL, length);
 
     auto r = T();
 
-    if (step < 0) {
-        for (Int i = start; i > end; i += step) {
-            r.push_back(v[i-1]);
-        }
-    } else {
+    if (step > 0) {
         for (Int i = start; i < end; i += step) {
             r.push_back(v[i]);
+        }
+    } else {
+        for (Int i = start; i > end; i += step) {
+            r.push_back(v[i-1]);
         }
     }
     return r;

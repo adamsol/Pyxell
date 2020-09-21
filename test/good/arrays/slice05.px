@@ -1,5 +1,7 @@
 
-a = [5, 6, 7]
-print a[2:-3:-1]
-print a[::-2]
-print (a*100)[-100::-14].length
+a = [5, 6, 7, 8]
+print a[2:-4:-1]
+print a[-3::-1]
+print a[:0:-1]
+print a[::-3]
+print (a*100)[-100::-21].length
