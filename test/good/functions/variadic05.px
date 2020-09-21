@@ -1,9 +1,12 @@
 
-func output(String s, Int xs...) def
-    print s
-    for x in xs do
-        print x
+func f(Bool args...) def
+    args[0] = true
+    print args[0]
 
-a = [5..7]
-output("test", ...a)
-output("", 2...4)
+a = [false]
+f(...a)
+print a
+
+b = false
+f(b)
+print b

@@ -1,8 +1,7 @@
 
-func str(Char cs...) String def
-    return cs.join()
+func product(Int args...) Int def
+    return args.reduce(_*_)
 
-[Char]->String f = str
-print f([])
-print f(['b', 'n', 'm'])
-print str('x')
+a = [4..6]
+print product(2, ...a)
+print product(...a, -1, ...a)

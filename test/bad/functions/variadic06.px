@@ -1,0 +1,5 @@
+
+func f(Int args...) def
+    return
+
+f(args=[3])
