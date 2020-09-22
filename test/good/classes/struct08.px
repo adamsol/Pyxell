@@ -3,12 +3,13 @@ class A def
     Char c: '~'
     String->Int f
 
-a = A('r', _.length)
+a = A('r')
 print a.c
+print a.f(".")
+
+a.f = _.length
 print a.f("zxcvb")
 
 a = A(f=_[-1].code)
 print a.c
 print a.f("XY")
-
-print A().f(".")

@@ -516,7 +516,7 @@ class PyxellTranspiler:
             value = self.tmp(value)
             for i, expr in enumerate(exprs):
                 self.assign(node, expr, v.Get(value, i))
-        elif value.isTemplate() and expr['id'] not in self.env:
+        elif value.isTemplate() and expr['node'] == 'AtomId' and expr['id'] not in self.env:
             id = expr['id']
             self.env[id] = value
         else:

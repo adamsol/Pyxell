@@ -5,3 +5,7 @@ class A def
 
 a = A()
 print a.f(0)
+
+a.f = lambda x def
+    return x > 0
+print a.f(0)
