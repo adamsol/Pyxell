@@ -60,7 +60,7 @@ expr
   | op=('+' | '-') expr # ExprUnaryOp
   | expr op=('*' | '/' | '//' | '%' | '&') expr # ExprBinaryOp
   | expr op=('+' | '-') expr # ExprBinaryOp
-  | expr op='|' expr # ExprBinaryOp
+  | expr op='%%' expr # ExprBinaryOp
   | <assoc=right> expr op='??' expr # ExprBinaryOp
   | expr dots=('..' | '...') expr # ExprRange
   | expr dots='...' # ExprRange

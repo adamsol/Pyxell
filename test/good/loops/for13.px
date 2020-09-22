@@ -5,5 +5,5 @@ for b in false..true do
 for _ in true...false do
     print "no"
 
-for b in (1>0)..2|7 by -1 do
+for b in (1>0)..7%%2 by -1 do
     print b

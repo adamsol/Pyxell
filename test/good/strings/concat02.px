@@ -2,7 +2,7 @@
 n = 5997
 b = ""
 while n > 0 do
-    if 2|n do
+    if n %% 2 do
         b = "0" + b
     else do
         b = "1" + b

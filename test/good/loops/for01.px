@@ -3,7 +3,7 @@ for a in 1..0 do
     print false
 i = 0
 for i in 3..6 do
-    if not 4|i do
+    if not i %% 4 do
         print i
 for j in i..3 by -2 do
     print j

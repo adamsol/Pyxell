@@ -1,7 +1,7 @@
 
 [Bool] a
 for i in 1..10^^6 do
-    a.push(2|i)
+    a.push(i %% 2)
 
 print a.length
 print a[-2:]

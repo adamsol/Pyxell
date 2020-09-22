@@ -639,9 +639,9 @@ class PyxellTranspiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '|':
+        elif op == '%%':
             if left.type == right.type == t.Int:
-                return v.BinaryOp(v.BinaryOp(right, '%', left), '==', v.Int(0), type=t.Bool)
+                return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0), type=t.Bool)
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 

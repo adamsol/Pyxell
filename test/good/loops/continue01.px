@@ -2,10 +2,10 @@
 i = 0
 while i < 8 do
     i += 1
-    if not 2|i do
+    if not i %% 2 do
         continue
     print 2
-    if not 3|i do
+    if not i %% 3 do
         continue
     else do
         print 3

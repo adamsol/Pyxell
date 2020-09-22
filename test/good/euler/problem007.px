@@ -2,7 +2,7 @@
 func prime(Int p) Bool def
     i = 2
     while i * i <= p do
-        if i | p do
+        if p %% i do
             return false
         i += 1
     return true

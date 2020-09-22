@@ -1,6 +1,6 @@
 
 s = 0
 for i in 1...1000 do
-    if 3|i or 5|i do
+    if i %% 3 or i %% 5 do
         s += i
 print s

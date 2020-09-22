@@ -2,7 +2,7 @@
 n = 600851475143
 p = r = 2
 while n > 1 do
-    if p | n do
+    if n %% p do
         r = p
         n //= p
     else do
