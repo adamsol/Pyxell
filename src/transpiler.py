@@ -640,8 +640,8 @@ class PyxellTranspiler:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '%%':
-            if left.type == right.type == t.Int:
-                return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0), type=t.Bool)
+            if left.type == right.type and left.type in {t.Int, t.Rat}:
+                return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0) if left.type == t.Int else v.Rat(0), type=t.Bool)
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
