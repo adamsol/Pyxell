@@ -1,0 +1,11 @@
+
+b = false
+
+func f(Bool x) ->Void def
+    return lambda def
+        b = x
+
+g = f(true)
+print b
+g()
+print b

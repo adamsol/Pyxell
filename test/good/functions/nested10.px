@@ -1,0 +1,10 @@
+
+a = 0
+
+func f() def
+    func g() def
+        a += 1
+    g()
+
+f()
+print a

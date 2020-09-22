@@ -1,0 +1,6 @@
+
+func* codes(Char a...) Int def
+    for c in a do
+        yield c.code
+
+print [...codes('x', '@')]

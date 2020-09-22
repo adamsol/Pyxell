@@ -1,0 +1,20 @@
+
+func f(Int x) Int def
+    print x
+    return x
+
+
+class A def
+    Int x: f(1)
+
+    constructor def
+        print 'A'
+
+class B(A) def
+    Float y: f(2)
+
+    constructor def
+        print 'B'
+
+
+B()
