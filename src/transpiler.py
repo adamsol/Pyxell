@@ -254,7 +254,7 @@ class PyxellTranspiler:
 
         return self.cond(node, v.IsNotNull(value), callback_notnull, callback_null)
 
-    def attribute(self, node, expr, attr):
+    def attribute(self, node, expr, attr, for_print=False):
         if expr['node'] == 'AtomId':
             id = expr['id']
             if id in self.units:
@@ -262,15 +262,18 @@ class PyxellTranspiler:
                     return self.get(node, attr)
 
         obj = self.tmp(self.transpile(expr))
-        return self.attr(node, obj, attr)
+        return self.attr(node, obj, attr, for_print)
 
-    def attr(self, node, obj, attr):
+    def attr(self, node, obj, attr, for_print=False):
         type = obj.type
         value = None
 
         if attr == 'toString' and type.isPrintable():
             if type in {t.Char, t.String}:
-                value = v.Lambda(t.Func([], t.String), [], v.Cast(obj, t.String))  # value shouldn't be wrapped in quotes
+                # Value shouldn't be wrapped in quotes.
+                value = v.Cast(obj, t.String)
+                if not for_print:
+                    value = v.Lambda(t.Func([], t.String), [], value)
             elif type.isClass():
                 value = self.member(node, obj, 'toString')
             else:
@@ -380,7 +383,10 @@ class PyxellTranspiler:
             self.throw(node, err.NoAttribute(type, attr))
 
         if value.type.isFunc() and not isinstance(value, v.Lambda) and (not type.isClass() or attr in type.methods):
-            value = value.bind(obj)
+            if for_print:
+                value = v.Call(value, obj, type=t.String)
+            else:
+                value = value.bind(obj)
 
         return value
 
@@ -889,7 +895,7 @@ class PyxellTranspiler:
 
             if i > 0:
                 self.output(c.Statement(v.Call('write', v.String(' '))))
-            self.output(c.Statement(v.Call('write', v.Call(self.attr(node, value, 'toString')))))
+            self.output(c.Statement(v.Call('write', self.attr(node, value, 'toString', for_print=True))))
 
         self.output(c.Statement(v.Call('write', v.String('\\n'))))  # std::endl is very slow
 
@@ -1702,6 +1708,10 @@ class PyxellTranspiler:
                 return self.safe(node, obj, callback, lambda: v.null)
 
             else:
+                if attr == 'toString' and len(node['args']) == 0:
+                    return self.attribute(expr, expr['expr'], attr, for_print=True)
+
+                # TODO: remove redundant binding for method calls, like with `toString()`
                 func = self.attribute(expr, expr['expr'], attr)
 
         else:
