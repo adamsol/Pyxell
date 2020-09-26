@@ -10,3 +10,6 @@ print a
 b = false
 f(b)
 print b
+
+f(args=a)
+print a

@@ -5,3 +5,5 @@ func f(Int x: 0, String... a) Int def
 print f()
 print f(x=1)
 print f(5, 'x', "qwerty")
+print f(a=[])
+print f(2, a=['A'..'D'])

@@ -1,0 +1,8 @@
+
+func sum(Float... xs) Float def
+    return xs.reduce(_+_)
+
+[Float]->Float f = sum
+print f([])
+print f([3])
+print f([-4, 1.5, 9])

@@ -412,10 +412,6 @@ class PyxellTranspiler:
                     self.throw(node, err.NoConversion(value.type, type))
                 return self.function(value, d)
 
-            # Variadic functions must not be converted to function variables.
-            if value.type.isFunc() and any(arg.variadic for arg in value.type.args):
-                self.throw(node, err.UnknownType())
-
             # This is the only place where containers are not covariant during type checking.
             if not can_cast(value.type, type, covariance=False):
                 self.throw(node, err.NoConversion(value.type, type))
@@ -1598,8 +1594,6 @@ class PyxellTranspiler:
                     if name in named_args:
                         if i < len(pos_args):
                             self.throw(node, err.RepeatedArgument(name))
-                        if func_arg.variadic:
-                            self.throw(node, err.UnexpectedArgument(name))
 
                         expr = named_args.pop(name)
 

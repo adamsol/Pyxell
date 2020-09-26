@@ -2,4 +2,4 @@
 func f(Int... args) def
     return
 
-f' = f
+f(args={3})

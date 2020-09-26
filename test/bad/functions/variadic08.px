@@ -1,0 +1,5 @@
+
+func f(Float... args) def
+    return
+
+f([0.0])
