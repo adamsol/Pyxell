@@ -1151,6 +1151,8 @@ class PyxellTranspiler:
                 elif expect_default and not variadic:
                     self.throw(arg, err.MissingDefault(name))
                 if variadic:
+                    if default:
+                        self.throw(arg, err.InvalidSyntax())
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())
                     type = t.Array(type)

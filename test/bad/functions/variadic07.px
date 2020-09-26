@@ -1,5 +1,5 @@
 
-func f(Int args...) def
+func f(Int... args) def
     return
 
 f' = f

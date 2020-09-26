@@ -1,5 +1,5 @@
 
-func f(Int x...) def
+func f(Int... x) def
     return
 
 f(...[2.5])

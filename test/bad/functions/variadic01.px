@@ -1,3 +1,3 @@
 
-func f(Int a..., Int b...) def
+func f(Int... a, Int... b) def
     return

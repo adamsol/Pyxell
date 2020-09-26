@@ -1,5 +1,5 @@
 
-func f(Bool x...) def
+func f(Bool... x) def
     return
 
 f(1, 2)

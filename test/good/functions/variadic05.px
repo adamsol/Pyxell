@@ -1,5 +1,5 @@
 
-func f(Bool args...) def
+func f(Bool... args) def
     args[0] = true
     print args[0]
 
