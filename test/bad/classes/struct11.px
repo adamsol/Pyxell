@@ -2,5 +2,5 @@
 class A def
     Int x
 
-    ->Int getter: lambda def
+    ()->Int getter: lambda def
         return this.x

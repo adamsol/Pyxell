@@ -124,7 +124,7 @@ typ
   | typ '?' # TypeNullable
   | <assoc=right> typ '*' typ # TypeTuple
   | <assoc=right> typ '->' typ # TypeFunc
-  | '->' typ # TypeFunc0
+  | '(' ')' '->' typ # TypeFunc0
   ;
 
 INT_DEC : DIGIT NUMBER_DEC_CONT* ;

@@ -1,5 +1,5 @@
 
-func call(->Void proc) def
+func call(()->Void proc) def
     proc()
 
 func p1() def

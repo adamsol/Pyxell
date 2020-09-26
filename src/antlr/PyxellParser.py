@@ -12,7 +12,7 @@ else:
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3T")
-        buf.write("\u021c\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\u021e\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\3\2\3\2\3\2\7\2$\n\2\f\2\16")
         buf.write("\2\'\13\2\3\2\3\2\3\3\3\3\3\3\3\3\6\3/\n\3\r\3\16\3\60")
@@ -59,38 +59,38 @@ def serializedATN():
         buf.write("\u01ec\n\16\3\17\3\17\7\17\u01f0\n\17\f\17\16\17\u01f3")
         buf.write("\13\17\3\17\3\17\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3")
         buf.write("\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20\3\20")
-        buf.write("\3\20\3\20\3\20\3\20\5\20\u020d\n\20\3\20\3\20\3\20\3")
-        buf.write("\20\3\20\3\20\3\20\3\20\7\20\u0217\n\20\f\20\16\20\u021a")
-        buf.write("\13\20\3\20\2\4\16\36\21\2\4\6\b\n\f\16\20\22\24\26\30")
-        buf.write("\32\34\36\2\13\3\2\16\27\3\2\30\31\3\2\25\26\3\2\16\17")
-        buf.write("\3\2\20\24\4\2,,88\4\2%&:=\3\2KN\3\2EF\2\u0284\2%\3\2")
-        buf.write("\2\2\4*\3\2\2\2\6\u00b3\3\2\2\2\b\u00b5\3\2\2\2\n\u00bc")
-        buf.write("\3\2\2\2\f\u00e4\3\2\2\2\16\u014f\3\2\2\2\20\u01bf\3\2")
-        buf.write("\2\2\22\u01c6\3\2\2\2\24\u01cb\3\2\2\2\26\u01d5\3\2\2")
-        buf.write("\2\30\u01d9\3\2\2\2\32\u01eb\3\2\2\2\34\u01f1\3\2\2\2")
-        buf.write("\36\u020c\3\2\2\2 !\5\6\4\2!\"\7\3\2\2\"$\3\2\2\2# \3")
-        buf.write("\2\2\2$\'\3\2\2\2%#\3\2\2\2%&\3\2\2\2&(\3\2\2\2\'%\3\2")
-        buf.write("\2\2()\7\2\2\3)\3\3\2\2\2*.\7\4\2\2+,\5\6\4\2,-\7\3\2")
-        buf.write("\2-/\3\2\2\2.+\3\2\2\2/\60\3\2\2\2\60.\3\2\2\2\60\61\3")
-        buf.write("\2\2\2\61\62\3\2\2\2\62\63\7\5\2\2\63\5\3\2\2\2\64\65")
-        buf.write("\7\6\2\2\65<\7R\2\2\66\67\7\7\2\2\67=\5\34\17\289\7\b")
-        buf.write("\2\29=\5\34\17\2:;\7\t\2\2;=\7R\2\2<\66\3\2\2\2<8\3\2")
-        buf.write("\2\2<:\3\2\2\2<=\3\2\2\2=\u00b4\3\2\2\2>\u00b4\7\n\2\2")
-        buf.write("?E\7\13\2\2@A\5\16\b\2AB\7\f\2\2BD\3\2\2\2C@\3\2\2\2D")
-        buf.write("G\3\2\2\2EC\3\2\2\2EF\3\2\2\2FI\3\2\2\2GE\3\2\2\2HJ\5")
-        buf.write("\16\b\2IH\3\2\2\2IJ\3\2\2\2J\u00b4\3\2\2\2KL\5\36\20\2")
-        buf.write("LO\7R\2\2MN\7\r\2\2NP\5\22\n\2OM\3\2\2\2OP\3\2\2\2P\u00b4")
-        buf.write("\3\2\2\2QR\5\22\n\2RS\7\r\2\2SU\3\2\2\2TQ\3\2\2\2UX\3")
-        buf.write("\2\2\2VT\3\2\2\2VW\3\2\2\2WY\3\2\2\2XV\3\2\2\2Y\u00b4")
-        buf.write("\5\22\n\2Z[\5\16\b\2[\\\t\2\2\2\\]\7\r\2\2]^\5\16\b\2")
-        buf.write("^\u00b4\3\2\2\2_\u00b4\t\3\2\2`b\7\32\2\2ac\5\22\n\2b")
-        buf.write("a\3\2\2\2bc\3\2\2\2c\u00b4\3\2\2\2de\7\33\2\2e\u00b4\5")
-        buf.write("\22\n\2fg\7\34\2\2gh\5\16\b\2hi\7\35\2\2ir\5\4\3\2jk\7")
-        buf.write("\3\2\2kl\7\36\2\2lm\5\16\b\2mn\7\35\2\2no\5\4\3\2oq\3")
-        buf.write("\2\2\2pj\3\2\2\2qt\3\2\2\2rp\3\2\2\2rs\3\2\2\2sy\3\2\2")
-        buf.write("\2tr\3\2\2\2uv\7\3\2\2vw\7\37\2\2wx\7\35\2\2xz\5\4\3\2")
-        buf.write("yu\3\2\2\2yz\3\2\2\2z\u00b4\3\2\2\2{|\7 \2\2|}\5\16\b")
-        buf.write("\2}~\7\35\2\2~\177\5\4\3\2\177\u00b4\3\2\2\2\u0080\u0081")
+        buf.write("\3\20\3\20\3\20\3\20\3\20\3\20\5\20\u020f\n\20\3\20\3")
+        buf.write("\20\3\20\3\20\3\20\3\20\3\20\3\20\7\20\u0219\n\20\f\20")
+        buf.write("\16\20\u021c\13\20\3\20\2\4\16\36\21\2\4\6\b\n\f\16\20")
+        buf.write("\22\24\26\30\32\34\36\2\13\3\2\16\27\3\2\30\31\3\2\25")
+        buf.write("\26\3\2\16\17\3\2\20\24\4\2,,88\4\2%&:=\3\2KN\3\2EF\2")
+        buf.write("\u0286\2%\3\2\2\2\4*\3\2\2\2\6\u00b3\3\2\2\2\b\u00b5\3")
+        buf.write("\2\2\2\n\u00bc\3\2\2\2\f\u00e4\3\2\2\2\16\u014f\3\2\2")
+        buf.write("\2\20\u01bf\3\2\2\2\22\u01c6\3\2\2\2\24\u01cb\3\2\2\2")
+        buf.write("\26\u01d5\3\2\2\2\30\u01d9\3\2\2\2\32\u01eb\3\2\2\2\34")
+        buf.write("\u01f1\3\2\2\2\36\u020e\3\2\2\2 !\5\6\4\2!\"\7\3\2\2\"")
+        buf.write("$\3\2\2\2# \3\2\2\2$\'\3\2\2\2%#\3\2\2\2%&\3\2\2\2&(\3")
+        buf.write("\2\2\2\'%\3\2\2\2()\7\2\2\3)\3\3\2\2\2*.\7\4\2\2+,\5\6")
+        buf.write("\4\2,-\7\3\2\2-/\3\2\2\2.+\3\2\2\2/\60\3\2\2\2\60.\3\2")
+        buf.write("\2\2\60\61\3\2\2\2\61\62\3\2\2\2\62\63\7\5\2\2\63\5\3")
+        buf.write("\2\2\2\64\65\7\6\2\2\65<\7R\2\2\66\67\7\7\2\2\67=\5\34")
+        buf.write("\17\289\7\b\2\29=\5\34\17\2:;\7\t\2\2;=\7R\2\2<\66\3\2")
+        buf.write("\2\2<8\3\2\2\2<:\3\2\2\2<=\3\2\2\2=\u00b4\3\2\2\2>\u00b4")
+        buf.write("\7\n\2\2?E\7\13\2\2@A\5\16\b\2AB\7\f\2\2BD\3\2\2\2C@\3")
+        buf.write("\2\2\2DG\3\2\2\2EC\3\2\2\2EF\3\2\2\2FI\3\2\2\2GE\3\2\2")
+        buf.write("\2HJ\5\16\b\2IH\3\2\2\2IJ\3\2\2\2J\u00b4\3\2\2\2KL\5\36")
+        buf.write("\20\2LO\7R\2\2MN\7\r\2\2NP\5\22\n\2OM\3\2\2\2OP\3\2\2")
+        buf.write("\2P\u00b4\3\2\2\2QR\5\22\n\2RS\7\r\2\2SU\3\2\2\2TQ\3\2")
+        buf.write("\2\2UX\3\2\2\2VT\3\2\2\2VW\3\2\2\2WY\3\2\2\2XV\3\2\2\2")
+        buf.write("Y\u00b4\5\22\n\2Z[\5\16\b\2[\\\t\2\2\2\\]\7\r\2\2]^\5")
+        buf.write("\16\b\2^\u00b4\3\2\2\2_\u00b4\t\3\2\2`b\7\32\2\2ac\5\22")
+        buf.write("\n\2ba\3\2\2\2bc\3\2\2\2c\u00b4\3\2\2\2de\7\33\2\2e\u00b4")
+        buf.write("\5\22\n\2fg\7\34\2\2gh\5\16\b\2hi\7\35\2\2ir\5\4\3\2j")
+        buf.write("k\7\3\2\2kl\7\36\2\2lm\5\16\b\2mn\7\35\2\2no\5\4\3\2o")
+        buf.write("q\3\2\2\2pj\3\2\2\2qt\3\2\2\2rp\3\2\2\2rs\3\2\2\2sy\3")
+        buf.write("\2\2\2tr\3\2\2\2uv\7\3\2\2vw\7\37\2\2wx\7\35\2\2xz\5\4")
+        buf.write("\3\2yu\3\2\2\2yz\3\2\2\2z\u00b4\3\2\2\2{|\7 \2\2|}\5\16")
+        buf.write("\b\2}~\7\35\2\2~\177\5\4\3\2\177\u00b4\3\2\2\2\u0080\u0081")
         buf.write("\7!\2\2\u0081\u0082\5\16\b\2\u0082\u0083\7\35\2\2\u0083")
         buf.write("\u0084\5\4\3\2\u0084\u00b4\3\2\2\2\u0085\u0086\7\"\2\2")
         buf.write("\u0086\u0087\5\22\n\2\u0087\u0088\7#\2\2\u0088\u0089\5")
@@ -264,29 +264,29 @@ def serializedATN():
         buf.write("\u01ed\3\2\2\2\u01f0\u01f3\3\2\2\2\u01f1\u01ef\3\2\2\2")
         buf.write("\u01f1\u01f2\3\2\2\2\u01f2\u01f4\3\2\2\2\u01f3\u01f1\3")
         buf.write("\2\2\2\u01f4\u01f5\7R\2\2\u01f5\35\3\2\2\2\u01f6\u01f7")
-        buf.write("\b\20\1\2\u01f7\u020d\7R\2\2\u01f8\u01f9\7*\2\2\u01f9")
-        buf.write("\u01fa\5\36\20\2\u01fa\u01fb\7+\2\2\u01fb\u020d\3\2\2")
+        buf.write("\b\20\1\2\u01f7\u020f\7R\2\2\u01f8\u01f9\7*\2\2\u01f9")
+        buf.write("\u01fa\5\36\20\2\u01fa\u01fb\7+\2\2\u01fb\u020f\3\2\2")
         buf.write("\2\u01fc\u01fd\7\61\2\2\u01fd\u01fe\5\36\20\2\u01fe\u01ff")
-        buf.write("\7\62\2\2\u01ff\u020d\3\2\2\2\u0200\u0201\7\4\2\2\u0201")
-        buf.write("\u0202\5\36\20\2\u0202\u0203\7\5\2\2\u0203\u020d\3\2\2")
+        buf.write("\7\62\2\2\u01ff\u020f\3\2\2\2\u0200\u0201\7\4\2\2\u0201")
+        buf.write("\u0202\5\36\20\2\u0202\u0203\7\5\2\2\u0203\u020f\3\2\2")
         buf.write("\2\u0204\u0205\7\4\2\2\u0205\u0206\5\36\20\2\u0206\u0207")
         buf.write("\7-\2\2\u0207\u0208\5\36\20\2\u0208\u0209\7\5\2\2\u0209")
-        buf.write("\u020d\3\2\2\2\u020a\u020b\7J\2\2\u020b\u020d\5\36\20")
-        buf.write("\3\u020c\u01f6\3\2\2\2\u020c\u01f8\3\2\2\2\u020c\u01fc")
-        buf.write("\3\2\2\2\u020c\u0200\3\2\2\2\u020c\u0204\3\2\2\2\u020c")
-        buf.write("\u020a\3\2\2\2\u020d\u0218\3\2\2\2\u020e\u020f\f\5\2\2")
-        buf.write("\u020f\u0210\7\20\2\2\u0210\u0217\5\36\20\5\u0211\u0212")
-        buf.write("\f\4\2\2\u0212\u0213\7J\2\2\u0213\u0217\5\36\20\4\u0214")
-        buf.write("\u0215\f\6\2\2\u0215\u0217\7\63\2\2\u0216\u020e\3\2\2")
-        buf.write("\2\u0216\u0211\3\2\2\2\u0216\u0214\3\2\2\2\u0217\u021a")
-        buf.write("\3\2\2\2\u0218\u0216\3\2\2\2\u0218\u0219\3\2\2\2\u0219")
-        buf.write("\37\3\2\2\2\u021a\u0218\3\2\2\2?%\60<EIOVbry\u008e\u0095")
-        buf.write("\u0099\u009e\u00a6\u00af\u00b3\u00ba\u00c2\u00c6\u00ce")
-        buf.write("\u00d2\u00d7\u00dc\u00e4\u00f2\u00f6\u00ff\u0103\u010c")
-        buf.write("\u0111\u011d\u0126\u0131\u013d\u0143\u0147\u014d\u014f")
-        buf.write("\u016b\u017d\u0183\u018c\u0190\u0194\u0196\u019b\u01a3")
-        buf.write("\u01a7\u01b1\u01b4\u01b6\u01bf\u01c6\u01d5\u01d9\u01eb")
-        buf.write("\u01f1\u020c\u0216\u0218")
+        buf.write("\u020f\3\2\2\2\u020a\u020b\7*\2\2\u020b\u020c\7+\2\2\u020c")
+        buf.write("\u020d\7J\2\2\u020d\u020f\5\36\20\3\u020e\u01f6\3\2\2")
+        buf.write("\2\u020e\u01f8\3\2\2\2\u020e\u01fc\3\2\2\2\u020e\u0200")
+        buf.write("\3\2\2\2\u020e\u0204\3\2\2\2\u020e\u020a\3\2\2\2\u020f")
+        buf.write("\u021a\3\2\2\2\u0210\u0211\f\5\2\2\u0211\u0212\7\20\2")
+        buf.write("\2\u0212\u0219\5\36\20\5\u0213\u0214\f\4\2\2\u0214\u0215")
+        buf.write("\7J\2\2\u0215\u0219\5\36\20\4\u0216\u0217\f\6\2\2\u0217")
+        buf.write("\u0219\7\63\2\2\u0218\u0210\3\2\2\2\u0218\u0213\3\2\2")
+        buf.write("\2\u0218\u0216\3\2\2\2\u0219\u021c\3\2\2\2\u021a\u0218")
+        buf.write("\3\2\2\2\u021a\u021b\3\2\2\2\u021b\37\3\2\2\2\u021c\u021a")
+        buf.write("\3\2\2\2?%\60<EIOVbry\u008e\u0095\u0099\u009e\u00a6\u00af")
+        buf.write("\u00b3\u00ba\u00c2\u00c6\u00ce\u00d2\u00d7\u00dc\u00e4")
+        buf.write("\u00f2\u00f6\u00ff\u0103\u010c\u0111\u011d\u0126\u0131")
+        buf.write("\u013d\u0143\u0147\u014d\u014f\u016b\u017d\u0183\u018c")
+        buf.write("\u0190\u0194\u0196\u019b\u01a3\u01a7\u01b1\u01b4\u01b6")
+        buf.write("\u01bf\u01c6\u01d5\u01d9\u01eb\u01f1\u020e\u0218\u021a")
         return buf.getvalue()
 
 
@@ -485,7 +485,7 @@ class PyxellParser ( Parser ):
             self.state = 35
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__21) | (1 << PyxellParser.T__22) | (1 << PyxellParser.T__23) | (1 << PyxellParser.T__24) | (1 << PyxellParser.T__25) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__31) | (1 << PyxellParser.T__33) | (1 << PyxellParser.T__38) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__41) | (1 << PyxellParser.T__46) | (1 << PyxellParser.T__59) | (1 << PyxellParser.T__61))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__66 - 65)) | (1 << (PyxellParser.T__67 - 65)) | (1 << (PyxellParser.T__68 - 65)) | (1 << (PyxellParser.T__69 - 65)) | (1 << (PyxellParser.T__70 - 65)) | (1 << (PyxellParser.T__71 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__21) | (1 << PyxellParser.T__22) | (1 << PyxellParser.T__23) | (1 << PyxellParser.T__24) | (1 << PyxellParser.T__25) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__31) | (1 << PyxellParser.T__33) | (1 << PyxellParser.T__38) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__41) | (1 << PyxellParser.T__46) | (1 << PyxellParser.T__59) | (1 << PyxellParser.T__61))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__66 - 65)) | (1 << (PyxellParser.T__67 - 65)) | (1 << (PyxellParser.T__68 - 65)) | (1 << (PyxellParser.T__69 - 65)) | (1 << (PyxellParser.T__70 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0):
                 self.state = 30
                 self.stmt()
                 self.state = 31
@@ -550,7 +550,7 @@ class PyxellParser ( Parser ):
                 self.state = 46 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__21) | (1 << PyxellParser.T__22) | (1 << PyxellParser.T__23) | (1 << PyxellParser.T__24) | (1 << PyxellParser.T__25) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__31) | (1 << PyxellParser.T__33) | (1 << PyxellParser.T__38) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__41) | (1 << PyxellParser.T__46) | (1 << PyxellParser.T__59) | (1 << PyxellParser.T__61))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__66 - 65)) | (1 << (PyxellParser.T__67 - 65)) | (1 << (PyxellParser.T__68 - 65)) | (1 << (PyxellParser.T__69 - 65)) | (1 << (PyxellParser.T__70 - 65)) | (1 << (PyxellParser.T__71 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0)):
+                if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__3) | (1 << PyxellParser.T__7) | (1 << PyxellParser.T__8) | (1 << PyxellParser.T__18) | (1 << PyxellParser.T__19) | (1 << PyxellParser.T__21) | (1 << PyxellParser.T__22) | (1 << PyxellParser.T__23) | (1 << PyxellParser.T__24) | (1 << PyxellParser.T__25) | (1 << PyxellParser.T__29) | (1 << PyxellParser.T__30) | (1 << PyxellParser.T__31) | (1 << PyxellParser.T__33) | (1 << PyxellParser.T__38) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__41) | (1 << PyxellParser.T__46) | (1 << PyxellParser.T__59) | (1 << PyxellParser.T__61))) != 0) or ((((_la - 65)) & ~0x3f) == 0 and ((1 << (_la - 65)) & ((1 << (PyxellParser.T__64 - 65)) | (1 << (PyxellParser.T__66 - 65)) | (1 << (PyxellParser.T__67 - 65)) | (1 << (PyxellParser.T__68 - 65)) | (1 << (PyxellParser.T__69 - 65)) | (1 << (PyxellParser.T__70 - 65)) | (1 << (PyxellParser.INT_DEC - 65)) | (1 << (PyxellParser.INT_BIN - 65)) | (1 << (PyxellParser.INT_OCT - 65)) | (1 << (PyxellParser.INT_HEX - 65)) | (1 << (PyxellParser.FLOAT - 65)) | (1 << (PyxellParser.CHAR - 65)) | (1 << (PyxellParser.STRING - 65)) | (1 << (PyxellParser.ID - 65)))) != 0)):
                     break
 
             self.state = 48
@@ -1193,7 +1193,7 @@ class PyxellParser ( Parser ):
                 self.state = 151
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.T__71 or _la==PyxellParser.ID:
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.ID:
                     self.state = 150
                     localctx.ret = self.typ(0)
 
@@ -1250,7 +1250,7 @@ class PyxellParser ( Parser ):
                     self.state = 173 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
-                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__33) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__44) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.T__71 or _la==PyxellParser.ID):
+                    if not ((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__33) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__44) | (1 << PyxellParser.T__45) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.ID):
                         break
 
                 self.state = 175
@@ -1394,7 +1394,7 @@ class PyxellParser ( Parser ):
             self.state = 196
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.T__71 or _la==PyxellParser.ID:
+            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.ID:
                 self.state = 195
                 self.func_arg()
 
@@ -1520,7 +1520,7 @@ class PyxellParser ( Parser ):
             self.state = 226
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [PyxellParser.T__1, PyxellParser.T__39, PyxellParser.T__46, PyxellParser.T__71, PyxellParser.ID]:
+            if token in [PyxellParser.T__1, PyxellParser.T__39, PyxellParser.T__46, PyxellParser.ID]:
                 localctx = PyxellParser.ClassFieldContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
                 self.state = 200
@@ -1558,7 +1558,7 @@ class PyxellParser ( Parser ):
                 self.state = 213
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.T__71 or _la==PyxellParser.ID:
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << PyxellParser.T__1) | (1 << PyxellParser.T__39) | (1 << PyxellParser.T__46))) != 0) or _la==PyxellParser.ID:
                     self.state = 212
                     localctx.ret = self.typ(0)
 
@@ -3715,7 +3715,7 @@ class PyxellParser ( Parser ):
         self.enterRecursionRule(localctx, 28, self.RULE_typ, _p)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 522
+            self.state = 524
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,58,self._ctx)
             if la_ == 1:
@@ -3784,14 +3784,18 @@ class PyxellParser ( Parser ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 520
-                self.match(PyxellParser.T__71)
+                self.match(PyxellParser.T__39)
                 self.state = 521
+                self.match(PyxellParser.T__40)
+                self.state = 522
+                self.match(PyxellParser.T__71)
+                self.state = 523
                 self.typ(1)
                 pass
 
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 534
+            self.state = 536
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,60,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -3799,48 +3803,48 @@ class PyxellParser ( Parser ):
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 532
+                    self.state = 534
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,59,self._ctx)
                     if la_ == 1:
                         localctx = PyxellParser.TypeTupleContext(self, PyxellParser.TypContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_typ)
-                        self.state = 524
+                        self.state = 526
                         if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 525
+                        self.state = 527
                         self.match(PyxellParser.T__13)
-                        self.state = 526
+                        self.state = 528
                         self.typ(3)
                         pass
 
                     elif la_ == 2:
                         localctx = PyxellParser.TypeFuncContext(self, PyxellParser.TypContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_typ)
-                        self.state = 527
+                        self.state = 529
                         if not self.precpred(self._ctx, 2):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 528
+                        self.state = 530
                         self.match(PyxellParser.T__71)
-                        self.state = 529
+                        self.state = 531
                         self.typ(2)
                         pass
 
                     elif la_ == 3:
                         localctx = PyxellParser.TypeNullableContext(self, PyxellParser.TypContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_typ)
-                        self.state = 530
+                        self.state = 532
                         if not self.precpred(self._ctx, 4):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
-                        self.state = 531
+                        self.state = 533
                         self.match(PyxellParser.T__48)
                         pass
 
              
-                self.state = 536
+                self.state = 538
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,60,self._ctx)
 

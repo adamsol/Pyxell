@@ -12,6 +12,6 @@ print f()
 a.x = 3
 print f()
 
-->Int f'
+()->Int f'
 for f' in [f, A(2).f] do
     print f'()
