@@ -1138,7 +1138,6 @@ class PyxellTranspiler:
                 self.env[name] = t.Var(name)
 
             args = [] if class_type is None else [t.Func.Arg(class_type, 'this')]
-            expect_default = False
             for arg in node['args']:
                 type = self.transpile(arg['type'])
                 if not type.hasValue():
@@ -1146,10 +1145,6 @@ class PyxellTranspiler:
                 name = arg['name']
                 default = arg.get('default')
                 variadic = arg.get('variadic')
-                if default:
-                    expect_default = True
-                elif expect_default and not variadic:
-                    self.throw(arg, err.MissingDefault(name))
                 if variadic:
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())

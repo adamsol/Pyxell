@@ -23,7 +23,6 @@ class PyxellError(Exception):
     InvalidReturnType = lambda t: f"`{t.show()}` is not a valid return type"
     InvalidUsage = lambda s: f"`{s}` cannot be used here"
     MissingArgument = lambda id: f"Missing required argument `{id}`"
-    MissingDefault = lambda id: f"Missing default value for argument `{id}`"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"
     NoConversion = lambda t1, t2: f"No implicit conversion from `{t1.show()}` to `{t2.show()}`"
