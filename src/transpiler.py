@@ -312,8 +312,8 @@ class PyxellTranspiler:
                     'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
                     'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
-                    'startswith': v.Variable(t.Func([type, type], t.Bool), attr),
-                    'endswith': v.Variable(t.Func([type, type], t.Bool), attr),
+                    'startsWith': v.Variable(t.Func([type, type], t.Bool), attr),
+                    'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
 
             elif type.isArray():

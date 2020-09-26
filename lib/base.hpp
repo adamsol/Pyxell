@@ -748,12 +748,12 @@ Int count(const String& x, Char e)
     return std::count(x->begin(), x->end(), e);
 }
 
-Bool startswith(const String& x, const String& y)
+Bool startsWith(const String& x, const String& y)
 {
     return x->rfind(*y, 0) == 0;
 }
 
-Bool endswith(const String& x, const String& y)
+Bool endsWith(const String& x, const String& y)
 {
     return x->find(*y, x->size() - y->size()) != std::string::npos;
 }
