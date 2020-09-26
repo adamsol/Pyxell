@@ -1,8 +1,8 @@
 
 from antlr4.tree import Tree
 
-from .antlr.PyxellParser import PyxellParser
-from .antlr.PyxellVisitor import PyxellVisitor
+from .parser.PyxellParser import PyxellParser
+from .parser.PyxellVisitor import PyxellVisitor
 
 from .utils import lmap
 

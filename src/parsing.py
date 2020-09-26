@@ -1,8 +1,8 @@
 
 from antlr4 import *
 
-from .antlr.PyxellLexer import PyxellLexer
-from .antlr.PyxellParser import PyxellParser
+from .parser.PyxellLexer import PyxellLexer
+from .parser.PyxellParser import PyxellParser
 
 from .ast import PyxellASTVisitor
 from .errors import PyxellErrorListener
