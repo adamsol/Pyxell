@@ -1,0 +1,7 @@
+
+func f(Int x: 0, String... a) Int def
+    return x + a.length
+
+print f()
+print f(x=1)
+print f(5, 'x', "qwerty")

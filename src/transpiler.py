@@ -1151,8 +1151,6 @@ class PyxellTranspiler:
                 elif expect_default and not variadic:
                     self.throw(arg, err.MissingDefault(name))
                 if variadic:
-                    if default:
-                        self.throw(arg, err.InvalidSyntax())
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())
                     type = t.Array(type)
@@ -1610,7 +1608,7 @@ class PyxellTranspiler:
 
                         expr = named_args.pop(name)
 
-                    elif func_arg.variadic:
+                    elif func_arg.variadic and (pos_args or not func_arg.default):
                         expr = {
                             'node': 'ExprCollection',
                             'kind': 'array',

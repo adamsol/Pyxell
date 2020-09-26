@@ -1,0 +1,6 @@
+
+func join(Char... c: [..."empty"]) String def
+    return c.join()
+
+print join()
+print join('x', 'y')

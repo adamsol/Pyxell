@@ -1,3 +1,5 @@
 
-func f(Int... a: []) def
-    return
+func f(Char... c: "") def
+    skip
+
+f()
