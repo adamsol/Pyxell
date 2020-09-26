@@ -457,7 +457,7 @@ class PyxellTranspiler:
         if not type.hasValue() or type.isVar():
             self.throw(node, err.InvalidDeclaration(type))
         if id in self.env and not redeclare:
-            self.throw(node, err.RedeclaredIdentifier(id))
+            self.throw(node, err.RedefinedIdentifier(id))
 
         var = self.var(type)
         self.env[id] = var
@@ -1129,6 +1129,8 @@ class PyxellTranspiler:
 
     def transpileStmtFunc(self, node, class_type=None):
         id = node['id']
+        if class_type is None and id in self.env:
+            self.throw(node, err.RedefinedIdentifier(id))
 
         with self.local():
             typevars = node.get('typevars', [])
@@ -1223,7 +1225,7 @@ class PyxellTranspiler:
     def transpileStmtClass(self, node):
         id = node['id']
         if id in self.env:
-            self.throw(node, err.RedeclaredIdentifier(id))
+            self.throw(node, err.RedefinedIdentifier(id))
 
         base = self.transpile(node['base'])
         if base and not base.isClass():
