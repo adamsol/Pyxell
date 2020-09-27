@@ -3,5 +3,5 @@ func product<T>(T... xs) T def
     return xs.reduce(_*_)
 
 print product(1)
-print product(3/4, 3)
+print product(3/4, 3).fraction
 print product(2, 5.5, 3/2)

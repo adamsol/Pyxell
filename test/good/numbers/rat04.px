@@ -6,4 +6,4 @@ a ^= -4
 a *= b
 a += -b
 
-print a, b
+print a.fraction, b

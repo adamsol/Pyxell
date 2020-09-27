@@ -64,6 +64,7 @@ struct Rat
 
     Rat(): denominator(1) {}
     Rat(long long n): numerator(n), denominator(1) {}
+    Rat(const bigint& n): numerator(n), denominator(1) {}
 
     Rat(const std::string& s): denominator(1)
     {
@@ -980,7 +981,33 @@ String toString(Int x)
 
 String toString(const Rat& x)
 {
-    return make_string(x.numerator.to_string() + '/' + x.denominator.to_string());
+    if (x.denominator == 1) {
+        return make_string(x.numerator.to_string());
+    }
+    Int d = x.denominator.to_string().size() + 6;  // at least 6 digits after the decimal point
+    Rat y = floordiv(x.numerator.sign < 0 ? -x : x, pow(Rat(10), -d));
+    std::string s = y.numerator.to_string();
+
+    if (s.size() <= d) {
+        s.insert(0, d - s.size() + 1, '0');
+    }
+    s.insert(s.size() - d, ".");
+
+    char l = s.back();
+    s.pop_back();
+    if (l >= '5') {
+        while (s.back() == '9') {
+            s.pop_back();
+        }
+        s.back() += 1;
+    }
+    while (s.back() == '0') {
+        s.pop_back();
+    }
+    if (x.numerator.sign < 0) {
+        s.insert(0, "-");
+    }
+    return make_string(s);
 }
 
 String toString(Float x)

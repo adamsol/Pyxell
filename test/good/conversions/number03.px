@@ -1,7 +1,7 @@
 
 x = 15.toRat()
 x /= 12
-print x.toInt(), x.toRat(), x.toFloat()
+print x.toInt(), x.toRat().fraction, x.toFloat()
 
 x = -x^20
 print x.toInt()

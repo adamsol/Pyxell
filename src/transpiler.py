@@ -286,6 +286,9 @@ class PyxellTranspiler:
         elif attr == 'toFloat' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
             value = v.Variable(t.Func([type], t.Float), 'toFloat')
 
+        elif attr == 'fraction' and type == t.Rat:
+            value = v.Tuple([v.Cast(v.Attribute(obj, 'numerator'), t.Rat), v.Cast(v.Attribute(obj, 'denominator'), t.Rat)])
+
         elif attr == 'char' and type == t.Int:
             value = v.Cast(obj, t.Char)
         elif attr == 'code' and type == t.Char:
@@ -580,7 +583,7 @@ class PyxellTranspiler:
 
         elif op == '//':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
-                return v.Call('floordiv', left, right, type=t.Int)
+                return v.Call('floordiv', left, right, type=left.type)
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 

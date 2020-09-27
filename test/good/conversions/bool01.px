@@ -1,4 +1,4 @@
 
 print false.toInt()
-print true.toRat() / 2
+print true.toRat().fraction
 print true.toFloat() / 2

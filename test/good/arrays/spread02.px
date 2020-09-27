@@ -1,4 +1,4 @@
 
 print [...[1, 3], 2]
 print [true..false by -1, ...[]]
-print [...[] by 2, ...[4/3]]
+print [...[] by 2, ...[10^-1]]

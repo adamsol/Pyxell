@@ -1,0 +1,4 @@
+
+r = 10^25 * -6^-30
+a, b = r.fraction
+print a.fraction, b.fraction

@@ -5,7 +5,7 @@ func f(Rat x) Rat def
     n -= 1
     if n == 0 do
         x -= 1
-        print "{x}"[-12:-2]
+        print "{x}"[-10:]
     return x
 
 x = 2^50000

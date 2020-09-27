@@ -1,6 +1,6 @@
 
 print default(Int)
-print default(Rat)
+print default(Rat).fraction
 print default(Float)
 print default(Bool)
 print default(Char).code

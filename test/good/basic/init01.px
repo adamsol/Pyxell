@@ -5,4 +5,4 @@ Float c
 Bool d
 Char e
 
-print a, b, c, d, e.code
+print a, b.fraction, c, d, e.code

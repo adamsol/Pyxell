@@ -2,5 +2,5 @@
 pow = _^_
 neg = -_
 
-print pow(3, neg(4))
+print pow(3, neg(4)).fraction
 print pow(neg(7.0), 3)

@@ -163,7 +163,7 @@ class Attribute(Value):
         self.attr = attr
 
     def __str__(self):
-        op = '.' if self.value.type.isGenerator() or self.value.type.isNullable() else '->'
+        op = '.' if self.value.type == t.Rat or self.value.type.isNullable() or self.value.type.isGenerator() else '->'
         return f'{self.value}{op}{self.attr}'
 
 

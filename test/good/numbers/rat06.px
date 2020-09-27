@@ -1,6 +1,7 @@
 
 print 3^50 * 2^80
 print (10^10 + 6*10^30 + 7) * (10^21 * 4)
-print [1/i for i in 1..200].reduce(_+_)
+print [1/i for i in 1..200].reduce(_+_).fraction
 print 7^13565 * 343^-4381
 print (4/22)^792
+print (2^164-1) / (2^100)
