@@ -22,7 +22,7 @@ Examples
 Rational numbers:
 
 ```
-print 1/10 + 5^-1  -- 3/10
+print 1/10 + 5^-1  # 3/10
 ```
 
 Range literals, for-loops, string interpolation:
@@ -36,13 +36,13 @@ for x, i in a, 0... by 5 do
 Dynamic containers:
 
 ```
-[Int] a = [1]  -- array (Python's list / C++'s vector)
+[Int] a = [1]  # array (Python's list / C++'s vector)
 a.push(2)
 
-{Float} b = {3.0}  -- hash set
+{Float} b = {3.0}  # hash set
 b.add(4.0)
 
-{Char:String} c = {'5': "6"}  -- dictionary (hash map) 
+{Char:String} c = {'5': "6"}  # dictionary (hash map) 
 c['7'] = "8"
 ```
 
@@ -54,10 +54,10 @@ func fold<A,B>([A] a, A->B->B f, B r) B def
         r = f(x, r)
     return r
 
-print fold([2, 3, 4], _*_, 1)  -- 24
+print fold([2, 3, 4], _*_, 1)  # 24
 
 -- There are built-in methods like this:
-print [0..10 by 2].reduce(_+_)  -- 30
+print [0..10 by 2].reduce(_+_)  # 30
 ```
 
 Generators, tuples, spread syntax:

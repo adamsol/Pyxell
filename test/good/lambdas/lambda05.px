@@ -9,8 +9,8 @@ t = [false, false, true]
 print fold(_ and _, true, t)
 print fold(_ or _, false, t)
 
-print fold(_ != _, false, t)  -- xor
+print fold(_ != _, false, t)  # xor
 
-print fold(false ? _ : _, true, t)  -- last value
-print fold(_ ? true : _, false, t)  -- is any true
-print fold(not _ ? not _ : false, false, t)  -- odd number of falses at the end
+print fold(false ? _ : _, true, t)  # last value
+print fold(_ ? true : _, false, t)  # is any true
+print fold(not _ ? not _ : false, false, t)  # odd number of falses at the end

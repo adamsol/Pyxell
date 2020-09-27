@@ -1,7 +1,10 @@
-
-a' = 4
--- print a'
+'#'
+a' = '#'.code
+a'' = a'
+a''#'
+'#'
+# print a'
+print a''
+{#
 print a'
-{-
-print a'
--}
+#}

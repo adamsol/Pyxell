@@ -1,17 +1,17 @@
 
-------------
---@ test @--
-------------
+##------##
+#- test -#
+##------##
 
-if true do---; print false
- --
-    x = "--".length -- print false
-  --- x = 1;
-    print x  ----- 2
+if true do###; print false
+ #
+    x = "#".length # print false
+  ## x = 2;
+    print x  ##### 1
 
-else do --
+else do #
 
     print false
 
-----------
+##########
 print true
