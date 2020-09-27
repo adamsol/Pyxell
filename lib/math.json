@@ -576,20 +576,20 @@
 							],
 							"exprs": [
 								{
-									"node": "ExprBinaryOp",
+									"node": "AtomId",
 									"position": [
 										21,
 										12
 									],
+									"id": "x"
+								},
+								{
+									"node": "ExprBinaryOp",
+									"position": [
+										21,
+										16
+									],
 									"exprs": [
-										{
-											"node": "AtomId",
-											"position": [
-												21,
-												12
-											],
-											"id": "x"
-										},
 										{
 											"node": "AtomId",
 											"position": [
@@ -597,20 +597,20 @@
 												16
 											],
 											"id": "PI"
+										},
+										{
+											"node": "AtomInt",
+											"position": [
+												21,
+												21
+											],
+											"int": 180
 										}
 									],
-									"op": "*"
-								},
-								{
-									"node": "AtomInt",
-									"position": [
-										21,
-										21
-									],
-									"int": 180
+									"op": "/"
 								}
 							],
-							"op": "/"
+							"op": "*"
 						}
 					}
 				]
@@ -672,20 +672,20 @@
 							],
 							"exprs": [
 								{
-									"node": "ExprBinaryOp",
+									"node": "AtomId",
 									"position": [
 										24,
 										12
 									],
+									"id": "x"
+								},
+								{
+									"node": "ExprBinaryOp",
+									"position": [
+										24,
+										16
+									],
 									"exprs": [
-										{
-											"node": "AtomId",
-											"position": [
-												24,
-												12
-											],
-											"id": "x"
-										},
 										{
 											"node": "AtomInt",
 											"position": [
@@ -693,20 +693,20 @@
 												16
 											],
 											"int": 180
+										},
+										{
+											"node": "AtomId",
+											"position": [
+												24,
+												22
+											],
+											"id": "PI"
 										}
 									],
-									"op": "*"
-								},
-								{
-									"node": "AtomId",
-									"position": [
-										24,
-										22
-									],
-									"id": "PI"
+									"op": "/"
 								}
 							],
-							"op": "/"
+							"op": "*"
 						}
 					}
 				]

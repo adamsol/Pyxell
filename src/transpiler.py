@@ -570,19 +570,6 @@ class PyxellTranspiler:
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '*':
-            if left.type == right.type and left.type.isNumber():
-                return v.BinaryOp(left, op, right, type=left.type)
-
-            elif left.type.isSequence() and right.type == t.Int:
-                return v.Call('multiply', left, right, type=left.type)
-
-            elif left.type == t.Int and right.type.isSequence():
-                return self.binaryop(node, op, right, left)
-
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
-
         elif op == '/':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.BinaryOp(v.Cast(left, t.Rat), op, v.Cast(right, t.Rat), type=t.Rat)
@@ -600,6 +587,19 @@ class PyxellTranspiler:
         elif op == '%':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.Call('mod', left, right, type=left.type)
+            else:
+                self.throw(node, err.NoBinaryOperator(op, *types))
+
+        elif op == '*':
+            if left.type == right.type and left.type.isNumber():
+                return v.BinaryOp(left, op, right, type=left.type)
+
+            elif left.type.isSequence() and right.type == t.Int:
+                return v.Call('multiply', left, right, type=left.type)
+
+            elif left.type == t.Int and right.type.isSequence():
+                return self.binaryop(node, op, right, left)
+
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
