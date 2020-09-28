@@ -6,11 +6,11 @@ class A def
         skip
 
 class B(A) def
-    Float x
+    Rat x
     A a
 
     constructor def
         print this.s.length
 
 b = B()
-print b.s, b.x
+print b.s, b.x.fraction

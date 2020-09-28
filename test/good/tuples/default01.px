@@ -1,2 +1,2 @@
 
-print default(Int*Float)
+print default(Int*Bool)

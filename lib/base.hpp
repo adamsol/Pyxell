@@ -1014,11 +1014,7 @@ String toString(Float x)
 {
     static char buffer[25];
     sprintf(buffer, "%.15g", x);
-    auto r = make_string(buffer);
-    if (std::all_of(r->begin(), r->end(), [](Char c) { return ('0' <= c && c <= '9') || c == '-'; })) {
-        r->append(".0");
-    }
-    return r;
+    return make_string(buffer);
 }
 
 String toString(Bool x)

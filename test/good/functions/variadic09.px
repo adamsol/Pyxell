@@ -4,5 +4,5 @@ func sum(Float... xs) Float def
 
 [Float]->Float f = sum
 print f([])
-print f([3])
+print f([10^^16])
 print f([-4, 1.5, 9])

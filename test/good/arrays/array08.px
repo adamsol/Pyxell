@@ -1,4 +1,4 @@
 
 [(Char*Float)?] a = [null]
-a[0] ??= ('a', 6)
+a[0] ??= ('a', 12/2)
 print a[0]!

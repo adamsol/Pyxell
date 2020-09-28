@@ -15,4 +15,4 @@ class B(A) def
 
 A a
 a = A()
-a = B(1, 2)
+a = B(1, 2.2)

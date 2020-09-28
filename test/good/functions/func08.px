@@ -1,5 +1,5 @@
 
-func f(Int x) Float def
+func f(Int x) Rat def
     return x
 
-print f(2)
+print f(2).fraction

@@ -1,6 +1,6 @@
 
 func one<T>() T def
-    return 1
+    return 10^^16
     return 2.0
 
 print one()

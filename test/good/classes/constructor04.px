@@ -7,10 +7,10 @@ class A def
 
 
 class B(A) def
-    Float y
+    Rat y
 
     constructor def
-        print this.y
+        print this.y.fraction
 
 
 a = A()

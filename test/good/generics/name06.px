@@ -9,4 +9,4 @@ func call<A,B>(A x, A->B f) B def
     return f(x)
 
 print call("qwerty", _[3])
-print call(A(5), B@(_.x).y+1.0)
+print call(A(5), B@(_.x).y+1.8)

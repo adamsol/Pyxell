@@ -1,5 +1,5 @@
 
 Int a
-Float b
+Rat b
 a = b = 1
-print a, b
+print a, b.fraction

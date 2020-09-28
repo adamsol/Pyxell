@@ -1,6 +1,6 @@
 
 func one() Float def
     use math
-    return exp(0.0)
+    return exp(0)
 
 print one()

@@ -2,5 +2,5 @@
 print {2: 5, 3: 4}.all(lambda t: t.a<t.b)
 print {"": "ab", "ab": "c"}.any(_.b.length==0)
 print {'A': true, 'B': false}.filter(_.b)
-print {1: 20}.map(lambda t: (t.a.toFloat(), "{t.b}{t.b}"))
-print {x//2: x for x in 0...7}.fold(lambda t, c: t.a + t.b + c, 0.0)
+print {"111": 20.0}.map(lambda t: (t.a.length, "{t.b}{t.b}"))
+print {x//2: x for x in 0...7}.fold(lambda t, c: t.a + t.b + c, 0.9)

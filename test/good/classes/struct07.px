@@ -1,14 +1,14 @@
 
-func g1(Char c, Int x) Float def
+func g1(Char c, Int x) Rat def
     return c.code - x
 
-func g2(Char c, Int x) Float def
+func g2(Char c, Int x) Rat def
     return c.code + x
 
 class A def
-    Char->Int->Float f: g1
+    Char->Int->Rat f: g1
 
 a = A()
 print a.f('A', 1)
 a.f = g2
-print a.f('B', 6)
+print a.f('B', 6).fraction

@@ -1,6 +1,6 @@
 
 func* f<T>() T def
-    yield 5
+    yield 10^^18
     yield 7/2
     yield -3.0
 

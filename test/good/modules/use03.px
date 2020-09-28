@@ -1,4 +1,4 @@
 
 use math only sqrt
 
-print sqrt(9.0)
+print sqrt(9)

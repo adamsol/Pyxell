@@ -2,5 +2,5 @@
 func f(Float*[[String]] x) def
     print x.a, x.b.length
 
-for t in {3: []} do
+for t in {5/2: []} do
     f(t)

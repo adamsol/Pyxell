@@ -3,4 +3,4 @@ pow = _^_
 neg = -_
 
 print pow(3, neg(4)).fraction
-print pow(neg(7.0), 3)
+print pow(neg(10.0), 31)
