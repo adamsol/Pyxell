@@ -1,1 +1,1 @@
-No implicit conversion from `{Int}` to `{Float}`.
+No implicit conversion from `{Int}` to `{Rat}`.

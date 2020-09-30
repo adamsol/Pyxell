@@ -1,1 +1,1 @@
-No implicit conversion from `Char` to `Float`.
+No implicit conversion from `Char` to `Rat`.

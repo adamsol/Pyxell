@@ -1,6 +1,6 @@
 
 use math
 
-print floor(9.01), floor(-9.01)
-print ceil(9.01), ceil(-9.01)
-print trunc(9.99), trunc(-9.99)
+print floor(9.01e0), floor(-9.01)
+print ceil(9.01e0), ceil(-9.01)
+print trunc(9.99), trunc(-0.999e1)

@@ -1924,6 +1924,9 @@ class PyxellTranspiler:
         else:
             return v.Rat(value)
 
+    def transpileAtomRat(self, node):
+        return v.Rat(node['rat'])
+
     def transpileAtomFloat(self, node):
         return v.Float(node['float'])
 

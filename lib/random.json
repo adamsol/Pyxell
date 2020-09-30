@@ -104,12 +104,12 @@
 					},
 					"name": "r",
 					"default": {
-						"node": "AtomFloat",
+						"node": "AtomInt",
 						"position": [
 							5,
 							25
 						],
-						"float": 1.0
+						"int": 1
 					}
 				}
 			],
@@ -117,7 +117,7 @@
 				"node": "TypeName",
 				"position": [
 					5,
-					30
+					28
 				],
 				"name": "Float"
 			},

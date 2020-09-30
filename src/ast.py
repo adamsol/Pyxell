@@ -419,6 +419,12 @@ class PyxellASTVisitor(PyxellVisitor):
             'int': int(number, base),
         }
 
+    def visitAtomRat(self, ctx):
+        return {
+            **_node(ctx, 'AtomRat'),
+            'rat': ctx.getText().replace('_', ''),
+        }
+
     def visitAtomFloat(self, ctx):
         return {
             **_node(ctx, 'AtomFloat'),

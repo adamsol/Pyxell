@@ -1,1 +1,1 @@
-No implicit conversion from `[Float]` to `[Int]`.
+No implicit conversion from `[Rat]` to `[Int]`.

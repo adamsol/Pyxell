@@ -1,7 +1,7 @@
 
 func f<T>(Bool b) T def
     if b do
-        return 1.0
+        return 1e0
     else do
         return -10^^18
 

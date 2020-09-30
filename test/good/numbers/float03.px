@@ -1,10 +1,10 @@
 
-a = -2.0
+a = -2e0
 a /= 4
 print a
-a /= -2.5
+a /= -2.5e0
 print a
 
-b = 6.25
-b ^= -0.5
+b = 6.25e0
+b ^= -5e-1
 print b

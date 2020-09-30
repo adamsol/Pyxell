@@ -1,1 +1,1 @@
-No implicit conversion from `Float*Float` to `Float*Int`.
+No implicit conversion from `Rat*Rat` to `Rat*Int`.

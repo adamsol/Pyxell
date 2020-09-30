@@ -1,1 +1,1 @@
-No binary operator `+` defined for `[Int]` and `[Float]`.
+No binary operator `+` defined for `[Int]` and `[Rat]`.

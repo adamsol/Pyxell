@@ -2,4 +2,4 @@
 class A def
     Rat x
 
-A(8.0)
+A(8e0)

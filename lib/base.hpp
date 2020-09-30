@@ -66,14 +66,17 @@ struct Rat
     Rat(long long n): numerator(n), denominator(1) {}
     Rat(const bigint& n): numerator(n), denominator(1) {}
 
-    Rat(const std::string& s): denominator(1)
+    Rat(const std::string& s)
     {
-        std::size_t p = s.find('/');
-        numerator = bigint(s.substr(0, p));
-        if (p != s.npos) {
-            denominator = bigint(s.substr(p+1));
+        std::size_t p = s.find('.');
+        if (p == s.npos) {
+            numerator = bigint(s);
+            denominator = bigint(1);
+        } else {
+            numerator = bigint(s.substr(0, p) + s.substr(p+1));
+            denominator = bigint('1' + std::string(s.size()-p-1, '0'));
+            reduce();
         }
-        reduce();
     }
 
     void reduce()

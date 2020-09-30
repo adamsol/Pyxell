@@ -1,4 +1,4 @@
 
 print "-00000".toRat().fraction
-print ("-2/3".toRat() / "4".toRat()).toString()
-print "123456789012345678901234567890/98765432109876543210".toRat().fraction
+print ("-0.5".toRat() / "3".toRat()).toString()
+print "18696943495460731.557696".toRat().fraction

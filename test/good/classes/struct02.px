@@ -1,15 +1,15 @@
 
-z = -2.0
+Float z = -2
 
 class Point def
     Float x
-    Float y: 1.0
+    Float y: 1e0
     Float z: z
 
-z = 2.0
+z = 2
 
 p = Point()
 print p.x, p.y, p.z
-p.x = 4.0
+p.x = 4
 p.z = -7.5
 print p.x, p.y, p.z

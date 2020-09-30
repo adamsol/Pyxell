@@ -40,7 +40,7 @@ def Int(x):
     return Literal(int(x), '{}LL', type=t.Int)
 
 def Rat(x):
-    return Literal(int(x), 'Rat("{}"s)', type=t.Rat)
+    return Literal(x, 'Rat("{}"s)', type=t.Rat)
 
 def Float(x):
     return Literal(float(x), type=t.Float)

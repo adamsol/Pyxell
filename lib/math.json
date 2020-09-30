@@ -1001,12 +1001,12 @@
 								],
 								"stmts": [
 									{
-										"node": "StmtAssg",
+										"node": "StmtAssgExpr",
 										"position": [
 											33,
 											9
 										],
-										"lvalues": [
+										"exprs": [
 											{
 												"node": "AtomId",
 												"position": [
@@ -1014,34 +1014,25 @@
 													9
 												],
 												"id": "m"
+											},
+											{
+												"node": "ExprUnaryOp",
+												"position": [
+													33,
+													14
+												],
+												"expr": {
+													"node": "AtomInt",
+													"position": [
+														33,
+														15
+													],
+													"int": 1
+												},
+												"op": "-"
 											}
 										],
-										"expr": {
-											"node": "ExprBinaryOp",
-											"position": [
-												33,
-												13
-											],
-											"exprs": [
-												{
-													"node": "AtomFloat",
-													"position": [
-														33,
-														13
-													],
-													"float": 1.0
-												},
-												{
-													"node": "AtomId",
-													"position": [
-														33,
-														19
-													],
-													"id": "m"
-												}
-											],
-											"op": "/"
-										}
+										"op": "^"
 									}
 								]
 							}
@@ -1160,12 +1151,12 @@
 											"id": "x"
 										},
 										{
-											"node": "AtomFloat",
+											"node": "AtomInt",
 											"position": [
 												36,
 												13
 											],
-											"float": 0.0
+											"int": 0
 										}
 									],
 									"ops": [
@@ -1176,13 +1167,13 @@
 									"node": "ExprCall",
 									"position": [
 										36,
-										19
+										17
 									],
 									"expr": {
 										"node": "AtomId",
 										"position": [
 											36,
-											19
+											17
 										],
 										"id": "floor"
 									},
@@ -1191,21 +1182,21 @@
 											"node": "CallArg",
 											"position": [
 												36,
-												25
+												23
 											],
 											"name": null,
 											"expr": {
 												"node": "ExprBinaryOp",
 												"position": [
 													36,
-													25
+													23
 												],
 												"exprs": [
 													{
 														"node": "AtomId",
 														"position": [
 															36,
-															25
+															23
 														],
 														"id": "x"
 													},
@@ -1213,7 +1204,7 @@
 														"node": "AtomFloat",
 														"position": [
 															36,
-															27
+															25
 														],
 														"float": 0.5
 													}
