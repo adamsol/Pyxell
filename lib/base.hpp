@@ -162,7 +162,9 @@ Rat operator - (Rat a, const Rat& b)
 }
 Rat operator - (Rat a)
 {
-    a.numerator.sign = -a.numerator.sign;
+    if (!a.numerator.isZero()) {
+        a.numerator.sign = -a.numerator.sign;
+    }
     return a;
 }
 
