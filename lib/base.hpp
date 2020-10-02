@@ -81,10 +81,13 @@ struct Rat
 
     void reduce()
     {
-        bigint d = gcd(numerator, denominator);
-        numerator /= d;
-        denominator /= d;
-
+        if (denominator != 1 && denominator != -1) {
+            bigint d = gcd(numerator, denominator);
+            if (d != 1 && d != -1) {
+                numerator /= d;
+                denominator /= d;
+            }
+        }
         numerator.sign *= denominator.sign;
         denominator.sign = 1;
     }
@@ -112,17 +115,25 @@ struct Rat
     }
     Rat& operator += (const Rat& other)
     {
-        numerator *= other.denominator;
-        numerator += denominator * other.numerator;
-        denominator *= other.denominator;
+        if (denominator == other.denominator) {
+            numerator += other.numerator;
+        } else {
+            numerator *= other.denominator;
+            numerator += denominator * other.numerator;
+            denominator *= other.denominator;
+        }
         reduce();
         return *this;
     }
     Rat& operator -= (const Rat& other)
     {
-        numerator *= other.denominator;
-        numerator -= denominator * other.numerator;
-        denominator *= other.denominator;
+        if (denominator == other.denominator) {
+            numerator -= other.numerator;
+        } else {
+            numerator *= other.denominator;
+            numerator -= denominator * other.numerator;
+            denominator *= other.denominator;
+        }
         reduce();
         return *this;
     }

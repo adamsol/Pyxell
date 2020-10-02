@@ -29,6 +29,7 @@ class PyxellTranspiler:
         self.units = {}
         self.current_unit = None
         self.sequence_number = 0
+        self.const_cache = {}
         self.current_block = c.Block()
 
         self.module_declarations = c.Collection()
@@ -112,7 +113,7 @@ class PyxellTranspiler:
             yield
 
     def output(self, stmt, toplevel=False):
-        if isinstance(stmt, (v.Value, c.Var)):
+        if isinstance(stmt, (v.Value, c.Var, c.Const)):
             stmt = c.Statement(stmt)
 
         if toplevel:
@@ -172,7 +173,7 @@ class PyxellTranspiler:
         if type == t.Int:
             return v.Int(0)
         elif type == t.Rat:
-            return v.Rat(0)
+            return self.rat(0)
         elif type == t.Float:
             return v.Float(0)
         elif type == t.Bool:
@@ -180,7 +181,7 @@ class PyxellTranspiler:
         elif type == t.Char:
             return v.Char('\0')
         elif type == t.String:
-            return v.String('')
+            return self.string('')
         elif type.isArray():
             return v.Array([], type.subtype)
         elif type.isSet():
@@ -300,7 +301,7 @@ class PyxellTranspiler:
             elif attr == 'empty':
                 value = v.Call(v.Attribute(obj, 'empty'), type=t.Bool)
             elif attr == 'join' and type.subtype in {t.Char, t.String}:
-                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default=v.String(''))], t.String), attr)
+                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default=self.string(''))], t.String), attr)
             elif attr == '_asString' and type.subtype == t.Char:
                 value = v.Variable(t.Func([type], t.String), 'asString')
 
@@ -434,6 +435,21 @@ class PyxellTranspiler:
             self.throw(node, err.UnknownType())
 
         return [self.cast(node, value, type) for value in values]
+
+    def const(self, value):
+        s = str(value)
+        if s in self.const_cache:
+            return self.const_cache[s]
+        const = self.var(value.type)
+        self.output(c.Const(const, s), toplevel=True)
+        self.const_cache[s] = const
+        return const
+
+    def rat(self, value):
+        return self.const(v.Rat(value))
+
+    def string(self, value):
+        return self.const(v.String(value))
 
     def var(self, type, prefix='v'):
         return v.Variable(type, self.fake_id(prefix))
@@ -646,7 +662,7 @@ class PyxellTranspiler:
 
         elif op == '%%':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
-                return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0) if left.type == t.Int else v.Rat(0), type=t.Bool)
+                return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0) if left.type == t.Int else self.rat(0), type=t.Bool)
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
@@ -893,10 +909,10 @@ class PyxellTranspiler:
                 self.throw(node, err.NotPrintable(value.type))
 
             if i > 0:
-                self.output(c.Statement(v.Call('write', v.String(' '))))
+                self.output(c.Statement(v.Call('write', self.string(' '))))
             self.output(c.Statement(v.Call('write', self.attr(node, value, 'toString', for_print=True))))
 
-        self.output(c.Statement(v.Call('write', v.String('\\n'))))  # std::endl is very slow
+        self.output(c.Statement(v.Call('write', self.string('\\n'))))  # std::endl is very slow
 
     def transpileStmtDecl(self, node):
         type = self.resolve_type(self.transpile(node['type']))
@@ -1267,7 +1283,7 @@ class PyxellTranspiler:
                 'ret': t.String,
                 'block': {
                     'node': 'StmtReturn',
-                    'expr': v.String(f'{id} object'),
+                    'expr': self.string(f'{id} object'),
                 },
             })
             type.default_methods.add('toString')
@@ -1922,10 +1938,10 @@ class PyxellTranspiler:
         if value < 2**63:
             return v.Int(value)
         else:
-            return v.Rat(value)
+            return self.rat(value)
 
     def transpileAtomRat(self, node):
-        return v.Rat(node['rat'])
+        return self.rat(node['rat'])
 
     def transpileAtomFloat(self, node):
         return v.Float(node['float'])
@@ -1940,7 +1956,7 @@ class PyxellTranspiler:
         expr = self.convert_string(node, node['string'])
 
         if expr['node'] == 'AtomString':
-            return v.String(expr['string'])
+            return self.string(expr['string'])
         
         try:
             return self.transpile(expr)
@@ -1951,7 +1967,7 @@ class PyxellTranspiler:
             }, str(e).partition(': ')[2][:-1])
 
     def transpileAtomNull(self, node):
-        return v.null
+        return self.const(v.null)
 
     def transpileAtomThis(self, node):
         if not self.env.get('#this'):
