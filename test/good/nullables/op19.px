@@ -1,0 +1,6 @@
+
+{String:Int}? d = {"k": 4, "kk": 5}
+print d?["k"]
+
+d = null
+print d?["k"]
