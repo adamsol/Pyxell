@@ -200,6 +200,8 @@ class PyxellTranspiler:
         self.throw(node, err.NotDefaultable(type))
 
     def index(self, node, collection, index, lvalue=False):
+        exprs = node['exprs']
+
         if collection.type.isSequence() or collection.type.isDict():
             if lvalue and collection.type == t.String:
                 self.throw(node, err.NotLvalue())
@@ -207,7 +209,7 @@ class PyxellTranspiler:
             collection = self.tmp(collection)
 
             if collection.type.isSequence():
-                index = self.tmp(self.cast(node, index, t.Int))
+                index = self.tmp(self.cast(exprs[1], index, t.Int))
                 index = v.TernaryOp(
                     v.BinaryOp(index, '<', v.Int(0)),
                     v.BinaryOp(self.attr(node, collection, 'length'), '+', index),
@@ -215,12 +217,12 @@ class PyxellTranspiler:
                 type = collection.type.subtype
 
             elif collection.type.isDict():
-                index = self.cast(node, index, collection.type.key_type)
+                index = self.cast(exprs[1], index, collection.type.key_type)
                 type = collection.type.value_type
 
             return v.Index(collection, index, type=type)
 
-        self.throw(node, err.NotIndexable(collection.type))
+        self.throw(exprs[0], err.NotIndexable(collection.type))
 
     def cond(self, node, pred, callback_true, callback_false):
         pred = self.cast(node, pred, t.Bool)
@@ -961,20 +963,21 @@ class PyxellTranspiler:
             self.store(left, value)
 
     def transpileStmtAppend(self, node):
-        # Special instruction for array/set/dict comprehension.
+        # Special instruction for array/set/dict literals and comprehensions.
         collection = self.transpile(node['collection'])
-        values = lmap(self.transpile, node['exprs'])
+        exprs = node['exprs']
+        values = lmap(self.transpile, exprs)
         if any(value.type == t.Unknown for value in values):
             return
 
         if collection.type.isArray():
-            value = self.cast(node, values[0], collection.type.subtype)
+            value = self.cast(exprs[0], values[0], collection.type.subtype)
             self.output(v.Call(v.Attribute(collection, 'push_back'), value))
         elif collection.type.isSet():
-            value = self.cast(node, values[0], collection.type.subtype)
+            value = self.cast(exprs[0], values[0], collection.type.subtype)
             self.output(v.Call(v.Attribute(collection, 'insert'), value))
         elif collection.type.isDict():
-            values = [self.cast(node, values[0], collection.type.key_type), self.cast(node, values[1], collection.type.value_type)]
+            values = [self.cast(exprs[0], values[0], collection.type.key_type), self.cast(exprs[1], values[1], collection.type.value_type)]
             self.output(v.Call(v.Attribute(collection, 'insert_or_assign'), *values))
 
     def transpileStmtIf(self, node):
@@ -1048,9 +1051,11 @@ class PyxellTranspiler:
             # It must be a function so that there are separate scopes of variables to use in lambdas.
 
             if iterable['node'] == 'ExprBy':
-                step = self.freeze(self.transpile(iterable['exprs'][1]))
+                step_expr = iterable['exprs'][1]
+                step = self.freeze(self.transpile(step_expr))
                 iterable = iterable['exprs'][0]
             else:
+                step_expr = None
                 step = self.freeze(v.Int(1))
 
             if iterable['node'] == 'ExprRange':
@@ -1063,7 +1068,7 @@ class PyxellTranspiler:
                 types.append(type)
                 index = iterator = self.var({t.Rat: t.Rat, t.Float: t.Float}.get(type, t.Int))
                 start = v.Cast(values[0], index.type)
-                self.cast(node, step, index.type)
+                self.cast(step_expr, step, index.type)
 
                 if len(values) == 1:
                     cond = lambda: v.true  # infinite range
@@ -1080,7 +1085,7 @@ class PyxellTranspiler:
                 value = self.tmp(self.transpile(iterable))
                 type = value.type
                 if not type.isIterable():
-                    self.throw(node, err.NotIterable(type))
+                    self.throw(iterable, err.NotIterable(type))
 
                 types.append(type.subtype)
                 iterator = self.var(None)
@@ -1156,7 +1161,7 @@ class PyxellTranspiler:
             for arg in node['args']:
                 type = self.transpile(arg['type'])
                 if not type.hasValue():
-                    self.throw(node, err.InvalidDeclaration(type))
+                    self.throw(arg['type'], err.InvalidDeclaration(type))
                 name = arg['name']
                 default = arg.get('default')
                 variadic = arg.get('variadic')
@@ -1390,6 +1395,7 @@ class PyxellTranspiler:
 
                 var = {
                     'node': 'AtomId',
+                    'position': expr['position'],
                     'id': self.fake_id(),
                 }
                 self.transpile({
@@ -1957,7 +1963,7 @@ class PyxellTranspiler:
 
         if expr['node'] == 'AtomString':
             return self.string(expr['string'])
-        
+
         try:
             return self.transpile(expr)
         except err as e:
