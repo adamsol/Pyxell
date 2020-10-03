@@ -1,0 +1,11 @@
+
+{Int?:[Int]} d
+for i in 1..10 do
+    for j in 1..i do
+        if i %% j do
+            d[i] += [j]
+
+print d[1], d[4], d[7]
+print d.length
+print d[null].length
+print d.length, null in d

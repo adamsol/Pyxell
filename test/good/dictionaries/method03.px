@@ -4,6 +4,7 @@ d = {"": [], "@": a}
 
 print d.get("")
 print d.get("#")?[0]
+print d.length
 
 d.get("@")![0] = 3
 print a

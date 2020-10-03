@@ -1,0 +1,8 @@
+
+{Char:Bool?} d
+d['x'] ??= false
+d['x'] ??= true
+print d
+
+d['y']
+print ('y', null) in {...d}

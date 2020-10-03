@@ -214,13 +214,22 @@ class PyxellTranspiler:
                     v.BinaryOp(index, '<', v.Int(0)),
                     v.BinaryOp(self.attr(node, collection, 'length'), '+', index),
                     index)
-                type = collection.type.subtype
+                return v.Index(collection, index, type=collection.type.subtype)
 
             elif collection.type.isDict():
                 index = self.cast(exprs[1], index, collection.type.key_type)
                 type = collection.type.value_type
 
-            return v.Index(collection, index, type=type)
+                it = self.tmp(v.Call(v.Attribute(collection, 'find'), index))
+                end = v.Call(v.Attribute(collection, 'end'))
+
+                block = c.Block()
+                self.output(c.If(f'{it} == {end}', block))
+                with self.block(block):
+                    default = self.default(node, type, nullptr_allowed=True)
+                    self.output(c.Statement(it, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), it, index, default)))
+
+                return v.Attribute(it, 'second', type=type)
 
         self.throw(exprs[0], err.NotIndexable(collection.type))
 
