@@ -1,3 +1,3 @@
 
-print [0...5e5 by 25e-2].length
-print [0e0..-1000 by -1/8][-2:]
+print [0...5e5 by 0.25f].length
+print [0f..-1000 by -1/8][-2:]

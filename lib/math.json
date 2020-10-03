@@ -1218,13 +1218,13 @@
 									"node": "ExprCall",
 									"position": [
 										36,
-										34
+										33
 									],
 									"expr": {
 										"node": "AtomId",
 										"position": [
 											36,
-											34
+											33
 										],
 										"id": "ceil"
 									},
@@ -1233,21 +1233,21 @@
 											"node": "CallArg",
 											"position": [
 												36,
-												39
+												38
 											],
 											"name": null,
 											"expr": {
 												"node": "ExprBinaryOp",
 												"position": [
 													36,
-													39
+													38
 												],
 												"exprs": [
 													{
 														"node": "AtomId",
 														"position": [
 															36,
-															39
+															38
 														],
 														"id": "x"
 													},
@@ -1255,7 +1255,7 @@
 														"node": "AtomFloat",
 														"position": [
 															36,
-															41
+															40
 														],
 														"float": 0.5
 													}

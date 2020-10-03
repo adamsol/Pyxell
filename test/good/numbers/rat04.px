@@ -1,9 +1,9 @@
 
-Rat a = -3
+a = -3r
 b = a
 
 a ^= -4
 a *= b
 a += -b
 
-print a.fraction, b
+print a.fraction, b.fraction

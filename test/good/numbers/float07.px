@@ -1,6 +1,6 @@
 
-print 5e0 == 5 and 0 == 0e0 == -0e0
-print -3 < -2.9e0 <= 2 and not 15.6e0 > 15 >= 15.34e0
+print 5f == 5 and 0 == 0f == -0.0f
+print -3 < -2.9f <= 2 and not 15.6f > 15 >= 15.34f
 
-print 3 == 3.5e0 or -1.23e0 == -1
-print 2 != 2e0 or -7e0 != -7
+print 3 == 3.5f or -1.23f == -1
+print 2 != 2f or -7.0f != -7

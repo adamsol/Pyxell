@@ -422,13 +422,13 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitAtomRat(self, ctx):
         return {
             **_node(ctx, 'AtomRat'),
-            'rat': ctx.getText().replace('_', ''),
+            'rat': ctx.getText().replace('_', '').replace('r', ''),
         }
 
     def visitAtomFloat(self, ctx):
         return {
             **_node(ctx, 'AtomFloat'),
-            'float': float(ctx.getText().replace('_', '')),
+            'float': float(ctx.getText().replace('_', '').replace('f', '')),
         }
 
     def visitAtomBool(self, ctx):

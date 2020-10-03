@@ -1,9 +1,9 @@
 
-x = 5.783e0
-print x == x == 4.9e0 + 0.883e0
+x = 5.783f
+print x == x == 4.9f + 0.883f
 
-print 2e0 < 2.1e0 <= 2.1e0
-print not -6.6e0 > -7.167e0 != 7.167e0 >= -8e0
+print 2f < 2.1f <= 2.1f
+print not -6.6f > -7.167f != 7.167f >= -8f
 
 print x == -x or x != x
-print 0.1e0 + 0.1e0 <= 0.1e0 or 1e0 >= 1.01e0 or 0.5e0 < 0.5e0 / 1e0 or +0e6 > -0e5
+print 0.1f + 0.1f <= 0.1f or 1f >= 1.01f or 0.5f < 0.5f / 1f or +0.0f > -0e5

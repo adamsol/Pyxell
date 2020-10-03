@@ -1,2 +1,2 @@
 
-print [1/1..100].reduce(_*_).toString().fold(_.toInt()+_, 0)
+print [1..100r].reduce(_*_).toString().fold(_.toInt()+_, 0)

@@ -5,9 +5,9 @@ class C def
 
 n = 10^^5
 
-c = [C(i, 1.25e0) for i in 0...n] + [C(i, 1.5e0) for i in n...3*n]
+c = [C(i, 1.25f) for i in 0...n] + [C(i, 1.5f) for i in n...3*n]
 c.sort(reverse=true, key=_.x)
 
 print c.length
-print [c[i].id == n+i and c[i].x == 1.5e0 for i in 0...2*n].all()
-print [c[i].id == i-2*n and c[i].x == 1.25e0 for i in 2*n...3*n].all()
+print [c[i].id == n+i and c[i].x == 1.5f for i in 0...2*n].all()
+print [c[i].id == i-2*n and c[i].x == 1.25f for i in 2*n...3*n].all()

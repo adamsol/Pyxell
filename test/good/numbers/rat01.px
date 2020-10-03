@@ -8,7 +8,7 @@ print 97/4
 print -15/3
 print 1/5000
 print 0/2
-print -0.0
+print -0r
 print -3.924
 print (165/-1210).fraction
 print 1.75.fraction

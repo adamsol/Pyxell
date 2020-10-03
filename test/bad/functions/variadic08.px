@@ -2,4 +2,4 @@
 func f(Float... args) def
     return
 
-f([0e0])
+f([0f])
