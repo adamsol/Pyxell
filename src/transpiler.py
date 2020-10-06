@@ -1819,16 +1819,17 @@ class PyxellTranspiler:
         if not iterable.type.isIterable():
             self.throw(node, err.NotIterable(iterable.type))
 
-        if iterable.type.subtype == t.Unknown:  # for the case of empty container
+        if iterable.type == t.String:
+            type = iterable.type
+        elif iterable.type.isDict():
+            type = iterable.type.key_type
+        else:
+            type = iterable.type.subtype
+
+        if type == t.Unknown:  # for the case of empty container
             return v.Bool(node.get('not'))
 
-        if iterable.type == t.String:
-            element = self.cast(node, element, iterable.type)
-        elif iterable.type.isDict():
-            element = self.cast(node, element, iterable.type.key_type)
-        else:
-            element = self.cast(node, element, iterable.type.subtype)
-
+        element = self.cast(node, element, type)
         result = v.Call('contains', iterable, element, type=t.Bool)
         return v.UnaryOp('!', result, type=t.Bool) if node.get('not') else result
 

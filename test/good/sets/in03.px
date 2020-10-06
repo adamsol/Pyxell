@@ -1,0 +1,3 @@
+
+print "" in {}
+print null not in {}
