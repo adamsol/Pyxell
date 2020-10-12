@@ -694,32 +694,6 @@ bool contains(const Dict<K, V>& x, const K& k)
 
 /* Container methods */
 
-template <typename T, std::enable_if_t<std::is_same<typename T::value_type, Char>::value, int> = 0>
-String join(const custom_ptr<T>& x, const String& sep)
-{
-    auto r = make_string();
-    for (auto it = x->begin(); it != x->end(); ++it) {
-        if (it != x->begin()) {
-            r->append(*sep);
-        }
-        r->push_back(*it);
-    }
-    return r;
-}
-
-template <typename T, std::enable_if_t<std::is_same<typename T::value_type, String>::value, int> = 0>
-String join(const custom_ptr<T>& x, const String& sep)
-{
-    auto r = make_string();
-    for (auto it = x->begin(); it != x->end(); ++it) {
-        if (it != x->begin()) {
-            r->append(*sep);
-        }
-        r->append(**it);
-    }
-    return r;
-}
-
 template <typename T>
 String asString(const custom_ptr<T>& x)
 {
@@ -776,6 +750,30 @@ Bool endsWith(const String& x, const String& y)
 }
 
 /* Array methods */
+
+String join(const Array<Char>& x, const String& sep)
+{
+    auto r = make_string();
+    for (auto it = x->begin(); it != x->end(); ++it) {
+        if (it != x->begin()) {
+            r->append(*sep);
+        }
+        r->push_back(*it);
+    }
+    return r;
+}
+
+String join(const Array<String>& x, const String& sep)
+{
+    auto r = make_string();
+    for (auto it = x->begin(); it != x->end(); ++it) {
+        if (it != x->begin()) {
+            r->append(*sep);
+        }
+        r->append(**it);
+    }
+    return r;
+}
 
 template <typename T>
 Void push(const Array<T>& x, const T& e)

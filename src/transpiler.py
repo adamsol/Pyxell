@@ -311,8 +311,6 @@ class PyxellTranspiler:
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif attr == 'empty':
                 value = v.Call(v.Attribute(obj, 'empty'), type=t.Bool)
-            elif attr == 'join' and type.subtype in {t.Char, t.String}:
-                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default=self.string(''))], t.String), attr)
             elif attr == '_asString' and type.subtype == t.Char:
                 value = v.Variable(t.Func([type], t.String), 'asString')
 
@@ -331,6 +329,8 @@ class PyxellTranspiler:
                     'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
 
+            elif attr == 'join' and type.isArray() and type.subtype in {t.Char, t.String}:
+                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default=self.string(''))], t.String), attr)
             elif type.isArray():
                 value = {
                     'all': self.env['Array_all'],

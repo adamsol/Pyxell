@@ -1,3 +1,0 @@
-
-print {'x', 'y'}.join().length
-print {"123", "", "z"}.join(", ").length

@@ -1,3 +1,0 @@
-
-print "test".join()
-print "abc".join(", ")
