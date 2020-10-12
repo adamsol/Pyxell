@@ -311,8 +311,6 @@ class PyxellTranspiler:
                 value = v.Cast(v.Call(v.Attribute(obj, 'size')), t.Int)
             elif attr == 'empty':
                 value = v.Call(v.Attribute(obj, 'empty'), type=t.Bool)
-            elif attr == '_asString' and type.subtype == t.Char:
-                value = v.Variable(t.Func([type], t.String), 'asString')
 
             elif type == t.String:
                 value = {

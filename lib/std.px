@@ -44,10 +44,10 @@ func String_any(String s, Char->Bool f) Bool def
     return false
 
 func String_filter(String s, Char->Bool f) String def
-    return [c for c in s if f(c)]._asString()
+    return [c for c in s if f(c)].join()
 
 func String_map(String s, Char->Char f) String def
-    return [f(c) for c in s]._asString()
+    return [f(c) for c in s].join()
 
 func String_fold<B>(String s, Char->B->B f, B r) B def
     for c in s do

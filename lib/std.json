@@ -1688,7 +1688,7 @@
 										}
 									]
 								},
-								"attr": "_asString"
+								"attr": "join"
 							},
 							"args": []
 						}
@@ -1862,7 +1862,7 @@
 										}
 									]
 								},
-								"attr": "_asString"
+								"attr": "join"
 							},
 							"args": []
 						}

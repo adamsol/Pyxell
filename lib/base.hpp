@@ -692,14 +692,6 @@ bool contains(const Dict<K, V>& x, const K& k)
 #endif
 
 
-/* Container methods */
-
-template <typename T>
-String asString(const custom_ptr<T>& x)
-{
-    return make_string(x->begin(), x->end());
-}
-
 /* String methods */
 
 Array<String> split(const String& x, const String& y)
@@ -753,6 +745,9 @@ Bool endsWith(const String& x, const String& y)
 
 String join(const Array<Char>& x, const String& sep)
 {
+    if (sep->size() == 0) {
+        return make_string(x->begin(), x->end());
+    }
     auto r = make_string();
     for (auto it = x->begin(); it != x->end(); ++it) {
         if (it != x->begin()) {
