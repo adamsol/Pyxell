@@ -291,11 +291,11 @@ class PyxellTranspiler:
             else:
                 value = v.Variable(t.Func([type], t.String), 'toString')
 
-        elif attr == 'toInt' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
+        elif attr == 'toInt' and type in {t.Rat, t.Float, t.String}:
             value = v.Variable(t.Func([type], t.Int), 'toInt')
-        elif attr == 'toRat' and type in {t.Int, t.Rat, t.Bool, t.Char, t.String}:
+        elif attr == 'toRat' and type == t.String:
             value = v.Variable(t.Func([type], t.Rat), 'toRat')
-        elif attr == 'toFloat' and type in {t.Int, t.Rat, t.Float, t.Bool, t.Char, t.String}:
+        elif attr == 'toFloat' and type == t.String:
             value = v.Variable(t.Func([type], t.Float), 'toFloat')
 
         elif attr == 'fraction' and type == t.Rat:

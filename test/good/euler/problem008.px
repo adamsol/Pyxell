@@ -8,7 +8,7 @@ d = 13
 for i in 0...s.length-d do
     v = 1
     for j in i...i+d do
-        v *= s[j].toInt()
+        v *= s[j] - '0'
     x = max(x, v)
 
 print x

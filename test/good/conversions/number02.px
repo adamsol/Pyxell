@@ -1,6 +1,7 @@
 
-Int x = 2
+x = 15r
+x /= 12
 print x.toInt()
 
-Float y = 2.5
-print y.toFloat()
+x = -x^20
+print x.toInt()

@@ -7,7 +7,7 @@ class A def
 
 class B(A) def
     func f() def
-        print this.x.toFloat() + 0.5
+        print this.x + 0.5
         super()
 
 class C(B) def

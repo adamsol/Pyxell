@@ -12,4 +12,4 @@ print f(_ is null ? 1 : 0, x)
 func f'(Int?->Float? g, Int? x) Float? def
     return g(x)
 
-print f'(_?.toFloat(), x)
+print f'(_?.toString()?.toFloat(), x)

@@ -1149,78 +1149,23 @@ Int toInt(Float x)
     return static_cast<Int>(x);
 }
 
-Int toInt(Bool x)
-{
-    return x ? 1 : 0;
-}
-
 Int toInt(const String& x)
 {
     return std::stoll(*x);
 }
 
-Int toInt(Char x)
-{
-    return toInt(static_cast<String>(x));
-}
-
 /* Conversion to Rat */
-
-Rat toRat(Int x)
-{
-    return Rat(x);
-}
-
-Rat toRat(const Rat& x)
-{
-    return x;
-}
-
-Rat toRat(Bool x)
-{
-    return x ? 1 : 0;
-}
 
 Rat toRat(const String& x)
 {
     return Rat(*x);
 }
 
-Rat toRat(Char x)
-{
-    return toRat(static_cast<String>(x));
-}
-
 /* Conversion to Float */
-
-Float toFloat(Int x)
-{
-    return static_cast<Float>(x);
-}
-
-Float toFloat(const Rat& x)
-{
-    return static_cast<Float>(x);
-}
-
-Float toFloat(Float x)
-{
-    return x;
-}
-
-Float toFloat(Bool x)
-{
-    return x ? 1.0 : 0.0;
-}
 
 Float toFloat(const String& x)
 {
     return std::stod(*x);
-}
-
-Float toFloat(Char x)
-{
-    return toFloat(static_cast<String>(x));
 }
 
 

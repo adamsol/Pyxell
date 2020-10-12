@@ -1,4 +1,0 @@
-
-print '6'.toInt() // 3
-print '7'.toRat().fraction
-print '4'.toFloat() / 5
