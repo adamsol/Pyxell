@@ -378,6 +378,7 @@ class PyxellTranspiler:
                     'filter': self.env['Dict_filter'],
                     'map': self.env['Dict_map'],
                     'fold': self.env['Dict_fold'],
+                    'reduce': self.env['Dict_reduce'],
                     'update': v.Variable(t.Func([type, type]), attr),
                     'get': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),
                     'pop': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),

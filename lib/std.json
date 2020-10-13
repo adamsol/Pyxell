@@ -6484,6 +6484,442 @@
 					}
 				]
 			}
+		},
+		{
+			"node": "StmtFunc",
+			"position": [
+				166,
+				1
+			],
+			"id": "Dict_reduce",
+			"typevars": [
+				"A",
+				"B"
+			],
+			"args": [
+				{
+					"node": "FuncArg",
+					"position": [
+						166,
+						23
+					],
+					"type": {
+						"node": "TypeDict",
+						"position": [
+							166,
+							23
+						],
+						"key_type": {
+							"node": "TypeName",
+							"position": [
+								166,
+								24
+							],
+							"name": "A"
+						},
+						"value_type": {
+							"node": "TypeName",
+							"position": [
+								166,
+								26
+							],
+							"name": "B"
+						}
+					},
+					"name": "a",
+					"default": null
+				},
+				{
+					"node": "FuncArg",
+					"position": [
+						166,
+						32
+					],
+					"type": {
+						"node": "TypeFunc",
+						"position": [
+							166,
+							37
+						],
+						"args": [
+							{
+								"node": "TypeTuple",
+								"position": [
+									166,
+									32
+								],
+								"elements": [
+									{
+										"node": "TypeName",
+										"position": [
+											166,
+											32
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											166,
+											34
+										],
+										"name": "B"
+									}
+								]
+							},
+							{
+								"node": "TypeTuple",
+								"position": [
+									166,
+									37
+								],
+								"elements": [
+									{
+										"node": "TypeName",
+										"position": [
+											166,
+											37
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											166,
+											39
+										],
+										"name": "B"
+									}
+								]
+							}
+						],
+						"ret": {
+							"node": "TypeTuple",
+							"position": [
+								166,
+								42
+							],
+							"elements": [
+								{
+									"node": "TypeName",
+									"position": [
+										166,
+										42
+									],
+									"name": "A"
+								},
+								{
+									"node": "TypeName",
+									"position": [
+										166,
+										44
+									],
+									"name": "B"
+								}
+							]
+						}
+					},
+					"name": "f",
+					"default": null
+				}
+			],
+			"ret": {
+				"node": "TypeTuple",
+				"position": [
+					166,
+					49
+				],
+				"elements": [
+					{
+						"node": "TypeName",
+						"position": [
+							166,
+							49
+						],
+						"name": "A"
+					},
+					{
+						"node": "TypeName",
+						"position": [
+							166,
+							51
+						],
+						"name": "B"
+					}
+				]
+			},
+			"block": {
+				"node": "Block",
+				"position": [
+					166,
+					56
+				],
+				"stmts": [
+					{
+						"node": "StmtDecl",
+						"position": [
+							167,
+							5
+						],
+						"type": {
+							"node": "TypeTuple",
+							"position": [
+								167,
+								5
+							],
+							"elements": [
+								{
+									"node": "TypeName",
+									"position": [
+										167,
+										5
+									],
+									"name": "A"
+								},
+								{
+									"node": "TypeName",
+									"position": [
+										167,
+										7
+									],
+									"name": "B"
+								}
+							]
+						},
+						"id": "r",
+						"expr": null
+					},
+					{
+						"node": "StmtAssg",
+						"position": [
+							168,
+							5
+						],
+						"lvalues": [
+							{
+								"node": "AtomId",
+								"position": [
+									168,
+									5
+								],
+								"id": "b"
+							}
+						],
+						"expr": {
+							"node": "AtomBool",
+							"position": [
+								168,
+								9
+							],
+							"bool": true
+						}
+					},
+					{
+						"node": "StmtFor",
+						"position": [
+							169,
+							5
+						],
+						"vars": [
+							{
+								"node": "AtomId",
+								"position": [
+									169,
+									9
+								],
+								"id": "x"
+							}
+						],
+						"iterables": [
+							{
+								"node": "AtomId",
+								"position": [
+									169,
+									14
+								],
+								"id": "a"
+							}
+						],
+						"block": {
+							"node": "Block",
+							"position": [
+								169,
+								18
+							],
+							"stmts": [
+								{
+									"node": "StmtIf",
+									"position": [
+										170,
+										9
+									],
+									"exprs": [
+										{
+											"node": "AtomId",
+											"position": [
+												170,
+												12
+											],
+											"id": "b"
+										}
+									],
+									"blocks": [
+										{
+											"node": "Block",
+											"position": [
+												170,
+												16
+											],
+											"stmts": [
+												{
+													"node": "StmtAssg",
+													"position": [
+														171,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																171,
+																13
+															],
+															"id": "r"
+														}
+													],
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															171,
+															17
+														],
+														"id": "x"
+													}
+												},
+												{
+													"node": "StmtAssg",
+													"position": [
+														172,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																172,
+																13
+															],
+															"id": "b"
+														}
+													],
+													"expr": {
+														"node": "AtomBool",
+														"position": [
+															172,
+															17
+														],
+														"bool": false
+													}
+												}
+											]
+										},
+										{
+											"node": "Block",
+											"position": [
+												173,
+												16
+											],
+											"stmts": [
+												{
+													"node": "StmtAssg",
+													"position": [
+														174,
+														13
+													],
+													"lvalues": [
+														{
+															"node": "AtomId",
+															"position": [
+																174,
+																13
+															],
+															"id": "r"
+														}
+													],
+													"expr": {
+														"node": "ExprCall",
+														"position": [
+															174,
+															17
+														],
+														"expr": {
+															"node": "AtomId",
+															"position": [
+																174,
+																17
+															],
+															"id": "f"
+														},
+														"args": [
+															{
+																"node": "CallArg",
+																"position": [
+																	174,
+																	19
+																],
+																"name": null,
+																"expr": {
+																	"node": "AtomId",
+																	"position": [
+																		174,
+																		19
+																	],
+																	"id": "x"
+																}
+															},
+															{
+																"node": "CallArg",
+																"position": [
+																	174,
+																	22
+																],
+																"name": null,
+																"expr": {
+																	"node": "AtomId",
+																	"position": [
+																		174,
+																		22
+																	],
+																	"id": "r"
+																}
+															}
+														]
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"node": "StmtReturn",
+						"position": [
+							175,
+							5
+						],
+						"expr": {
+							"node": "AtomId",
+							"position": [
+								175,
+								12
+							],
+							"id": "r"
+						}
+					}
+				]
+			}
 		}
 	]
 }

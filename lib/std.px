@@ -162,3 +162,14 @@ func Dict_fold<A,B,C>({A:B} a, A*B->C->C f, C r) C def
     for x in a do
         r = f(x, r)
     return r
+
+func Dict_reduce<A,B>({A:B} a, A*B->A*B->A*B f) A*B def
+    A*B r
+    b = true
+    for x in a do
+        if b do
+            r = x
+            b = false
+        else do
+            r = f(x, r)
+    return r
