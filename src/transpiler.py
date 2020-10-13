@@ -320,6 +320,7 @@ class PyxellTranspiler:
                     'map': self.env['String_map'],
                     'fold': self.env['String_fold'],
                     'reduce': self.env['String_reduce'],
+                    'get': v.Variable(t.Func([type, t.Int], t.Nullable(t.Char)), attr),
                     'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
                     'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),

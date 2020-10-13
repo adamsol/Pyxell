@@ -1,0 +1,5 @@
+
+s = "qwerty"
+print s.get(0), s.get(5)!
+print s.get(-4)?.code
+print s.get(6), s.get(-7)?.code

@@ -692,6 +692,21 @@ bool contains(const Dict<K, V>& x, const K& k)
 #endif
 
 
+/* Container methods */
+
+template <typename T>
+Nullable<typename T::value_type> get(const custom_ptr<T>& x, Int i)
+{
+    if (i < 0) {
+        i += x->size();
+    }
+    if (0 <= i && i < x->size()) {
+        return Nullable<typename T::value_type>((*x)[i]);
+    } else {
+        return Nullable<typename T::value_type>();
+    }
+}
+
 /* String methods */
 
 Array<String> split(const String& x, const String& y)
@@ -790,19 +805,6 @@ Void extend(const Array<T>& x, const Array<T>& y)
 {
     x->reserve(x->size() + y->size());
     x->insert(x->end(), y->begin(), y->end());
-}
-
-template <typename T>
-Nullable<T> get(const Array<T>& x, Int i)
-{
-    if (i < 0) {
-        i += x->size();
-    }
-    if (0 <= i && i < x->size()) {
-        return Nullable<T>((*x)[i]);
-    } else {
-        return Nullable<T>();
-    }
 }
 
 template <typename T>
