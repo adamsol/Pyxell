@@ -7,12 +7,7 @@ x = {1..n by s}
 for i in {3..n by s} do
     x.add(i)
 
-c = 0
-for i in 1..n do
-    if x.contains(i) do
-        c += 1
-
-print c
+print x.length
 
 for i in s+1..n do
     x.remove(i)

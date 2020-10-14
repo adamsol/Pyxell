@@ -368,7 +368,6 @@ class PyxellTranspiler:
                     'remove': v.Variable(t.Func([type, type.subtype]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
-                    'contains': v.Variable(t.Func([type, type.subtype], t.Bool), attr),
                 }.get(attr)
 
             elif type.isDict():
