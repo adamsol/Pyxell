@@ -1,0 +1,6 @@
+
+print [10^^16] + [2.5f]
+print ["", "qwerty"] + ['t']
+print [3] * 2 + []
+print [] + [null] + [true, false]
+print [] + [] + [] * 5

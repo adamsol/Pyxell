@@ -1,0 +1,4 @@
+
+print {3f} + {} + {3.0} + {3}
+print {true, false} - {false, true} & {null, false} - {}
+print {} & {""}

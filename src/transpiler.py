@@ -436,13 +436,14 @@ class PyxellTranspiler:
 
         return _cast(value, type)
 
-    def unify(self, node, *values):
+    def unify(self, node, *values, error=err.UnknownType()):
         if not values:
             return []
 
-        type = unify_types(*[value.type for value in values])
+        types = [value.type for value in values]
+        type = unify_types(*types)
         if type is None:
-            self.throw(node, err.UnknownType())
+            self.throw(node, error)
 
         return [self.cast(node, value, type) for value in values]
 
@@ -633,7 +634,8 @@ class PyxellTranspiler:
                 self.throw(node, err.NoBinaryOperator(op, *types))
 
         elif op == '&':
-            if left.type == right.type and left.type.isSet():
+            if left.type.isSet() and right.type.isSet():
+                left, right = self.unify(node, left, right, error=err.NoBinaryOperator('&', left.type, right.type))
                 return v.Call('intersection', left, right, type=left.type)
             else:
                 self.throw(node, err.NoBinaryOperator(op, *types))
@@ -648,7 +650,8 @@ class PyxellTranspiler:
             elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.Call('concat', v.Cast(left, t.String), v.Cast(right, t.String), type=t.String)
 
-            elif left.type == right.type and left.type.isCollection():
+            elif left.type.isCollection() and right.type.isCollection():
+                left, right = self.unify(node, left, right, error=err.NoBinaryOperator('+', left.type, right.type))
                 return v.Call('concat', left, right, type=left.type)
 
             else:
@@ -664,7 +667,8 @@ class PyxellTranspiler:
             elif left.type == t.Char and right.type == t.Int:
                 return v.Cast(v.BinaryOp(left, op, right), t.Char)
 
-            elif left.type == right.type and left.type.isSet():
+            elif left.type.isSet() and right.type.isSet():
+                left, right = self.unify(node, left, right, error=err.NoBinaryOperator('-', left.type, right.type))
                 return v.Call('difference', left, right, type=left.type)
 
             else:
