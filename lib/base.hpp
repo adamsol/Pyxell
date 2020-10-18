@@ -854,9 +854,12 @@ Array<T> copy(const Array<T>& x)
 }
 
 template <typename T>
-Nullable<Int> find(const Array<T>& x, const T& e)
+Nullable<Int> find(const Array<T>& x, const T& e, Int i)
 {
-    for (std::size_t i = 0; i < x->size(); ++i) {
+    if (i < 0) {
+        i += x->size();
+    }
+    for (; i < x->size(); ++i) {
         if ((*x)[i] == e) {
             return Nullable<Int>(i);
         }

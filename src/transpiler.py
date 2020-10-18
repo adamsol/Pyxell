@@ -322,7 +322,7 @@ class PyxellTranspiler:
                     'reduce': self.env['String_reduce'],
                     'get': v.Variable(t.Func([type, t.Int], t.Nullable(t.Char)), attr),
                     'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
-                    'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
+                    'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, 'start', default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
                     'startsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                     'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
@@ -348,7 +348,7 @@ class PyxellTranspiler:
                     'reverse': v.Variable(t.Func([type]), attr),
                     'sort': v.Variable(t.Func([type, t.Func.Arg(t.Bool, 'reverse', default=v.false), t.Func.Arg(t.Func([type.subtype], t.Var('K')), 'key', default={'node': 'AtomPlaceholder'})], type), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
-                    'find': v.Variable(t.Func([type, type.subtype], t.Nullable(t.Int)), attr),
+                    'find': v.Variable(t.Func([type, type.subtype, t.Func.Arg(t.Int, 'start', default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
                 }.get(attr)
 
