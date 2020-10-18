@@ -380,7 +380,7 @@ class PyxellTranspiler:
                     'reduce': self.env['Dict_reduce'],
                     'update': v.Variable(t.Func([type, type]), attr),
                     'get': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),
-                    'pop': v.Variable(t.Func([type, type.key_type], t.Nullable(type.value_type)), attr),
+                    'remove': v.Variable(t.Func([type, type.key_type]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
                 }.get(attr)

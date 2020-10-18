@@ -1,10 +1,11 @@
 
 d = {c: c.code for c in 'a'..'z'}
 
-print d.pop('B')
-print d.pop('b') ?? -1
-print d.pop('b') ?? -1
+d.remove('b')
+print d.get('b')
 
+d.remove('A')
 print d.length
+
 d.clear()
 print d

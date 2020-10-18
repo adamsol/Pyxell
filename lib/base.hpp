@@ -955,15 +955,9 @@ Nullable<V> get(const Dict<K, V>& x, const K& e)
 }
 
 template <typename K, typename V>
-Nullable<V> pop(const Dict<K, V>& x, const K& e)
+Void remove(const Dict<K, V>& x, const K& e)
 {
-    Nullable<V> r;
-    auto it = x->find(e);
-    if (it != x->end()) {
-        r = Nullable<V>(it->second);
-        x->erase(it);
-    }
-    return r;
+    x->erase(e);
 }
 
 template <typename K, typename V>
