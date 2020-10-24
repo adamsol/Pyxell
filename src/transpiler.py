@@ -817,24 +817,20 @@ class PyxellTranspiler:
 
         body = template.body
 
-        if not body:  # `extern`
-            func = v.Variable(template.type, template.id)
+        with self.local():
+            self.env = template.env.copy()
+            self.env.update(assigned_types)
+
+            func_type = self.resolve_type(template.type)
+
+            func = self.var(func_type, prefix='f')
             template.cache[real_types] = func
 
-        else:
-            with self.local():
-                self.env = template.env.copy()
-                self.env.update(assigned_types)
+            arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
+            block = c.Block()
 
-                func_type = self.resolve_type(template.type)
-
-                func = self.var(func_type, prefix='f')
-                template.cache[real_types] = func
-
-                arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
-                block = c.Block()
-
-                with self.block(block):
+            with self.block(block):
+                if body:
                     self.env['#return'] = func_type.ret
                     self.env.pop('#loop', None)
 
@@ -870,14 +866,17 @@ class PyxellTranspiler:
                     if func_type.ret.hasValue():
                         self.output(c.Statement('return', self.default(body, func_type.ret, nullptr_allowed=True)))
 
-            if template.lambda_:
-                # The closure is created every time the function is used (except for recursive calls),
-                # so current values of variables are captured, possibly different than in the moment of definition.
-                del template.cache[real_types]
-                self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=func_type)
-            else:
-                self.output(c.Statement(func_type.ret, f'{func}({func_type.args_str()})'), toplevel=True)
-                self.output(c.Function(func_type.ret, func, arg_vars, block), toplevel=True)
+                else:  # `extern`
+                    self.output(c.Statement('return', v.Call(v.Variable(template.type, template.id), *arg_vars)))
+
+        if template.lambda_:
+            # The closure is created every time the function is used (except for recursive calls),
+            # so current values of variables are captured, possibly different than in the moment of definition.
+            del template.cache[real_types]
+            self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=func_type)
+        else:
+            self.output(c.Statement(func_type.ret, f'{func}({func_type.args_str()})'), toplevel=True)
+            self.output(c.Function(func_type.ret, func, arg_vars, block), toplevel=True)
 
         return func.bind(template.bound)
 
