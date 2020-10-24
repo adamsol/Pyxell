@@ -17,12 +17,6 @@ func asin(Float x) Float extern
 func atan(Float x) Float extern
 func atan2(Float y, Float x) Float extern
 
-func rad(Float x) Float def
-    return x * PI / 180
-
-func deg(Float x) Float def
-    return x * 180 / PI
-
 func floor(Float x) Float extern
 func ceil(Float x) Float extern
 func trunc(Float x) Float extern
