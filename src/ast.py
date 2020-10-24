@@ -41,12 +41,8 @@ class PyxellASTVisitor(PyxellVisitor):
         }
 
     def visitStmtUse(self, ctx):
-        if ctx.only:
-            detail = ['only', *self.visit(ctx.only)]
-        elif ctx.hiding:
+        if ctx.hiding:
             detail = ['hiding', *self.visit(ctx.hiding)]
-        elif ctx.as_:
-            detail = ['as', ctx.as_.text]
         else:
             detail = ['all']
         return {

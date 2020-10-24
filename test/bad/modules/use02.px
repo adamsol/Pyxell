@@ -1,4 +1,4 @@
 
-use math only sin
+use math hiding sin
 
-print PI
+sin(0)

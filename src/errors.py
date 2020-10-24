@@ -19,7 +19,6 @@ class PyxellError(Exception):
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidFunctionCall = lambda id, types, msg: f"Error in function `{id}` called here{(' (with types ' + ', '.join(f'{name}={type.show()}' for name, type in types.items()) + ')') if types else ''}.\n{msg}"
     InvalidMember = lambda id: f"Invalid type signature of member `{id}`"
-    InvalidModule = lambda id: f"Could not find module `{id}`"
     InvalidReturnType = lambda t: f"`{t.show()}` is not a valid return type"
     InvalidUsage = lambda s: f"`{s}` cannot be used here"
     MissingArgument = lambda id: f"Missing required argument `{id}`"
@@ -49,6 +48,7 @@ class PyxellError(Exception):
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
     UnexpectedArgument = lambda id: f"Unexpected argument `{id}`"
     UnexpectedVoid = lambda: f"Function without return value cannot be called here"
+    UnknownModule = lambda id: f"Unknown module `{id}`"
     UnknownType = lambda: f"Cannot settle type of the expression"
 
     def __init__(self, msg, line, column=None):

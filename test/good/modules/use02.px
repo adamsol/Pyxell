@@ -1,4 +1,4 @@
 
-use math as m
+use math hiding E, exp
 
-print m.cos(0)
+print cos(PI)

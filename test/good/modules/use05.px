@@ -1,6 +1,0 @@
-
-func one() Float def
-    use math
-    return exp(0)
-
-print one()

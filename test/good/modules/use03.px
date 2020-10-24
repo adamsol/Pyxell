@@ -1,4 +1,6 @@
 
-use math only sqrt
+func one() Float def
+    use math
+    return exp(0)
 
-print sqrt(9)
+print one()

@@ -891,24 +891,18 @@ class PyxellTranspiler:
     def transpileStmtUse(self, node):
         name = node['name']
         if name not in self.units:
-            self.throw(node, err.InvalidModule(name))
+            self.throw(node, err.UnknownModule(name))
 
         unit = self.units[name]
         kind, *ids = node['detail']
-        if kind == 'only':
-            for id in ids:
-                if id not in unit.env:
-                    self.throw(node, err.UndeclaredIdentifier(id))
-                self.env[id] = unit.env[id]
-        elif kind == 'hiding':
+
+        if kind == 'hiding':
             hidden = set()
             for id in ids:
                 if id not in unit.env:
                     self.throw(node, err.UndeclaredIdentifier(id))
                 hidden.add(id)
             self.env.update({x: unit.env[x] for x in unit.env.keys() - hidden})
-        elif kind == 'as':
-            self.units[ids[0]] = unit
         else:
             self.env.update(unit.env)
 

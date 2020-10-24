@@ -9,7 +9,7 @@ block
   ;
 
 stmt
-  : 'use' name=ID ('only' only=id_list | 'hiding' hiding=id_list | 'as' as_=ID)? # StmtUse
+  : 'use' name=ID ('hiding' hiding=id_list)? # StmtUse
   | 'skip' # StmtSkip
   | 'print' (expr ',')* expr? # StmtPrint
   | typ ID ('=' tuple_expr)? # StmtDecl

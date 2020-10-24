@@ -1,4 +1,5 @@
 
-use math as m
+if true do
+    use math
 
-print tan(0.0)
+print E

@@ -1,5 +1,0 @@
-
-if true do
-    use math
-
-print E
