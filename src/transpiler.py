@@ -1947,10 +1947,9 @@ class PyxellTranspiler:
 
     def transpileAtomInt(self, node):
         value = node['int']
-        if value < 2**63:
-            return v.Int(value)
-        else:
-            return self.rat(value)
+        if value >= 2**63:
+            self.throw(node, err.IntegerTooLarge())
+        return v.Int(value)
 
     def transpileAtomRat(self, node):
         return self.rat(node['rat'])

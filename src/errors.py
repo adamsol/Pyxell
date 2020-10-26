@@ -15,6 +15,7 @@ class PyxellError(Exception):
     AbstractClass = lambda t: f"Cannot instantiate an abstract class `{t.show()}`"
     CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
+    IntegerTooLarge = lambda: f"Integer constant is too large"
     InvalidArgumentTypes = lambda t: f"Cannot unify argument types for type variable `{t.show()}`"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
     InvalidFunctionCall = lambda id, types, msg: f"Error in function `{id}` called here{(' (with types ' + ', '.join(f'{name}={type.show()}' for name, type in types.items()) + ')') if types else ''}.\n{msg}"
