@@ -1,9 +1,9 @@
 
-func bitNot(Int a) Int extern
-func bitShift(Int a, Int b) Int extern
-func bitAnd(Int a, Int b) Int extern
-func bitXor(Int a, Int b) Int extern
-func bitOr(Int a, Int b) Int extern
+func bitNot(Int x) Int extern
+func bitShift(Int x, Int y) Int extern
+func bitAnd(Int x, Int y) Int extern
+func bitXor(Int x, Int y) Int extern
+func bitOr(Int x, Int y) Int extern
 
 func write(String s) extern
 
@@ -15,11 +15,11 @@ func readFloat() Float extern
 func readChar() Char extern
 
 
-func min<T>(T a, T b) T def
-    return a < b ? a : b
+func min<T>(T x, T y) T def
+    return x < y ? x : y
 
-func max<T>(T a, T b) T def
-    return b < a ? a : b
+func max<T>(T x, T y) T def
+    return y < x ? x : y
 
 func clamp<T>(T x, T a, T b) T def
     return min(max(x, a), b)

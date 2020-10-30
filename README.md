@@ -4,87 +4,22 @@ Pyxell
 ### Clean and easy-to-use multi-paradigm programming language with static typing. ###
 
 
+Documentation
+-------------
+
+https://www.pyxell.org/docs/
+
+
 Motivation
 ----------
 
-The project aims to combine the best features of different programming languages,
+Pyxell [_pixel_] aims to combine the best features of different programming languages,
 pack them into a clean and consistent syntax,
 and provide the execution speed of native machine code.
 
 It draws mainly from Python, C++, C#, and Haskell,
-and tries to avoid common design flaws that have been nicely described
+trying to avoid common design flaws that have been nicely described
 [in this blog post](https://eev.ee/blog/2016/12/01/lets-stop-copying-c/).
-
-
-Examples
---------
-
-Rational numbers:
-
-```
-print 1/10 + 5^-1  # 3/10
-```
-
-Range literals, for-loops, string interpolation:
-
-```
-a = ['A'..'Z']
-for x, i in a, 0... by 5 do
-    print "a[{i}] = {x}" 
-```
-
-Dynamic containers:
-
-```
-[Int] a = [1]  # array (Python's list / C++'s vector)
-a.push(2)
-
-{Float} b = {3.0}  # hash set
-b.add(4.0)
-
-{Char:String} c = {'5': "6"}  # dictionary (hash map) 
-c['7'] = "8"
-```
-
-Generic functions, lambda expressions:
-
-```
-func fold<A,B>([A] a, A->B->B f, B r) B def
-    for x in a do
-        r = f(x, r)
-    return r
-
-print fold([2, 3, 4], _*_, 1)  # 24
-
--- There are built-in methods like this:
-print [0..10 by 2].reduce(_+_)  # 30
-```
-
-Generators, tuples, spread syntax:
-
-```
-fib = lambda* n def
-    if n <= 0 do
-        return
-    a, b = 0, 1
-    yield a
-    for _ in 2..n do
-        yield b
-        a, b = b, a+b
-
-print [...fib(10)]
-```
-
-Classes, nullable types:
-
-```
-class C def
-    String? s: null
-
-c = C()
-print c.s?.length
-print c.s ?? "---"
-```
 
 
 Features
@@ -115,12 +50,14 @@ Features
 To do:
 
 * Exception handling
-* Unicode
+* Static class fields and methods
+* Complex numbers
+* Unicode support
+* Module system
+* Multiple inheritance
 * Generic classes
 * Operator overloading
-* Multiple inheritance
-* Concurrency
-* Module system
+* Asynchronous programming
 
 
 Requirements
@@ -134,8 +71,10 @@ python -m pip install -r requirements.txt
 
 * C++17 compiler: Clang 5+ or GCC 7+.
 
-Note that generators are currently supported only in Clang, since they are based on C++'s coroutines
-(GCC 10 also supports coroutines, but as of version 10.1 the implementation is buggy, so it is not yet supported by Pyxell).
+Note that generators are currently available only with Clang, since they are based on C++'s coroutines.
+Though GCC 10 also supports coroutines, as of version 10.2 the implementation is buggy
+(see [here](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95591) or [here](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95823)),
+so it is not yet supported by Pyxell.
 
 
 Usage
@@ -145,19 +84,19 @@ Usage
 python pyxell.py program.px
 ```
 
-If the program is correct, `program.cpp` file and `program.exe` executable will be created in the same folder,
+If the program is valid, `program.cpp` file and `program.exe` executable will be created in the same folder,
 and it will be automatically executed (unless you add `-n` option).
 Otherwise, errors will be displayed, pointing to the erroneous code location.
 
 By default, `clang` command is used to compile the code.
 You can pick a different compiler using `-c` option.
 
-Use `-s` to skip the compilation step and obtain transpiled C++ code with all headers included,
-ready for manual compilation (with -std=c++17 option, and with -fcoroutines-ts in the case of Clang).
-
 The executable is not optimized by default.
 You can set the optimization level with `-O` option, e.g. `-O2`.
 This will make the program run faster, but also make the compilation slower.
+
+Use `-s` to skip the compilation step and obtain transpiled C++ code with all headers included,
+ready for manual compilation (with `-std=c++17` option, and with `-fcoroutines-ts` in the case of Clang).
 
 To see all options, use `-h`.
 
@@ -165,8 +104,9 @@ To see all options, use `-h`.
 PyInstaller
 -----------
 
-You can build a standalone application using `PyInstaller`. Install it using `pip`, then run `make exe`.
-An executable `pyxell.exe` (not requiring Python to run) will be created in the `dist/pyxell` folder.
+You can build a standalone compiler application using `PyInstaller`.
+Install `PyInstaller` with `pip`, then run `make exe`.
+An executable (not requiring Python to run) will be created in the `dist/pyxell` folder.
 
 
 Development
@@ -180,19 +120,22 @@ then run `make parser`.
 After changing the code of Pyxell libraries (`lib/*.px` files),
 run `make libs` to rebuild them.
 
+To build the documentation, go to the `docs` folder, run `npm install`, then `make`.
+To start a documentation server locally, install `flask` and run `server.py` in the same folder.
+
 
 Tests
 -----
 
 ```
-python test.py [-v]
+python test.py
 ```
 
 Tests are divided into good (supposed to compile and run properly) and bad (should throw compilation errors).
 
-By default, the whole C++ code for correct tests is merged, so that only one file is compiled,
+By default, the whole C++ code for valid tests is merged, so that only one file is compiled,
 which is faster than compiling hundreds of files individually, even using multiple threads.
-Total execution time should be around 30-60 seconds.
+Total execution time (with default settings) should be around 30-60 seconds.
 
 If, however, the script fails with an error like this: `too many sections` / `file too big`
 (seen with GCC 7.2 on Windows), or there is another compilation error that is hard to decipher,
@@ -201,9 +144,6 @@ then you might need to add the `-s` option so that each test is compiled separat
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
 
 To see all options, run the script with `-h`.
-
-Tests serve currently also as a documentation of the language.
-You can browse them to learn the syntax and semantics.
 
 
 Alternatives

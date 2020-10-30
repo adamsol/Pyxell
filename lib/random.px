@@ -1,5 +1,5 @@
 
-func seed(Int s) extern
+func seed(Int x) extern
 
 func randInt(Int r: 2) Int extern
 func randFloat(Float r: 1) Float extern
