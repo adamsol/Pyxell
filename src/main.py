@@ -66,10 +66,9 @@ def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbos
         print(f"running {' '.join(command)}")
 
     try:
-        if verbose:
-            subprocess.call(command, stderr=subprocess.STDOUT)
-        else:
-            subprocess.check_output(command, stderr=subprocess.STDOUT)
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT)
+        if verbose and output:
+            print(output.decode())
     except FileNotFoundError:
         print(f"command not found: {cpp_compiler}")
         sys.exit(1)
@@ -153,6 +152,9 @@ def main():
         sys.exit(1)
     except (NotSupportedError, PyxellError) as e:
         print(str(e))
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(e.output.decode())
         sys.exit(1)
 
     if exe_filename and not args.dont_run:
