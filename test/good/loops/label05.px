@@ -1,0 +1,7 @@
+
+for i in 1..3 by 2 label i do
+    i += 5
+    print i
+    if true do
+        continue i
+    print i

@@ -1,0 +1,5 @@
+
+until false label loop1 do
+    for _ in 0... label loop2 do
+        skip
+    break loop2

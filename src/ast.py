@@ -95,6 +95,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'StmtWhile'),
             'expr': self.visit(ctx.expr()),
+            'label': self.visit(ctx.ID()),
             'block': self.visit(ctx.block()),
         }
 
@@ -102,6 +103,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'StmtUntil'),
             'expr': self.visit(ctx.expr()),
+            'label': self.visit(ctx.ID()),
             'block': self.visit(ctx.block()),
         }
 
@@ -111,6 +113,7 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'StmtFor'),
             'vars': self.visit(exprs[0].expr()),
             'iterables': self.visit(exprs[1].expr()),
+            'label': self.visit(ctx.ID()),
             'block': self.visit(ctx.block()),
         }
 
@@ -118,6 +121,7 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'StmtLoopControl'),
             'stmt': ctx.s.text,
+            'label': self.visit(ctx.ID()),
         }
 
     def visitStmtFunc(self, ctx):

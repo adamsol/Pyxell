@@ -15,13 +15,13 @@ stmt
   | typ ID ('=' tuple_expr)? # StmtDecl
   | (tuple_expr '=')* tuple_expr # StmtAssg
   | expr op=('^' | '^^' | '/' | '//' | '%' | '*' | '&' | '+' | '-' | '??') '=' expr # StmtAssgExpr
-  | s=('break' | 'continue') # StmtLoopControl
+  | s=('break' | 'continue') ID? # StmtLoopControl
   | 'return' tuple_expr? # StmtReturn
   | 'yield' tuple_expr # StmtYield
   | 'if' expr 'do' block (';' 'elif' expr 'do' block)* (';' 'else' 'do' block)? # StmtIf
-  | 'while' expr 'do' block # StmtWhile
-  | 'until' expr 'do' block # StmtUntil
-  | 'for' tuple_expr 'in' tuple_expr 'do' block # StmtFor
+  | 'while' expr ('label' ID)? 'do' block # StmtWhile
+  | 'until' expr ('label' ID)? 'do' block # StmtUntil
+  | 'for' tuple_expr 'in' tuple_expr ('label' ID)? 'do' block # StmtFor
   | 'func' generator='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern') # StmtFunc
   | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
   ;

@@ -49,6 +49,7 @@ class PyxellError(Exception):
     UndeclaredIdentifier = lambda id: f"Undeclared identifier `{id}`"
     UnexpectedArgument = lambda id: f"Unexpected argument `{id}`"
     UnexpectedVoid = lambda: f"Function without return value cannot be called here"
+    UnknownLabel = lambda id: f"Unknown label `{id}`"
     UnknownModule = lambda id: f"Unknown module `{id}`"
     UnknownType = lambda: f"Cannot settle type of the expression"
 

@@ -1,0 +1,10 @@
+
+for x in [[[false], [true, false]], [[true]]] label loop do
+    for y in x do
+        if true do
+            for z in y do
+                print z
+                if z do
+                    break loop
+
+print "done"

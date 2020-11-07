@@ -241,7 +241,7 @@ for x, c in 0.5... by -0.1, 'A'...'D' do
 
 ### `continue` and `break`
 
-Inside loops you can use statements to exit the current iteration or the whole loop.
+You can use these statements to exit the current iteration or the whole loop.
 
 ```
 for i in 1..10 do
@@ -250,6 +250,17 @@ for i in 1..10 do
     if i > 5 do
         break
     print i
+```
+
+Labels are also supported. This can be useful for breaking out of nested loops.
+
+```
+n = 30
+for x in 1..n label loop do
+    for y in 1..x do
+        if x * y == n do
+            print "{n} = {x} * {y}"
+            break loop
 ```
 
 

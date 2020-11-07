@@ -45,6 +45,11 @@ class Const(Wrapper):
         super().__init__('const {} {} = {}', var.type, var.name, value)
 
 
+class Label(Wrapper):
+    def __init__(self, name):
+        super().__init__('{}:', name)
+
+
 class If(Wrapper):
     def __init__(self, cond, if_block, else_block=None):
         if else_block is None:

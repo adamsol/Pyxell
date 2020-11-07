@@ -3,6 +3,7 @@ import ast
 import re
 from collections import defaultdict
 from contextlib import contextmanager
+from functools import partial
 from itertools import zip_longest
 
 from . import codegen as c
@@ -17,7 +18,7 @@ from .utils import lmap
 class Unit:
 
     def __init__(self):
-        self.env = {}
+        self.env = {'#loops': {}}
 
 
 class PyxellTranspiler:
@@ -113,7 +114,7 @@ class PyxellTranspiler:
             yield
 
     def output(self, stmt, toplevel=False):
-        if isinstance(stmt, (v.Value, c.Var, c.Const)):
+        if isinstance(stmt, (v.Value, c.Var, c.Const, c.Label)):
             stmt = c.Statement(stmt)
 
         if toplevel:
@@ -832,7 +833,7 @@ class PyxellTranspiler:
             with self.block(block):
                 if body:
                     self.env['#return'] = func_type.ret
-                    self.env.pop('#loop', None)
+                    self.env['#loops'] = {}
 
                     for arg, var in zip(func_type.args, arg_vars):
                         self.env[arg.name] = var
@@ -879,6 +880,20 @@ class PyxellTranspiler:
             self.output(c.Function(func_type.ret, func, arg_vars, block), toplevel=True)
 
         return func.bind(template.bound)
+
+    @contextmanager
+    def loop(self, stmt_callback, label):
+        with self.local():
+            labels = {'break': self.fake_id('l'), 'continue': self.fake_id('l')}
+            self.env['#loops'] = {**self.env['#loops'], label: labels, None: labels}
+
+            body = c.Block()
+            with self.block(body):
+                yield
+                self.output(c.Label(labels['continue']))
+
+            self.output(stmt_callback(body))
+            self.output(c.Label(labels['break']))
 
 
     ### Statements ###
@@ -1010,38 +1025,26 @@ class PyxellTranspiler:
     def transpileStmtWhile(self, node):
         expr = node['expr']
 
-        with self.local():
-            self.env['#loop'] = True
+        with self.loop(partial(c.While, v.true), node.get('label')):
+            cond = self.cast(expr, self.transpile(expr), t.Bool)
+            cond = v.UnaryOp('!', cond)
+            self.output(c.If(cond, c.Statement('break')))
 
-            body = c.Block()
-            with self.block(body):
-                cond = self.cast(expr, self.transpile(expr), t.Bool)
-                cond = v.UnaryOp('!', cond)
-                self.output(c.If(cond, c.Statement('break')))
-
-                self.transpile(node['block'])
-
-        self.output(c.While(v.true, body))
+            self.transpile(node['block'])
 
     def transpileStmtUntil(self, node):
         expr = node['expr']
 
-        with self.local():
-            self.env['#loop'] = True
+        second_iteration = self.var(t.Bool)
+        self.store(second_iteration, v.false, 'auto')
 
-            second_iteration = self.var(t.Bool)
-            self.store(second_iteration, v.false, 'auto')
+        with self.loop(partial(c.While, v.true), node.get('label')):
+            cond = self.cast(expr, self.transpile(expr), t.Bool)
+            cond = v.BinaryOp(second_iteration, '&&', cond)
+            self.output(c.If(cond, c.Statement('break')))
+            self.store(second_iteration, v.true)
 
-            body = c.Block()
-            with self.block(body):
-                cond = self.cast(expr, self.transpile(expr), t.Bool)
-                cond = v.BinaryOp(second_iteration, '&&', cond)
-                self.output(c.If(cond, c.Statement('break')))
-                self.store(second_iteration, v.true)
-
-                self.transpile(node['block'])
-
-        self.output(c.While(v.true, body))
+            self.transpile(node['block'])
 
     def transpileStmtFor(self, node):
         vars = node['vars']
@@ -1118,39 +1121,37 @@ class PyxellTranspiler:
         for iterable in iterables:
             prepare(iterable)
 
-        body = c.Block()
-        with self.block(body):
-            with self.local():
-                self.env['#loop'] = True
-
-                if len(vars) == 1 and len(types) > 1:
-                    tuple = v.Tuple([getter() for getter in getters])
-                    self.assign(node, vars[0], tuple)
-                elif len(vars) > 1 and len(types) == 1:
-                    if not types[0].isTuple():
-                        self.throw(node, err.CannotUnpack(types[0], len(vars)))
-                    tuple = getters[0]()
-                    for i, var in enumerate(vars):
-                        self.assign(node, var, v.Get(tuple, i))
-                elif len(vars) == len(types):
-                    for var, getter in zip(vars, getters):
-                        self.assign(node, var, getter())
-                else:
-                    self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
-
-                self.transpile(node['block'])
-
         condition = ' && '.join(str(cond()) for cond in conditions)
         update = ', '.join(str(update()) for update in updates)
-        self.output(c.For('', condition, update, body))
+
+        with self.loop(partial(c.For, '', condition, update), node.get('label')):
+            if len(vars) == 1 and len(types) > 1:
+                tuple = v.Tuple([getter() for getter in getters])
+                self.assign(node, vars[0], tuple)
+            elif len(vars) > 1 and len(types) == 1:
+                if not types[0].isTuple():
+                    self.throw(node, err.CannotUnpack(types[0], len(vars)))
+                tuple = getters[0]()
+                for i, var in enumerate(vars):
+                    self.assign(node, var, v.Get(tuple, i))
+            elif len(vars) == len(types):
+                for var, getter in zip(vars, getters):
+                    self.assign(node, var, getter())
+            else:
+                self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
+
+            self.transpile(node['block'])
 
     def transpileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`
+        label = node.get('label')
 
-        if not self.env.get('#loop'):
+        if not self.env['#loops']:
             self.throw(node, err.InvalidUsage(stmt))
+        if label not in self.env['#loops']:
+            self.throw(node, err.UnknownLabel(label))
 
-        self.output(c.Statement(stmt))
+        self.output(c.Statement('goto', self.env['#loops'][label][stmt]))
 
     def transpileStmtFunc(self, node, class_type=None):
         id = node['id']

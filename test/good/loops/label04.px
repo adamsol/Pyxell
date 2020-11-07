@@ -1,0 +1,10 @@
+
+until true label a do
+    for c in "2" do
+        while true label b do
+            print 3
+            break
+        print c
+    print 1
+    continue
+    print 0
