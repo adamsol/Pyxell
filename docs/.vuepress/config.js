@@ -15,6 +15,7 @@ module.exports = {
             ['/playground', 'Playground'],
         ],
         displayAllHeaders: true,
+        lastUpdated: 'Documentation version',  // see plugins/version.js
         defaultTheme: 'dark',  // FIXME: code snippets are barely legible in the light theme
     },
     markdown: {
@@ -37,6 +38,7 @@ module.exports = {
             });
         },
     },
+    plugins: [require('./plugins/version')],
     clientRootMixin: require('path').resolve(__dirname, 'utils/scroll-fix.js'),
     base: '/docs/',
 };
