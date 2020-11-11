@@ -1,10 +1,10 @@
 
-Float z = -2
+z: Float = -2
 
 class Point def
-    Float x
-    Float y: 1
-    Float z: z
+    x: Float
+    y: Float = 1
+    z: Float = z
 
 z = 2
 

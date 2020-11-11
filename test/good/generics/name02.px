@@ -1,5 +1,5 @@
 
-func f<B>(Int->B g) B def
+func f<B>(g: Int->B): B def
     return g(2)
 
 B = 3

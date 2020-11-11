@@ -20,15 +20,15 @@
 						2,
 						11
 					],
+					"name": "x",
 					"type": {
 						"node": "TypeName",
 						"position": [
 							2,
-							11
+							14
 						],
 						"name": "Int"
 					},
-					"name": "x",
 					"default": null
 				}
 			],
@@ -50,20 +50,20 @@
 						4,
 						14
 					],
+					"name": "r",
 					"type": {
 						"node": "TypeName",
 						"position": [
 							4,
-							14
+							17
 						],
 						"name": "Int"
 					},
-					"name": "r",
 					"default": {
 						"node": "AtomInt",
 						"position": [
 							4,
-							21
+							23
 						],
 						"int": 2
 					}
@@ -73,7 +73,7 @@
 				"node": "TypeName",
 				"position": [
 					4,
-					24
+					27
 				],
 				"name": "Int"
 			},
@@ -94,20 +94,20 @@
 						5,
 						16
 					],
+					"name": "r",
 					"type": {
 						"node": "TypeName",
 						"position": [
 							5,
-							16
+							19
 						],
 						"name": "Float"
 					},
-					"name": "r",
 					"default": {
 						"node": "AtomInt",
 						"position": [
 							5,
-							25
+							27
 						],
 						"int": 1
 					}
@@ -117,7 +117,7 @@
 				"node": "TypeName",
 				"position": [
 					5,
-					28
+					31
 				],
 				"name": "Float"
 			},

@@ -1,13 +1,13 @@
 
 class A def
-    Int x
+    x: Int
 
     constructor def
         print this.x
 
 
 class B(A) def
-    Rat y
+    y: Rat
 
     constructor def
         print this.y.fraction

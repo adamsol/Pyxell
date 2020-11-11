@@ -1,5 +1,5 @@
 
-String? s
+s: String?
 print s?[-1]
 
 s = "abc"

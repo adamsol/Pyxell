@@ -1,5 +1,5 @@
 
-Float f = 3/4
+f: Float = 3/4
 print f
 
 print 13/2 + 0.5f - 1r

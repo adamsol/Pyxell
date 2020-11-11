@@ -1,8 +1,8 @@
 
 class Counter def
-    Int n: 0
+    n: Int
 
-    func next() Counter def
+    func next(): Counter def
         print this.n
         this.n += 1
         return this

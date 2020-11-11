@@ -1,5 +1,5 @@
 
-func f(Char a, String... b, Float c, Int d: 4) def
+func f(a: Char, ...b: String, c: Float, d: Int = 4) def
     print a, c + d
     print b.join()
 

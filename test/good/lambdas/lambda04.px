@@ -1,5 +1,5 @@
 
-func fold(Int->Int->Int f, Int a, [Int] t) Int def
+func fold(f: Int->Int->Int, a: Int, t: [Int]): Int def
     for x in t do
         a = f(a, x)
     return a
@@ -13,7 +13,7 @@ print fold(_//-_, 360, t)
 print fold(_^^_, -1, t)
 
 
-func fold2(Float->Int->Float f, Float a, [Int] t) Float def
+func fold2(f: Float->Int->Float, a: Float, t: [Int]): Float def
     for x in t do
         a = f(a, x)
     return a

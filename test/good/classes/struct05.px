@@ -1,8 +1,8 @@
 
 class A def
-    Char x: 'A'
+    x: Char = 'A'
 
-A a
+a: A
 a = A()
 print a.x
 

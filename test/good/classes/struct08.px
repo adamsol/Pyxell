@@ -1,7 +1,7 @@
 
 class A def
-    Char c: '~'
-    String->Int f
+    c: Char = '~'
+    f: String->Int
 
 a = A('r')
 print a.c

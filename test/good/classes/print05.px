@@ -1,13 +1,13 @@
 
 class A def
-    String s
+    s: String
 
 class B(A) def
-    func toString() String def
+    func toString(): String def
         return this.s
 
 class C(B) def
-    Int y
+    y: Int
 
 
 print A().toString()

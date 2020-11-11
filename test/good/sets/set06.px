@@ -1,6 +1,6 @@
 
 class A def
-    Int x: 0
+    x: Int
 
 a = A()
 print {a, A(), A(), a, A()}.length

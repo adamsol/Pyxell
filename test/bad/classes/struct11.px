@@ -1,6 +1,6 @@
 
 class A def
-    Int x
+    x: Int
 
-    ()->Int getter: lambda def
+    getter: ()->Int = lambda def
         return this.x

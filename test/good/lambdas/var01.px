@@ -1,5 +1,5 @@
 
-Int->Float f = 2*_
+f: Int->Float = 2*_
 print f(5)
 
 f = _/2

@@ -1,13 +1,13 @@
 
 class A def
-    [String] s
+    s: [String]
 
     func f() def
         skip
 
 class B(A) def
-    Rat x
-    A a
+    x: Rat
+    a: A
 
     constructor def
         print this.s.length

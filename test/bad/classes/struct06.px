@@ -1,4 +1,4 @@
 
 class Class def
-    Int x
-    Int x
+    x: Int
+    x: Int

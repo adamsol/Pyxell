@@ -1,5 +1,5 @@
 
-func add<A>(A x, A y) A def
+func add<A>(x: A, y: A): A def
     return x + y
 
 print add(3, 4) // 2

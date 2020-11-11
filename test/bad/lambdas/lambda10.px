@@ -1,5 +1,5 @@
 
-func f() Int def
+func f(): Int def
     return lambda: 0
 
 f()

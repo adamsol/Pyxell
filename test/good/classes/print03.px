@@ -1,11 +1,11 @@
 
 class Test def
-    func toString() String def
+    func toString(): String def
         return "test"
 
 print [Test()]
 print "{Test(), Test().toString()}"
 
-Test? t
+t: Test?
 t = Test()
 print t, t!

@@ -1,9 +1,9 @@
 
 class A def
-    Int x
+    x: Int
 
 class B(A) def
-    String y
+    y: String
 
 b = B()
 b.x = 3

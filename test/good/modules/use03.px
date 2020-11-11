@@ -1,5 +1,5 @@
 
-func one() Float def
+func one(): Float def
     use math
     return exp(0)
 

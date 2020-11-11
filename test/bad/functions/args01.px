@@ -1,5 +1,5 @@
 
-func f(Int x, Char y) Bool def
+func f(x: Int, y: Char): Bool def
     return x == y
 
 f()

@@ -1,17 +1,17 @@
 
 class A def
-    Bool x
+    x: Bool
 
     destructor def
         print this.x
 
 
-func f(A a) A def
+func f(a: A): A def
     print 'f'
     return A(true)
 
 
-A a
+a: A
 if true do
     a = f(A(false))
 print

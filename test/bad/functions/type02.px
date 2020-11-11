@@ -1,8 +1,8 @@
 
-func f(String x) def
+func f(x: String) def
     return
 
-func g(String x) Char def
+func g(x: String): Char def
     return 'g'
 
 h = g

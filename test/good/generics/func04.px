@@ -1,14 +1,14 @@
 
-func call<A,B>(A->B f, A x) def
+func call<A,B>(f: A->B, x: A) def
     print f(x)
 
-func f(Char c) Int def
+func f(c: Char): Int def
     return c.code
 
-func g(Int n) Float def
+func g(n: Int): Float def
     return n + 0.5
 
-func h(String s) Int def
+func h(s: String): Int def
     return s.length
 
 call(f, 'a')

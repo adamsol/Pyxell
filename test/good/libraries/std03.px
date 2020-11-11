@@ -7,5 +7,5 @@ print join(""), join("+")
 fold = a.fold
 print fold(_+_, "")
 
-(Char->Int)->[Int] map = a.map
+map: (Char->Int)->[Int] = a.map
 print map(_.code)

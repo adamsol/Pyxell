@@ -1,13 +1,13 @@
 
 class A def
-    String x: "A"
+    x: String = "A"
 
 class B(A) def
     constructor def
         this.x = "B"
 
 
-func f() A def
+func f(): A def
     return B()
 
 print f().x

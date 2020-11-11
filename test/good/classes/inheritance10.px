@@ -1,15 +1,15 @@
 
 class A def
-    Bool x
+    x: Bool
 
 class B(A) def
-    Char y: '?'
+    y: Char = '?'
 
     func f() def
         print this.x
 
 class C(B) def
-    String z
+    z: String
 
 
 B().f()

@@ -1,17 +1,17 @@
 
 class A def
-    func* f() String def
+    func* f(): String def
         return
 
 
 class B(A) def
-    String s
+    s: String
 
-    func* f() String def
+    func* f(): String def
         yield this.s
 
 
-A a
+a: A
 
 a = A()
 print [...a.f()]

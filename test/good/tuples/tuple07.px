@@ -1,5 +1,5 @@
 
-func tuple(Int a, Bool b) Int*Bool def
+func tuple(a: Int, b: Bool): Int*Bool def
     print a, b
     return a, b
 

@@ -228,12 +228,12 @@ class Tuple(Type):
 class Func(Type):
     PRECEDENCE = 3
 
-    Arg = namedtuple('Arg', ['type', 'name', 'default', 'variadic'])
+    Arg = namedtuple('Arg', ['name', 'type', 'default', 'variadic'])
     Arg.__new__.__defaults__ = (None,) * 4
 
     def __init__(self, args, ret=Void):
         super().__init__()
-        self.args = [arg if isinstance(arg, Func.Arg) else Func.Arg(arg) for arg in args]
+        self.args = [arg if isinstance(arg, Func.Arg) else Func.Arg(type=arg) for arg in args]
         self.ret = ret
 
     def args_str(self):

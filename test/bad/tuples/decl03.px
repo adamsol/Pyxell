@@ -1,2 +1,2 @@
 
-Int*Bool t = 1, true, ""
+t: Int*Bool = 1, true, ""

@@ -1,5 +1,5 @@
 
-func set(Int n, [Int] a: [0]) [Int] def
+func set(n: Int, a: [Int] = [0]): [Int] def
     a[0] = n
     return a
 

@@ -1,2 +1,2 @@
 
-{Float:String?} d = {'1': null}
+d: {Float:String?} = {'1': null}

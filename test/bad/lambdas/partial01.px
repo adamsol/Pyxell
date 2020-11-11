@@ -1,5 +1,5 @@
 
-func f(String->String g) def
+func f(g: String->String) def
     return
 
 f(write@(_))

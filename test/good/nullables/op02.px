@@ -1,5 +1,5 @@
 
-String? s
+s: String?
 print s?.length
 s = "test"
 print s?.length

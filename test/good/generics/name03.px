@@ -1,8 +1,8 @@
 
-func f<T>() T def
+func f<T>(): T def
     return "abcd"
 
-func g<T>() T def
+func g<T>(): T def
     return f().length
 
 print g()

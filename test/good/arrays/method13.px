@@ -1,7 +1,7 @@
 
 class C def
-    Int id
-    Float x
+    id: Int
+    x: Float
 
 n = 10^^5
 

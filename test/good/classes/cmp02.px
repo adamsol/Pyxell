@@ -1,6 +1,6 @@
 
 class A def
-    Int n
+    n: Int
 
 
 a = [A(i) for i in 0..4]

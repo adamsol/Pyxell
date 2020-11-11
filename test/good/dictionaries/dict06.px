@@ -1,5 +1,5 @@
 
-func f({Float:[Rat]} d) def
+func f(d: {Float:[Rat]}) def
     d[3f][0] /= 2
     print d, d[3r][0].fraction
 

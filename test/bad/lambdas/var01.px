@@ -1,2 +1,2 @@
 
-Int->Int f = _/2
+f: Int->Int = _/2

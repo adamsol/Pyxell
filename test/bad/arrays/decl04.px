@@ -1,2 +1,2 @@
 
-Bool a = []
+a: Bool = []

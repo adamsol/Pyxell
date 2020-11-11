@@ -1,5 +1,5 @@
 
-func f(Int x) Rat def
+func f(x: Int): Rat def
     return x
 
 print f(2).fraction

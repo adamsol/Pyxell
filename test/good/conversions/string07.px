@@ -1,4 +1,4 @@
 
-String s = (3, true, "rt").toString()
+s: String = (3, true, "rt").toString()
 s += [].toString() * 2 + ([-2.5], [5, 6]).toString()
 print s

@@ -1,5 +1,5 @@
 
-func output(String s, Int... xs) def
+func output(s: String, ...xs: Int) def
     print s
     for x in xs do
         print x

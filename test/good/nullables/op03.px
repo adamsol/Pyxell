@@ -1,5 +1,5 @@
 
-Bool? x = true
+x: Bool? = true
 print x?.toString()
 x = null
 print x?.toString()

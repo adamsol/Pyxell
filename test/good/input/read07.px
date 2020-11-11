@@ -1,4 +1,4 @@
 
 print readRat() * readRat()
-Rat x = readRat()
+x: Rat = readRat()
 print x.fraction

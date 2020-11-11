@@ -1,10 +1,10 @@
 
-func f<A,B>(A*B p) B*A def
-    func g1(A x) A def
+func f<A,B>(p: A*B): B*A def
+    func g1(x: A): A def
         return x
-    func g2(B x) B def
+    func g2(x: B): B def
         return x*3
-    func h<C>(C x) C def
+    func h<C>(x: C): C def
         return x
     return h(g2(p.b)), h(g1(p.a))
 

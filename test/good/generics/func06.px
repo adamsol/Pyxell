@@ -1,5 +1,5 @@
 
-func apply<A,B,C>(A->B f, A->C g, C->C->C h, [A] a) B*C def
+func apply<A,B,C>(f: A->B, g: A->C, h: C->C->C, a: [A]): B*C def
     return f(a[0]), h(g(a[1]), g(a[2]))
 
 print apply('0'+_, _.length, _+_, ["123", "4567", "890"])

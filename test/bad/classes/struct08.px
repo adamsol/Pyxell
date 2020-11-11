@@ -1,5 +1,5 @@
 
 class A def
-    Rat x
+    x: Rat
 
 A(8f)

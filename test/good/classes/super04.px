@@ -1,6 +1,6 @@
 
 class A def
-    Char x
+    x: Char
 
     constructor def
         this.x = 'A'
@@ -9,7 +9,7 @@ class A def
         print this.x
 
 class B(A) def
-    Int y
+    y: Int
 
 class C(B) def
     func f() def

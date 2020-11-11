@@ -1,5 +1,5 @@
 
-func id(Int->String f) Int->String def
+func id(f: Int->String): Int->String def
     return id
 
 id()

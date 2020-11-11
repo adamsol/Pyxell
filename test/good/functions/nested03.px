@@ -1,11 +1,11 @@
 
-func f1() Int def
-    func g() Int def
+func f1(): Int def
+    func g(): Int def
         return -5
     return g()
 
-func f2() Int def
-    func g() Int def
+func f2(): Int def
+    func g(): Int def
         return 6
     return g()
 

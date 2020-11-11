@@ -1,4 +1,4 @@
 
-{Float:Float} d
+d: {Float:Float}
 d = {x: x+2.7f for x in 0...1 by 3}
 print d

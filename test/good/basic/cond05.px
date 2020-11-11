@@ -1,5 +1,5 @@
 
-func f(Int x) Int def
+func f(x: Int): Int def
     print x
     return x
 

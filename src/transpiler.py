@@ -323,14 +323,15 @@ class PyxellTranspiler:
                     'reduce': self.env['String_reduce'],
                     'get': v.Variable(t.Func([type, t.Int], t.Nullable(t.Char)), attr),
                     'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
-                    'find': v.Variable(t.Func([type, type, t.Func.Arg(t.Int, 'start', default=v.Int(0))], t.Nullable(t.Int)), attr),
+                    'find': v.Variable(t.Func([type, type, t.Func.Arg('start', t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
                     'startsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                     'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
 
             elif attr == 'join' and type.isArray() and type.subtype in {t.Char, t.String}:
-                value = v.Variable(t.Func([type, t.Func.Arg(t.String, default=self.string(''))], t.String), attr)
+                value = v.Variable(t.Func([type, t.Func.Arg('sep', t.String, default=self.string(''))], t.String), attr)
+
             elif type.isArray():
                 value = {
                     'all': self.env['Array_all'],
@@ -344,12 +345,12 @@ class PyxellTranspiler:
                     'extend': v.Variable(t.Func([type, type]), attr),
                     'get': v.Variable(t.Func([type, t.Int], t.Nullable(type.subtype)), attr),
                     'pop': v.Variable(t.Func([type], type.subtype), attr),
-                    'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg(t.Int, default=v.Int(1))]), attr),
+                    'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg('count', t.Int, default=v.Int(1))]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'reverse': v.Variable(t.Func([type]), attr),
-                    'sort': v.Variable(t.Func([type, t.Func.Arg(t.Bool, 'reverse', default=v.false), t.Func.Arg(t.Func([type.subtype], t.Var('K')), 'key', default={'node': 'AtomPlaceholder'})], type), attr),
+                    'sort': v.Variable(t.Func([type, t.Func.Arg('reverse', t.Bool, default=v.false), t.Func.Arg('key', t.Func([type.subtype], t.Var('K')), default={'node': 'AtomPlaceholder'})], type), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
-                    'find': v.Variable(t.Func([type, type.subtype, t.Func.Arg(t.Int, 'start', default=v.Int(0))], t.Nullable(t.Int)), attr),
+                    'find': v.Variable(t.Func([type, type.subtype, t.Func.Arg('start', t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
                 }.get(attr)
 
@@ -937,8 +938,8 @@ class PyxellTranspiler:
         self.output(c.Statement(v.Call('write', self.string('\\n'))))  # std::endl is very slow
 
     def transpileStmtDecl(self, node):
-        type = self.resolve_type(self.transpile(node['type']))
         id = node['id']
+        type = self.resolve_type(self.transpile(node['type']))
         expr = node['expr']
         var = self.declare(node, type, id)
 
@@ -1163,19 +1164,19 @@ class PyxellTranspiler:
             for name in typevars:
                 self.env[name] = t.Var(name)
 
-            args = [] if class_type is None else [t.Func.Arg(class_type, 'this')]
+            args = [] if class_type is None else [t.Func.Arg('this', class_type)]
             for arg in node['args']:
+                name = arg['name']
                 type = self.transpile(arg['type'])
                 if not type.hasValue():
                     self.throw(arg['type'], err.InvalidDeclaration(type))
-                name = arg['name']
                 default = arg.get('default')
                 variadic = arg.get('variadic')
                 if variadic:
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())
                     type = t.Array(type)
-                args.append(t.Func.Arg(type, name, default, variadic))
+                args.append(t.Func.Arg(name, type, default, variadic))
 
             ret_type = self.transpile(node.get('ret')) or t.Void
             if node.get('generator'):
@@ -1748,7 +1749,7 @@ class PyxellTranspiler:
             obj = self.tmp(v.Object(cls))
 
             fields = {name: field for name, field in cls.members.items() if name not in cls.methods}
-            constructor_type = t.Func([t.Func.Arg(field.type, name, field.default) for name, field in fields.items()])
+            constructor_type = t.Func([t.Func.Arg(name, field.type, field.default) for name, field in fields.items()])
             args = _resolve_args(v.Value(type=constructor_type))[1]
             for name, value in zip(fields, args):
                 self.store(self.attr(node, obj, name), value)
@@ -1923,11 +1924,11 @@ class PyxellTranspiler:
             'id': id,
             'typevars': typevars,
             'args': [{
+                'name': name,
                 'type': {
                     'node': 'TypeName',
                     'name': typevars[i],
                 },
-                'name': name,
             } for i, name in enumerate(node['ids'], 1)],
             'ret': {
                 'node': 'TypeName',

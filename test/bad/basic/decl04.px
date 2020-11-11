@@ -1,4 +1,4 @@
 
-Int x
+x: Int
 if true do
-    Bool x = true
+    x: Bool = true

@@ -1,9 +1,9 @@
 
 class A def
-    Int x: 0
+    x: Int
 
-A? a1
-A? a2 = A()
+a1: A?
+a2: A? = A()
 
 d = {
     (a1, 4): null,

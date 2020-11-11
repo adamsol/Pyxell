@@ -1,5 +1,5 @@
 
-func f<A,B>(A x) B*B def
+func f<A,B>(x: A): B*B def
     return x, 2
 
 f(1)

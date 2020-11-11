@@ -2,4 +2,4 @@
 A = 1
 
 class A def
-    Int x
+    x: Int

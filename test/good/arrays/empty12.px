@@ -1,10 +1,10 @@
 
-func f<A,B>([A] x) [B] def
+func f<A,B>(x: [A]): [B] def
     print x
     return []
 
 a = [][:1]
-[Int] b = a
+b: [Int] = a
 print b + [3]
 
 c = ['c']

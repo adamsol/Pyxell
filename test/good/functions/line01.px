@@ -1,7 +1,7 @@
 
 func f(
-    Int x,
-    String s,
+    x: Int,
+    s: String,
 ) def
     print x, s
 

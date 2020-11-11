@@ -1,5 +1,5 @@
 
-func diff<A>(A x, A y) A def
+func diff<A>(x: A, y: A): A def
     if x >= y do
         return x-y
     else do

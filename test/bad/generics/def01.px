@@ -1,5 +1,5 @@
 
-func f(T x) def
+func f(x: T) def
     return
 
 f(2)

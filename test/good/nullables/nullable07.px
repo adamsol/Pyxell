@@ -1,12 +1,12 @@
 
-[Int?] a = [null]
+a: [Int?] = [null]
 print a
 
-[Bool?] b = [null, true, false]
+b: [Bool?] = [null, true, false]
 print b
 
-[Char?] c = ['a', null]
+c: [Char?] = ['a', null]
 print c
 
-[String?] d = ['q', null, "werty"]
+d: [String?] = ['q', null, "werty"]
 print d

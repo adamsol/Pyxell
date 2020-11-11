@@ -1,18 +1,18 @@
 
 class A def
-    Int x: 0
+    x: Int
 
-    func add(Int v, Char c: 'A') Int def
+    func add(v: Int, c: Char = 'A'): Int def
         print c
         this.x += v
         return this.x
 
 class B(A) def
-    func add(Int v: 0, Char c: 'B') Int def
+    func add(v: Int = 0, c: Char = 'B'): Int def
         return super(v, c=c)
 
 class B'(B) def
-    func add(Int v: 0, Char c: 'B') Int def
+    func add(v: Int = 0, c: Char = 'B'): Int def
         if c != 'B' do
             print c
         super(v=v)

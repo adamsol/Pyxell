@@ -1,5 +1,5 @@
 
-func min_(Int x, Int y) Int def
+func min_(x: Int, y: Int): Int def
     if x < y do
         return x
     else do

@@ -1,14 +1,14 @@
 
 class A def
-    func toString() String def
+    func toString(): String def
         return "A"
 
 class B(A) def
-    func toString() String def
+    func toString(): String def
         return "B"
 
 
-func f([A] a) [A] def
+func f(a: [A]): [A] def
     return [a[0], B()]
 
 print f([B()]).map(_.toString())

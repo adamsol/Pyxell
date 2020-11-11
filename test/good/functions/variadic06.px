@@ -1,6 +1,6 @@
 
 class A def
-    func f(Bool... b) def
+    func f(...b: Bool) def
         print b
 
 A().f(true, false)

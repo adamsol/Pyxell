@@ -1,5 +1,5 @@
 
-func div(Int a, Int b) Int def
+func div(a: Int, b: Int): Int def
     return a // b
 
 print div(a=18, b=3)

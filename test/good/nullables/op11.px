@@ -1,11 +1,11 @@
 
 class A def
-    Int x: 0
+    x: Int = 0
 
     constructor def
         print "A"
 
-A? a
+a: A?
 print a?.x
 
 a ??= A()

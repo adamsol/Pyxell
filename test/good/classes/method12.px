@@ -1,8 +1,8 @@
 
 class Logger def
-    String prefix
+    prefix: String
 
-    func log(String msg) String def
+    func log(msg: String): String def
         return "{this.prefix} {msg}"
 
 logger = Logger("[log]")

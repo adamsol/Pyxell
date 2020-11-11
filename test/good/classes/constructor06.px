@@ -1,17 +1,17 @@
 
-func f(Int x) Int def
+func f(x: Int): Int def
     print x
     return x
 
 
 class A def
-    Int x: f(1)
+    x: Int = f(1)
 
     constructor def
         print 'A'
 
 class B(A) def
-    Float y: f(2)
+    y: Float = f(2)
 
     constructor def
         print 'B'

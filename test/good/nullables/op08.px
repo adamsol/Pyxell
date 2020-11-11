@@ -1,7 +1,7 @@
 
-[Char?] a = [null]
+a: [Char?] = [null]
 
-func f() [Char?] def
+func f(): [Char?] def
     print a
     return a
 

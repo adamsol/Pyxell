@@ -1,13 +1,13 @@
 
-func id<T>(T x) T def
+func id<T>(x: T): T def
     return x
 
-func f<T>() T def
+func f<T>(): T def
     return id([id('?')])
 
-func g<T>(T x) T def
+func g<T>(x: T): T def
     s = f()
-    T y = id(x)
+    y: T = id(x)
     return s.length + y
 
 print g(5)

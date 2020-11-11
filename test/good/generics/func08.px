@@ -1,5 +1,5 @@
 
-func fold<T>(T->T->T f, [T] t) T def
+func fold<T>(f: T->T->T, t: [T]): T def
     a = t[0]
     for x in t do
         a = f(a, x)

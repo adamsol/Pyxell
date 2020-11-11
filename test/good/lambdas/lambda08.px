@@ -1,5 +1,5 @@
 
-func f(Int n, Int->Int g) Int def
+func f(n: Int, g: Int->Int): Int def
     return g(n)
 
 print f(4, _).toString() * 2

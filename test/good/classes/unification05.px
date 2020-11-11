@@ -1,6 +1,6 @@
 
 class A def
-    Char x: 'A'
+    x: Char = 'A'
 
     func f() def
         print this.x
@@ -17,7 +17,7 @@ class C(A) def
         print "{this.x}" * 3
 
 
-func get<T>(T*T a) T def
+func get<T>(a: T*T): T def
     return a.a
 
 get((C(), B())).f()

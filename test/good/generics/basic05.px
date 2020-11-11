@@ -1,5 +1,5 @@
 
-func array<T>(T a, T b) [T] def
+func array<T>(a: T, b: T): [T] def
     return [a, b]
 
 print array(false, true)[1]

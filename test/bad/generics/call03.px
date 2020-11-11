@@ -1,8 +1,8 @@
 
-func f<T>(T x, T y) def
+func f<T>(x: T, y: T) def
     return
 
-func g<A,B>(A x, B y) def
+func g<A,B>(x: A, y: B) def
     f(x, y)
 
 g('x', false)

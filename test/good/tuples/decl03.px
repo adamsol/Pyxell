@@ -1,4 +1,4 @@
 
-[Float] b
+b: [Float]
 a, b = [1], [2e20]
 print a, b

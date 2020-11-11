@@ -1,6 +1,6 @@
 
 class A def
-    Int x
+    x: Int
 
     destructor def
         print "destructor {this.x}"

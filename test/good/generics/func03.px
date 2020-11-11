@@ -1,5 +1,5 @@
 
-func call<A,B>(A x, A->B f) B def
+func call<A,B>(x: A, f: A->B): B def
     return f(x)
 
 print call(-1.2, 3*_.toString()), call(["ABC"], _[0][1])

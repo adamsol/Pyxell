@@ -1,7 +1,7 @@
 
 func f() def
-    String s = "q"
-    [Bool] a = [false]
+    s: String = "q"
+    a: [Bool] = [false]
 
     func g() def
         s += 'w'

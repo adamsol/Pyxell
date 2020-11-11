@@ -1,5 +1,5 @@
 
-func f<A,B>(A? x) [B] def
+func f<A,B>(x: A?): [B] def
     print x
     return [x]
 
@@ -7,5 +7,5 @@ x = null
 y = f(x)
 print y
 
-[Float?] z = y
+z: [Float?] = y
 print z.map(_ ?? 1.5)

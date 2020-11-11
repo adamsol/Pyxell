@@ -1,8 +1,8 @@
 
 class A def
-    Int a
-    String*Bool b
-    Float->{Char} c
+    a: Int
+    b: String*Bool
+    c: Float->{Char}
 
     constructor def
         print this.c(0.0)

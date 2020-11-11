@@ -1,5 +1,5 @@
 
-func f<A, B>(A x) def
+func f<A, B>(x: A) def
     print x
 
 f(true)

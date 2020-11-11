@@ -3,26 +3,26 @@ PI = 3.141592653589793f
 E = 2.718281828459045f
 INF = "inf".toFloat()
 
-func exp(Float x) Float extern
-func log(Float x) Float extern
-func log10(Float x) Float extern
-func sqrt(Float x) Float extern
+func exp(x: Float): Float extern
+func log(x: Float): Float extern
+func log10(x: Float): Float extern
+func sqrt(x: Float): Float extern
 
-func cos(Float x) Float extern
-func sin(Float x) Float extern
-func tan(Float x) Float extern
+func cos(x: Float): Float extern
+func sin(x: Float): Float extern
+func tan(x: Float): Float extern
 
-func acos(Float x) Float extern
-func asin(Float x) Float extern
-func atan(Float x) Float extern
-func atan2(Float y, Float x) Float extern
+func acos(x: Float): Float extern
+func asin(x: Float): Float extern
+func atan(x: Float): Float extern
+func atan2(y: Float, x: Float): Float extern
 
-func floor(Float x) Float extern
-func ceil(Float x) Float extern
-func trunc(Float x) Float extern
+func floor(x: Float): Float extern
+func ceil(x: Float): Float extern
+func trunc(x: Float): Float extern
 
-func round(Float x, Int p: 0) Float def
-    Float m = 10^^abs(p)
+func round(x: Float, p: Int = 0): Float def
+    m: Float = 10^^abs(p)
     if p < 0 do
         m ^= -1
     if p != 0 do

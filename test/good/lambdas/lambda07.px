@@ -1,10 +1,10 @@
 
-func tuple(Int->Char->Int*Char f, Int n, Char c) def
+func tuple(f: Int->Char->Int*Char, n: Int, c: Char) def
     print f(n, c)
 
 tuple(lambda a, b: (a, b), 2, 'x')
 
-func array(String->[String] f, String s) def
+func array(f: String->[String], s: String) def
     print f(s)[0]
 
 array((3, [_]).b, "###")

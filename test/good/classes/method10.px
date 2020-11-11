@@ -1,11 +1,11 @@
 
 class A def
-    Int x
+    x: Int
 
-    func f() Int*Float def
+    func f(): Int*Float def
         return this.x, this.y
 
-    Float y
+    y: Float
 
 print A(1, 2).f()
 print A(y=3.6, x=4).f()

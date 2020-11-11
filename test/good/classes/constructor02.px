@@ -1,6 +1,6 @@
 
 class C def
-    [Int] a
+    a: [Int]
 
     constructor def
         this.a[0] = 0

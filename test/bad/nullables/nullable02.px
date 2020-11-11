@@ -1,2 +1,2 @@
 
-Char x = null
+x: Char = null

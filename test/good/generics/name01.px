@@ -1,7 +1,7 @@
 
 T' = 'T'
 
-func f'<T'>(T' t') T' def
+func f'<T'>(t': T'): T' def
     return t'
 
 print f'(T')

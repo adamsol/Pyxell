@@ -1,5 +1,5 @@
 
-func* chain([Rat] a, [Float] b) Float def
+func* chain(a: [Rat], b: [Float]): Float def
     for x in a do
         yield x
     for x in b do

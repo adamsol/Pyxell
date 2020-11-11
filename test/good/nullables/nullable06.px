@@ -1,5 +1,5 @@
 
-func even(Int i) Int? def
+func even(i: Int): Int? def
     return i %% 2 ? i : null
 
 a = [even(i) for i in 0..1000]

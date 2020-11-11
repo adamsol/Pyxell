@@ -1,6 +1,6 @@
 
 class Base def
-    Int x: 0
+    x: Int
 
     func f() def
         print "Base"
@@ -17,12 +17,12 @@ class Sub2(Base) def
         this.x = 2
 
 
-[Base] a = [Sub2()]
+a: [Base] = [Sub2()]
 print a[0].x
 a[0] = Base()
 print a[0].x
 
-func f(Base*Base t) Base*Base def
+func f(t: Base*Base): Base*Base def
     return t
 
 f((Base(), Sub2()))

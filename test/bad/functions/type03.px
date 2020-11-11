@@ -1,8 +1,8 @@
 
-func apply(Bool->Bool f, Bool b) Bool def
+func apply(f: Bool->Bool, b: Bool): Bool def
     return f(b)
 
-func f() Bool def
+func f(): Bool def
     return true
 
 apply(f, true)

@@ -1,27 +1,27 @@
 
 class A def
-    Char c: '*'
+    c: Char = '*'
 
-    func toString() String def
+    func toString(): String def
         return this.c.toString()
 
 class B(A) def
-    Bool b
+    b: Bool
 
-    func toString() String def
+    func toString(): String def
         return "{this.c} {this.b}"
 
 class C(B) def
-    Int x
+    x: Int
 
 class D(A) def
-    Int x: 42
+    x: Int = 42
 
-    func toString() String def
+    func toString(): String def
         return "{this.c} {this.x}"
 
 
-func f(A a) def
+func f(a: A) def
     print a.toString()
 
 f(A('A'))

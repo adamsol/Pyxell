@@ -1,6 +1,6 @@
 
-Bool? x
+x: Bool?
 print false or x ?? 12 %% 3 and true
 
-Int? a = 0
+a: Int? = 0
 print a ?? 1+2 == 0

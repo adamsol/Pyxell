@@ -1,6 +1,6 @@
 
 x = {'a'..'z'}
-{Char} y
+y: {Char}
 
 x.remove('a')
 x.remove('t')

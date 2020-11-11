@@ -1,4 +1,4 @@
 
-String*Char*Float x
+x: String*Char*Float
 x = "x", 'x', 0.0
 print x.c, x.b, x.a[0]

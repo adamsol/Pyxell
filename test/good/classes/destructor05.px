@@ -5,7 +5,7 @@ class A def
 
 
 class B(A) def
-    Int x
+    x: Int
 
 
 class C(B) def

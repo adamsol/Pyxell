@@ -1,5 +1,5 @@
 
-func seed(Int x) extern
+func seed(x: Int) extern
 
-func randInt(Int r: 2) Int extern
-func randFloat(Float r: 1) Float extern
+func randInt(r: Int = 2): Int extern
+func randFloat(r: Float = 1): Float extern

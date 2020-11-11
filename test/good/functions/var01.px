@@ -1,5 +1,5 @@
 
-func sqr(Int x) Int def
+func sqr(x: Int): Int def
     return x*x
 
 f = sqr

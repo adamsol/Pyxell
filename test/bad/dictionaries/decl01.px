@@ -1,3 +1,3 @@
 
-{Int:String} d
+d: {Int:String}
 d = {"": 0}

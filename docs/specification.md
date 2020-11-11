@@ -77,13 +77,13 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `toInt() Int`                                     | returns the number converted to `Int` (conversion may be lossy)                                                 |
+| `toInt(): Int`                                    | returns the number converted to `Int` (conversion may be lossy)                                                 |
 
 ### `Float` methods
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `toInt() Int`                                     | returns the number converted to `Int` (conversion may be lossy)                                                 |
+| `toInt(): Int`                                    | returns the number converted to `Int` (conversion may be lossy)                                                 |
 
 ### `Char` properties
 
@@ -100,21 +100,21 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `all(Char->Bool f) Bool`                          | determines whether all characters in the string satisfy a condition                                             |
-| `any(Char->Bool f) Bool`                          | determines whether any character in the string satisfies a condition                                            |
-| `count(Char c) Int`                               | returns the number of occurrences of a character within the string                                              |
-| `endsWith(String s) Bool`                         | determines whether the string ends with a given string                                                          |
-| `filter(Char->Bool f) String`                     | returns a string with only those characters from the original string that satisfy a condition                   |
-| `find(String s, Int start: 0) Int?`               | returns the index of the first occurrence of a string within the string, or `null` if it is not found           |
-| `fold<B>(Char->B->B f, B r) B`                    | applies an accumulator function over the string, with a given initial accumulator value                         |
-| `get(Int p) Char?`                                | returns the character under a given index in the string, or `null` if the index is out of bounds                |
-| `map(Char->Char f) String`                        | returns a string with characters from the original string transformed by a mapping function                     |
-| `reduce(Char->Char->Char f) Char`                 | applies an accumulator function over the string, with the first character as the initial value                  |
-| `split(String sep) [String]`                      | splits the string into substrings delimited by a given separator                                                |
-| `startsWith(String s) Bool`                       | determines whether the string starts with a given string                                                        |
-| `toInt() Int`                                     | returns the string's content converted to `Int` (conversion may fail)                                           |
-| `toFloat() Float`                                 | returns the string's content converted to `Float` (conversion may fail)                                         |
-| `toRat() Rat`                                     | returns the string's content converted to `Rat` (conversion may fail)                                           |
+| `all(f: Char->Bool): Bool`                        | determines whether all characters in the string satisfy a condition                                             |
+| `any(f: Char->Bool): Bool`                        | determines whether any character in the string satisfies a condition                                            |
+| `count(c: Char): Int`                             | returns the number of occurrences of a character within the string                                              |
+| `endsWith(s: String): Bool`                       | determines whether the string ends with a given string                                                          |
+| `filter(f: Char->Bool): String`                   | returns a string with only those characters from the original string that satisfy a condition                   |
+| `find(s: String, start: Int = 0): Int?`           | returns the index of the first occurrence of a string within the string, or `null` if it is not found           |
+| `fold<B>(f: Char->B->B, r: B): B`                 | applies an accumulator function over the string, with a given initial accumulator value                         |
+| `get(p: Int): Char?`                              | returns the character under a given index in the string, or `null` if the index is out of bounds                |
+| `map(f: Char->Char): String`                      | returns a string with characters from the original string transformed by a mapping function                     |
+| `reduce(f: Char->Char->Char): Char`               | applies an accumulator function over the string, with the first character as the initial value                  |
+| `split(sep: String): [String]`                    | splits the string into substrings delimited by a given separator                                                |
+| `startsWith(s: String): Bool`                     | determines whether the string starts with a given string                                                        |
+| `toInt(): Int`                                    | returns the string's content converted to `Int` (conversion may fail)                                           |
+| `toFloat(): Float`                                | returns the string's content converted to `Float` (conversion may fail)                                         |
+| `toRat(): Rat`                                    | returns the string's content converted to `Rat` (conversion may fail)                                           |
 
 ### Array properties and methods
 
@@ -123,27 +123,27 @@ This section describes all data types available in Pyxell, together with their p
 | `empty`          | `Bool`       | whether the array is empty                                       |
 | `length`         | `Int`        | number of elements in the array                                  |
 
-| Method header                                     | Description                                                                                                     |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `all<A>(A->Bool f: _) Bool`                       | determines whether all elements in the array satisfy a condition                                                |
-| `any<A>(A->Bool f: _) Bool`                       | determines whether any element in the array satisfies a condition                                               |
-| `clear<A>() Void`                                 | removes all elements from the array                                                                             |
-| `copy<A>() [A]`                                   | return a shallow copy of the array                                                                              |
-| `count<A>(A x) A?`                                | returns the number of occurrences of an element within the array                                                |
-| `erase<A>(Int p, Int count: 1) Void`              | removes elements from the array at a given position                                                             |
-| `extend<A>([A] a) Void`                           | appends all elements in a given array to the array                                                              |
-| `filter<A>(A->Bool f) [A]`                        | returns an array with only those elements from the original array that satisfy a condition                      |
-| `find<A>(A x, Int start: 0) Int?`                 | returns the index of the first occurrence of an element within the array, or `null` if it is not found          |
-| `fold<A,B>(A->B->B f, B r) B`                     | applies an accumulator function over the array, with a given initial accumulator value                          |
-| `get<A>(Int p) A?`                                | returns the element under a given index in the array, or `null` if the index is out of bounds                   |
-| `insert<A>(Int p, A x) Void`                      | inserts a new element at a given position of the array                                                          |
-| `join(String sep: "") String`                     | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
-| `map<A,B>(A->B f) [B]`                            | returns an array with elements from the original array transformed by a mapping function                        |
-| `pop<A>() A`                                      | removes the last element from the array and returns it (will fail if the array is empty)                        |
-| `push<A>(A x) Void`                               | appends a given element to the end of the array                                                                 |
-| `reduce<A>(A->A->A f) A`                          | applies an accumulator function over the array, with the first element as the initial value                     |
-| `reverse<A>() Void`                               | reverses the order of elements in the array                                                                     |
-| `sort<A,K>(Bool reverse: false, A->K key: _) [A]` | sorts the array in place, stably, using a function to extract comparison keys; returns the sorted array         |
+| Method header                                          | Description                                                                                                     |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `all<A>(f: A->Bool = _): Bool`                         | determines whether all elements in the array satisfy a condition                                                |
+| `any<A>(f: A->Bool = _): Bool`                         | determines whether any element in the array satisfies a condition                                               |
+| `clear<A>(): Void`                                     | removes all elements from the array                                                                             |
+| `copy<A>(): [A]`                                       | returns a shallow copy of the array                                                                             |
+| `count<A>(x: A): A?`                                   | returns the number of occurrences of an element within the array                                                |
+| `erase<A>(p: Int, count: Int = 1): Void`               | removes elements from the array at a given position                                                             |
+| `extend<A>(a: [A]): Void`                              | appends all elements in a given array to the array                                                              |
+| `filter<A>(f: A->Bool): [A]`                           | returns an array with only those elements from the original array that satisfy a condition                      |
+| `find<A>(x: A, start: Int = 0): Int?`                  | returns the index of the first occurrence of an element within the array, or `null` if it is not found          |
+| `fold<A,B>(f: A->B->B, r: B): B`                       | applies an accumulator function over the array, with a given initial accumulator value                          |
+| `get<A>(p: Int): A?`                                   | returns the element under a given index in the array, or `null` if the index is out of bounds                   |
+| `insert<A>(p: Int, x: A): Void`                        | inserts a new element at a given position of the array                                                          |
+| `join(sep: String = ""): String`                       | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
+| `map<A,B>(f: A->B): [B]`                               | returns an array with elements from the original array transformed by a mapping function                        |
+| `pop<A>(): A`                                          | removes the last element from the array and returns it (will fail if the array is empty)                        |
+| `push<A>(x: A): Void`                                  | appends a given element to the end of the array                                                                 |
+| `reduce<A>(f: A->A->A): A`                             | applies an accumulator function over the array, with the first element as the initial value                     |
+| `reverse<A>(): Void`                                   | reverses the order of elements in the array                                                                     |
+| `sort<A,K>(reverse: Bool = false, key: A->K = _): [A]` | sorts the array in place, stably, using a function to extract comparison keys; returns the sorted array         |
 
 ### Set properties and methods
 
@@ -154,20 +154,20 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `add<A>(A x) Void`                                | adds a given element to the set                                                                                 |
-| `all<A>(A->Bool f: _) Bool`                       | determines whether all elements in the set satisfy a condition                                                  |
-| `any<A>(A->Bool f: _) Bool`                       | determines whether any element in the set satisfies a condition                                                 |
-| `clear<A>() Void`                                 | removes all elements from the set                                                                               |
-| `copy<A>() {A}`                                   | return a shallow copy of the set                                                                                |
-| `filter<A>(A->Bool f) {A}`                        | returns a set with only those elements from the original set that satisfy a condition                           |
-| `fold<A,B>(A->B->B f, B r) B`                     | applies an accumulator function over the set, with a given initial accumulator value                            |
-| `intersect<A>({A} s) Void`                        | removes all elements not present in a given set from the set                                                    |
-| `map<A,B>(A->B f) {B}`                            | returns a set with elements from the original set transformed by a mapping function                             |
-| `pop<A>() A`                                      | removes some element from the set and returns it (will fail if the set is empty)                                |
-| `reduce<A>(A->A->A f) A`                          | applies an accumulator function over the set, with one of the elements as the initial value                     |
-| `remove<A>(A x) Void`                             | removes a given element from the set                                                                            |
-| `subtract<A>({A} s) Void`                         | removes all elements in a given set from the set                                                                |
-| `union<A>({A} s) Void`                            | adds all elements in a given set to the set                                                                     |
+| `add<A>(x: A): Void`                              | adds a given element to the set                                                                                 |
+| `all<A>(f: A->Bool = _): Bool`                    | determines whether all elements in the set satisfy a condition                                                  |
+| `any<A>(f: A->Bool = _): Bool`                    | determines whether any element in the set satisfies a condition                                                 |
+| `clear<A>(): Void`                                | removes all elements from the set                                                                               |
+| `copy<A>(): {A}`                                  | returns a shallow copy of the set                                                                               |
+| `filter<A>(f: A->Bool): {A}`                      | returns a set with only those elements from the original set that satisfy a condition                           |
+| `fold<A,B>(f: A->B->B, r: B): B`                  | applies an accumulator function over the set, with a given initial accumulator value                            |
+| `intersect<A>(s: {A}): Void`                      | removes all elements not present in a given set from the set                                                    |
+| `map<A,B>(f: A->B): {B}`                          | returns a set with elements from the original set transformed by a mapping function                             |
+| `pop<A>(): A`                                     | removes some element from the set and returns it (will fail if the set is empty)                                |
+| `reduce<A>(f: A->A->A): A`                        | applies an accumulator function over the set, with one of the elements as the initial value                     |
+| `remove<A>(x: A): Void`                           | removes a given element from the set                                                                            |
+| `subtract<A>(s: {A}): Void`                       | removes all elements in a given set from the set                                                                |
+| `union<A>(s: {A}): Void`                          | adds all elements in a given set to the set                                                                     |
 
 ### Dictionary properties and methods
 
@@ -178,17 +178,17 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `all<A,B>(A*B->Bool f) Bool`                      | determines whether all key-value pairs in the dictionary satisfy a condition                                    |
-| `any<A,B>(A*B->Bool f) Bool`                      | determines whether any key-value pair in the dictionary satisfies a condition                                   |
-| `clear<A,B>() Void`                               | removes all elements from the dictionary                                                                        |
-| `copy<A,B>() {A:B}`                               | return a shallow copy of the dictionary                                                                         |
-| `filter<A,B>(A*B->Bool f) {A:B}`                  | returns a dictionary with only those key-value pairs from the original dictionary that satisfy a condition      |
-| `fold<A,B,C>(A*B->C->C f, C r) C`                 | applies an accumulator function over the dictionary, with a given initial accumulator value                     |
-| `get<A,B>(A x) B?`                                | returns the value under a given key in the dictionary, or `null` if the key is not present                      |
-| `map<A,B,C,D>(A*B->C*D f) {C:D}`                  | returns a dictionary with key-value pairs from the original dictionary transformed by a mapping function        |
-| `reduce<A,B>(A*B->A*B->A*B f) A*B`                | applies an accumulator function over the dictionary, with one of the key-value pairs as the initial value       |
-| `remove<A,B>(A x) Void`                           | removes a given key from the dictionary                                                                         |
-| `update<A,B>({A:B} d) Void`                       | updates the dictionary with keys and values from a given dictionary                                             |
+| `all<A,B>(f: A*B->Bool): Bool`                    | determines whether all key-value pairs in the dictionary satisfy a condition                                    |
+| `any<A,B>(f: A*B->Bool): Bool`                    | determines whether any key-value pair in the dictionary satisfies a condition                                   |
+| `clear<A,B>(): Void`                              | removes all elements from the dictionary                                                                        |
+| `copy<A,B>(): {A:B}`                              | returns a shallow copy of the dictionary                                                                        |
+| `filter<A,B>(f: A*B->Bool): {A:B}`                | returns a dictionary with only those key-value pairs from the original dictionary that satisfy a condition      |
+| `fold<A,B,C>(f: A*B->C->C, r: C): C`              | applies an accumulator function over the dictionary, with a given initial accumulator value                     |
+| `get<A,B>(x: A): B?`                              | returns the value under a given key in the dictionary, or `null` if the key is not present                      |
+| `map<A,B,C,D>(f: A*B->C*D): {C:D}`                | returns a dictionary with key-value pairs from the original dictionary transformed by a mapping function        |
+| `reduce<A,B>(f: A*B->A*B->A*B): A*B`              | applies an accumulator function over the dictionary, with one of the key-value pairs as the initial value       |
+| `remove<A,B>(x: A): Void`                         | removes a given key from the dictionary                                                                         |
+| `update<A,B>(d: {A:B}): Void`                     | updates the dictionary with keys and values from a given dictionary                                             |
 
 ### Tuple properties
 
@@ -200,7 +200,7 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `toString() String`                               | returns the string representation of the value                                                                  |
+| `toString(): String`                              | returns the string representation of the value                                                                  |
 
 
 ## Standard library
@@ -211,33 +211,33 @@ This section describes the built-in functions in Pyxell, as well as constants an
 
 | Function header                                   | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `read() String`                                   | reads a string from the standard input, to the first whitespace character                                       |
-| `readChar() Char`                                 | reads a single character from the standard input                                                                |
-| `readFloat() Float`                               | reads a floating-point number from the standard input                                                           |
-| `readInt() Int`                                   | reads an integer number from the standard input                                                                 |
-| `readLine() String`                               | reads a string from the standard input, to the first newline character                                          |
-| `readRat() Rat`                                   | reads a rational number from the standard input                                                                 |
-| `write(String s) Void`                            | writes a string to the standard output                                                                          |
+| `read(): String`                                  | reads a string from the standard input, to the first whitespace character                                       |
+| `readChar(): Char`                                | reads a single character from the standard input                                                                |
+| `readFloat(): Float`                              | reads a floating-point number from the standard input                                                           |
+| `readInt(): Int`                                  | reads an integer number from the standard input                                                                 |
+| `readLine(): String`                              | reads a string from the standard input, to the first newline character                                          |
+| `readRat(): Rat`                                  | reads a rational number from the standard input                                                                 |
+| `write(s: String): Void`                          | writes a string to the standard output                                                                          |
 
 ### Bitwise functions
 
 | Function header                                   | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `bitAnd(Int x, Int y) Int`                        | returns the bitwise AND of `x` and `y`                                                                          |
-| `bitNot(Int x) Int`                               | returns the bitwise NOT of `x`                                                                                  |
-| `bitOr(Int x, Int y) Int`                         | returns the bitwise OR of `x` and `y`                                                                           |
-| `bitShift(Int x, Int y) Int`                      | returns the bitwise shift of `x`: left for positive `y`, right for negative `y`                                 |
-| `bitXor(Int x, Int y) Int`                        | returns the bitwise XOR of `x` and `y`                                                                          |
+| `bitAnd(x: Int, y: Int): Int`                     | returns the bitwise AND of `x` and `y`                                                                          |
+| `bitNot(x: Int): Int`                             | returns the bitwise NOT of `x`                                                                                  |
+| `bitOr(x: Int, y: Int): Int`                      | returns the bitwise OR of `x` and `y`                                                                           |
+| `bitShift(x: Int, y: Int): Int`                   | returns the bitwise shift of `x`: left for positive `y`, right for negative `y`                                 |
+| `bitXor(x: Int, y: Int): Int`                     | returns the bitwise XOR of `x` and `y`                                                                          |
 
 ### Arithmetic functions
 
 | Function header                                   | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `abs<T>(T x) T`                                   | returns the absolute value of `x`                                                                               |
-| `clamp<T>(T x, T a, T b) T`                       | returns `x` clamped to the interval `[a, b]`                                                                    |
-| `max<T>(T x, T y) T`                              | returns the maximum of `x` and `y`                                                                              |
-| `min<T>(T x, T y) T`                              | returns the minimum of `x` and `y`                                                                              |
-| `sign<T>(T x) T`                                  | returns the sign of `x` (`-1`, `0`, or `1`)                                                                     |
+| `abs<T>(x: T): T`                                 | returns the absolute value of `x`                                                                               |
+| `clamp<T>(x: T, a: T, b: T): T`                   | returns `x` clamped to the interval `[a, b]`                                                                    |
+| `max<T>(x: T, y: T): T`                           | returns the maximum of `x` and `y`                                                                              |
+| `min<T>(x: T, y: T): T`                           | returns the minimum of `x` and `y`                                                                              |
+| `sign<T>(x: T): T`                                | returns the sign of `x` (`-1`, `0`, or `1`)                                                                     |
 
 ### `math` module
 
@@ -249,25 +249,25 @@ This section describes the built-in functions in Pyxell, as well as constants an
 
 | Function header                                   | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `acos(Float x) Float`                             | returns the angle (in radians) whose cosine is `x`                                                              |
-| `asin(Float x) Float`                             | returns the angle (in radians) whose sine is `x`                                                                |
-| `atan(Float x) Float`                             | returns the angle (in radians) whose tangent is `x`                                                             |
-| `ceil(Float x) Float`                             | returns the smallest integral value greater than or equal to `x`                                                |
-| `cos(Float x) Float`                              | returns the cosine of `x` (in radians)                                                                          |
-| `exp(Float x) Float`                              | returns _e_ raised to the power of `x`                                                                          |
-| `floor(Float x) Float`                            | returns the largest integral value less than or equal to `x`                                                    |
-| `log(Float x) Float`                              | returns the natural logarithm of `x`                                                                            |
-| `log10(Float x) Float`                            | returns the base 10 logarithm of `x`                                                                            |
-| `round(Float x, Int p: 0) Float`                  | returns `x` rounded to `p` fractional digits                                                                    |
-| `sin(Float x) Float`                              | returns the sine of `x` (in radians)                                                                            |
-| `sqrt(Float x) Float`                             | returns the square root of `x`                                                                                  |
-| `tan(Float x) Float`                              | returns the tangent of `x` (in radians)                                                                         |
-| `trunc(Float x) Float`                            | returns the integral part of `x` (`x` rounded towards 0)                                                        |
+| `acos(x: Float): Float`                           | returns the angle (in radians): whose cosine is `x`                                                             |
+| `asin(x: Float): Float`                           | returns the angle (in radians): whose sine is `x`                                                               |
+| `atan(x: Float): Float`                           | returns the angle (in radians): whose tangent is `x`                                                            |
+| `ceil(x: Float): Float`                           | returns the smallest integral value greater than or equal to `x`                                                |
+| `cos(x: Float): Float`                            | returns the cosine of `x` (in radians)                                                                          |
+| `exp(x: Float): Float`                            | returns _e_ raised to the power of `x`                                                                          |
+| `floor(x: Float): Float`                          | returns the largest integral value less than or equal to `x`                                                    |
+| `log(x: Float): Float`                            | returns the natural logarithm of `x`                                                                            |
+| `log10(x: Float): Float`                          | returns the base 10 logarithm of `x`                                                                            |
+| `round(x: Float, p: Int = 0): Float`              | returns `x` rounded to `p` fractional digits                                                                    |
+| `sin(x: Float): Float`                            | returns the sine of `x` (in radians)                                                                            |
+| `sqrt(x: Float): Float`                           | returns the square root of `x`                                                                                  |
+| `tan(x: Float): Float`                            | returns the tangent of `x` (in radians)                                                                         |
+| `trunc(x: Float): Float`                          | returns the integral part of `x` (`x` rounded towards 0)                                                        |
 
 ### `random` module
 
 | Function header                                   | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `randFloat(Float r: 1) Float`                     | returns a random floating-point number from the interval `[0, r)`                                               |
-| `randInt(Int r: 2) Float`                         | returns a random integer number from the interval `[0, r)`                                                      |
-| `seed(Int x) Float`                               | initializes the pseudo-random number generator with a given seed                                                |
+| `randFloat(r: Float = 1): Float`                  | returns a random floating-point number from the interval `[0, r)`                                               |
+| `randInt(r: Int = 2): Float`                      | returns a random integer number from the interval `[0, r)`                                                      |
+| `seed(x: Int): Float`                             | initializes the pseudo-random number generator with a given seed                                                |

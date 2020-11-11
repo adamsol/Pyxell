@@ -1,5 +1,5 @@
 
-Int? x
+x: Int?
 x = 10
-Int x' = x!
+x': Int = x!
 print x'

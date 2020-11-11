@@ -1,8 +1,8 @@
 
 class A def
-    func f() Int def
+    func f(): Int def
         return this.x * 2
 
-    Int x: 5
+    x: Int = 5
 
 print A().f()

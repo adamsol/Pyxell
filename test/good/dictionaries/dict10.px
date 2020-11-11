@@ -1,5 +1,5 @@
 
-{Char:Bool?} d
+d: {Char:Bool?}
 d['x'] ??= false
 d['x'] ??= true
 print d

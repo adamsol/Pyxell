@@ -1,8 +1,8 @@
 
 class Node def
-    Int value
-    Node? left
-    Node? right
+    value: Int
+    left: Node?
+    right: Node?
 
 tree = Node(42)
 tree.left = tree.right = tree

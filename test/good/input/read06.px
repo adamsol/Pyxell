@@ -1,4 +1,4 @@
 
 print readFloat() + readFloat()
-Float x = readFloat()
+x: Float = readFloat()
 print x

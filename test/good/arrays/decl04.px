@@ -1,3 +1,3 @@
 
-[String]*[[Int*Float]] a = ['A'], [[], [(0, 1/2)], [(2, 3)]]
+a: [String]*[[Int*Float]] = ['A'], [[], [(0, 1/2)], [(2, 3)]]
 print a

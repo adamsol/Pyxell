@@ -1,5 +1,5 @@
 
-func T'4_EST'p2'() Int def
+func T'4_EST'p2'(): Int def
     return 7
 
 print T'4_EST'p2'()

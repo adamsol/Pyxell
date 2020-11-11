@@ -1,5 +1,5 @@
 
-func print'<A>(A x) A def
+func print'<A>(x: A): A def
     print x
     return x
 

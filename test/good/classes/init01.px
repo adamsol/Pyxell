@@ -1,6 +1,6 @@
 
 class A def
-    Int n
+    n: Int
 
-A*[Float] x
+x: A*[Float]
 print x.b

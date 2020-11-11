@@ -1,8 +1,8 @@
 
-func f<A>(A->A p) def
+func f<A>(p: A->A) def
     return
 
-func g(Int x) Bool def
+func g(x: Int): Bool def
     return true
 
 f(g)

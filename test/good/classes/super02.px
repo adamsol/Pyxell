@@ -1,6 +1,6 @@
 
 class A def
-    Int x
+    x: Int
 
     func f() def
         print this.x

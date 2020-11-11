@@ -37,7 +37,7 @@ When not directly initialized, variable is automatically initialized with the de
 You can find the list of all available types and their default values in the [Specification](/specification.md#types).
 
 ```
-Bool y
+y: Bool
 ```
 
 Variable name must start with a letter, but may also contain digits, underscores, and apostrophes.
@@ -48,13 +48,13 @@ Once a variable has been created, its type cannot be changed.
 Values of some types can be automatically converted to more general types: `Int -> Rat -> Float` or `Char -> String`.
 
 ```
-Float x = 1
+x: Float = 1
 ```
 
 The coercion doesn't work in the other direction.
 
 ```
-Int y = 1.0  # error: No implicit conversion from `Rat` to `Int`.
+y: Int = 1.0  # error: No implicit conversion from `Rat` to `Int`.
 ```
 
 
@@ -287,10 +287,11 @@ b[0] = 10
 print a[0]
 ```
 
-When an empty array is used, its type must be explicitly given.
+When an empty container is created, its type must be explicitly given.
+Empty literals can be skipped in variable declarations, since this is the default value.
 
 ```
-[Char] e = []
+e: [Char]  # = []
 ```
 
 Arrays can be concatenated, repeated, and compared using standard operators.
@@ -313,7 +314,7 @@ even if types of the elements match (see [here](https://stackoverflow.com/q/2745
 However, container literals can be automatically converted.
 
 ```
-[Rat] c
+c: [Rat]
 c = [...a]  # copy of the array of Int, elements converted to Rat
 c = a  # error: No implicit conversion from `[Int]` to `[Rat]`.
 ```
@@ -324,12 +325,6 @@ Sets contain no duplicates and do not preserve order of elements.
 
 ```
 print {3, 4, 4}
-```
-
-Empty set can be created like an empty array.
-
-```
-{Float} e = {}
 ```
 
 To check if an element is in the set, use `in` operator.
@@ -370,12 +365,6 @@ print d["abc"]
 print d[""]
 ```
 
-Empty dictionary literal has an additional colon.
-
-```
-{Int:[Bool]} e = {:}
-```
-
 Use `in` operator for checking if the dictionary contains a given key.
 
 ```
@@ -414,7 +403,7 @@ print {...:d}  # copy of the dictionary
 To accept `null` value, variable's type must be explicitly marked as nullable.
 
 ```
-Bool? b
+b: Bool?
 b = true
 b = null
 ```
@@ -422,28 +411,34 @@ b = null
 You can either directly check if a value is `null`, or use special coalescing and conditional operators.
 
 ```
-[Int]? a
+a: [Int]?
 print a is null
 print a ?? []
 print a?.length
 print a?[0]
 ```
 
-There is also an operator to directly retrieve the value, for cases when you are sure it is not null.
+There is also an operator to directly retrieve the value in cases when it is certainly not null.
 
 ```
-Rat? x = 1.5
+x: Rat? = 1.5
 print x! * 2
 ```
 
 
 ## Tuples
 
-Two or more values separated with a comma (outside of a container, function call, and print statement) form a tuple.
+Two or more values separated with a comma form a tuple.
 
 ```
 t = 1, 'Z'
 print t
+```
+
+In some cases, like container literals or function calls, it is necessary to provide additional parentheses.
+
+```
+print [(true, "")]
 ```
 
 Values can be retrieved using alphabetical properties or tuple destructuring (unneeded part can be discarded with an underscore).
@@ -471,7 +466,7 @@ print s  # the set contains the original value
 Basic definition of a function consists of its name, list of arguments, return type, and body.
 
 ```
-func square(Int x) Int def
+func square(x: Int): Int def
     return x * x
 
 print square(5)
@@ -490,7 +485,7 @@ You can provide default values for optional arguments.
 The expressions will be evaluated every time the function is called (if they are needed), so mutable container literals can be safely used.
 
 ```
-func push(Int x, [Int] a: []) [Int] def
+func push(x: Int, a: [Int] = []): [Int] def
     a.push(x)
     return a
 
@@ -502,7 +497,7 @@ print push(2, [3])
 Arguments can be also passed in any order using their names.
 
 ```
-func pow(Rat base, Int exponent) Rat def
+func pow(base: Rat, exponent: Int): Rat def
     return base ^ exponent
 
 print pow(exponent=-3, base=6)
@@ -512,7 +507,7 @@ Variadic functions are supported too. This is just a syntactic sugar for passing
 Ranges and spread syntax can be used when such a function is called.
 
 ```
-func sum(Rat... numbers) Rat def
+func sum(...numbers: Rat): Rat def
     return numbers.reduce(_+_)
 
 print sum()
@@ -524,7 +519,7 @@ Functions can be stored in variables, passed to other functions as arguments, et
 However, when a function is converted to a variable, all information about its arguments except for their types is lost.
 
 ```
-[Rat]->Rat s = sum
+s: [Rat]->Rat = sum
 print s([1, 2])
 print s()  # error: Too few arguments.
 ```
@@ -535,7 +530,7 @@ Generic functions are standard functions with additional type variables, which c
 They are compiled independently for each combination of types they are called with.
 
 ```
-func log<T>(T x) def
+func log<T>(x: T) def
     print "logged", x
 
 log(3)
@@ -546,7 +541,7 @@ Function declaration may contain default values for generic arguments, and the b
 Errors will be reported when the function cannot be compiled with given types.
 
 ```
-func multiply<A,B,C>(A a, B b: 1) C def
+func multiply<A,B,C>(a: A, b: B = 1): C def
     return a * b
 
 print multiply(3, "qwerty")
@@ -556,7 +551,7 @@ print multiply({0.5f})  # error: No binary operator `*` defined for `{Float}` an
 When a type name is used more than once, the compiler will try to unify types of the arguments, following the coercion rules.
 
 ```
-func contains<T>([T] a, T x) Bool def
+func contains<T>(a: [T], x: T): Bool def
     return x in a
 
 print contains([3r], 3)  # T will be Rat
@@ -601,7 +596,7 @@ You cannot pass a lambda function to another lambda function.
 In the case of functional arguments, it's better to use the full generic definition instead.
 
 ```
-func apply<A,B>(A->B f, A x) B def
+func apply<A,B>(f: A->B, x: A): B def
     return f(x)
 
 print apply(3*_, 14)
@@ -613,7 +608,7 @@ Generator is a function producing a sequence of values that can be iterated over
 To create a generator, add an asterisk symbol to the function definition.
 
 ```
-func* range(Int n) Int def
+func* range(n: Int): Int def
     for i in 0...n do
         yield i
 
@@ -643,8 +638,8 @@ Each field may have an explicit default value; if not provided, it will be the d
 
 ```
 class Cat def
-    String name
-    Bool afraid_of_water: true
+    name: String
+    afraid_of_water: Bool = true
 ```
 
 Every class has a default constructor function that accepts field values in the order of definition, or as named arguments.
@@ -659,7 +654,7 @@ Remember that class objects must always be explicitly constructed before use (th
 The following code will crash (or raise a proper exception, once they are implemented).
 
 ```
-Cat cat'
+cat': Cat
 cat'.name = "Simba"  # SIGSEGV
 ```
 
@@ -669,10 +664,10 @@ Methods are similar to normal functions, but are called in the context of an obj
 
 ```
 class Vector def
-    Float x
-    Float y
+    x: Float
+    y: Float
 
-    func length() Float def
+    func length(): Float def
         return math.sqrt(this.x^2 + this.y^2)
 
 print Vector(5, 12).length()
@@ -682,9 +677,9 @@ Method is bound to the object before it is called, so it can be treated as a sta
 
 ```
 class Multiplier def
-    Int a
+    a: Int
 
-    func resolve(Int b) Int def
+    func resolve(b: Int): Int def
         return this.a * b
 
 r = Multiplier(10).resolve
@@ -695,9 +690,9 @@ If a special method `toString()` is defined in a class, it will be used to displ
 
 ```
 class Greeting def
-    String name
+    name: String
 
-    func toString() String def
+    func toString(): String def
         return "Hello, {this.name}!"
 
 print Greeting("world")
@@ -713,7 +708,7 @@ It is executed immediately after the object has been created.
 
 ```
 class IntWrapper def
-    Int value
+    value: Int
 
     constructor def
         print "Created object with value {this.value}"
@@ -725,7 +720,7 @@ Destructors are similar to constructors. Destructor is called when an object doe
 
 ```
 class Resource def
-    Int id
+    id: Int
 
     destructor def
         print "Resource {this.id} freed"
@@ -745,7 +740,7 @@ Inherited destructors are called after the destructor of the derived class (in t
 
 ```
 class Base def
-    Int x
+    x: Int
 
     constructor def
         print "Base constructor, x = {this.x}"
@@ -754,7 +749,7 @@ class Base def
         print "Base destructor"
 
 class Derived(Base) def
-    Int y
+    y: Int
 
     constructor def
         print "Derived constructor, y = {this.y}"
@@ -768,8 +763,8 @@ Derived(y=4)
 Derived class object can be assigned to a parent class variable, but not the other way around.
 
 ```
-Base base = Derived()
-Derived derived = Base()  # error: No implicit conversion from `Base` to `Derived`.
+base: Base = Derived()
+derived: Derived = Base()  # error: No implicit conversion from `Base` to `Derived`.
 ```
 
 When derived class has a method with the same name as in the parent class, which method will be called depends on the real type of the object, not its declared type.
@@ -777,15 +772,15 @@ Inside the method body, you can call the corresponding method of the parent clas
 
 ```
 class A def
-    func f(Int x) def
+    func f(x: Int) def
         print "A: {x}"
 
 class B(A) def
-    func f(Int x) def
+    func f(x: Int) def
         print "B: {x}"
         super(x//2)
 
-A a = B()
+a: A = B()
 a.f(42)
 ```
 
@@ -858,7 +853,7 @@ print s
 
 ```
 s = "abracadabra"
-{Char:Int} d
+d: {Char:Int}
 for c in s do
     d[c] += 1
 print d
@@ -868,13 +863,13 @@ print d
 
 ```
 a = ["apple", "banana", "apple", "orange", "banana"]
-[String] a'
-{String} v
+b: [String]
+v: {String}
 for x in a do
     if x not in v do
-        a'.push(x)
+        b.push(x)
         v.add(x)
-print a'
+print b
 # Or, if the order of elements is not important, just:
 print {...a}
 ```
@@ -889,7 +884,7 @@ print factorial(10)
 ### Generator for Fibonacci numbers
 
 ```
-func* fib() Rat def
+func* fib(): Rat def
     a, b = 0r, 1r
     yield a
     while true do

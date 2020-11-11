@@ -1,6 +1,6 @@
 
 class Test def
-    Int x
+    x: Int
 
-    func f() Int def
+    func f(): Int def
         return x

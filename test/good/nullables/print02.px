@@ -1,20 +1,20 @@
 
-[Int?] a = [1, null]
+a: [Int?] = [1, null]
 print a
 
-[Bool]? b = [true]
+b: [Bool]? = [true]
 print b
 
 b = null
 print b
 
-Char*Float? c = ('c', 3.5)
+c: Char*Float? = ('c', 3.5)
 print c
 
 c = ('C', null)
 print c
 
-(String*[Int])? d
+d: (String*[Int])?
 print d
 
 d = ("abc", [])

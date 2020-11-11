@@ -1,5 +1,5 @@
 
-func f<N>(N x) def
+func f<N>(x: N) def
     y = N
 
 f(4)

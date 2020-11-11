@@ -1,5 +1,5 @@
 
-Int a
-Rat b
+a: Int
+b: Rat
 a = b = 1
 print a, b.fraction

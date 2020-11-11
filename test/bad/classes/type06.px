@@ -1,9 +1,9 @@
 
 class A def
-    Int x
+    x: Int
 
 class B(A) def
-    Int y
+    y: Int
 
-{B}? b = {B()}
-{A}? a = b
+b: {B}? = {B()}
+a: {A}? = b

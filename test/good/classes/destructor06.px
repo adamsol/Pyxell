@@ -1,6 +1,6 @@
 
 class A def
-    Char x
+    x: Char
 
 
 class B(A) def
@@ -8,4 +8,4 @@ class B(A) def
         print this.x
 
 
-A a = B('B')
+a: A = B('B')

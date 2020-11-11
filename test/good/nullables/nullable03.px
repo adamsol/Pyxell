@@ -1,5 +1,5 @@
 
-Bool? x
+x: Bool?
 x = null
 print x
 x = true

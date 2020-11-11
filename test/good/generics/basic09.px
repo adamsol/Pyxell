@@ -1,5 +1,5 @@
 
-func f<T>(T x) T def
+func f<T>(x: T): T def
     y = x
     return y
 

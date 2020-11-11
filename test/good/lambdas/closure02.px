@@ -1,5 +1,5 @@
 
-func divider(Float d) [Float]->[Float] def
+func divider(d: Float): [Float]->[Float] def
     m = 1/d
     return lambda a: a.map(_*m)
 

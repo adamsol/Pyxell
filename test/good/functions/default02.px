@@ -1,4 +1,4 @@
 
 f = default(Char->(Int->[Int]->Void))
-Int->[Int]->Void f' = f('x')
+f': Int->[Int]->Void = f('x')
 f'(1, [])

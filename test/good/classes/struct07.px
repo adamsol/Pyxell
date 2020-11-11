@@ -1,12 +1,12 @@
 
-func g1(Char c, Int x) Rat def
+func g1(c: Char, x: Int): Rat def
     return c.code - x
 
-func g2(Char c, Int x) Rat def
+func g2(c: Char, x: Int): Rat def
     return c.code + x
 
 class A def
-    Char->Int->Rat f: g1
+    f: Char->Int->Rat = g1
 
 a = A()
 print a.f('A', 1)

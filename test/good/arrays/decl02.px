@@ -1,4 +1,4 @@
 
-[Int] a
+a: [Int]
 a = [2]
 print a[0]

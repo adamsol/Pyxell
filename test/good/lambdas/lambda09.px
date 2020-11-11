@@ -1,5 +1,5 @@
 
-func f(Int n, Int->[String] g) [String] def
+func f(n: Int, g: Int->[String]): [String] def
     return g(n)
 
 print f(3, [x.toString() for x in 1.._]).join(",")

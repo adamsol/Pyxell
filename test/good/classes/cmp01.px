@@ -1,6 +1,6 @@
 
 class A def
-    Int x: 0
+    x: Int
 
 a1 = A()
 a2 = A()

@@ -1,7 +1,7 @@
 
 x = 0
 
-func f(Int y) Int def
+func f(y: Int): Int def
     x += 1
     return y
 

@@ -1,8 +1,8 @@
 
-func f(String a, String b) String def
+func f(a: String, b: String): String def
     return a + b
 
-func g(String x) String def
+func g(x: String): String def
     print x
     return x
 

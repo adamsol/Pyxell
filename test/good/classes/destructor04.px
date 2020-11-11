@@ -1,18 +1,18 @@
 
 class A def
-    Int x
+    x: Int
 
     destructor def
         print "A {this.x}"
 
 
 class B(A) def
-    Float y
+    y: Float
 
     destructor def
         print "B {this.x} {this.y}"
 
 
-A a
+a: A
 a = A()
 a = B(1, 2.2)

@@ -1,14 +1,14 @@
 
 class Base def
-    func toString() String def
+    func toString(): String def
         return "Base"
 
 class Sub1(Base) def
-    func toString() String def
+    func toString(): String def
         return "Sub1"
 
 class Sub2(Base) def
-    func toString() String def
+    func toString(): String def
         return "Sub2"
 
 a = [Sub1(), Sub2()]

@@ -1,9 +1,9 @@
 
 class A def
-    Int x
+    x: Int
 
 class B(A) def
-    Int y
+    y: Int
 
 b = [[B()]]
-[[[A]]]*Int t = [b], 6
+t: [[[A]]]*Int = [b], 6

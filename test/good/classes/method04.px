@@ -1,9 +1,9 @@
 
 class Point def
-    Float x
-    Float y
+    x: Float
+    y: Float
 
-    func tuple(Bool reverse: false) Float*Float def
+    func tuple(reverse: Bool = false): Float*Float def
         return reverse ? (this.y, this.x) : (this.x, this.y)
 
 p = Point(3.0, -1.5)

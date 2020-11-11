@@ -1,10 +1,10 @@
 
 if true do
-    Bool x
+    x: Bool
     x = false
     print x
 
 if true do
-    Char x
+    x: Char
     x = '*'
     print x

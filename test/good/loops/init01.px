@@ -1,5 +1,5 @@
 
 for _ in 1..2 do
-    Int x
+    x: Int
     x += 4
     print x

@@ -1,5 +1,5 @@
 
-func f(Int n, Int->[Char] g) [Char] def
+func f(n: Int, g: Int->[Char]): [Char] def
     return g(n)
 
 a = [c for c in "abcde"]

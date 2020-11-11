@@ -1,5 +1,5 @@
 
-func f<A>(A x, A y: default(A)) def
+func f<A>(x: A, y: A = default(A)) def
     print x
 
 print f(1)

@@ -12,7 +12,7 @@ stmt
   : 'use' name=ID ('hiding' hiding=id_list)? # StmtUse
   | 'skip' # StmtSkip
   | 'print' (expr ',')* expr? # StmtPrint
-  | typ ID ('=' tuple_expr)? # StmtDecl
+  | ID ':' typ ('=' tuple_expr)? # StmtDecl
   | (tuple_expr '=')* tuple_expr # StmtAssg
   | expr op=('^' | '^^' | '/' | '//' | '%' | '*' | '&' | '+' | '-' | '??') '=' expr # StmtAssgExpr
   | s=('break' | 'continue') ID? # StmtLoopControl
@@ -22,12 +22,12 @@ stmt
   | 'while' expr ('label' ID)? 'do' block # StmtWhile
   | 'until' expr ('label' ID)? 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('label' ID)? 'do' block # StmtFor
-  | 'func' generator='*'? ID ('<' typevars=id_list '>')? args=func_args (ret=typ)? ('def' block | 'extern') # StmtFunc
+  | 'func' generator='*'? ID ('<' typevars=id_list '>')? args=func_args (':' ret=typ)? ('def' block | 'extern') # StmtFunc
   | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
   ;
 
 func_arg
-  : typ variadic='...'? ID (':' expr)? # FuncArg
+  : variadic='...'? ID ':' typ ('=' expr)? # FuncArg
   ;
 
 func_args
@@ -35,8 +35,8 @@ func_args
   ;
 
 class_member
-  : typ ID (':' tuple_expr)? # ClassField
-  | 'func' generator='*'? ID args=func_args (ret=typ)? ('def' block | 'abstract') # ClassMethod
+  : ID ':' typ ('=' tuple_expr)? # ClassField
+  | 'func' generator='*'? ID args=func_args (':' ret=typ)? ('def' block | 'abstract') # ClassMethod
   | 'constructor' 'def' block # ClassConstructor
   | 'destructor' 'def' block # ClassDestructor
   ;

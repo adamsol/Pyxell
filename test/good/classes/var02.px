@@ -1,9 +1,9 @@
 
 class A def
-    Int x: 0
+    x: Int
 
 class B def
-    A a
+    a: A
 
 b = B(A())
 b.a = b.a

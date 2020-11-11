@@ -1,3 +1,3 @@
 
-Int? x
+x: Int?
 print x is null, x is not null

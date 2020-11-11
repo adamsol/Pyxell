@@ -1,5 +1,5 @@
 
-func test() Void def
+func test(): Void def
     print "test"
     return
 

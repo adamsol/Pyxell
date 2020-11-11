@@ -1,3 +1,3 @@
 
-Float? x
+x: Float?
 print x

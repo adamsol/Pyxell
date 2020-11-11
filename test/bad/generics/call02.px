@@ -1,8 +1,8 @@
 
-func f(Int x) Int def
+func f(x: Int): Int def
     return x
 
-func g<T>(T x) def
+func g<T>(x: T) def
     print f(x)
 
 g('0')

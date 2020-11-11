@@ -1,5 +1,5 @@
 
-func f<A,B,C>(A x) B*[C] def
+func f<A,B,C>(x: A): B*[C] def
     while x > 0 do
         return "abc", []
     return '@', [null]

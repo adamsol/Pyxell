@@ -1,5 +1,5 @@
 
-func* map<A,B>([A] a, A->B f) B def
+func* map<A,B>(a: [A], f: A->B): B def
     for x in a do
         yield f(x)
 

@@ -1,12 +1,12 @@
 
 class A def
-    String s: "A"
+    s: String = "A"
 
     constructor def
         print this.s
 
 class B(A) def
-    Int x
+    x: Int
 
 B("B")
 B(s="B")

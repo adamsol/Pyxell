@@ -1,5 +1,5 @@
 
-func product<T>(T... xs) T def
+func product<T>(...xs: T): T def
     return xs.reduce(_*_)
 
 print product(1)

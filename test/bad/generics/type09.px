@@ -1,8 +1,8 @@
 
-func f<A,B,C>(A->B->C p) def
+func f<A,B,C>(p: A->B->C) def
     return
 
-func g(Int x) Bool def
+func g(x: Int): Bool def
     return x > 0
 
 print f(g)

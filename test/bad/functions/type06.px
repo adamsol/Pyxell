@@ -1,5 +1,5 @@
 
-func f(Int y: 0) def
+func f(y: Int = 0) def
     return
 
 g = f

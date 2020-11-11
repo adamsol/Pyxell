@@ -1,7 +1,7 @@
 
-Int? x
+x: Int?
 
-{Float?:[Bool?]} d = {x: [true]}
+d: {Float?:[Bool?]} = {x: [true]}
 print d[null][0] ?? false
 
 d = {0: [null]}

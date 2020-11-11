@@ -1,12 +1,12 @@
 
 class A def
-    Int x: 2
+    x: Int = 2
 
 class B(A) def
-    String y: "y"
+    y: String = "y"
 
-B b = B()
+b: B = B()
 print b.x, b.y
 b.x = 5
-A a = b
+a: A = b
 print a.x

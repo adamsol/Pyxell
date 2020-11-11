@@ -1,15 +1,15 @@
 
-func f(Int?->Int g, Int? x) Int def
+func f(g: Int?->Int, x: Int?): Int def
     return g(x)
 
-Int? x = 5
+x: Int? = 5
 print f(_!, x)
 
 x = null
 print f(_ ?? 3, x)
 print f(_ is null ? 1 : 0, x)
 
-func f'(Int?->Float? g, Int? x) Float? def
+func f'(g: Int?->Float?, x: Int?): Float? def
     return g(x)
 
 print f'(_?.toString()?.toFloat(), x)

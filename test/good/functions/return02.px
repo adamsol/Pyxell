@@ -1,12 +1,12 @@
 
-func f(Float x) [Float] def
+func f(x: Float): [Float] def
     if false do
         return [x]
 
-func g() Int*String def
+func g(): Int*String def
     skip
 
-func h() Bool->Void def
+func h(): Bool->Void def
     skip
 
 print f(1)

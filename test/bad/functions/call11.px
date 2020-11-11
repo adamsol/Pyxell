@@ -1,5 +1,5 @@
 
-func f(String s) def
+func f(s: String) def
     return
 
 f("", s="")

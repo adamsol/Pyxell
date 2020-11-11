@@ -1,5 +1,5 @@
 
-func number<T>() T def
+func number<T>(): T def
     return 10^^16
     return 2e3
 

@@ -1,6 +1,6 @@
 
 class A def
-    Int->Bool f: lambda x def
+    f: Int->Bool = lambda x def
         return x >= 0
 
 a = A()

@@ -1,9 +1,9 @@
 
 class Base def
-    Int x
+    x: Int
 
 class Sub(Base) def
-    Int y
+    y: Int
 
 sub = Sub()
 sub = Base()

@@ -1,6 +1,6 @@
 
-func f(String s) def
+func f(s: String) def
     return
 
-String? s = ""
+s: String? = ""
 f(s)

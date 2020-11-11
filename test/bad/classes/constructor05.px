@@ -1,4 +1,4 @@
 
 class Test def
-    constructor(Int x) def
+    constructor(x: Int) def
         skip

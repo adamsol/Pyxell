@@ -1,5 +1,5 @@
 
-func f<A,B>(A x) Float*[B] def
+func f<A,B>(x: A): Float*[B] def
     return 0.5, [x]
 
 print f('x')

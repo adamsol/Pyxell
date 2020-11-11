@@ -1,5 +1,5 @@
 
-func* codes(Char... a) Int def
+func* codes(...a: Char): Int def
     for c in a do
         yield c.code
 

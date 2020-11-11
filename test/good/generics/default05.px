@@ -1,5 +1,5 @@
 
-func apply<A,B,C>(A x, A->B->C f: min, B y: 0) C def
+func apply<A,B,C>(x: A, f: A->B->C = min, y: B = 0): C def
     return f(x, y)
 
 print apply(5), apply(-4, y=-3)

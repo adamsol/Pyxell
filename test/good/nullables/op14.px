@@ -1,14 +1,14 @@
 
 class A def
 
-    func f(Int x: 0) Int def
+    func f(x: Int = 0): Int def
         return x
 
     func g() def
         print 'g'
 
 
-A? a
+a: A?
 print a?.f()
 
 a = A()

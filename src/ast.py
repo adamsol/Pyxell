@@ -65,8 +65,8 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitStmtDecl(self, ctx):
         return {
             **_node(ctx, 'StmtDecl'),
-            'type': self.visit(ctx.typ()),
             'id': self.visit(ctx.ID()),
+            'type': self.visit(ctx.typ()),
             'expr': self.visit(ctx.tuple_expr()),
         }
 
@@ -138,8 +138,8 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitFuncArg(self, ctx):
         return {
             **_node(ctx, 'FuncArg'),
-            'type': self.visit(ctx.typ()),
             'name': self.visit(ctx.ID()),
+            'type': self.visit(ctx.typ()),
             'default': self.visit(ctx.expr()),
             **({'variadic': True} if ctx.variadic else {}),
         }
@@ -167,8 +167,8 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitClassField(self, ctx):
         return {
             **_node(ctx, 'ClassField'),
-            'type': self.visit(ctx.typ()),
             'id': self.visit(ctx.ID()),
+            'type': self.visit(ctx.typ()),
             'default': self.visit(ctx.tuple_expr()),
         }
 

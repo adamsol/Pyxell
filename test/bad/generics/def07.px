@@ -1,5 +1,5 @@
 
-func f<V>(V v) V def
+func f<V>(v: V): V def
     return
 
 f(0)

@@ -1,5 +1,5 @@
 
-func f<T>(T x, [T] a: []) [T] def
+func f<T>(x: T, a: [T] = []): [T] def
     return a.empty ? [x] : a
 
 print f(5), f("A", []), f(false, [true])

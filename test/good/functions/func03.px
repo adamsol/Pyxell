@@ -1,5 +1,5 @@
 
-func ack(Int m, Int n) Int def
+func ack(m: Int, n: Int): Int def
     if m == 0 do
         return n+1
     elif n == 0 do

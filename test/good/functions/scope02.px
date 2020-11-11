@@ -3,7 +3,7 @@ b = true
 a = ["a"]
 s = a[0] + "bc"
 
-func inc(String s) String def
+func inc(s: String): String def
     if b do
         s += "z"
         b = false

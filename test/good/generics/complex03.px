@@ -1,7 +1,7 @@
 
-func f<T>(T x) [T] def
-    T y = x*2
-    [T] a
+func f<T>(x: T): [T] def
+    y: T = x*2
+    a: [T]
     a = [x, y]
     return a
 

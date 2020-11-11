@@ -1,5 +1,5 @@
 
-func f(Int x) def
+func f(x: Int) def
     return
 
 f(x=false)

@@ -1,5 +1,5 @@
 
-func f(Bool->Void g) def
+func f(g: Bool->Void) def
     return
 
 f(_)

@@ -1,9 +1,9 @@
 
-func v() Int def
+func v(): Int def
     print "v"
     return 10+3*3
 
-func f(String x, Int y, Int z: v(), [Bool] a: [false]) Char def
+func f(x: String, y: Int, z: Int = v(), a: [Bool] = [false]): Char def
     print y, x, z
     for b in a do
         print b

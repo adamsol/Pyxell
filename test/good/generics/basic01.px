@@ -1,5 +1,5 @@
 
-func f<T>(T x) Int def
+func f<T>(x: T): Int def
     return 42
 
 print f(5)

@@ -1,61 +1,61 @@
 
-func bitNot(Int x) Int extern
-func bitShift(Int x, Int y) Int extern
-func bitAnd(Int x, Int y) Int extern
-func bitXor(Int x, Int y) Int extern
-func bitOr(Int x, Int y) Int extern
+func bitNot(x: Int): Int extern
+func bitShift(x: Int, y: Int): Int extern
+func bitAnd(x: Int, y: Int): Int extern
+func bitXor(x: Int, y: Int): Int extern
+func bitOr(x: Int, y: Int): Int extern
 
-func write(String s) extern
+func write(s: String) extern
 
-func read() String extern
-func readLine() String extern
-func readInt() Int extern
-func readRat() Rat extern
-func readFloat() Float extern
-func readChar() Char extern
+func read(): String extern
+func readLine(): String extern
+func readInt(): Int extern
+func readRat(): Rat extern
+func readFloat(): Float extern
+func readChar(): Char extern
 
 
-func min<T>(T x, T y) T def
+func min<T>(x: T, y: T): T def
     return x < y ? x : y
 
-func max<T>(T x, T y) T def
+func max<T>(x: T, y: T): T def
     return y < x ? x : y
 
-func clamp<T>(T x, T a, T b) T def
+func clamp<T>(x: T, a: T, b: T): T def
     return min(max(x, a), b)
 
-func abs<T>(T x) T def
+func abs<T>(x: T): T def
     return x >= 0 ? x : -x
 
-func sign<T>(T x) T def
+func sign<T>(x: T): T def
     return x > 0 ? 1 : x < 0 ? -1 : 0
 
 
-func String_all(String s, Char->Bool f) Bool def
+func String_all(s: String, f: Char->Bool): Bool def
     for c in s do
         if not f(c) do
             return false
     return true
 
-func String_any(String s, Char->Bool f) Bool def
+func String_any(s: String, f: Char->Bool): Bool def
     for c in s do
         if f(c) do
             return true
     return false
 
-func String_filter(String s, Char->Bool f) String def
+func String_filter(s: String, f: Char->Bool): String def
     return [c for c in s if f(c)].join()
 
-func String_map(String s, Char->Char f) String def
+func String_map(s: String, f: Char->Char): String def
     return [f(c) for c in s].join()
 
-func String_fold<B>(String s, Char->B->B f, B r) B def
+func String_fold<B>(s: String, f: Char->B->B, r: B): B def
     for c in s do
         r = f(c, r)
     return r
 
-func String_reduce(String s, Char->Char->Char f) Char def
-    Char r
+func String_reduce(s: String, f: Char->Char->Char): Char def
+    r: Char
     b = true
     for c in s do
         if b do
@@ -66,31 +66,31 @@ func String_reduce(String s, Char->Char->Char f) Char def
     return r
 
 
-func Array_all<A>([A] a, A->Bool f: _) Bool def
+func Array_all<A>(a: [A], f: A->Bool = _): Bool def
     for x in a do
         if not f(x) do
             return false
     return true
 
-func Array_any<A>([A] a, A->Bool f: _) Bool def
+func Array_any<A>(a: [A], f: A->Bool = _): Bool def
     for x in a do
         if f(x) do
             return true
     return false
 
-func Array_filter<A>([A] a, A->Bool f) [A] def
+func Array_filter<A>(a: [A], f: A->Bool): [A] def
     return [x for x in a if f(x)]
 
-func Array_map<A,B>([A] a, A->B f) [B] def
+func Array_map<A,B>(a: [A], f: A->B): [B] def
     return [f(x) for x in a]
 
-func Array_fold<A,B>([A] a, A->B->B f, B r) B def
+func Array_fold<A,B>(a: [A], f: A->B->B, r: B): B def
     for x in a do
         r = f(x, r)
     return r
 
-func Array_reduce<A>([A] a, A->A->A f) A def
-    A r
+func Array_reduce<A>(a: [A], f: A->A->A): A def
+    r: A
     b = true
     for x in a do
         if b do
@@ -101,31 +101,31 @@ func Array_reduce<A>([A] a, A->A->A f) A def
     return r
 
 
-func Set_all<A>({A} a, A->Bool f: _) Bool def
+func Set_all<A>(a: {A}, f: A->Bool = _): Bool def
     for x in a do
         if not f(x) do
             return false
     return true
 
-func Set_any<A>({A} a, A->Bool f: _) Bool def
+func Set_any<A>(a: {A}, f: A->Bool = _): Bool def
     for x in a do
         if f(x) do
             return true
     return false
 
-func Set_filter<A>({A} a, A->Bool f) {A} def
+func Set_filter<A>(a: {A}, f: A->Bool): {A} def
     return {x for x in a if f(x)}
 
-func Set_map<A,B>({A} a, A->B f) {B} def
+func Set_map<A,B>(a: {A}, f: A->B): {B} def
     return {f(x) for x in a}
 
-func Set_fold<A,B>({A} a, A->B->B f, B r) B def
+func Set_fold<A,B>(a: {A}, f: A->B->B, r: B): B def
     for x in a do
         r = f(x, r)
     return r
 
-func Set_reduce<A>({A} a, A->A->A f) A def
-    A r
+func Set_reduce<A>(a: {A}, f: A->A->A): A def
+    r: A
     b = true
     for x in a do
         if b do
@@ -136,35 +136,35 @@ func Set_reduce<A>({A} a, A->A->A f) A def
     return r
 
 
-func Dict_all<A,B>({A:B} a, A*B->Bool f) Bool def
+func Dict_all<A,B>(a: {A:B}, f: A*B->Bool): Bool def
     for x in a do
         if not f(x) do
             return false
     return true
 
-func Dict_any<A,B>({A:B} a, A*B->Bool f) Bool def
+func Dict_any<A,B>(a: {A:B}, f: A*B->Bool): Bool def
     for x in a do
         if f(x) do
             return true
     return false
 
-func Dict_filter<A,B>({A:B} a, A*B->Bool f) {A:B} def
+func Dict_filter<A,B>(a: {A:B}, f: A*B->Bool): {A:B} def
     return {x.a: x.b for x in a if f(x)}
 
-func Dict_map<A,B,C,D>({A:B} a, A*B->C*D f) {C:D} def
-    {C:D} r
+func Dict_map<A,B,C,D>(a: {A:B}, f: A*B->C*D): {C:D} def
+    r: {C:D}
     for x in a do
         y = f(x)
         r[y.a] = y.b
     return r
 
-func Dict_fold<A,B,C>({A:B} a, A*B->C->C f, C r) C def
+func Dict_fold<A,B,C>(a: {A:B}, f: A*B->C->C, r: C): C def
     for x in a do
         r = f(x, r)
     return r
 
-func Dict_reduce<A,B>({A:B} a, A*B->A*B->A*B f) A*B def
-    A*B r
+func Dict_reduce<A,B>(a: {A:B}, f: A*B->A*B->A*B): A*B def
+    r: A*B
     b = true
     for x in a do
         if b do

@@ -1,11 +1,11 @@
 
 class Test def
-    Int value
+    value: Int
 
-    func add(Int v: 0) def
+    func add(v: Int = 0) def
         this.value += v
 
-    func multiply(Int v: 1) def
+    func multiply(v: Int = 1) def
         this.value *= v
 
 t = Test(3)

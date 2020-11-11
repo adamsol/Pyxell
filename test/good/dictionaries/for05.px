@@ -1,5 +1,5 @@
 
-func f(Float*[[String]] x) def
+func f(x: Float*[[String]]) def
     print x.a, x.b.length
 
 for t in {5/2: []} do

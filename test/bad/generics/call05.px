@@ -1,5 +1,5 @@
 
-func f<A>(A->A->A g) def
+func f<A>(g: A->A->A) def
     return
 
 f(abs)

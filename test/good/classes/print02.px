@@ -1,8 +1,8 @@
 
 class Test def
-    Bool b
+    b: Bool
 
-    func toString() String def
+    func toString(): String def
         return this.b.toString()
 
 obj = Test()

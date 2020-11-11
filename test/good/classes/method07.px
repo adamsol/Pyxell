@@ -1,8 +1,8 @@
 
 class A def
-    Int x: 3
+    x: Int = 3
 
-    func f() [A] def
+    func f(): [A] def
         return [this] * this.x
 
 

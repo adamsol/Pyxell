@@ -1,5 +1,5 @@
 
-func f<T>(T x: 3, T y: true) def
+func f<T>(x: T = 3, y: T = true) def
     return
 
 f()

@@ -1,5 +1,5 @@
 
-func* counter(Int n) Int def
+func* counter(n: Int): Int def
     for i in 0... do
         if i >= n do
             return

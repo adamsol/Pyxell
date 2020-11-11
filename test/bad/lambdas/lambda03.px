@@ -1,5 +1,5 @@
 
-func f(Char->Char g) Char def
+func f(g: Char->Char): Char def
     return g('x')
 
 f(lambda: 'y')

@@ -1,9 +1,9 @@
 
 class A def
-    Int x
+    x: Int
 
-    func f(Int x) def
-        func g(Int? y: null) Int def
+    func f(x: Int) def
+        func g(y: Int? = null): Int def
             if y is null do
                 return 0
             return this.x + x + y! + g()

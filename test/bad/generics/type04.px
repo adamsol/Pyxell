@@ -1,5 +1,5 @@
 
-func f<A,B>(A x, B y) A def
+func f<A,B>(x: A, y: B): A def
     return x * y
 
 f(4, [4.2])

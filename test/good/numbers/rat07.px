@@ -1,7 +1,7 @@
 
 n = 3*10^^5
 
-func f(Rat x) Rat def
+func f(x: Rat): Rat def
     n -= 1
     if n == 0 do
         x -= 1

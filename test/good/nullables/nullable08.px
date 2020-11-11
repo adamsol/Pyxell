@@ -1,7 +1,7 @@
 
-Int n = 8
-Int? n' = 9
-(Float?*Float?*([Bool]?*Char)?)? x = n, n', ([], 'x')
+n: Int = 8
+n': Int? = 9
+x: (Float?*Float?*([Bool]?*Char)?)? = n, n', ([], 'x')
 print x
 print x!.c?.a!! + [true]
 

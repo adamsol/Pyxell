@@ -1,5 +1,5 @@
 
-func f(Int->Int g) Int def
+func f(g: Int->Int): Int def
     return g(5)
 
 f(lambda x, y: x)

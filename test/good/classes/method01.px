@@ -1,6 +1,6 @@
 
 class Hello def
-    func say(String greeting) def
+    func say(greeting: String) def
         print greeting
 
 Hello().say("Hello!")

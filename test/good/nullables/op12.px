@@ -1,11 +1,11 @@
 
-Float? x
+x: Float?
 print x ?? 1
 x ??= 6
 print x
 print x ?? 3.2
 
-Int? y
+y: Int?
 print y ?? -2.1
 y = 5
 print y ?? 0.3

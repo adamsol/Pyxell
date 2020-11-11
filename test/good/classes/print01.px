@@ -1,8 +1,8 @@
 
 class Test def
-    String s
+    s: String
 
-    func toString() String def
+    func toString(): String def
         return this.s
 
 obj = Test("test")

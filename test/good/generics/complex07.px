@@ -1,5 +1,5 @@
 
-func length<T>([T] a) Int def
+func length<T>(a: [T]): Int def
     if a.empty do
         return 0
     return length(a[1:]) + 1

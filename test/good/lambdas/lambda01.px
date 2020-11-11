@@ -1,5 +1,5 @@
 
-func f(Int->String g, Int n) String def
+func f(g: Int->String, n: Int): String def
     return g(n) * 2
 
 print f(lambda x: x.toString(), 7)

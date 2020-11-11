@@ -1,6 +1,6 @@
 
 class Base def
-    Int x: 0
+    x: Int
 
 class Sub1(Base) def
     constructor def

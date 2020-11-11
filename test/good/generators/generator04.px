@@ -1,5 +1,5 @@
 
-func* range(Int n) Int def
+func* range(n: Int): Int def
     for x in 0...n do
         yield x
 

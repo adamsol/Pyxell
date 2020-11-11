@@ -1,5 +1,5 @@
 
-{String:[Int]} d
+d: {String:[Int]}
 
 d[""] = []
 print d

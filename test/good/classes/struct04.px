@@ -1,6 +1,6 @@
 
 class A''B' def
-    Int x'
+    x': Int
 
 a''b' = A''B'()
 a''b'.x' = 3

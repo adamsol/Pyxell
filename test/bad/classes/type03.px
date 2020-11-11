@@ -1,8 +1,8 @@
 
 class A def
-    Int x
+    x: Int
 
 class B(A) def
-    Int y
+    y: Int
 
-[B] b = [A()]
+b: [B] = [A()]

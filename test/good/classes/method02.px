@@ -2,11 +2,11 @@
 use math
 
 class Vector def
-    Float x
-    Float y
-    Float z
+    x: Float
+    y: Float
+    z: Float
 
-    func length() Float def
+    func length(): Float def
         return sqrt(this.x^2 + this.y^2 + this.z^2)
 
 v = Vector(2, 3, 6)

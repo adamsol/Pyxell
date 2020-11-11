@@ -1,5 +1,5 @@
 
-func call(Int->String f, Int n) String def
+func call(f: Int->String, n: Int): String def
     return f(n)
 
 print call("42"*_, 5)

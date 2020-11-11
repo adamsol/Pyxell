@@ -1,5 +1,5 @@
 
-func fact(Int n) Int def
+func fact(n: Int): Int def
     if n <= 1 do
         return 1
     return n * fact(n-1)

@@ -1,2 +1,2 @@
 
-[(String?*Int)] a = [(null, "")]
+a: [(String?*Int)] = [(null, "")]

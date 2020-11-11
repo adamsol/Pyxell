@@ -1,8 +1,8 @@
 
-func call<A,B>(A x, A->B f) def
+func call<A,B>(x: A, f: A->B) def
     print f(x)
 
-func f<T>(T x) T def
+func f<T>(x: T): T def
     return x + x
 
 call(1, f)

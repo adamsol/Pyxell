@@ -1,6 +1,6 @@
 
 class Class def
-    Int x
+    x: Int
 
 class Class def
-    Int y
+    y: Int

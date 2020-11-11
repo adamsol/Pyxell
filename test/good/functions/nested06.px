@@ -1,7 +1,7 @@
 
 n = 0
 
-func f(Int i) def
+func f(i: Int) def
     func g() def
         n += i
 

@@ -1,5 +1,5 @@
 
-[Bool] a
+a: [Bool]
 print a.length
 
 a = [true]

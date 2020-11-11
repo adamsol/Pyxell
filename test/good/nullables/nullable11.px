@@ -1,5 +1,5 @@
 
-func f([{String?}?] x) [{String?}?]? def
+func f(x: [{String?}?]): [{String?}?]? def
     return x.empty ? null : x
 
 s = "abc"

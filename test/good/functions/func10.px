@@ -1,5 +1,5 @@
 
-func f([Rat] a) [Float] def
+func f(a: [Rat]): [Float] def
     return [a[1]]
 
 print f([3, 10^-20])

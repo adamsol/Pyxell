@@ -1,5 +1,5 @@
 
-func f(Int->Int->Int g, String->Char->Int->Char h) Int def
+func f(g: Int->Int->Int, h: String->Char->Int->Char): Int def
     c = h("ABC", 'Z', 2)
     return g(c.code, 42)
 

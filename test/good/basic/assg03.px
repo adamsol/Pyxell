@@ -1,7 +1,7 @@
 
 a = [0]
 
-func f(Int x) [Int] def
+func f(x: Int): [Int] def
     a[0] += x
     return a
 

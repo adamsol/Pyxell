@@ -3,7 +3,7 @@ class C def
     constructor def
         print "constructor"
 
-    func f(Int x) Int def
+    func f(x: Int): Int def
         print x
         return 0
 

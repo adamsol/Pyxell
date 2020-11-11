@@ -1,8 +1,8 @@
 
-func g<A,C>(A x, C y) A*C def
+func g<A,C>(x: A, y: C): A*C def
     return x, y
 
-func f<A,B>(A x, B y) A*B def
+func f<A,B>(x: A, y: B): A*B def
     return g(x, y)
 
 print f(3, 6)

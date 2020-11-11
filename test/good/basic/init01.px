@@ -1,8 +1,8 @@
 
-Int a
-Rat b
-Float c
-Bool d
-Char e
+a: Int
+b: Rat
+c: Float
+d: Bool
+e: Char
 
 print a, b.fraction, c, d, e.code

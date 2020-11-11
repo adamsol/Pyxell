@@ -1,5 +1,5 @@
 
-func indices([Int] a, [Int] i) [Int] def
+func indices(a: [Int], i: [Int]): [Int] def
     return i.map(a[_])
 
 print indices([2, 3], [1, 0, 1])

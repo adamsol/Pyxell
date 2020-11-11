@@ -1,8 +1,8 @@
 
 class A def
-    Int x
+    x: Int
 
-    func f() Int def
+    func f(): Int def
         return this.x
 
 a = A(5)
@@ -12,6 +12,6 @@ print f()
 a.x = 3
 print f()
 
-()->Int f'
+f': ()->Int
 for f' in [f, A(2).f] do
     print f'()

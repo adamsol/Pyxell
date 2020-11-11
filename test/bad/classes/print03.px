@@ -1,6 +1,6 @@
 
 class Test def
-    func toString(Int x) String def
+    func toString(x: Int): String def
         return ""
 
 print Test()

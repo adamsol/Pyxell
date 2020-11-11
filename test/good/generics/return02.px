@@ -1,5 +1,5 @@
 
-func f<T>(Bool b) T def
+func f<T>(b: Bool): T def
     if b do
         return 1f
     else do

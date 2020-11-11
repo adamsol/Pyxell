@@ -1,5 +1,5 @@
 
-func call(Int->Bool f, Int n) Bool def
+func call(f: Int->Bool, n: Int): Bool def
     return f(n)
 
 print call(_ in [3], 3)

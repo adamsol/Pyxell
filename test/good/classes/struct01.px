@@ -1,7 +1,7 @@
 
 class Struct def
-    Int n
-    String s
+    n: Int
+    s: String
 
 r = Struct(2, "abc")
 print r.n, r.s

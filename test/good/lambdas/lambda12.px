@@ -1,5 +1,5 @@
 
-func f(Int->Bool->String g, Int n, Bool b) String def
+func f(g: Int->Bool->String, n: Int, b: Bool): String def
     return g(n, b)
 
 print f("2+2={_*2} {not _}", 2, true)

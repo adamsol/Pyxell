@@ -1,5 +1,5 @@
 
 func f<T>() def
-    T x
+    x: T
 
 f()

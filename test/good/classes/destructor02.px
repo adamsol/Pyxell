@@ -1,8 +1,8 @@
 
 class A def
-    Float x
-    A? a1
-    A? a2
+    x: Float
+    a1: A?
+    a2: A?
 
     destructor def
         print this.x

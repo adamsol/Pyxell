@@ -1,8 +1,8 @@
 
 class A def
-    Int x
+    x: Int
 
 class B def
-    Int x
+    x: Int
 
 A() == B()

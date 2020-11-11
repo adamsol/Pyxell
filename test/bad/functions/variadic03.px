@@ -1,5 +1,5 @@
 
-func f(Char... c: "") def
+func f(...c: Char = "") def
     skip
 
 f()

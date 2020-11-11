@@ -1,7 +1,7 @@
 
 b = false
 
-func f(Bool x) ()->Void def
+func f(x: Bool): ()->Void def
     return lambda def
         b = x
 

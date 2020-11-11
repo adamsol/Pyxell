@@ -3,7 +3,7 @@ class A def
     func f() abstract
 
 class B(A) def
-    Int x
+    x: Int
 
 class C(B) def
     func f() def

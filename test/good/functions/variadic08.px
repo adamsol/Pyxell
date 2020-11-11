@@ -1,5 +1,5 @@
 
-func join(Char... c: [..."empty"]) String def
+func join(...c: Char = [..."empty"]): String def
     return c.join()
 
 print join()

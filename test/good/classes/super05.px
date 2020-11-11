@@ -1,10 +1,10 @@
 
 class A def
-    func f(Int x) [Int] def
+    func f(x: Int): [Int] def
         return [x*2]
 
 class B(A) def
-    func f(Int x) [Int] def
+    func f(x: Int): [Int] def
         return [super(i) for i in x..x+1][1]
 
 print(B().f(2))

@@ -8,7 +8,7 @@ class B(A) def
         print "B"
 
 
-func get<T>(T*A a) A def
+func get<T>(a: T*A): A def
     print a.a
     return a.b
 

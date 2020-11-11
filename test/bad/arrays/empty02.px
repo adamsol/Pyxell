@@ -1,4 +1,4 @@
 
-[Int] a
-[Float] b
+a: [Int]
+b: [Float]
 print a == [] == b

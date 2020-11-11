@@ -2,6 +2,6 @@
 a = [4]
 
 class A def
-    {Float?} x: {...a}
+    x: {Float?} = {...a}
 
 print A().x.pop() ?? 0

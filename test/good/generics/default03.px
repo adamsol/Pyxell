@@ -1,5 +1,5 @@
 
-func f<T>(T x: 10^^15, T y: 1f) def
+func f<T>(x: T = 10^^15, y: T = 1f) def
     print x, y
 
 f(3.5)

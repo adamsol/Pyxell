@@ -1,5 +1,5 @@
 
-func f<A>(A->A g, A x) Int def
+func f<A>(g: A->A, x: A): Int def
     return g(x)
 
 print f(sign, -5)
