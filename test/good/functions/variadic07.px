@@ -1,5 +1,5 @@
 
-func f(x: Int = 0, ...a: String): Int def
+func f(x: Int = 0, ...a: [String]): Int def
     return x + a.length
 
 print f()

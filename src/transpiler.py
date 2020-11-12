@@ -1175,7 +1175,8 @@ class PyxellTranspiler:
                 if variadic:
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())
-                    type = t.Array(type)
+                    if not type.isArray():
+                        self.throw(arg, err.InvalidVariadicType(type))
                 args.append(t.Func.Arg(name, type, default, variadic))
 
             ret_type = self.transpile(node.get('ret')) or t.Void

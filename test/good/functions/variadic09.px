@@ -1,5 +1,5 @@
 
-func sum(...xs: Float): Float def
+func sum(...xs: [Float]): Float def
     return xs.reduce(_+_)
 
 f: [Float]->Float = sum

@@ -1,5 +1,5 @@
 
-func sum(...args: Int): Int def
+func sum(...args: [Int]): Int def
     return args.reduce(_+_)
 
 print sum()

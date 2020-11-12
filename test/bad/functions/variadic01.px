@@ -1,3 +1,3 @@
 
-func f(...a: Int, ...b: Int) def
+func f(...a: [Int], ...b: [Int]) def
     return

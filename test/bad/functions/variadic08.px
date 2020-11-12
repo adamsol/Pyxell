@@ -1,5 +1,5 @@
 
-func f(...args: Float) def
+func f(...args: [Float]) def
     return
 
 f([0f])

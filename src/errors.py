@@ -22,6 +22,7 @@ class PyxellError(Exception):
     InvalidMember = lambda id: f"Invalid type signature of member `{id}`"
     InvalidReturnType = lambda t: f"`{t.show()}` is not a valid return type"
     InvalidUsage = lambda s: f"`{s}` cannot be used here"
+    InvalidVariadicType = lambda t: f"Variadic argument's type `{t.show()}` is not an array"
     MissingArgument = lambda id: f"Missing required argument `{id}`"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"

@@ -507,7 +507,7 @@ Variadic functions are supported too. This is just a syntactic sugar for passing
 Ranges and spread syntax can be used when such a function is called.
 
 ```
-func sum(...numbers: Rat): Rat def
+func sum(...numbers: [Rat]): Rat def
     return numbers.reduce(_+_)
 
 print sum()

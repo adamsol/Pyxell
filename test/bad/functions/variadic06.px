@@ -1,5 +1,5 @@
 
-func f(...args: Int) def
+func f(...args: [Int]) def
     return
 
 f(2, args=[3])
