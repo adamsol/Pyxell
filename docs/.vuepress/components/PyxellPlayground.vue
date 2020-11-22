@@ -103,27 +103,33 @@
                 this.output = '';
                 this.running = true;
 
-                let response = await axios.post('/transpile/', {
-                    code: this.code,
-                });
-                if (response.data.error) {
-                    this.error = true;
-                    this.output = response.data.error;
-                } else {
-                    const params = {
-                        'LanguageChoice': 27,  // C++ (clang)
-                        'Program': response.data.cpp_code,
-                        'Input': this.input,
-                        'CompilerArgs': '-std=c++17 -fcoroutines-ts -o a.out source_file.cpp' +
-                                        (this.optimization ? ' -O2' : ''),
-                    };
-                    const form_data = new FormData();
-                    for (const [name, value] of Object.entries(params)) {
-                        form_data.set(name, value);
+                try {
+                    let response = await axios.post('/transpile/', {
+                        code: this.code,
+                    });
+                    if (response.data.error) {
+                        this.error = true;
+                        this.output = response.data.error;
+                    } else {
+                        const params = {
+                            'LanguageChoice': 27,  // C++ (clang)
+                            'Program': response.data.cpp_code,
+                            'Input': this.input,
+                            'CompilerArgs': '-std=c++17 -fcoroutines-ts -o a.out source_file.cpp' +
+                                            (this.optimization ? ' -O2' : ''),
+                        };
+                        const form_data = new FormData();
+                        for (const [name, value] of Object.entries(params)) {
+                            form_data.set(name, value);
+                        }
+                        response = await axios.post('https://rextester.com/rundotnet/api/', form_data);
+                        this.error = !!response.data.Errors;
+                        this.output = response.data.Errors || response.data.Result;
                     }
-                    response = await axios.post('https://rextester.com/rundotnet/api/', form_data);
-                    this.error = !!response.data.Errors;
-                    this.output = response.data.Errors || response.data.Result;
+                } catch (error) {
+                    this.error = true;
+                    this.output = 'Unknown error';
+                    throw error;
                 }
                 this.running = false;
             },
