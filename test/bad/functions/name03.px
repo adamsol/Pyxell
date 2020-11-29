@@ -1,6 +1,6 @@
 
-func function() def
+func function(): Void def
     skip
 
-func function() def
+func function(): Void def
     skip

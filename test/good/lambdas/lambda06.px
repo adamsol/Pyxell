@@ -1,5 +1,5 @@
 
-func call(f: ()->String) def
+func call(f: ()->String): Void def
     print f()
 
 call(lambda: "lambda")

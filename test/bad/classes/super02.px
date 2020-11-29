@@ -1,8 +1,8 @@
 
 class A def
-    func f() def
+    func f(): Void def
         return
 
 class B(A) def
-    func g() def
+    func g(): Void def
         super()

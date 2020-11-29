@@ -1,5 +1,5 @@
 
-func f<T>(x: T, y: T) def
+func f<T>(x: T, y: T): Void def
     print x, y
 
 f(-10^^17, 1.0f)

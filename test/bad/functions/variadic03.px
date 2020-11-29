@@ -1,5 +1,5 @@
 
-func f(...c: [Char] = "") def
+func f(...c: [Char] = ""): Void def
     skip
 
 f()

@@ -2,10 +2,10 @@
 class Test def
     value: Int
 
-    func add(v: Int = 0) def
+    func add(v: Int = 0): Void def
         this.value += v
 
-    func multiply(v: Int = 1) def
+    func multiply(v: Int = 1): Void def
         this.value *= v
 
 t = Test(3)

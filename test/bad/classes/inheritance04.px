@@ -9,7 +9,7 @@ class Sub2(Base) def
     y: Int
 
 
-func f(obj: Sub1) def
+func f(obj: Sub1): Void def
     skip
 
 f(Sub2())

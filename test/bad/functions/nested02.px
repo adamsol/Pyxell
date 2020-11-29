@@ -1,6 +1,6 @@
 
 if true do
-    func h() def
+    func h(): Void def
         return
 
 h()

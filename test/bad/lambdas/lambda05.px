@@ -1,5 +1,5 @@
 
-func f(g: Int->Int->Char) def
+func f(g: Int->Int->Char): Void def
     return
 
 f(_*_)

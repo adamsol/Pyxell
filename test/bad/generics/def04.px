@@ -1,5 +1,5 @@
 
-func f<N>(x: N) def
+func f<N>(x: N): Void def
     y = N
 
 f(4)

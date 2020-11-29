@@ -2,7 +2,7 @@
 class A def
     s: [String]
 
-    func f() def
+    func f(): Void def
         skip
 
 class B(A) def

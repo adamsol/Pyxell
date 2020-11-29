@@ -1,5 +1,5 @@
 
-func call<A,B>(x: A, f: A->B) def
+func call<A,B>(x: A, f: A->B): Void def
     print f(x)
 
 call(10.01, lambda x: 2*x)

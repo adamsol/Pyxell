@@ -1,8 +1,8 @@
 
 a = 0
 
-func f() def
-    func g() def
+func f(): Void def
+    func g(): Void def
         a += 1
     g()
 

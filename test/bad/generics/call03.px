@@ -1,8 +1,8 @@
 
-func f<T>(x: T, y: T) def
+func f<T>(x: T, y: T): Void def
     return
 
-func g<A,B>(x: A, y: B) def
+func g<A,B>(x: A, y: B): Void def
     f(x, y)
 
 g('x', false)

@@ -2,7 +2,7 @@
 func f(x: Int): Int def
     return x
 
-func g<T>(x: T) def
+func g<T>(x: T): Void def
     print f(x)
 
 g('0')

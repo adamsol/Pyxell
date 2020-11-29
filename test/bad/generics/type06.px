@@ -1,5 +1,5 @@
 
-func f<T>(x: T) def
+func f<T>(x: T): Void def
     n = 0.0
     n = x
 

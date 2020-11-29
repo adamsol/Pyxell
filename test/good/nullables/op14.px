@@ -4,7 +4,7 @@ class A def
     func f(x: Int = 0): Int def
         return x
 
-    func g() def
+    func g(): Void def
         print 'g'
 
 

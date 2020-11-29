@@ -1,5 +1,5 @@
 
-func output(s: String, ...xs: [Int]) def
+func output(s: String, ...xs: [Int]): Void def
     print s
     for x in xs do
         print x

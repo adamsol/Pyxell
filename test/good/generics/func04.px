@@ -1,5 +1,5 @@
 
-func call<A,B>(f: A->B, x: A) def
+func call<A,B>(f: A->B, x: A): Void def
     print f(x)
 
 func f(c: Char): Int def

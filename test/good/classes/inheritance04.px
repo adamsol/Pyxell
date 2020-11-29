@@ -1,6 +1,6 @@
 
 class Z def
-    func f(x: Char = 'Z') def
+    func f(x: Char = 'Z'): Void def
         print x
 
 class Y(Z) def

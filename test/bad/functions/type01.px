@@ -1,8 +1,8 @@
 
-func f(x: Int) def
+func f(x: Int): Void def
     return
 
-func g(x: String) def
+func g(x: String): Void def
     return
 
 h = f

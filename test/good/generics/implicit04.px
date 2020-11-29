@@ -1,0 +1,5 @@
+
+func f() def
+    return true
+
+print f()

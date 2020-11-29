@@ -1,5 +1,5 @@
 
-func f(a: Int, b: Bool, c: Char = 'd', s: String = "") def
+func f(a: Int, b: Bool, c: Char = 'd', s: String = ""): Void def
     return
 
 f(a=6, s="s", c='x')

@@ -1,6 +1,6 @@
 
 class Test def
-    func f(b: Int = 0) def
+    func f(b: Int = 0): Void def
         skip
 
 Test().f(a=3)

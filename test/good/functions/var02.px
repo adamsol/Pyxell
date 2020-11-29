@@ -1,11 +1,11 @@
 
-func call(proc: ()->Void) def
+func call(proc: ()->Void): Void def
     proc()
 
-func p1() def
+func p1(): Void def
     print "p1"
 
-func p2() def
+func p2(): Void def
     print "p2"
 
 call(p1)

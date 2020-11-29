@@ -1,5 +1,5 @@
 
-func f(s: String) def
+func f(s: String): Void def
     return
 
 s: String? = ""

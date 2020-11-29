@@ -1,5 +1,5 @@
 
-func palindrome(n: Int): Bool def
+func palindrome(n) def
     s = n.toString()
     for i in 0..s.length//2 do
         if s[i] != s[-i-1] do

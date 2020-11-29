@@ -187,6 +187,10 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ClassConstructor'),
             'id': '<constructor>',
             'args': [],
+            'ret': {
+                **_node(ctx, 'TypeName'),
+                'name': 'Void',
+            },
             'block': self.visit(ctx.block()),
         }
 
@@ -195,6 +199,10 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ClassDestructor'),
             'id': '<destructor>',
             'args': [],
+            'ret': {
+                **_node(ctx, 'TypeName'),
+                'name': 'Void',
+            },
             'block': self.visit(ctx.block()),
         }
 

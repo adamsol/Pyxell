@@ -1,5 +1,5 @@
 
-func call(f: Int->[Int], n: Int) def
+func call(f: Int->[Int], n: Int): Void def
     print f(n)
 
 call([1, ...{...:{true: {_+2}}}[true], 0], 3)

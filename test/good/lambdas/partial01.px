@@ -1,8 +1,8 @@
 
-func call(f: Bool->String->Void) def
+func call(f: Bool->String->Void): Void def
     f(true, "$")
 
-func f(a: Int, b: Bool, c: Char, d: String = "---") def
+func f(a: Int, b: Bool, c: Char, d: String = "---"): Void def
     print a, b, c, d
 
 call(lambda b, d: f(6, b, 'a'))

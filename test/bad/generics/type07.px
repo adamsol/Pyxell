@@ -1,5 +1,5 @@
 
-func f<A,B>(p: A*B*A) def
+func f<A,B>(p: A*B*A): Void def
     return
 
 f(('$', 7, 8))

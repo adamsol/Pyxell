@@ -1,5 +1,5 @@
 
-func f<A>(g: A->A, x: A) def
+func f<A>(g: A->A, x: A): Void def
     return
 
 f(2/_, 1)

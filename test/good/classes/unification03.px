@@ -2,14 +2,14 @@
 class Base def
     x: Int
 
-    func f() def
+    func f(): Void def
         print "Base"
 
 class Sub1(Base) def
     constructor def
         this.x = 1
 
-    func f() def
+    func f(): Void def
         print "Sub1"
 
 class Sub2(Base) def

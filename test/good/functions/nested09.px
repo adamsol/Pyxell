@@ -2,7 +2,7 @@
 class A def
     x: Int
 
-    func f(x: Int) def
+    func f(x: Int): Void def
         func g(y: Int? = null): Int def
             if y is null do
                 return 0

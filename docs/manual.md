@@ -467,25 +467,37 @@ Basic definition of a function consists of its name, list of arguments, return t
 
 ```
 func square(x: Int): Int def
-    return x * x
+    return x ^^ 2
 
 print square(5)
 ```
 
-When a function does not return anything, the return type may be written as `Void` or may be omitted completely.
+When a function does not return anything, the return type should be `Void`.
 
 ```
-func hello() def
+func hello(): Void def
     print "Hello, world!"
 
 hello()
+```
+
+Just like with variables, type annotations in functions are optional.
+If omitted, a generic function, which can work with values of any type, will be created.
+Generic functions are described in more detail in the next section.
+
+```
+func double(x) def
+    return x * 2
+
+print double(1)
+print double("text")
 ```
 
 You can provide default values for optional arguments.
 The expressions will be evaluated every time the function is called (if they are needed), so mutable container literals can be safely used.
 
 ```
-func push(x: Int, a: [Int] = []): [Int] def
+func push(x: Int, a: [Int] = []) def
     a.push(x)
     return a
 
@@ -497,14 +509,14 @@ print push(2, [3])
 Arguments can be also passed in any order using their names.
 
 ```
-func pow(base: Rat, exponent: Int): Rat def
+func pow(base, exponent) def
     return base ^ exponent
 
 print pow(exponent=-3, base=6)
 ```
 
 Variadic functions are supported too. This is just a syntactic sugar for passing an array.
-Ranges and spread syntax can be used when such a function is called.
+Ranges and spread syntax can be used when such a function is called, just like with array literals.
 
 ```
 func sum(...numbers: [Rat]): Rat def
@@ -530,7 +542,7 @@ Generic functions are standard functions with additional type variables, which c
 They are compiled independently for each combination of types they are called with.
 
 ```
-func log<T>(x: T) def
+func log<T>(x: T): Void def
     print "logged", x
 
 log(3)
@@ -557,9 +569,18 @@ func contains<T>(a: [T], x: T): Bool def
 print contains([3r], 3)  # T will be Rat
 ```
 
+As described in the previous section, a generic function can also be created implicitly, by omitting the type annotations.
+
+```
+func contains2(a, x) def
+    return x in a
+
+print contains2("abc", 'd')
+```
+
 ### Lambda functions
 
-Lambda is a simpler version of generic function, where all arguments, as well as the return type, are generic.
+Lambda is an anonymous function, whose all arguments, as well as the return type, are generic.
 
 ```
 double = lambda x: x * 2
@@ -772,11 +793,11 @@ Inside the method body, you can call the corresponding method of the parent clas
 
 ```
 class A def
-    func f(x: Int) def
+    func f(x: Int): Void def
         print "A: {x}"
 
 class B(A) def
-    func f(x: Int) def
+    func f(x: Int): Void def
         print "B: {x}"
         super(x//2)
 
@@ -791,7 +812,7 @@ class Abstract def
     func f() abstract
 
 class Concrete(Abstract) def
-    func f() def
+    func f(): Void def
         print "ok"
 
 Concrete().f()
@@ -884,7 +905,7 @@ print factorial(10)
 ### Generator for Fibonacci numbers
 
 ```
-func* fib(): Rat def
+func* fib() def
     a, b = 0r, 1r
     yield a
     while true do

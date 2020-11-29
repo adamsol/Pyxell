@@ -1,8 +1,8 @@
 
-func f(x: Int) def
+func f(x: Int): Void def
     print x
 
-func f'(x: Int = 0) def
+func f'(x: Int = 0): Void def
     print x
 
 g = f'

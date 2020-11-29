@@ -5,14 +5,14 @@ class A def
     constructor def
         this.x = 'A'
 
-    func f() def
+    func f(): Void def
         print this.x
 
 class B(A) def
     y: Int
 
 class C(B) def
-    func f() def
+    func f(): Void def
         print 'C'
         super()
 

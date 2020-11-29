@@ -5,7 +5,7 @@ class A def
 class B(A) def
     y: Char = '?'
 
-    func f() def
+    func f(): Void def
         print this.x
 
 class C(B) def

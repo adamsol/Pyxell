@@ -1,5 +1,5 @@
 
-func f<A>(x: A = "", y: A = "") def
+func f<A>(x: A = "", y: A = ""): Void def
     return
 
 f(['x'])

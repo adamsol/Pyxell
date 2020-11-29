@@ -21,7 +21,7 @@ class D(A) def
         return "{this.c} {this.x}"
 
 
-func f(a: A) def
+func f(a: A): Void def
     print a.toString()
 
 f(A('A'))

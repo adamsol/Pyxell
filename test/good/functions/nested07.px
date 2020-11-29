@@ -1,9 +1,9 @@
 
-func f() def
+func f(): Void def
     s: String = "q"
     a: [Bool] = [false]
 
-    func g() def
+    func g(): Void def
         s += 'w'
         print s
         a[0] = true

@@ -1,7 +1,7 @@
 
 x = 2
 
-func test(x: Bool, x: Char) def
+func test(x: Bool, x: Char): Void def
     print x
     return
 

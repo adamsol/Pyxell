@@ -1,5 +1,5 @@
 
-func prime(p: Int): Bool def
+func prime(p) def
     i = 2
     while i * i <= p do
         if p %% i do

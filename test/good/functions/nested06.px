@@ -1,8 +1,8 @@
 
 n = 0
 
-func f(i: Int) def
-    func g() def
+func f(i: Int): Void def
+    func g(): Void def
         n += i
 
     g()

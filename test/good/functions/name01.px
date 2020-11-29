@@ -1,8 +1,8 @@
 
-func printInt() def
+func printInt(): Void def
     return
 
-func main() def
+func main(): Void def
     print "ok"
     return
 

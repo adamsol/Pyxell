@@ -1,5 +1,5 @@
 
-func f<A,B,C>(p: A->B->C) def
+func f<A,B,C>(p: A->B->C): Void def
     return
 
 func g(x: Int): Bool def

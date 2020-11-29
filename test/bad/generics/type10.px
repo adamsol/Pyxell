@@ -1,5 +1,5 @@
 
-func f<A>(p: A->A) def
+func f<A>(p: A->A): Void def
     return
 
 func g(x: Int): Bool def

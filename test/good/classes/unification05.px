@@ -2,7 +2,7 @@
 class A def
     x: Char = 'A'
 
-    func f() def
+    func f(): Void def
         print this.x
 
 class B(A) def
@@ -13,7 +13,7 @@ class C(A) def
     constructor def
         this.x = 'C'
 
-    func f() def
+    func f(): Void def
         print "{this.x}" * 3
 
 

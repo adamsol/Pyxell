@@ -1,5 +1,5 @@
 
-func f<T>(g: T->T) def
+func f<T>(g: T->T): Void def
     return
 
 f(min)

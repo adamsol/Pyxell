@@ -1,0 +1,6 @@
+
+func f(x) def
+    return x
+    return false
+
+f(0)

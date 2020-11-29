@@ -285,7 +285,14 @@
 					"default": null
 				}
 			],
-			"ret": null,
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					8,
+					24
+				],
+				"name": "Void"
+			},
 			"block": null
 		},
 		{

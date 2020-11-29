@@ -1,7 +1,7 @@
 
-func f() def
+func f(): Void def
     print "f"
-    func g() def
+    func g(): Void def
         print "g"
         return
     g()

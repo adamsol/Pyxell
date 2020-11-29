@@ -1,5 +1,5 @@
 
-func f() def
+func f(): Void def
     super()
 
 f()

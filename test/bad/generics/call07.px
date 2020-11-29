@@ -1,5 +1,5 @@
 
-func f<A>(g: A->A->A) def
+func f<A>(g: A->A->A): Void def
     return
 
 f(max)

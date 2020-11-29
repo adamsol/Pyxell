@@ -5,10 +5,10 @@ class A def
     func g() abstract
 
 class B(A) def
-    func f() def
+    func f(): Void def
         skip
 
-    func h() def
+    func h(): Void def
         skip
 
 B()

@@ -1,6 +1,6 @@
 
 class Test def
-    func f(x: Char = 0) def
+    func f(x: Char = 0): Void def
         skip
 
 Test().f()

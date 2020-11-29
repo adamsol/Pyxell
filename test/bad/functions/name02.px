@@ -1,5 +1,5 @@
 
-func f(x: String) def
+func f(x: String): Void def
     skip
 
 f, f = f, f

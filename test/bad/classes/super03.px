@@ -6,5 +6,5 @@ class B(A) def
     x: Int
 
 class C(B) def
-    func f() def
+    func f(): Void def
         super()

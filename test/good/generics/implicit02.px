@@ -1,0 +1,6 @@
+
+func f(a) def
+    return a[0]
+
+print f("abc")
+print f([true])

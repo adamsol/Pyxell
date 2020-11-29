@@ -1,0 +1,6 @@
+
+func f(x) def
+    return x * 2
+
+print f(1)
+print f("test")

@@ -1,5 +1,5 @@
 
-func f(x: T) def
+func f(x: T): Void def
     return
 
 f(2)

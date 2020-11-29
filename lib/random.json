@@ -32,7 +32,14 @@
 					"default": null
 				}
 			],
-			"ret": null,
+			"ret": {
+				"node": "TypeName",
+				"position": [
+					2,
+					20
+				],
+				"name": "Void"
+			},
 			"block": null
 		},
 		{

@@ -1,8 +1,8 @@
 
-func f() def
+func f(): Void def
     x = 5
 
-    func g() def
+    func g(): Void def
         print x
 
     g()

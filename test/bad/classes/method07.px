@@ -1,10 +1,10 @@
 
 class Test def
 
-    func f() def
+    func f(): Void def
         skip
 
-    func f() def
+    func f(): Void def
         skip
 
 f()

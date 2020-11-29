@@ -1,5 +1,5 @@
 
-func f(s: {String} = {'x'..'z', 'X'..'Z'}) def
+func f(s: {String} = {'x'..'z', 'X'..'Z'}): Void def
     print s.pop().length
 
 f()

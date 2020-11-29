@@ -1,5 +1,5 @@
 
-func f(x: [Float] = [0]) def
+func f(x: [Float] = [0]): Void def
     print x
 
 f()

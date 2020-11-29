@@ -1,13 +1,13 @@
 
-func f() def
+func f(): Void def
     print "f"
 
 class A def
-    func f() def
+    func f(): Void def
         print "A.f"
 
 class B def
-    func f() def
+    func f(): Void def
         print "B.f"
 
 f()

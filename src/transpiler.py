@@ -1165,9 +1165,13 @@ class PyxellTranspiler:
                 self.env[name] = t.Var(name)
 
             args = [] if class_type is None else [t.Func.Arg('this', class_type)]
-            for arg in node['args']:
+            for i, arg in enumerate(node['args'], 1):
                 name = arg['name']
-                type = self.transpile(arg['type'])
+                type = self.transpile(arg.get('type'))
+                if type is None:
+                    type = t.Var(f'$T{i}')
+                    typevars.append(type.name)
+                    self.env[type.name] = type
                 if not type.hasValue():
                     self.throw(arg['type'], err.InvalidDeclaration(type))
                 default = arg.get('default')
@@ -1179,7 +1183,11 @@ class PyxellTranspiler:
                         self.throw(arg, err.InvalidVariadicType(type))
                 args.append(t.Func.Arg(name, type, default, variadic))
 
-            ret_type = self.transpile(node.get('ret')) or t.Void
+            ret_type = self.transpile(node.get('ret'))
+            if ret_type is None:
+                ret_type = t.Var('$T0')
+                typevars.append(ret_type.name)
+                self.env[ret_type.name] = ret_type
             if node.get('generator'):
                 self.require('generators')
                 ret_type = t.Generator(ret_type)
@@ -1908,7 +1916,6 @@ class PyxellTranspiler:
 
     def transpileExprLambda(self, node):
         id = self.fake_id()
-        typevars = [f'$T{i}' for i in range(len(node['ids'])+1)]
 
         if node.get('block'):
             block = node['block']
@@ -1923,18 +1930,9 @@ class PyxellTranspiler:
             **node,
             'node': 'StmtFunc',
             'id': id,
-            'typevars': typevars,
             'args': [{
                 'name': name,
-                'type': {
-                    'node': 'TypeName',
-                    'name': typevars[i],
-                },
             } for i, name in enumerate(node['ids'], 1)],
-            'ret': {
-                'node': 'TypeName',
-                'name': typevars[0],
-            },
             'block': block,
             'lambda': node.get('block') is None,
         })

@@ -5,7 +5,7 @@ func bitAnd(x: Int, y: Int): Int extern
 func bitXor(x: Int, y: Int): Int extern
 func bitOr(x: Int, y: Int): Int extern
 
-func write(s: String) extern
+func write(s: String): Void extern
 
 func read(): String extern
 func readLine(): String extern

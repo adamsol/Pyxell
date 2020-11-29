@@ -1,5 +1,5 @@
 
-func f(x: String) def
+func f(x: String): Void def
     return
 
 func g(x: String): Char def

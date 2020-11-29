@@ -2,16 +2,16 @@
 class A def
     x: Int
 
-    func f() def
+    func f(): Void def
         print this.x
 
 class B(A) def
-    func f() def
+    func f(): Void def
         print this.x + 0.5
         super()
 
 class C(B) def
-    func f() def
+    func f(): Void def
         super()
         print this.x.toString() + '.'
 

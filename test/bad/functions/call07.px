@@ -1,5 +1,5 @@
 
-func f(x: Int = 0) def
+func f(x: Int = 0): Void def
     return
 
 f(y=2)

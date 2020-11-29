@@ -1,5 +1,5 @@
 
-func f(s: {Float}) def
+func f(s: {Float}): Void def
     print s
 
 f({x/2 for x in 1...2})

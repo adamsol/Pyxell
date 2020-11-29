@@ -1,9 +1,9 @@
 
-func f() def
+func f(): Void def
     print 'f'
 
 class A def
-    func f() def
+    func f(): Void def
         f()
 
 A().f()
