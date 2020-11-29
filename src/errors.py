@@ -52,6 +52,7 @@ class PyxellError(Exception):
     UnexpectedVoid = lambda: f"Function without return value cannot be called here"
     UnknownLabel = lambda id: f"Unknown label `{id}`"
     UnknownModule = lambda id: f"Unknown module `{id}`"
+    UnknownReturnType = lambda: f"Cannot settle return type of the function"
     UnknownType = lambda: f"Cannot settle type of the expression"
 
     def __init__(self, msg, line, column=None):

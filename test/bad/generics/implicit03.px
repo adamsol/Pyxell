@@ -1,0 +1,5 @@
+
+func f(x) def
+    return f(x)
+
+print f(0)

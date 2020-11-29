@@ -1,1 +1,1 @@
-No implicit conversion from `Bool*Int` to `B*B`.
+Cannot settle return type of the function.

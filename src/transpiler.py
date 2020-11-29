@@ -862,6 +862,8 @@ class PyxellTranspiler:
 
                     if not func_type.ret.hasValue() and not func_type.ret.isGenerator() and func_type.ret != t.Void:
                         self.throw(body, err.InvalidReturnType(func_type.ret))
+                    if has_type_variables(func_type.ret):
+                        self.throw(body, err.UnknownReturnType())
 
                     self.transpile(body)
 
