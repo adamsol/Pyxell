@@ -1,0 +1,8 @@
+
+func join(...strings, sep = "") def
+    return strings.join(sep)
+
+print join("qwe", 'r', "ty")
+print join('x', 'y', 'z', sep='.')
+print join()
+print join(sep="---")

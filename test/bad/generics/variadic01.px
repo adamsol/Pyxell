@@ -1,0 +1,5 @@
+
+func f(...args) def
+    return
+
+f(1, '2')

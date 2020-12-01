@@ -1170,14 +1170,17 @@ class PyxellTranspiler:
             for i, arg in enumerate(node['args'], 1):
                 name = arg['name']
                 type = self.transpile(arg.get('type'))
-                if type is None:
-                    type = t.Var(f'$T{i}')
-                    typevars.append(type.name)
-                    self.env[type.name] = type
-                if not type.hasValue():
-                    self.throw(arg['type'], err.InvalidDeclaration(type))
                 default = arg.get('default')
                 variadic = arg.get('variadic')
+                if type is None:
+                    type_name = f'$T{i}'
+                    type = t.Var(type_name)
+                    if variadic:
+                        type = t.Array(type)
+                    typevars.append(type_name)
+                    self.env[type_name] = type
+                if not type.hasValue():
+                    self.throw(arg['type'], err.InvalidDeclaration(type))
                 if variadic:
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())
@@ -1642,6 +1645,7 @@ class PyxellTranspiler:
 
                     elif func_arg.variadic and (pos_args or not func_arg.default):
                         expr = {
+                            **(pos_args[i] if i < len(pos_args) else {}),
                             'node': 'ExprCollection',
                             'kind': 'array',
                             'exprs': pos_args[i:],
