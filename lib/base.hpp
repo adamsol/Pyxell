@@ -785,6 +785,11 @@ String join(const Array<String>& x, const String& sep)
     return r;
 }
 
+String join(const Array<Unknown>& x, const String& sep)
+{
+    return sep;
+}
+
 template <typename T>
 Void push(const Array<T>& x, const T& e)
 {

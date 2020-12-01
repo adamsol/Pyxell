@@ -329,7 +329,7 @@ class PyxellTranspiler:
                     'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
 
-            elif attr == 'join' and type.isArray() and type.subtype in {t.Char, t.String}:
+            elif attr == 'join' and type.isArray() and type.subtype in {t.Char, t.String, t.Unknown}:
                 value = v.Variable(t.Func([type, t.Func.Arg('sep', t.String, default=self.string(''))], t.String), attr)
 
             elif type.isArray():

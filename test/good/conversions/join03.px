@@ -1,0 +1,3 @@
+
+print [].join().length
+print [].join("sep")
