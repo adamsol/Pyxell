@@ -1188,6 +1188,9 @@ class PyxellTranspiler:
                         self.throw(arg, err.InvalidVariadicType(type))
                 args.append(t.Func.Arg(name, type, default, variadic))
 
+            if typevars and class_type:
+                self.throw(node, err.GenericMethod())
+
             ret_type = self.transpile(node.get('ret'))
             if ret_type is None:
                 ret_type = t.Var('$T0')

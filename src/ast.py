@@ -124,16 +124,20 @@ class PyxellASTVisitor(PyxellVisitor):
             'label': self.visit(ctx.ID()),
         }
 
-    def visitStmtFunc(self, ctx):
+    def _func_node(self, ctx, name):
+        header = ctx.func_header()
         return {
-            **_node(ctx, 'StmtFunc'),
-            'id': self.visit(ctx.ID()),
-            'typevars': self.visit(ctx.typevars) or [],
-            'args': self.visit(ctx.args.func_arg()),
-            'ret': self.visit(ctx.ret),
+            **_node(ctx, name),
+            'id': self.visit(header.ID()),
+            'typevars': self.visit(header.typevars) or [],
+            'args': self.visit(header.func_arg()),
+            'ret': self.visit(header.ret),
             'block': self.visit(ctx.block()),
-            **({'generator': True} if ctx.generator else {}),
+            **({'generator': True} if header.generator else {}),
         }
+
+    def visitStmtFunc(self, ctx):
+        return self._func_node(ctx, 'StmtFunc')
 
     def visitFuncArg(self, ctx):
         return {
@@ -173,14 +177,7 @@ class PyxellASTVisitor(PyxellVisitor):
         }
 
     def visitClassMethod(self, ctx):
-        return {
-            **_node(ctx, 'ClassMethod'),
-            'id': self.visit(ctx.ID()),
-            'args': self.visit(ctx.args.func_arg()),
-            'ret': self.visit(ctx.ret),
-            'block': self.visit(ctx.block()),
-            **({'generator': True} if ctx.generator else {}),
-        }
+        return self._func_node(ctx, 'ClassMethod')
 
     def visitClassConstructor(self, ctx):
         return {

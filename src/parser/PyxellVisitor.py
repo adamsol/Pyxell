@@ -94,13 +94,13 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#FuncArg.
-    def visitFuncArg(self, ctx:PyxellParser.FuncArgContext):
+    # Visit a parse tree produced by PyxellParser#func_header.
+    def visitFunc_header(self, ctx:PyxellParser.Func_headerContext):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#func_args.
-    def visitFunc_args(self, ctx:PyxellParser.Func_argsContext):
+    # Visit a parse tree produced by PyxellParser#FuncArg.
+    def visitFuncArg(self, ctx:PyxellParser.FuncArgContext):
         return self.visitChildren(ctx)
 
 

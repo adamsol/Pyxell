@@ -22,21 +22,21 @@ stmt
   | 'while' expr ('label' ID)? 'do' block # StmtWhile
   | 'until' expr ('label' ID)? 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('label' ID)? 'do' block # StmtFor
-  | 'func' generator='*'? ID ('<' typevars=id_list '>')? args=func_args (':' ret=typ)? ('def' block | 'extern') # StmtFunc
+  | func_header ('def' block | 'extern') # StmtFunc
   | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
+  ;
+
+func_header
+  : 'func' generator='*'? ID ('<' typevars=id_list '>')? '(' (func_arg ',')* func_arg? ')' (':' ret=typ)?
   ;
 
 func_arg
   : variadic='...'? ID (':' typ)? ('=' expr)? # FuncArg
   ;
 
-func_args
-  : '(' (func_arg ',')* func_arg? ')'
-  ;
-
 class_member
   : ID ':' typ ('=' tuple_expr)? # ClassField
-  | 'func' generator='*'? ID args=func_args (':' ret=typ)? ('def' block | 'abstract') # ClassMethod
+  | func_header ('def' block | 'abstract') # ClassMethod
   | 'constructor' 'def' block # ClassConstructor
   | 'destructor' 'def' block # ClassDestructor
   ;

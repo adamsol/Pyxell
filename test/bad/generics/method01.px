@@ -1,0 +1,4 @@
+
+class A def
+    func f<T>() def
+        return
