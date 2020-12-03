@@ -40,7 +40,7 @@ You can find the list of all available types and their default values in the [Sp
 y: Bool
 ```
 
-Variable name must start with a letter, but may also contain digits, underscores, and apostrophes.
+Variable name must start with a letter or underscore, but may also contain digits and apostrophes.
 Once a variable has been created, its type cannot be changed.
 
 ### Type coercion
