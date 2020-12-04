@@ -1,6 +1,0 @@
-
-f = lambda x def
-    print x
-    return
-
-f('x')

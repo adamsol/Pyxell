@@ -1,7 +1,0 @@
-
-f = lambda x def
-    if true do
-        return x
-    return
-
-f(true)

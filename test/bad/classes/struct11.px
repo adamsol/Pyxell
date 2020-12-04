@@ -2,5 +2,4 @@
 class A def
     x: Int
 
-    getter: ()->Int = lambda def
-        return this.x
+    getter: ()->Int = lambda: this.x

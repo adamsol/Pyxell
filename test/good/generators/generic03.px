@@ -1,5 +1,5 @@
 
-gen = lambda* x, y def
+func* gen(x, y) def
     yield x + y
     yield x * y
 

@@ -578,6 +578,8 @@ func contains2(a, x) def
 print contains2("abc", 'd')
 ```
 
+Note that for recursive functions to work, an explicit return type is necessary.
+
 ### Lambda functions
 
 Lambda is an anonymous function, whose all arguments, as well as the return type, are generic.
@@ -602,19 +604,9 @@ div_by_4 = div@(_, 4)  # without `@`, `_` would be an identity function
 print div_by_4(10)
 ```
 
-Lambdas can also be multi-line, so that you can define normal functions without any type annotations.
-
-```
-count = lambda n def
-    for i in n..0 by -1 do
-        print i
-
-count(3)
-```
-
-Note that lambda functions currently work only with arguments of known types.
-You cannot pass a lambda function to another lambda function.
-In the case of functional arguments, it's better to use the full generic definition instead.
+Note that when a function is passed to another function, its type must be known.
+For example, you cannot pass a lambda function to another lambda function.
+In the case of functional arguments, it's best to use the full generic definition.
 
 ```
 func apply<A,B>(f: A->B, x: A): B def
@@ -636,10 +628,10 @@ func* range(n: Int): Int def
 print [...range(5)]
 ```
 
-Lambdas can be generators as well.
+Generic functions can be generators as well.
 
 ```
-reversed = lambda* a def
+func* reversed(a) def
     for x in a by -1 do
         yield x
 

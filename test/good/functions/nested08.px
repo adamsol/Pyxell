@@ -1,5 +1,5 @@
 
-pow = lambda a, b def
+func pow(a, b) def
     func rec(c: Int): Rat def
         if c <= 0 do
             return 1

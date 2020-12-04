@@ -397,8 +397,6 @@ class PyxellASTVisitor(PyxellVisitor):
             **_node(ctx, 'ExprLambda'),
             'ids': self.visit(ctx.ID()),
             'expr': self.visit(ctx.expr()),
-            'block': self.visit(ctx.block()),
-            **({'generator': True} if ctx.generator else {}),
         }
 
     def visitExprTuple(self, ctx):

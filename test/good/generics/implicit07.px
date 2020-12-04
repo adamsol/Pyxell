@@ -1,0 +1,13 @@
+
+b = false
+
+func f(x): ()->Void def
+    func g() def
+        b = x
+        return
+    return g
+
+g = f(true)
+print b
+g()
+print b

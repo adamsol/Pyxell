@@ -1,8 +1,8 @@
 
-negate = lambda n def
+func negate(n) def
     return -n
 
-positive = lambda n def
+func positive(n) def
     return negate(n) < 0
 
 print positive(3)

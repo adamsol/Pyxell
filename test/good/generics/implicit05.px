@@ -1,5 +1,5 @@
 
-fib = lambda n def
+func fib(n) def
     if n <= 0 do
         return 0
     a, b = 0, 1

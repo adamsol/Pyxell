@@ -1926,15 +1926,6 @@ class PyxellTranspiler:
     def transpileExprLambda(self, node):
         id = self.fake_id()
 
-        if node.get('block'):
-            block = node['block']
-        else:
-            block = {
-                **node,
-                'node': 'StmtReturn',
-                'expr': node['expr'],
-            }
-
         self.transpile({
             **node,
             'node': 'StmtFunc',
@@ -1942,8 +1933,12 @@ class PyxellTranspiler:
             'args': [{
                 'name': name,
             } for i, name in enumerate(node['ids'], 1)],
-            'block': block,
-            'lambda': node.get('block') is None,
+            'block': {
+                **node,
+                'node': 'StmtReturn',
+                'expr': node['expr'],
+            },
+            'lambda': True,
         })
 
         return self.get(node, id)

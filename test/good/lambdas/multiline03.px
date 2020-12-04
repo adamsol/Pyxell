@@ -1,5 +1,0 @@
-
-f = lambda def
-    print 1
-
-f()
