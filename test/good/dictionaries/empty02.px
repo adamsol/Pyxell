@@ -1,3 +1,3 @@
 
 d: {String:Int}
-print d.empty
+print d, d.empty

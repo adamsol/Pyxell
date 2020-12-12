@@ -1,6 +1,7 @@
 
 func call<T>(f: ()->T): T def
-    print default(T)
+    x: T
+    print x
     return f()
 
 f: ()->String = lambda: "qwerty"

@@ -1,2 +1,3 @@
 
-print default(Rat*[{Char}]*(Bool?*String))
+t: Rat*[{Char}]*(Bool?*String)
+print t

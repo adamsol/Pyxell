@@ -109,7 +109,6 @@ atom
   | 'null' # AtomNull
   | 'this' # AtomThis
   | 'super' # AtomSuper
-  | 'default' '(' typ ')' # AtomDefault
   | ID # AtomId
   ;
 

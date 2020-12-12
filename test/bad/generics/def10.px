@@ -1,5 +1,6 @@
 
-func f<T>(): Void def
-    x: T
+func f<T>(): T def
+    return false
+    return 0
 
-f()
+print f()

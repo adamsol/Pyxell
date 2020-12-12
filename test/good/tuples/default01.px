@@ -1,2 +1,3 @@
 
-print default(Int*Bool)
+t: Int*Bool
+print t

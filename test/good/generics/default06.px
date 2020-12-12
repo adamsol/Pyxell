@@ -1,6 +1,6 @@
 
-func f<A>(a: A = default(Int)): Float def
-    b = default(A)
+func f<A>(a: A = 0): Float def
+    b: A
     b += a
     return b
 

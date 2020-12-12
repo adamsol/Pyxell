@@ -1,5 +1,5 @@
 
-func f<A>(x: A, y: A = default(A)): Void def
-    print x
+func f<T>(): Void def
+    x: T
 
-print f(1)
+f()

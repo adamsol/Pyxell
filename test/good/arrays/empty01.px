@@ -1,6 +1,6 @@
 
 a: [Bool]
-print a.length
+print a, a.empty
 
 a = [true]
 print a

@@ -1,7 +1,0 @@
-
-func f<T>(): T def
-    if false do
-        return []
-    return ""
-
-print f()

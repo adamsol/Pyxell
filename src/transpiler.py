@@ -170,7 +170,7 @@ class PyxellTranspiler:
 
         return result
 
-    def default(self, node, type, nullptr_allowed=False):
+    def default(self, node, type):
         if type == t.Int:
             return v.Int(0)
         elif type == t.Rat:
@@ -192,10 +192,10 @@ class PyxellTranspiler:
         elif type.isNullable():
             return v.Nullable(None, type.subtype)
         elif type.isTuple():
-            return v.Tuple([self.default(node, t, nullptr_allowed) for t in type.elements])
+            return v.Tuple([self.default(node, t) for t in type.elements])
         elif type.isFunc():
-            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret, nullptr_allowed) if type.ret != t.Void else c.Block())
-        elif type.isClass() and nullptr_allowed:
+            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret) if type.ret != t.Void else c.Block())
+        elif type.isClass():
             return v.Literal('nullptr', type=type)
 
         self.throw(node, err.NotDefaultable(type))
@@ -227,7 +227,7 @@ class PyxellTranspiler:
                 block = c.Block()
                 self.output(c.If(f'{it} == {end}', block))
                 with self.block(block):
-                    default = self.default(node, type, nullptr_allowed=True)
+                    default = self.default(node, type)
                     self.output(c.Statement(it, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), it, index, default)))
 
                 return v.Attribute(it, 'second', type=type)
@@ -868,7 +868,7 @@ class PyxellTranspiler:
                     self.transpile(body)
 
                     if func_type.ret.hasValue():
-                        self.output(c.Statement('return', self.default(body, func_type.ret, nullptr_allowed=True)))
+                        self.output(c.Statement('return', self.default(body, func_type.ret)))
 
                 else:  # `extern`
                     self.output(c.Statement('return', v.Call(v.Variable(template.type, template.id), *arg_vars)))
@@ -948,7 +948,7 @@ class PyxellTranspiler:
         if expr:
             value = self.cast(node, self.transpile(expr), type)
         else:
-            value = self.default(node, type, nullptr_allowed=True)
+            value = self.default(node, type)
 
         self.store(var, value)
 
@@ -1299,7 +1299,7 @@ class PyxellTranspiler:
                 if default:
                     field.default = self.cast(member, self.transpile(default), field.type)
                 else:
-                    field.default = self.default(member, field.type, nullptr_allowed=True)
+                    field.default = self.default(member, field.type)
 
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field
@@ -1995,9 +1995,6 @@ class PyxellTranspiler:
         if func is None:
             self.throw(node, err.InvalidUsage('super'))
         return func
-
-    def transpileAtomDefault(self, node):
-        return self.default(node, self.resolve_type(self.transpile(node['type'])))
 
     def transpileAtomId(self, node):
         return self.get(node, node['id'])

@@ -1,5 +1,7 @@
 
 func f<T>(): T def
-    return default(T)
+    if false do
+        return []
+    return ""
 
-f()
+print f()
