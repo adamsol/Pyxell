@@ -200,6 +200,103 @@ Expressions in Pyxell are evaluated in the natural order, which in the case of f
 The structure of your code in Pyxell corresponds to how it will work. No braces or semicolons are needed.
 
 
+## Benchmark
+
+A simplified version of an [algorithm for generating integer partitions](http://jeromekelleher.net/generating-integer-partitions.html)
+has been run in Pyxell, C++, and Python.
+
+The following execution times have been measured for `n = 100` (output: `190569292`).
+Pyxell and C++ programs were compiled with `-O3` flag. Compilation times were not taken into account.
+
+| Pyxell (GCC 7.2.0) | Pyxell (Clang 8.0.1) | C++ (GCC 7.2.0) | C++ (Clang 8.0.1) | Python (CPython 3.7.6) | Python (PyPy 3.7.9) |
+| ------------------ | -------------------- | --------------- | ----------------- | ---------------------- | ------------------- |
+| 0.32 s             | 0.53 s               | 0.35 s          | 0.36 s            | 49.4 s                 | 0.95 s              |
+
+Pyxell code:
+
+```
+func partitions(n) def
+    r = 0
+    a = [0] * (n+1)
+    k = 1
+    a[1] = n
+    while k != 0 do
+        x = a[k-1] + 1
+        y = a[k] - 1
+        k -= 1
+        while x <= y do
+            a[k] = x
+            y -= x
+            k += 1
+        a[k] = x + y
+        r += 1
+    return r
+
+print partitions(readInt())
+```
+
+C++ code:
+
+```cpp
+#include <iostream>
+
+int partitions(int n) {
+    int r = 0;
+    int *a = new int[n+1];
+    for (int i = 0; i <= n; ++i) {
+        a[i] = 0;
+    }
+    int k = 1;
+    a[1] = n;
+    while (k != 0) {
+        int x = a[k-1] + 1;
+        int y = a[k] - 1;
+        k -= 1;
+        while (x <= y) {
+            a[k] = x;
+            y -= x;
+            k += 1;
+        }
+        a[k] = x + y;
+        r += 1;
+    }
+    return r;
+}
+
+int main() {
+    int n;
+    std::cin >> n;
+    std::cout << partitions(n);
+}
+```
+
+Python code:
+
+```python
+def partitions(n):
+    r = 0
+    a = [0] * (n+1)
+    k = 1
+    a[1] = n
+    while k != 0:
+        x = a[k-1] + 1
+        y = a[k] - 1
+        k -= 1
+        while x <= y:
+            a[k] = x
+            y -= x
+            k += 1
+        a[k] = x + y
+        r += 1
+    return r
+
+print(partitions(int(input())))
+```
+
+Note that the differences in execution time between languages will depend on the code that is measured.
+However, Pyxell should always be close to C++ in performance, and substantially faster than Python (even with PyPy).
+
+
 ## Known problems
 
 No language is perfect. Here is a list of things that may considered bugs or inconveniences in Pyxell.
@@ -208,7 +305,8 @@ No language is perfect. Here is a list of things that may considered bugs or inc
 
 Pyxell is only as fast as the C++ code it generates.
 Since the base library contains over a thousand lines of C++ code with extensive usage of high-level features,
-compiling even the simplest programs may take around 1–2 seconds, depending on the compiler used (Clang is generally faster than GCC) and optimization level.
+compiling even the simplest programs may take a few seconds,
+depending on the compiler used (Clang is generally faster than GCC in this regard) and optimization level.
 The compilation time may grow quickly, as each line of Pyxell code often translates to many lines of C++ code.
 
 Furthermore, there is a problem with slow parsing of Pyxell files.
@@ -234,7 +332,7 @@ That's why Pyxell makes no attempt to prohibit (or warn about) using such uninit
 
 Though this may seem as a problem similar to dealing with unexpected `null` values,
 which Pyxell tries to solve, uninitialized variables are actually not so common.
-Since it's not possible to handle them in any way, it makes no sense to pass them deliberately to another function or class like with `null` values.
+Since it's not possible to handle them in any way, it makes no sense to pass them deliberately to another function or class like `null` values.
 An uninitialized object is always a programming error that must be fixed on the caller side.
 
 ### No guaranteed moment of destructor call
@@ -249,7 +347,7 @@ It is only guaranteed that all destructors will be eventually called before the 
 ### Partial closures
 
 Closures in Pyxell are based on closures in C++ with variables captured by value.
-This works differently than in Python and some other languages, when non-local variables in nested functions are concerned.
+This works differently than in Python and some other languages when non-local variables in nested functions are concerned.
 The following code will print `1` and `0` instead of two `1`s:
 
 ```

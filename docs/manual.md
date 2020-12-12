@@ -263,6 +263,29 @@ for x in 1..n label loop do
             break loop
 ```
 
+### Empty blocks
+
+To create an empty block of code, use `skip` statement, so that the program can be correctly parsed.
+
+```
+if false do
+    skip
+else do
+    print true
+```
+
+### Comments
+
+Pyxell supports both single-line and multiline comments.
+
+```
+# single-line comment
+{#
+multiline
+comment
+#}
+```
+
 
 ## Containers
 
@@ -292,6 +315,7 @@ Empty literals can be skipped in variable declarations, since this is the defaul
 
 ```
 e: [Char]  # = []
+print e
 ```
 
 Arrays can be concatenated, repeated, and compared using standard operators.
@@ -406,6 +430,7 @@ To accept `null` value, variable's type must be explicitly marked as nullable.
 b: Bool?
 b = true
 b = null
+print b
 ```
 
 You can either directly check if a value is `null`, or use special coalescing and conditional operators.
