@@ -1,0 +1,12 @@
+
+i = 0
+while i < 3 label l do
+    i += 1
+    while true do
+        print i
+        if i < 3 do
+            continue l
+        else do
+            break
+    x = i * 2
+    print x

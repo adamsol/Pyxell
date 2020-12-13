@@ -892,8 +892,8 @@ class PyxellTranspiler:
 
             body = c.Block()
             with self.block(body):
+                self.output(c.If(v.false, c.Block(c.Label(labels['continue']), c.Statement('continue'))))
                 yield
-                self.output(c.Label(labels['continue']))
 
             self.output(stmt_callback(body))
             self.output(c.Label(labels['break']))
