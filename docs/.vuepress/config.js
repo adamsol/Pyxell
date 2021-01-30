@@ -2,7 +2,6 @@
 module.exports = {
     title: 'Pyxell',
     description: 'Programming language built with simplicity in mind.',
-    theme: 'default-prefers-color-scheme',
     themeConfig: {
         repo: 'adamsol/Pyxell',
         nav: [
@@ -16,7 +15,6 @@ module.exports = {
         ],
         displayAllHeaders: true,
         lastUpdated: 'Documentation version',  // see plugins/version.js
-        overrideTheme: 'dark',  // FIXME: code snippets are barely legible in the light theme
     },
     markdown: {
         extendMarkdown: md => {
@@ -39,6 +37,6 @@ module.exports = {
         },
     },
     plugins: [require('./plugins/version')],
-    clientRootMixin: require('path').resolve(__dirname, 'utils/scroll-fix.js'),
+    clientRootMixin: require('path').resolve(__dirname, 'mixins/scroll-fix.js'),
     base: '/docs/',
 };

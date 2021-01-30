@@ -6,7 +6,7 @@
             <input v-model="show_input" type="checkbox" />
             Input
         </label>
-        <label style="padding-left: 6px" title="Will make the compilation slower, but the program may run faster.">
+        <label style="padding-left: 6px" title="Will make compilation slower, but your program may run faster.">
             <input v-model="optimization" type="checkbox" />
             Optimizations
         </label>
@@ -24,7 +24,7 @@
                 Run
             </button>
         </div>
-        <pre class="language-output" :style="{ color: error ? 'red' : 'inherit' }">{{ output }}</pre>
+        <pre :style="{ color: error ? 'red' : 'white' }">{{ output }}</pre>
     </div>
 </template>
 
