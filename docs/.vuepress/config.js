@@ -16,7 +16,7 @@ module.exports = {
         ],
         displayAllHeaders: true,
         lastUpdated: 'Documentation version',  // see plugins/version.js
-        defaultTheme: 'dark',  // FIXME: code snippets are barely legible in the light theme
+        overrideTheme: 'dark',  // FIXME: code snippets are barely legible in the light theme
     },
     markdown: {
         extendMarkdown: md => {

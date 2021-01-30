@@ -115,8 +115,8 @@ Development
 -----------
 
 In order to rebuild the parser from the grammar (`src/Pyxell.g4`),
-first [download ANTLR](https://www.antlr.org/download/antlr-4.8-complete.jar)
-and put the `antlr-4.8-complete.jar` file into `src` folder,
+first [download ANTLR](https://www.antlr.org/download/antlr-4.9.1-complete.jar)
+and put the `antlr*.jar` file into `src` folder,
 then run `make parser`.
 
 After changing the code of Pyxell libraries (`lib/*.px` files),
