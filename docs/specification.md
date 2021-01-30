@@ -26,7 +26,7 @@ Operators in the same row have equal precedence.
 | `...`                            | spread                                                   | unary     | right         |
 | `==`, `!=`, `<`, `<=`, `>`, `>=` | comparisons (chainable)                                  | binary    | right         |
 | `in`, `not in`                   | membership                                               | binary    | left          |
-| `is null`, `is not null`         | null check                                               | binary    | left          |
+| `is null`, `is not null`         | null check                                               | unary     | left          |
 | `not`                            | logical negation                                         | binary    | right         |
 | `and`                            | logical conjunction (short-circuiting)                   | binary    | right         |
 | `or`                             | logical disjunction (short-circuiting)                   | binary    | right         |
@@ -249,9 +249,9 @@ This section describes the built-in functions in Pyxell, as well as constants an
 
 | Function header                                   | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `acos(x: Float): Float`                           | returns the angle (in radians): whose cosine is `x`                                                             |
-| `asin(x: Float): Float`                           | returns the angle (in radians): whose sine is `x`                                                               |
-| `atan(x: Float): Float`                           | returns the angle (in radians): whose tangent is `x`                                                            |
+| `acos(x: Float): Float`                           | returns the angle (in radians) whose cosine is `x`                                                              |
+| `asin(x: Float): Float`                           | returns the angle (in radians) whose sine is `x`                                                                |
+| `atan(x: Float): Float`                           | returns the angle (in radians) whose tangent is `x`                                                             |
 | `ceil(x: Float): Float`                           | returns the smallest integral value greater than or equal to `x`                                                |
 | `cos(x: Float): Float`                            | returns the cosine of `x` (in radians)                                                                          |
 | `exp(x: Float): Float`                            | returns _e_ raised to the power of `x`                                                                          |

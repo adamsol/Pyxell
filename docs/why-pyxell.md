@@ -92,8 +92,8 @@ Built-in constants (e.g. `true`) are lowercase, since they are closer to variabl
 ### Non-discriminated global variables
 
 Pyxell allows modifying global variables inside functions by default.
-Python's requirement for using `global` keyword is most probably not what programmers coming from other languages expect,
-and it also not completely consistent, since mutable global objects can be mutated anyway.
+Python's requirement of using `global` keyword is most probably not what programmers coming from other languages expect,
+and it also not completely consistent, since mutable global objects can be always mutated anyway.
 
 ### Methods instead of global functions
 

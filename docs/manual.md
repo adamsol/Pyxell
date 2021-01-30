@@ -70,8 +70,8 @@ print 10, 0b101, 0o36, 0xAF
 ```
 
 Rational numbers have unlimited precision.
-They can be written either as integers with `r` suffix, or non-integers in decimal form.
-They are also created as the result of division or exponentiation
+They can be written either as integers with `r` suffix, or as non-integers in decimal form.
+They are also created as a result of division or exponentiation
 (to obtain an integer from a division or exponentiation, use lossy `//` and `^^` operators).
 
 ```
@@ -389,7 +389,7 @@ print d["abc"]
 print d[""]
 ```
 
-Use `in` operator for checking if the dictionary contains a given key.
+Use `in` operator to check whether a dictionary contains a given key.
 
 ```
 print "abc" in d
@@ -443,7 +443,7 @@ print a?.length
 print a?[0]
 ```
 
-There is also an operator to directly retrieve the value in cases when it is certainly not null.
+There is also an operator to directly retrieve the value when it is certainly not null.
 
 ```
 x: Rat? = 1.5
@@ -478,7 +478,7 @@ Tuples are mutable, but they have value semantics, so they are hashable and can 
 
 ```
 s = {t}
-t.a = 0
+t.a = 2
 print t  # will print the new value
 print s  # the set contains the original value
 ```
@@ -575,7 +575,7 @@ log("str")
 ```
 
 Function declaration may contain default values for generic arguments, and the body may contain any code dependent on the real types.
-Errors will be reported when the function cannot be compiled with given types.
+Errors will be reported when a function cannot be compiled with given types.
 
 ```
 func multiply<A,B,C>(a: A, b: B = 1): C def
@@ -711,7 +711,7 @@ class Vector def
 print Vector(5, 12).length()
 ```
 
-Method is bound to the object before it is called, so it can be treated as a standard function.
+Method is bound to the object before it is called, so it can be treated like a standard function.
 
 ```
 class Multiplier def
