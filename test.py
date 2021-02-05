@@ -91,7 +91,8 @@ def test(path, running_aggregate_tests=False):
                 exe_filename = compile(path, args.cpp_compiler, args.opt_level, mode=('executable' if args.separate else 'cpp'))
             error = False
         except NotSupportedError as e:
-            skipped += 1
+            with lock:
+                skipped += 1
             output.append(f"{Y}{e}{E}")
         except PyxellError as e:
             error_message = str(e)
@@ -154,15 +155,16 @@ def test(path, running_aggregate_tests=False):
         output.append(f"{R}{traceback.format_exc()}{E}")
 
     # Print the output of tests in the right order.
-    output_dict[index] = '\n'.join(output) if not passed or args.verbose else ''
     with lock:
+        output_dict[index] = '\n'.join(output) if not passed or args.verbose else ''
         while output_index in output_dict:
             if output_dict[output_index]:
                 print(output_dict[output_index])
             output_index += 1
 
     if passed:
-        ok += 1
+        with lock:
+            ok += 1
         if not args.verbose:
             os.remove(path.replace('.px', '.tmp'))
             if not error:
