@@ -213,3 +213,5 @@ else:
     msg += f", {G}all passed{E}"
 
 print(msg + f".")
+if failed:
+    sys.exit(1)
