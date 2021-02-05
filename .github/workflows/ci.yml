@@ -23,9 +23,10 @@ jobs:
         python -m pip install --upgrade pip wheel setuptools
         python -m pip install -r requirements.txt
     - name: Get compilers
+      run: |
         sudo apt update
         sudo apt install clang
-        sudo apt-get install build-essential
+        sudo apt install build-essential
     - name: Test clang
       run: python test.py
     - name: Test GCC
