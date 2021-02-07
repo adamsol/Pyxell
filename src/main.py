@@ -1,7 +1,6 @@
 
 import argparse
 import os
-import json
 import platform
 import re
 import subprocess
@@ -11,7 +10,7 @@ from timeit import default_timer as timer
 
 from .errors import NotSupportedError, PyxellError
 from .indentation import transform_indented_code
-from .parsing import parse_program
+from .parser import PyxellParser
 from .transpiler import PyxellTranspiler
 
 abspath = Path(__file__).parents[1]
@@ -19,25 +18,15 @@ abspath = Path(__file__).parents[1]
 version = Path(abspath/'version.txt').read_text()
 
 
+def build_ast(path):
+    # Note: Python automatically normalizes '\r' and '\r\n' to '\n' when reading a file.
+    lines = transform_indented_code(path.read_text(), path)
+    return PyxellParser(lines, path).parse_program()
+
+
 units = {}
 for name in ['std', 'math', 'random']:
-    try:
-        unit = json.load(open(abspath/f'lib/{name}.json'))
-    except FileNotFoundError:
-        unit = None
-    units[name] = unit
-
-
-def build_ast(path):
-    code = transform_indented_code(path.read_text(), path)
-    return parse_program(code, path)
-
-
-def build_libs():
-    for name in units:
-        path = abspath/f'lib/{name}.px'
-        units[name] = build_ast(path)
-        json.dump(units[name], open(str(path).replace('.px', '.json'), 'w'), indent='\t')
+    units[name] = build_ast(abspath/f'lib/{name}.px')
 
 
 def cpp_flags(cpp_compiler, opt_level):
@@ -125,7 +114,6 @@ def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
     parser.add_argument('-c', '--cpp-compiler', default='clang', help="C++ compiler command (default: clang)")
-    parser.add_argument('-l', '--libs', action='store_true', help="build libraries and exit")
     parser.add_argument('-n', '--dont-run', action='store_true', help="don't run the program after compilation")
     parser.add_argument('-O', '--opt-level', type=int, choices=range(4), default=0, help="compiler optimization level (default: 0)")
     parser.add_argument('-s', '--standalone-cpp', action='store_true', help="save transpiled C++ code for standalone compilation and exit")
@@ -136,10 +124,6 @@ def main():
 
     if args.version:
         print(f"Pyxell {version}")
-        sys.exit(0)
-
-    if args.libs:
-        build_libs()
         sys.exit(0)
 
     if not args.filepath:

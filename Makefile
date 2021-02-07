@@ -9,13 +9,7 @@ else
 	VERSION_PATH = version.txt:.
 endif
 
-all: parser libs exe docs
-
-parser:
-	"$(MAKE)" parser -C src
-
-libs:
-	"$(PYTHON)" pyxell.py --libs
+all: exe docs
 
 exe:
 	"$(PYTHON)" -m PyInstaller --hidden-import=decorator --add-data "$(LIB_PATH)" --add-data "$(VERSION_PATH)" pyxell.py --noconfirm
@@ -25,7 +19,5 @@ docs:
 	"$(MAKE)" docs -C docs
 
 clean:
-	"$(MAKE)" clean -C src
-	rm -f lib/*.ll lib/*.json
 	rm -rf build/ dist/
 	"$(MAKE)" clean -C docs

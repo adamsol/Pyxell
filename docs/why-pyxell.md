@@ -309,9 +309,6 @@ compiling even the simplest programs may take a few seconds,
 depending on the compiler used (Clang is generally faster than GCC in this regard) and optimization level.
 The compilation time may grow quickly, as each line of Pyxell code often translates to many lines of C++ code.
 
-Furthermore, there is a problem with slow parsing of Pyxell files.
-This may be solved in the future by changing ANTLR target from Python to another language or using another parser generator.
-
 ### Limited integer precision
 
 Although Pyxell has a built-in type for arbitrary-precision rational numbers,

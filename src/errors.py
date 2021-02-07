@@ -1,16 +1,4 @@
 
-from antlr4.error.ErrorListener import ErrorListener
-
-
-class PyxellErrorListener(ErrorListener):
-
-    def __init__(self, filepath):
-        self.filepath = filepath
-
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise PyxellError(self.filepath, (line, column+1), PyxellError.InvalidSyntax())
-
-
 class PyxellError(Exception):
 
     InvalidSyntax = lambda: f"Syntax error"

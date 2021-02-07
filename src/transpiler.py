@@ -9,7 +9,7 @@ from . import codegen as c
 from . import types as t
 from . import values as v
 from .errors import NotSupportedError, PyxellError as err
-from .parsing import parse_expr
+from .parser import PyxellParser
 from .types import can_cast, has_type_variables, type_variables_assignment, unify_types
 from .utils import lmap
 
@@ -692,7 +692,7 @@ class PyxellTranspiler:
 
         for i, tag in enumerate(tags):
             try:
-                expr = parse_expr(ast.literal_eval(f'"{tag}"'), self.current_unit.filepath)
+                expr = PyxellParser([ast.literal_eval(f'"{tag}"')], self.current_unit.filepath).parse_interpolation_expr()
             except err as e:
                 self.throw({
                     **node,

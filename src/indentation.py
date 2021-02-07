@@ -23,7 +23,7 @@ def transform_indented_code(code, filepath):
     Adds braces and semicolons to the code with indents.
     """
     code = remove_comments(code)
-    lines = code.split('\n')
+    lines = code.split('\n')  # note the difference to `splitlines()`: https://docs.python.org/3/library/stdtypes.html#str.splitlines
 
     j = None  # index of the previous non-empty line
     indents = ['']
@@ -74,4 +74,4 @@ def transform_indented_code(code, filepath):
     if j is not None:
         lines[-1] += ';' + '};' * len(indents)
 
-    return '\n'.join(lines)
+    return lines
