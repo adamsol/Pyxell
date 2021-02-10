@@ -80,21 +80,21 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitStmtAssgExpr(self, ctx):
         return {
             **_node(ctx, 'StmtAssgExpr'),
-            'exprs': self.visit(ctx.expr()),
-            'op': ctx.op.text,
+            'exprs': self.visit(ctx.tuple_expr()),
+            'op': ctx.op.text[:-1],
         }
 
     def visitStmtIf(self, ctx):
         return {
             **_node(ctx, 'StmtIf'),
-            'exprs': self.visit(ctx.expr()),
+            'exprs': self.visit(ctx.tuple_expr()),
             'blocks': self.visit(ctx.block()),
         }
 
     def visitStmtWhile(self, ctx):
         return {
             **_node(ctx, 'StmtWhile'),
-            'expr': self.visit(ctx.expr()),
+            'expr': self.visit(ctx.tuple_expr()),
             'label': self.visit(ctx.ID()),
             'block': self.visit(ctx.block()),
         }
@@ -102,7 +102,7 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitStmtUntil(self, ctx):
         return {
             **_node(ctx, 'StmtUntil'),
-            'expr': self.visit(ctx.expr()),
+            'expr': self.visit(ctx.tuple_expr()),
             'label': self.visit(ctx.ID()),
             'block': self.visit(ctx.block()),
         }
@@ -276,7 +276,7 @@ class PyxellASTVisitor(PyxellVisitor):
     def visitComprehensionPredicate(self, ctx):
         return {
             **_node(ctx, 'ComprehensionPredicate'),
-            'expr': self.visit(ctx.expr()),
+            'expr': self.visit(ctx.tuple_expr()),
         }
 
     def visitExprAttr(self, ctx):

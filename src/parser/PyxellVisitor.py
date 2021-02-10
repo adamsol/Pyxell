@@ -49,11 +49,6 @@ class PyxellVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by PyxellParser#StmtLoopControl.
-    def visitStmtLoopControl(self, ctx:PyxellParser.StmtLoopControlContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by PyxellParser#StmtReturn.
     def visitStmtReturn(self, ctx:PyxellParser.StmtReturnContext):
         return self.visitChildren(ctx)
@@ -81,6 +76,11 @@ class PyxellVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by PyxellParser#StmtFor.
     def visitStmtFor(self, ctx:PyxellParser.StmtForContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by PyxellParser#StmtLoopControl.
+    def visitStmtLoopControl(self, ctx:PyxellParser.StmtLoopControlContext):
         return self.visitChildren(ctx)
 
 

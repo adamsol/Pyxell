@@ -11,17 +11,17 @@ block
 stmt
   : 'use' name=ID ('hiding' hiding=id_list)? # StmtUse
   | 'skip' # StmtSkip
-  | 'print' (expr ',')* expr? # StmtPrint
+  | 'print' ((expr ',')* expr)? # StmtPrint
   | ID ':' typ ('=' tuple_expr)? # StmtDecl
   | (tuple_expr '=')* tuple_expr # StmtAssg
-  | expr op=('^' | '^^' | '/' | '//' | '%' | '*' | '&' | '+' | '-' | '??') '=' expr # StmtAssgExpr
-  | s=('break' | 'continue') ID? # StmtLoopControl
+  | tuple_expr op=('^=' | '^^=' | '/=' | '//=' | '%=' | '*=' | '&=' | '+=' | '-=' | '??=') tuple_expr # StmtAssgExpr
   | 'return' tuple_expr? # StmtReturn
   | 'yield' tuple_expr # StmtYield
-  | 'if' expr 'do' block (';' 'elif' expr 'do' block)* (';' 'else' 'do' block)? # StmtIf
-  | 'while' expr ('label' ID)? 'do' block # StmtWhile
-  | 'until' expr ('label' ID)? 'do' block # StmtUntil
+  | 'if' tuple_expr 'do' block (';' 'elif' tuple_expr 'do' block)* (';' 'else' 'do' block)? # StmtIf
+  | 'while' tuple_expr ('label' ID)? 'do' block # StmtWhile
+  | 'until' tuple_expr ('label' ID)? 'do' block # StmtUntil
   | 'for' tuple_expr 'in' tuple_expr ('label' ID)? 'do' block # StmtFor
+  | s=('break' | 'continue') ID? # StmtLoopControl
   | func_header ('def' block | 'extern') # StmtFunc
   | 'class' ID ('(' typ ')')? 'def' '{' (class_member ';')+ '}' # StmtClass
   ;
@@ -51,10 +51,10 @@ expr
   | '[' expr comprehension+ ']' # ExprArrayComprehension
   | '{' expr comprehension+ '}' # ExprSetComprehension
   | '{' expr ':' expr comprehension+ '}' # ExprDictComprehension
-  | expr safe='?'? '.' ID # ExprAttr
-  | expr safe='?'? '[' tuple_expr ']' # ExprIndex
+  | expr ('.' | safe='?.') ID # ExprAttr
+  | expr ('[' | safe='?[') tuple_expr ']' # ExprIndex
   | expr '[' e1=expr? (':' e2=expr? (':' e3=expr?)?) ']' # ExprSlice
-  | expr partial='@'? '(' (call_arg ',')* call_arg? ')' # ExprCall
+  | expr ('(' | partial='@(') (call_arg ',')* call_arg? ')' # ExprCall
   | expr op='!' # ExprUnaryOp
   | <assoc=right> expr op=('^' | '^^') expr # ExprBinaryOp
   | op=('+' | '-') expr # ExprUnaryOp
@@ -92,7 +92,7 @@ interpolation_expr
 
 comprehension
   : 'for' tuple_expr 'in' tuple_expr # ComprehensionIteration
-  | 'if' expr # ComprehensionPredicate
+  | 'if' tuple_expr # ComprehensionPredicate
   ;
 
 call_arg
