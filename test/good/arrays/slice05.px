@@ -4,4 +4,6 @@ print a[2:-4:-1]
 print a[-3::-1]
 print a[:0:-1]
 print a[::-3]
+print a[:2:]
+print a[::]
 print (a*100)[-100::-21].length
