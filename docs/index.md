@@ -2,7 +2,7 @@
 home: true
 actionText: Get Started →
 actionLink: /manual
-footer: MIT Licensed | Copyright © 2020 Adam Sołtysik
+footer: MIT Licensed | Copyright © 2020-2021 Adam Sołtysik
 features:
   - title: Fast
     details: Transpiled to C++, compiled to machine code with Clang or GCC.

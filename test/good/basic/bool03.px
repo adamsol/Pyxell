@@ -1,0 +1,13 @@
+
+func f(x: Bool): Bool def
+    print x
+    return x
+
+if f(false) and f(false) do
+    print 1
+elif f(true) and f(true) do
+    print 2
+elif f(false) or f(true) do
+    print 3
+else do
+    print 4

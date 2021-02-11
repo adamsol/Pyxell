@@ -1007,23 +1007,29 @@ class PyxellTranspiler:
         exprs = node['exprs']
         blocks = node['blocks']
 
-        stmt = None
+        def emitIf(index):
+            if index == len(blocks):
+                return
 
-        for expr, block in reversed(list(zip_longest(exprs, blocks))):
-            if expr:
+            expr = None
+            if index < len(exprs):
+                expr = exprs[index]
                 cond = self.cast(expr, self.transpile(expr), t.Bool)
 
             then = c.Block()
             with self.block(then):
                 with self.local():
-                    self.transpile(block)
+                    self.transpile(blocks[index])
 
             if expr:
-                stmt = c.If(cond, then, stmt)
+                els = c.Block()
+                with self.block(els):
+                    emitIf(index+1)
+                self.output(c.If(cond, then, els))
             else:
-                stmt = then
+                self.output(then)
 
-        self.output(stmt)
+        emitIf(0)
 
     def transpileStmtWhile(self, node):
         expr = node['expr']
