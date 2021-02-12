@@ -1857,27 +1857,6 @@ class PyxellParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
-    class ExprLogicalOpContext(ExprContext):
-
-        def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.ExprContext
-            super().__init__(parser)
-            self.op = None # Token
-            self.copyFrom(ctx)
-
-        def expr(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(PyxellParser.ExprContext)
-            else:
-                return self.getTypedRuleContext(PyxellParser.ExprContext,i)
-
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitExprLogicalOp" ):
-                return visitor.visitExprLogicalOp(self)
-            else:
-                return visitor.visitChildren(self)
-
-
     class ExprArrayComprehensionContext(ExprContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a PyxellParser.ExprContext
@@ -2609,7 +2588,7 @@ class PyxellParser ( Parser ):
                         pass
 
                     elif la_ == 11:
-                        localctx = PyxellParser.ExprLogicalOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprBinaryOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 370
                         if not self.precpred(self._ctx, 4):
@@ -2622,7 +2601,7 @@ class PyxellParser ( Parser ):
                         pass
 
                     elif la_ == 12:
-                        localctx = PyxellParser.ExprLogicalOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
+                        localctx = PyxellParser.ExprBinaryOpContext(self, PyxellParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
                         self.state = 373
                         if not self.precpred(self._ctx, 3):

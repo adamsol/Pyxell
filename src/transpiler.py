@@ -693,7 +693,7 @@ class PyxellTranspiler:
         if len(parts) == 1:
             return {
                 **node,
-                'string': string,
+                'value': string,
             }
 
         lits, tags = parts[::2], parts[1::2]
@@ -702,7 +702,7 @@ class PyxellTranspiler:
         for i, lit in enumerate(lits):
             exprs[i*2] = {
                 'node': 'AtomString',
-                'string': lit,
+                'value': lit,
             }
 
         for i, tag in enumerate(tags):
@@ -731,7 +731,7 @@ class PyxellTranspiler:
                 'expr': {
                     'node': 'ExprCollection',
                     'kind': 'array',
-                    'exprs': exprs,
+                    'items': exprs,
                 },
                 'attr': 'join',
             },
@@ -748,12 +748,12 @@ class PyxellTranspiler:
             nonlocal ids
             node = expr['node']
 
-            if node in {'ExprCollection', 'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprIn', 'ExprCmp', 'ExprLogicalOp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
+            if node in {'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprIn', 'ExprCmp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
                 }
-            if node == 'ExprDict':
+            elif node == 'ExprCollection':
                 return {
                     **expr,
                     'items': lmap(convert_expr, expr['items']),
@@ -787,7 +787,7 @@ class PyxellTranspiler:
                     'args': lmap(convert_expr, expr['args']) if expr.get('partial') else expr['args'],
                 }
             if node == 'AtomString':
-                expr = self.convert_string(expr, expr['string'])
+                expr = self.convert_string(expr, expr['value'])
                 if expr['node'] == 'AtomString':
                     return expr
                 return convert_expr(expr)
@@ -953,14 +953,15 @@ class PyxellTranspiler:
         self.store(var, value)
 
     def transpileStmtAssg(self, node):
-        value = self.transpile(node['expr'], void_allowed=(len(node['lvalues']) == 0))
+        lvalues = node['exprs'][:-1]
+        value = self.transpile(node['exprs'][-1], void_allowed=(len(lvalues) == 0))
 
         if value.type == t.Void:
             self.output(value)
         else:
             value = self.tmp(value)
 
-        for lvalue in node['lvalues']:
+        for lvalue in lvalues:
             self.assign(lvalue, lvalue, value)
 
     def transpileStmtAssgExpr(self, node):
@@ -1375,116 +1376,105 @@ class PyxellTranspiler:
     ### Expressions ###
 
     def transpileExprCollection(self, node):
-        exprs = node['exprs']
-        kind = node['kind']
-        types = []
-
-        with self.no_output():
-            for expr in exprs:
-                if expr['node'] in {'ExprRange', 'ExprBy'}:
-                    if expr['node'] == 'ExprBy':
-                        if expr['exprs'][0]['node'] != 'ExprRange':
-                            self.throw(node, err.InvalidSyntax())
-                        expr = expr['exprs'][0]
-                    values = lmap(self.transpile, expr['exprs'])
-                    types.extend(value.type for value in values)
-
-                elif expr['node'] == 'ExprSpread':
-                    expr = expr['expr']
-                    if expr['node'] == 'ExprBy':
-                        expr = expr['exprs'][0]
-                    value = self.transpile(expr)
-                    if not value.type.isIterable():
-                        self.throw(node, err.NotIterable(value.type))
-                    types.append(value.type.subtype)
-
-                else:
-                    value = self.transpile(expr)
-                    types.append(value.type)
-
-        type = t.Unknown
-        type.literal = True
-        if types:
-            type = unify_types(*types)
-            if type is None:
-                self.throw(node, err.UnknownType())
-            type.literal = all(t.literal for t in types)
-
-        if kind == 'array':
-            result = self.tmp(v.Array([], type))
-        elif kind == 'set':
-            if not type.isHashable():
-                self.throw(node, err.NotHashable(type))
-            result = self.tmp(v.Set([], type))
-        result.type.literal = True
-
-        for expr in exprs:
-            if expr['node'] in {'ExprRange', 'ExprSpread', 'ExprBy'}:
-                if expr['node'] == 'ExprSpread':
-                    expr = expr['expr']
-
-                var = {
-                    'node': 'AtomId',
-                    'position': expr['position'],
-                    'id': self.fake_id(),
-                }
-                self.transpile({
-                    'node': 'StmtFor',
-                    'vars': [var],
-                    'iterables': [expr],
-                    'block': {
-                        'node': 'StmtAppend',
-                        'collection': result,
-                        'exprs': [var],
-                    },
-                })
-            else:
-                self.transpile({
-                    'node': 'StmtAppend',
-                    'collection': result,
-                    'exprs': [expr],
-                })
-
-        return result
-
-    def transpileExprDict(self, node):
         items = node['items']
+        kind = node['kind']
         types = [], []
 
         with self.no_output():
             for item in items:
-                if item['node'] == 'DictSpread':
-                    expr = item['expr']
-                    if expr['node'] == 'ExprBy':
-                        expr = expr['exprs'][0]
-                    value = self.transpile(expr)
-                    if not value.type.isDict():
-                        self.throw(node, err.NotDictionary(value.type))
-                    types[0].append(value.type.key_type)
-                    types[1].append(value.type.value_type)
+                if item['node'] in {'ExprRange', 'ExprBy'}:
+                    if item['node'] == 'ExprBy':
+                        if item['exprs'][0]['node'] != 'ExprRange':
+                            self.throw(node, err.InvalidSyntax())
+                        item = item['exprs'][0]
+                    values = lmap(self.transpile, item['exprs'])
+                    types[0].extend(value.type for value in values)
+
+                elif item['node'] == 'ExprSpread':
+                    item = item['expr']
+                    if item['node'] == 'ExprBy':
+                        item = item['exprs'][0]
+                    value = self.transpile(item)
+                    if not value.type.isIterable():
+                        self.throw(node, err.NotIterable(value.type))
+                    types[0].append(value.type.subtype)
 
                 elif item['node'] == 'DictPair':
                     values = lmap(self.transpile, item['exprs'])
                     for i in range(2):
                         types[i].append(values[i].type)
 
-        key_type = value_type = t.Unknown
-        key_type.literal = value_type.literal = True
-        if types[0]:
-            key_type = unify_types(*types[0])
-            value_type = unify_types(*types[1])
-            if key_type is None or value_type is None:
-                self.throw(node, err.UnknownType())
-            key_type.literal = all(t.literal for t in types[0])
-            value_type.literal = all(t.literal for t in types[1])
+                elif item['node'] == 'DictSpread':
+                    item = item['expr']
+                    if item['node'] == 'ExprBy':
+                        item = item['exprs'][0]
+                    value = self.transpile(item)
+                    if not value.type.isDict():
+                        self.throw(node, err.NotDictionary(value.type))
+                    types[0].append(value.type.key_type)
+                    types[1].append(value.type.value_type)
 
-        if not key_type.isHashable():
-            self.throw(node, err.NotHashable(key_type))
-        result = self.tmp(v.Dict([], [], key_type, value_type))
+                else:
+                    value = self.transpile(item)
+                    types[0].append(value.type)
+
+        if kind in {'array', 'set'}:
+            type = t.Unknown
+            type.literal = True
+            if types[0]:
+                type = unify_types(*types[0])
+                if type is None:
+                    self.throw(node, err.UnknownType())
+                type.literal = all(t.literal for t in types[0])
+            if kind == 'array':
+                result = self.tmp(v.Array([], type))
+            elif kind == 'set':
+                if not type.isHashable():
+                    self.throw(node, err.NotHashable(type))
+                result = self.tmp(v.Set([], type))
+        elif kind == 'dict':
+            key_type = value_type = t.Unknown
+            key_type.literal = value_type.literal = True
+            if types[0]:
+                key_type = unify_types(*types[0])
+                value_type = unify_types(*types[1])
+                if key_type is None or value_type is None:
+                    self.throw(node, err.UnknownType())
+                key_type.literal = all(t.literal for t in types[0])
+                value_type.literal = all(t.literal for t in types[1])
+            if not key_type.isHashable():
+                self.throw(node, err.NotHashable(key_type))
+            result = self.tmp(v.Dict([], [], key_type, value_type))
+
         result.type.literal = True
 
         for item in items:
-            if item['node'] == 'DictSpread':
+            if item['node'] in {'ExprRange', 'ExprSpread', 'ExprBy'}:
+                if item['node'] == 'ExprSpread':
+                    item = item['expr']
+
+                var = {
+                    'node': 'AtomId',
+                    'position': item['position'],
+                    'id': self.fake_id(),
+                }
+                self.transpile({
+                    'node': 'StmtFor',
+                    'vars': [var],
+                    'iterables': [item],
+                    'block': {
+                        'node': 'StmtAppend',
+                        'collection': result,
+                        'exprs': [var],
+                    },
+                })
+            elif item['node'] == 'DictPair':
+                self.transpile({
+                    'node': 'StmtAppend',
+                    'collection': result,
+                    'exprs': item['exprs'],
+                })
+            elif item['node'] == 'DictSpread':
                 vars = [{
                     'node': 'AtomId',
                     'id': self.fake_id(),
@@ -1500,11 +1490,11 @@ class PyxellTranspiler:
                         'exprs': vars,
                     },
                 })
-            elif item['node'] == 'DictPair':
+            else:
                 self.transpile({
                     'node': 'StmtAppend',
                     'collection': result,
-                    'exprs': item['exprs'],
+                    'exprs': [item],
                 })
 
         return result
@@ -1520,11 +1510,13 @@ class PyxellTranspiler:
 
         stmt = inner_stmt = {
             'node': 'StmtAssg',
-            'lvalues': [value],
-            'expr': {
-                'node': 'ExprTuple',
-                'exprs': exprs,
-            },
+            'exprs': [
+                value,
+                {
+                    'node': 'ExprTuple',
+                    'exprs': exprs,
+                },
+            ],
         }
 
         for i, cpr in reversed(list(enumerate(node['comprehensions']))):
@@ -1657,7 +1649,7 @@ class PyxellTranspiler:
                             **(pos_args[i] if i < len(pos_args) else {}),
                             'node': 'ExprCollection',
                             'kind': 'array',
-                            'exprs': pos_args[i:],
+                            'items': pos_args[i:],
                         }
                         pos_args = []
 
@@ -1821,6 +1813,27 @@ class PyxellTranspiler:
             except err:
                 self.throw(node, err.NoBinaryOperator(op, left.type, self.transpile(exprs[1]).type))
 
+        if op in {'and', 'or'}:
+            exprs = node['exprs']
+            op = node['op']
+
+            result = self.var(t.Bool)
+            self.store(result, v.Bool(op == 'or'), 'auto')
+
+            cond1 = self.transpile(exprs[0])
+            if op == 'or':
+                cond1 = v.UnaryOp('!', cond1, type=t.Bool)
+
+            block = c.Block()
+            self.output(c.If(cond1, block))
+            with self.block(block):
+                cond2 = self.transpile(exprs[1])
+                if not cond1.type == cond2.type == t.Bool:
+                    self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
+                self.store(result, cond2)
+
+            return result
+
         return self.binaryop(node, op, *map(self.transpile, exprs))
 
     def transpileExprIsNull(self, node):
@@ -1895,27 +1908,6 @@ class PyxellTranspiler:
 
         return result
 
-    def transpileExprLogicalOp(self, node):
-        exprs = node['exprs']
-        op = node['op']
-
-        result = self.var(t.Bool)
-        self.store(result, v.Bool(op == 'or'), 'auto')
-
-        cond1 = self.transpile(exprs[0])
-        if op == 'or':
-            cond1 = v.UnaryOp('!', cond1, type=t.Bool)
-
-        block = c.Block()
-        self.output(c.If(cond1, block))
-        with self.block(block):
-            cond2 = self.transpile(exprs[1])
-            if not cond1.type == cond2.type == t.Bool:
-                self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
-            self.store(result, cond2)
-
-        return result
-
     def transpileExprCond(self, node):
         exprs = node['exprs']
         return self.cond(node, self.transpile(exprs[0]), lambda: self.transpile(exprs[1]), lambda: self.transpile(exprs[2]))
@@ -1957,28 +1949,28 @@ class PyxellTranspiler:
     ### Atoms ###
 
     def transpileAtomInt(self, node):
-        value = node['int']
+        value = node['value']
         if value >= 2**63:
             self.throw(node, err.IntegerTooLarge())
         return v.Int(value)
 
     def transpileAtomRat(self, node):
-        return self.rat(node['rat'])
+        return self.rat(node['value'])
 
     def transpileAtomFloat(self, node):
-        return v.Float(node['float'])
+        return v.Float(node['value'])
 
     def transpileAtomBool(self, node):
-        return v.Bool(node['bool'])
+        return v.Bool(node['value'])
 
     def transpileAtomChar(self, node):
-        return v.Char(node['char'])
+        return v.Char(node['value'])
 
     def transpileAtomString(self, node):
-        expr = self.convert_string(node, node['string'])
+        expr = self.convert_string(node, node['value'])
 
         if expr['node'] == 'AtomString':
-            return self.string(expr['string'])
+            return self.string(expr['value'])
 
         try:
             return self.transpile(expr)
@@ -2029,20 +2021,16 @@ class PyxellTranspiler:
 
         return type
 
-    def transpileTypeArray(self, node):
-        return t.Array(self.transpile(node['subtype']))
-
-    def transpileTypeSet(self, node):
-        return t.Set(self.transpile(node['subtype']))
-
-    def transpileTypeDict(self, node):
-        return t.Dict(self.transpile(node['key_type']), self.transpile(node['value_type']))
+    def transpileTypeCollection(self, node):
+        constructors = {'array': t.Array, 'set': t.Set, 'dict': t.Dict}
+        return constructors[node['kind']](*map(self.transpile, node['subtypes']))
 
     def transpileTypeNullable(self, node):
         return t.Nullable(self.transpile(node['subtype']))
 
     def transpileTypeTuple(self, node):
-        return t.Tuple(lmap(self.transpile, node['elements']))
+        return t.Tuple(lmap(self.transpile, node['types']))
 
     def transpileTypeFunc(self, node):
-        return t.Func(lmap(self.transpile, node['args']), self.transpile(node['ret']) or t.Void)
+        types = lmap(self.transpile, node['types'])
+        return t.Func(types[:-1], types[-1])

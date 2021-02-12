@@ -71,8 +71,8 @@ expr
   | expr not_='not'? 'in' expr # ExprIn
   | expr 'is' not_='not'? 'null' # ExprIsNull
   | op='not' expr # ExprUnaryOp
-  | <assoc=right> expr op='and' expr # ExprLogicalOp
-  | <assoc=right> expr op='or' expr # ExprLogicalOp
+  | <assoc=right> expr op='and' expr # ExprBinaryOp
+  | <assoc=right> expr op='or' expr # ExprBinaryOp
   | <assoc=right> expr '?' expr ':' expr # ExprCond
   | 'lambda' (ID ',')* ID? ':' expr # ExprLambda
   ;

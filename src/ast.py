@@ -70,11 +70,9 @@ class PyxellASTVisitor(PyxellVisitor):
             'expr': self.visit(ctx.tuple_expr()),
         }
 
-    def visitStmtAssg(self, ctx):
-        return {
+    def visitStmtAssg(self, ctx):return {
             **_node(ctx, 'StmtAssg'),
-            'lvalues': self.visit(ctx.tuple_expr()[:-1]),
-            'expr': self.visit(ctx.tuple_expr()[-1]),
+            'exprs': self.visit(ctx.tuple_expr()),
         }
 
     def visitStmtAssgExpr(self, ctx):
@@ -213,19 +211,20 @@ class PyxellASTVisitor(PyxellVisitor):
         return {
             **_node(ctx, 'ExprCollection'),
             'kind': 'array',
-            'exprs': self.visit(ctx.expr()),
+            'items': self.visit(ctx.expr()),
         }
 
     def visitExprSet(self, ctx):
         return {
             **_node(ctx, 'ExprCollection'),
             'kind': 'set',
-            'exprs': self.visit(ctx.expr()),
+            'items': self.visit(ctx.expr()),
         }
 
     def visitExprDict(self, ctx):
         return {
-            **_node(ctx, 'ExprDict'),
+            **_node(ctx, 'ExprCollection'),
+            'kind': 'dict',
             'items': self.visit(ctx.dict_item()),
         }
 
@@ -360,13 +359,6 @@ class PyxellASTVisitor(PyxellVisitor):
             'ops': ops,
         }
 
-    def visitExprLogicalOp(self, ctx):
-        return {
-            **_node(ctx, 'ExprLogicalOp'),
-            'exprs': self.visit(ctx.expr()),
-            'op': ctx.op.text,
-        }
-
     def visitExprCond(self, ctx):
         return {
             **_node(ctx, 'ExprCond'),
@@ -419,37 +411,37 @@ class PyxellASTVisitor(PyxellVisitor):
         base = 2 if number.startswith('0b') else 8 if number.startswith('0o') else 16 if number.startswith('0x') else 10
         return {
             **_node(ctx, 'AtomInt'),
-            'int': int(number, base),
+            'value': int(number, base),
         }
 
     def visitAtomRat(self, ctx):
         return {
             **_node(ctx, 'AtomRat'),
-            'rat': ctx.getText().replace('_', '').replace('r', ''),
+            'value': ctx.getText().replace('_', '').replace('r', ''),
         }
 
     def visitAtomFloat(self, ctx):
         return {
             **_node(ctx, 'AtomFloat'),
-            'float': float(ctx.getText().replace('_', '').replace('f', '')),
+            'value': float(ctx.getText().replace('_', '').replace('f', '')),
         }
 
     def visitAtomBool(self, ctx):
         return {
             **_node(ctx, 'AtomBool'),
-            'bool': ctx.getText() == 'true',
+            'value': ctx.getText() == 'true',
         }
 
     def visitAtomChar(self, ctx):
         return {
             **_node(ctx, 'AtomChar'),
-            'char': ctx.getText()[1:-1],
+            'value': ctx.getText()[1:-1],
         }
 
     def visitAtomString(self, ctx):
         return {
             **_node(ctx, 'AtomString'),
-            'string': ctx.getText()[1:-1],
+            'value': ctx.getText()[1:-1],
         }
 
     def visitAtomNull(self, ctx):
@@ -493,21 +485,23 @@ class PyxellASTVisitor(PyxellVisitor):
 
     def visitTypeArray(self, ctx):
         return {
-            **_node(ctx, 'TypeArray'),
-            'subtype': self.visit(ctx.typ()),
+            **_node(ctx, 'TypeCollection'),
+            'kind': 'array',
+            'subtypes': [self.visit(ctx.typ())],
         }
 
     def visitTypeSet(self, ctx):
         return {
-            **_node(ctx, 'TypeSet'),
-            'subtype': self.visit(ctx.typ()),
+            **_node(ctx, 'TypeCollection'),
+            'kind': 'set',
+            'subtypes': [self.visit(ctx.typ())],
         }
 
     def visitTypeDict(self, ctx):
         return {
-            **_node(ctx, 'TypeDict'),
-            'key_type': self.visit(ctx.typ(0)),
-            'value_type': self.visit(ctx.typ(1)),
+            **_node(ctx, 'TypeCollection'),
+            'kind': 'dict',
+            'subtypes': self.visit(ctx.typ()),
         }
 
     def visitTypeNullable(self, ctx):
@@ -528,7 +522,7 @@ class PyxellASTVisitor(PyxellVisitor):
             return types[0]
         return {
             **_node(ctx, 'TypeTuple'),
-            'elements': types,
+            'types': types,
         }
 
     def visitTypeFunc(self, ctx):
@@ -541,13 +535,11 @@ class PyxellASTVisitor(PyxellVisitor):
         types.append(self.visit(ctx.typ(1)))
         return {
             **_node(ctx, 'TypeFunc'),
-            'args': types[:-1],
-            'ret': types[-1],
+            'types': types,
         }
 
     def visitTypeFunc0(self, ctx):
         return {
             **_node(ctx, 'TypeFunc'),
-            'args': [],
-            'ret': self.visit(ctx.typ()),
+            'types': [self.visit(ctx.typ())],
         }

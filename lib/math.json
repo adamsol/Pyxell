@@ -11,7 +11,7 @@
 				2,
 				1
 			],
-			"lvalues": [
+			"exprs": [
 				{
 					"node": "AtomId",
 					"position": [
@@ -19,16 +19,16 @@
 						1
 					],
 					"id": "PI"
+				},
+				{
+					"node": "AtomFloat",
+					"position": [
+						2,
+						6
+					],
+					"value": 3.141592653589793
 				}
-			],
-			"expr": {
-				"node": "AtomFloat",
-				"position": [
-					2,
-					6
-				],
-				"float": 3.141592653589793
-			}
+			]
 		},
 		{
 			"node": "StmtAssg",
@@ -36,7 +36,7 @@
 				3,
 				1
 			],
-			"lvalues": [
+			"exprs": [
 				{
 					"node": "AtomId",
 					"position": [
@@ -44,16 +44,16 @@
 						1
 					],
 					"id": "E"
+				},
+				{
+					"node": "AtomFloat",
+					"position": [
+						3,
+						5
+					],
+					"value": 2.718281828459045
 				}
-			],
-			"expr": {
-				"node": "AtomFloat",
-				"position": [
-					3,
-					5
-				],
-				"float": 2.718281828459045
-			}
+			]
 		},
 		{
 			"node": "StmtAssg",
@@ -61,7 +61,7 @@
 				4,
 				1
 			],
-			"lvalues": [
+			"exprs": [
 				{
 					"node": "AtomId",
 					"position": [
@@ -69,32 +69,32 @@
 						1
 					],
 					"id": "INF"
-				}
-			],
-			"expr": {
-				"node": "ExprCall",
-				"position": [
-					4,
-					7
-				],
-				"expr": {
-					"node": "ExprAttr",
+				},
+				{
+					"node": "ExprCall",
 					"position": [
 						4,
 						7
 					],
 					"expr": {
-						"node": "AtomString",
+						"node": "ExprAttr",
 						"position": [
 							4,
 							7
 						],
-						"string": "inf"
+						"expr": {
+							"node": "AtomString",
+							"position": [
+								4,
+								7
+							],
+							"value": "inf"
+						},
+						"attr": "toFloat"
 					},
-					"attr": "toFloat"
-				},
-				"args": []
-			}
+					"args": []
+				}
+			]
 		},
 		{
 			"node": "StmtFunc",
@@ -678,7 +678,7 @@
 							24,
 							31
 						],
-						"int": 0
+						"value": 0
 					}
 				}
 			],
@@ -725,7 +725,7 @@
 										25,
 										16
 									],
-									"int": 10
+									"value": 10
 								},
 								{
 									"node": "ExprCall",
@@ -792,7 +792,7 @@
 											26,
 											12
 										],
-										"int": 0
+										"value": 0
 									}
 								],
 								"ops": [
@@ -835,7 +835,7 @@
 														27,
 														15
 													],
-													"int": 1
+													"value": 1
 												},
 												"op": "-"
 											}
@@ -874,7 +874,7 @@
 											28,
 											13
 										],
-										"int": 0
+										"value": 0
 									}
 								],
 								"ops": [
@@ -926,7 +926,7 @@
 							30,
 							5
 						],
-						"lvalues": [
+						"exprs": [
 							{
 								"node": "AtomId",
 								"position": [
@@ -934,147 +934,147 @@
 									5
 								],
 								"id": "x"
-							}
-						],
-						"expr": {
-							"node": "ExprCond",
-							"position": [
-								30,
-								9
-							],
-							"exprs": [
-								{
-									"node": "ExprCmp",
-									"position": [
-										30,
-										9
-									],
-									"exprs": [
-										{
-											"node": "AtomId",
-											"position": [
-												30,
-												9
-											],
-											"id": "x"
-										},
-										{
-											"node": "AtomInt",
-											"position": [
-												30,
-												13
-											],
-											"int": 0
-										}
-									],
-									"ops": [
-										">"
-									]
-								},
-								{
-									"node": "ExprCall",
-									"position": [
-										30,
-										17
-									],
-									"expr": {
-										"node": "AtomId",
+							},
+							{
+								"node": "ExprCond",
+								"position": [
+									30,
+									9
+								],
+								"exprs": [
+									{
+										"node": "ExprCmp",
+										"position": [
+											30,
+											9
+										],
+										"exprs": [
+											{
+												"node": "AtomId",
+												"position": [
+													30,
+													9
+												],
+												"id": "x"
+											},
+											{
+												"node": "AtomInt",
+												"position": [
+													30,
+													13
+												],
+												"value": 0
+											}
+										],
+										"ops": [
+											">"
+										]
+									},
+									{
+										"node": "ExprCall",
 										"position": [
 											30,
 											17
 										],
-										"id": "floor"
-									},
-									"args": [
-										{
-											"node": "CallArg",
+										"expr": {
+											"node": "AtomId",
 											"position": [
 												30,
-												23
+												17
 											],
-											"name": null,
-											"expr": {
-												"node": "ExprBinaryOp",
+											"id": "floor"
+										},
+										"args": [
+											{
+												"node": "CallArg",
 												"position": [
 													30,
 													23
 												],
-												"exprs": [
-													{
-														"node": "AtomId",
-														"position": [
-															30,
-															23
-														],
-														"id": "x"
-													},
-													{
-														"node": "AtomFloat",
-														"position": [
-															30,
-															25
-														],
-														"float": 0.5
-													}
-												],
-												"op": "+"
+												"name": null,
+												"expr": {
+													"node": "ExprBinaryOp",
+													"position": [
+														30,
+														23
+													],
+													"exprs": [
+														{
+															"node": "AtomId",
+															"position": [
+																30,
+																23
+															],
+															"id": "x"
+														},
+														{
+															"node": "AtomFloat",
+															"position": [
+																30,
+																25
+															],
+															"value": 0.5
+														}
+													],
+													"op": "+"
+												}
 											}
-										}
-									]
-								},
-								{
-									"node": "ExprCall",
-									"position": [
-										30,
-										33
-									],
-									"expr": {
-										"node": "AtomId",
+										]
+									},
+									{
+										"node": "ExprCall",
 										"position": [
 											30,
 											33
 										],
-										"id": "ceil"
-									},
-									"args": [
-										{
-											"node": "CallArg",
+										"expr": {
+											"node": "AtomId",
 											"position": [
 												30,
-												38
+												33
 											],
-											"name": null,
-											"expr": {
-												"node": "ExprBinaryOp",
+											"id": "ceil"
+										},
+										"args": [
+											{
+												"node": "CallArg",
 												"position": [
 													30,
 													38
 												],
-												"exprs": [
-													{
-														"node": "AtomId",
-														"position": [
-															30,
-															38
-														],
-														"id": "x"
-													},
-													{
-														"node": "AtomFloat",
-														"position": [
-															30,
-															40
-														],
-														"float": 0.5
-													}
-												],
-												"op": "-"
+												"name": null,
+												"expr": {
+													"node": "ExprBinaryOp",
+													"position": [
+														30,
+														38
+													],
+													"exprs": [
+														{
+															"node": "AtomId",
+															"position": [
+																30,
+																38
+															],
+															"id": "x"
+														},
+														{
+															"node": "AtomFloat",
+															"position": [
+																30,
+																40
+															],
+															"value": 0.5
+														}
+													],
+													"op": "-"
+												}
 											}
-										}
-									]
-								}
-							]
-						}
+										]
+									}
+								]
+							}
+						]
 					},
 					{
 						"node": "StmtIf",
@@ -1104,7 +1104,7 @@
 											31,
 											13
 										],
-										"int": 0
+										"value": 0
 									}
 								],
 								"ops": [

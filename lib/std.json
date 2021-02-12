@@ -913,7 +913,7 @@
 												28,
 												17
 											],
-											"int": 0
+											"value": 0
 										}
 									],
 									"ops": [
@@ -1028,7 +1028,7 @@
 												31,
 												16
 											],
-											"int": 0
+											"value": 0
 										}
 									],
 									"ops": [
@@ -1041,7 +1041,7 @@
 										31,
 										20
 									],
-									"int": 1
+									"value": 1
 								},
 								{
 									"node": "ExprCond",
@@ -1071,7 +1071,7 @@
 														31,
 														28
 													],
-													"int": 0
+													"value": 0
 												}
 											],
 											"ops": [
@@ -1090,7 +1090,7 @@
 													31,
 													33
 												],
-												"int": 1
+												"value": 1
 											},
 											"op": "-"
 										},
@@ -1100,7 +1100,7 @@
 												31,
 												37
 											],
-											"int": 0
+											"value": 0
 										}
 									]
 								}
@@ -1149,7 +1149,7 @@
 							34,
 							31
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -1157,16 +1157,16 @@
 									31
 								],
 								"name": "Char"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									34,
+									37
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								34,
-								37
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
@@ -1289,7 +1289,7 @@
 															37,
 															20
 														],
-														"bool": false
+														"value": false
 													}
 												}
 											]
@@ -1311,7 +1311,7 @@
 								38,
 								12
 							],
-							"bool": true
+							"value": true
 						}
 					}
 				]
@@ -1356,7 +1356,7 @@
 							40,
 							31
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -1364,16 +1364,16 @@
 									31
 								],
 								"name": "Char"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									40,
+									37
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								40,
-								37
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
@@ -1488,7 +1488,7 @@
 															43,
 															20
 														],
-														"bool": true
+														"value": true
 													}
 												}
 											]
@@ -1510,7 +1510,7 @@
 								44,
 								12
 							],
-							"bool": false
+							"value": false
 						}
 					}
 				]
@@ -1555,7 +1555,7 @@
 							46,
 							34
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -1563,16 +1563,16 @@
 									34
 								],
 								"name": "Char"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									46,
+									40
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								46,
-								40
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
@@ -1744,7 +1744,7 @@
 							49,
 							31
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -1752,16 +1752,16 @@
 									31
 								],
 								"name": "Char"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									49,
+									37
+								],
+								"name": "Char"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								49,
-								37
-							],
-							"name": "Char"
-						}
+						]
 					},
 					"default": null
 				}
@@ -1920,7 +1920,7 @@
 							52,
 							41
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -1936,16 +1936,16 @@
 									41
 								],
 								"name": "B"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									52,
+									44
+								],
+								"name": "B"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								52,
-								44
-							],
-							"name": "B"
-						}
+						]
 					},
 					"default": null
 				},
@@ -2022,7 +2022,7 @@
 										54,
 										9
 									],
-									"lvalues": [
+									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
@@ -2030,57 +2030,57 @@
 												9
 											],
 											"id": "r"
-										}
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											54,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
+										},
+										{
+											"node": "ExprCall",
 											"position": [
 												54,
 												13
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
+											"expr": {
+												"node": "AtomId",
 												"position": [
 													54,
-													15
+													13
 												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
 													"position": [
 														54,
 														15
 													],
-													"id": "c"
-												}
-											},
-											{
-												"node": "CallArg",
-												"position": [
-													54,
-													18
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															54,
+															15
+														],
+														"id": "c"
+													}
+												},
+												{
+													"node": "CallArg",
 													"position": [
 														54,
 														18
 													],
-													"id": "r"
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															54,
+															18
+														],
+														"id": "r"
+													}
 												}
-											}
-										]
-									}
+											]
+										}
+									]
 								}
 							]
 						}
@@ -2142,7 +2142,7 @@
 							57,
 							40
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -2158,16 +2158,16 @@
 									40
 								],
 								"name": "Char"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									57,
+									46
+								],
+								"name": "Char"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								57,
-								46
-							],
-							"name": "Char"
-						}
+						]
 					},
 					"default": null
 				}
@@ -2210,7 +2210,7 @@
 							59,
 							5
 						],
-						"lvalues": [
+						"exprs": [
 							{
 								"node": "AtomId",
 								"position": [
@@ -2218,16 +2218,16 @@
 									5
 								],
 								"id": "b"
+							},
+							{
+								"node": "AtomBool",
+								"position": [
+									59,
+									9
+								],
+								"value": true
 							}
-						],
-						"expr": {
-							"node": "AtomBool",
-							"position": [
-								59,
-								9
-							],
-							"bool": true
-						}
+						]
 					},
 					{
 						"node": "StmtFor",
@@ -2293,7 +2293,7 @@
 														62,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -2301,16 +2301,16 @@
 																13
 															],
 															"id": "r"
+														},
+														{
+															"node": "AtomId",
+															"position": [
+																62,
+																17
+															],
+															"id": "c"
 														}
-													],
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															62,
-															17
-														],
-														"id": "c"
-													}
+													]
 												},
 												{
 													"node": "StmtAssg",
@@ -2318,7 +2318,7 @@
 														63,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -2326,16 +2326,16 @@
 																13
 															],
 															"id": "b"
+														},
+														{
+															"node": "AtomBool",
+															"position": [
+																63,
+																17
+															],
+															"value": false
 														}
-													],
-													"expr": {
-														"node": "AtomBool",
-														"position": [
-															63,
-															17
-														],
-														"bool": false
-													}
+													]
 												}
 											]
 										},
@@ -2352,7 +2352,7 @@
 														65,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -2360,57 +2360,57 @@
 																13
 															],
 															"id": "r"
-														}
-													],
-													"expr": {
-														"node": "ExprCall",
-														"position": [
-															65,
-															17
-														],
-														"expr": {
-															"node": "AtomId",
+														},
+														{
+															"node": "ExprCall",
 															"position": [
 																65,
 																17
 															],
-															"id": "f"
-														},
-														"args": [
-															{
-																"node": "CallArg",
+															"expr": {
+																"node": "AtomId",
 																"position": [
 																	65,
-																	19
+																	17
 																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																"id": "f"
+															},
+															"args": [
+																{
+																	"node": "CallArg",
 																	"position": [
 																		65,
 																		19
 																	],
-																	"id": "c"
-																}
-															},
-															{
-																"node": "CallArg",
-																"position": [
-																	65,
-																	22
-																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			65,
+																			19
+																		],
+																		"id": "c"
+																	}
+																},
+																{
+																	"node": "CallArg",
 																	"position": [
 																		65,
 																		22
 																	],
-																	"id": "r"
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			65,
+																			22
+																		],
+																		"id": "r"
+																	}
 																}
-															}
-														]
-													}
+															]
+														}
+													]
 												}
 											]
 										}
@@ -2456,19 +2456,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeCollection",
 						"position": [
 							69,
 							22
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								69,
-								23
-							],
-							"name": "A"
-						}
+						"kind": "array",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									69,
+									23
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -2485,7 +2488,7 @@
 							69,
 							30
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -2493,16 +2496,16 @@
 									30
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									69,
+									33
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								69,
-								33
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": {
 						"node": "AtomPlaceholder",
@@ -2631,7 +2634,7 @@
 															72,
 															20
 														],
-														"bool": false
+														"value": false
 													}
 												}
 											]
@@ -2653,7 +2656,7 @@
 								73,
 								12
 							],
-							"bool": true
+							"value": true
 						}
 					}
 				]
@@ -2678,19 +2681,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeCollection",
 						"position": [
 							75,
 							22
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								75,
-								23
-							],
-							"name": "A"
-						}
+						"kind": "array",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									75,
+									23
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -2707,7 +2713,7 @@
 							75,
 							30
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -2715,16 +2721,16 @@
 									30
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									75,
+									33
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								75,
-								33
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": {
 						"node": "AtomPlaceholder",
@@ -2845,7 +2851,7 @@
 															78,
 															20
 														],
-														"bool": true
+														"value": true
 													}
 												}
 											]
@@ -2867,7 +2873,7 @@
 								79,
 								12
 							],
-							"bool": false
+							"value": false
 						}
 					}
 				]
@@ -2892,19 +2898,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeCollection",
 						"position": [
 							81,
 							25
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								81,
-								26
-							],
-							"name": "A"
-						}
+						"kind": "array",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									81,
+									26
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -2921,7 +2930,7 @@
 							81,
 							33
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -2929,34 +2938,37 @@
 									33
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									81,
+									36
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								81,
-								36
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
 			],
 			"ret": {
-				"node": "TypeArray",
+				"node": "TypeCollection",
 				"position": [
 					81,
 					43
 				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						81,
-						44
-					],
-					"name": "A"
-				}
+				"kind": "array",
+				"subtypes": [
+					{
+						"node": "TypeName",
+						"position": [
+							81,
+							44
+						],
+						"name": "A"
+					}
+				]
 			},
 			"block": {
 				"node": "Block",
@@ -3082,19 +3094,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeCollection",
 						"position": [
 							84,
 							24
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								84,
-								25
-							],
-							"name": "A"
-						}
+						"kind": "array",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									84,
+									25
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -3111,7 +3126,7 @@
 							84,
 							32
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -3119,34 +3134,37 @@
 									32
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									84,
+									35
+								],
+								"name": "B"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								84,
-								35
-							],
-							"name": "B"
-						}
+						]
 					},
 					"default": null
 				}
 			],
 			"ret": {
-				"node": "TypeArray",
+				"node": "TypeCollection",
 				"position": [
 					84,
 					39
 				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						84,
-						40
-					],
-					"name": "B"
-				}
+				"kind": "array",
+				"subtypes": [
+					{
+						"node": "TypeName",
+						"position": [
+							84,
+							40
+						],
+						"name": "B"
+					}
+				]
 			},
 			"block": {
 				"node": "Block",
@@ -3257,19 +3275,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeCollection",
 						"position": [
 							87,
 							25
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								87,
-								26
-							],
-							"name": "A"
-						}
+						"kind": "array",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									87,
+									26
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -3286,7 +3307,7 @@
 							87,
 							36
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -3302,16 +3323,16 @@
 									36
 								],
 								"name": "B"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									87,
+									39
+								],
+								"name": "B"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								87,
-								39
-							],
-							"name": "B"
-						}
+						]
 					},
 					"default": null
 				},
@@ -3388,7 +3409,7 @@
 										89,
 										9
 									],
-									"lvalues": [
+									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
@@ -3396,57 +3417,57 @@
 												9
 											],
 											"id": "r"
-										}
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											89,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
+										},
+										{
+											"node": "ExprCall",
 											"position": [
 												89,
 												13
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
+											"expr": {
+												"node": "AtomId",
 												"position": [
 													89,
-													15
+													13
 												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
 													"position": [
 														89,
 														15
 													],
-													"id": "x"
-												}
-											},
-											{
-												"node": "CallArg",
-												"position": [
-													89,
-													18
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															89,
+															15
+														],
+														"id": "x"
+													}
+												},
+												{
+													"node": "CallArg",
 													"position": [
 														89,
 														18
 													],
-													"id": "r"
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															89,
+															18
+														],
+														"id": "r"
+													}
 												}
-											}
-										]
-									}
+											]
+										}
+									]
 								}
 							]
 						}
@@ -3488,19 +3509,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeArray",
+						"node": "TypeCollection",
 						"position": [
 							92,
 							25
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								92,
-								26
-							],
-							"name": "A"
-						}
+						"kind": "array",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									92,
+									26
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -3517,7 +3541,7 @@
 							92,
 							36
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -3533,16 +3557,16 @@
 									36
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									92,
+									39
+								],
+								"name": "A"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								92,
-								39
-							],
-							"name": "A"
-						}
+						]
 					},
 					"default": null
 				}
@@ -3585,7 +3609,7 @@
 							94,
 							5
 						],
-						"lvalues": [
+						"exprs": [
 							{
 								"node": "AtomId",
 								"position": [
@@ -3593,16 +3617,16 @@
 									5
 								],
 								"id": "b"
+							},
+							{
+								"node": "AtomBool",
+								"position": [
+									94,
+									9
+								],
+								"value": true
 							}
-						],
-						"expr": {
-							"node": "AtomBool",
-							"position": [
-								94,
-								9
-							],
-							"bool": true
-						}
+						]
 					},
 					{
 						"node": "StmtFor",
@@ -3668,7 +3692,7 @@
 														97,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -3676,16 +3700,16 @@
 																13
 															],
 															"id": "r"
+														},
+														{
+															"node": "AtomId",
+															"position": [
+																97,
+																17
+															],
+															"id": "x"
 														}
-													],
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															97,
-															17
-														],
-														"id": "x"
-													}
+													]
 												},
 												{
 													"node": "StmtAssg",
@@ -3693,7 +3717,7 @@
 														98,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -3701,16 +3725,16 @@
 																13
 															],
 															"id": "b"
+														},
+														{
+															"node": "AtomBool",
+															"position": [
+																98,
+																17
+															],
+															"value": false
 														}
-													],
-													"expr": {
-														"node": "AtomBool",
-														"position": [
-															98,
-															17
-														],
-														"bool": false
-													}
+													]
 												}
 											]
 										},
@@ -3727,7 +3751,7 @@
 														100,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -3735,57 +3759,57 @@
 																13
 															],
 															"id": "r"
-														}
-													],
-													"expr": {
-														"node": "ExprCall",
-														"position": [
-															100,
-															17
-														],
-														"expr": {
-															"node": "AtomId",
+														},
+														{
+															"node": "ExprCall",
 															"position": [
 																100,
 																17
 															],
-															"id": "f"
-														},
-														"args": [
-															{
-																"node": "CallArg",
+															"expr": {
+																"node": "AtomId",
 																"position": [
 																	100,
-																	19
+																	17
 																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																"id": "f"
+															},
+															"args": [
+																{
+																	"node": "CallArg",
 																	"position": [
 																		100,
 																		19
 																	],
-																	"id": "x"
-																}
-															},
-															{
-																"node": "CallArg",
-																"position": [
-																	100,
-																	22
-																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			100,
+																			19
+																		],
+																		"id": "x"
+																	}
+																},
+																{
+																	"node": "CallArg",
 																	"position": [
 																		100,
 																		22
 																	],
-																	"id": "r"
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			100,
+																			22
+																		],
+																		"id": "r"
+																	}
 																}
-															}
-														]
-													}
+															]
+														}
+													]
 												}
 											]
 										}
@@ -3831,19 +3855,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeSet",
+						"node": "TypeCollection",
 						"position": [
 							104,
 							20
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								104,
-								21
-							],
-							"name": "A"
-						}
+						"kind": "set",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									104,
+									21
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -3860,7 +3887,7 @@
 							104,
 							28
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -3868,16 +3895,16 @@
 									28
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									104,
+									31
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								104,
-								31
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": {
 						"node": "AtomPlaceholder",
@@ -4006,7 +4033,7 @@
 															107,
 															20
 														],
-														"bool": false
+														"value": false
 													}
 												}
 											]
@@ -4028,7 +4055,7 @@
 								108,
 								12
 							],
-							"bool": true
+							"value": true
 						}
 					}
 				]
@@ -4053,19 +4080,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeSet",
+						"node": "TypeCollection",
 						"position": [
 							110,
 							20
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								110,
-								21
-							],
-							"name": "A"
-						}
+						"kind": "set",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									110,
+									21
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -4082,7 +4112,7 @@
 							110,
 							28
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -4090,16 +4120,16 @@
 									28
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									110,
+									31
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								110,
-								31
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": {
 						"node": "AtomPlaceholder",
@@ -4220,7 +4250,7 @@
 															113,
 															20
 														],
-														"bool": true
+														"value": true
 													}
 												}
 											]
@@ -4242,7 +4272,7 @@
 								114,
 								12
 							],
-							"bool": false
+							"value": false
 						}
 					}
 				]
@@ -4267,19 +4297,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeSet",
+						"node": "TypeCollection",
 						"position": [
 							116,
 							23
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								116,
-								24
-							],
-							"name": "A"
-						}
+						"kind": "set",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									116,
+									24
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -4296,7 +4329,7 @@
 							116,
 							31
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -4304,34 +4337,37 @@
 									31
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									116,
+									34
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								116,
-								34
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
 			],
 			"ret": {
-				"node": "TypeSet",
+				"node": "TypeCollection",
 				"position": [
 					116,
 					41
 				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						116,
-						42
-					],
-					"name": "A"
-				}
+				"kind": "set",
+				"subtypes": [
+					{
+						"node": "TypeName",
+						"position": [
+							116,
+							42
+						],
+						"name": "A"
+					}
+				]
 			},
 			"block": {
 				"node": "Block",
@@ -4457,19 +4493,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeSet",
+						"node": "TypeCollection",
 						"position": [
 							119,
 							22
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								119,
-								23
-							],
-							"name": "A"
-						}
+						"kind": "set",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									119,
+									23
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -4486,7 +4525,7 @@
 							119,
 							30
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -4494,34 +4533,37 @@
 									30
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									119,
+									33
+								],
+								"name": "B"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								119,
-								33
-							],
-							"name": "B"
-						}
+						]
 					},
 					"default": null
 				}
 			],
 			"ret": {
-				"node": "TypeSet",
+				"node": "TypeCollection",
 				"position": [
 					119,
 					37
 				],
-				"subtype": {
-					"node": "TypeName",
-					"position": [
-						119,
-						38
-					],
-					"name": "B"
-				}
+				"kind": "set",
+				"subtypes": [
+					{
+						"node": "TypeName",
+						"position": [
+							119,
+							38
+						],
+						"name": "B"
+					}
+				]
 			},
 			"block": {
 				"node": "Block",
@@ -4632,19 +4674,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeSet",
+						"node": "TypeCollection",
 						"position": [
 							122,
 							23
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								122,
-								24
-							],
-							"name": "A"
-						}
+						"kind": "set",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									122,
+									24
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -4661,7 +4706,7 @@
 							122,
 							34
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -4677,16 +4722,16 @@
 									34
 								],
 								"name": "B"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									122,
+									37
+								],
+								"name": "B"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								122,
-								37
-							],
-							"name": "B"
-						}
+						]
 					},
 					"default": null
 				},
@@ -4763,7 +4808,7 @@
 										124,
 										9
 									],
-									"lvalues": [
+									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
@@ -4771,57 +4816,57 @@
 												9
 											],
 											"id": "r"
-										}
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											124,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
+										},
+										{
+											"node": "ExprCall",
 											"position": [
 												124,
 												13
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
+											"expr": {
+												"node": "AtomId",
 												"position": [
 													124,
-													15
+													13
 												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
 													"position": [
 														124,
 														15
 													],
-													"id": "x"
-												}
-											},
-											{
-												"node": "CallArg",
-												"position": [
-													124,
-													18
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															124,
+															15
+														],
+														"id": "x"
+													}
+												},
+												{
+													"node": "CallArg",
 													"position": [
 														124,
 														18
 													],
-													"id": "r"
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															124,
+															18
+														],
+														"id": "r"
+													}
 												}
-											}
-										]
-									}
+											]
+										}
+									]
 								}
 							]
 						}
@@ -4863,19 +4908,22 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeSet",
+						"node": "TypeCollection",
 						"position": [
 							127,
 							23
 						],
-						"subtype": {
-							"node": "TypeName",
-							"position": [
-								127,
-								24
-							],
-							"name": "A"
-						}
+						"kind": "set",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									127,
+									24
+								],
+								"name": "A"
+							}
+						]
 					},
 					"default": null
 				},
@@ -4892,7 +4940,7 @@
 							127,
 							34
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeName",
 								"position": [
@@ -4908,16 +4956,16 @@
 									34
 								],
 								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									127,
+									37
+								],
+								"name": "A"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								127,
-								37
-							],
-							"name": "A"
-						}
+						]
 					},
 					"default": null
 				}
@@ -4960,7 +5008,7 @@
 							129,
 							5
 						],
-						"lvalues": [
+						"exprs": [
 							{
 								"node": "AtomId",
 								"position": [
@@ -4968,16 +5016,16 @@
 									5
 								],
 								"id": "b"
+							},
+							{
+								"node": "AtomBool",
+								"position": [
+									129,
+									9
+								],
+								"value": true
 							}
-						],
-						"expr": {
-							"node": "AtomBool",
-							"position": [
-								129,
-								9
-							],
-							"bool": true
-						}
+						]
 					},
 					{
 						"node": "StmtFor",
@@ -5043,7 +5091,7 @@
 														132,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -5051,16 +5099,16 @@
 																13
 															],
 															"id": "r"
+														},
+														{
+															"node": "AtomId",
+															"position": [
+																132,
+																17
+															],
+															"id": "x"
 														}
-													],
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															132,
-															17
-														],
-														"id": "x"
-													}
+													]
 												},
 												{
 													"node": "StmtAssg",
@@ -5068,7 +5116,7 @@
 														133,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -5076,16 +5124,16 @@
 																13
 															],
 															"id": "b"
+														},
+														{
+															"node": "AtomBool",
+															"position": [
+																133,
+																17
+															],
+															"value": false
 														}
-													],
-													"expr": {
-														"node": "AtomBool",
-														"position": [
-															133,
-															17
-														],
-														"bool": false
-													}
+													]
 												}
 											]
 										},
@@ -5102,7 +5150,7 @@
 														135,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -5110,57 +5158,57 @@
 																13
 															],
 															"id": "r"
-														}
-													],
-													"expr": {
-														"node": "ExprCall",
-														"position": [
-															135,
-															17
-														],
-														"expr": {
-															"node": "AtomId",
+														},
+														{
+															"node": "ExprCall",
 															"position": [
 																135,
 																17
 															],
-															"id": "f"
-														},
-														"args": [
-															{
-																"node": "CallArg",
+															"expr": {
+																"node": "AtomId",
 																"position": [
 																	135,
-																	19
+																	17
 																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																"id": "f"
+															},
+															"args": [
+																{
+																	"node": "CallArg",
 																	"position": [
 																		135,
 																		19
 																	],
-																	"id": "x"
-																}
-															},
-															{
-																"node": "CallArg",
-																"position": [
-																	135,
-																	22
-																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			135,
+																			19
+																		],
+																		"id": "x"
+																	}
+																},
+																{
+																	"node": "CallArg",
 																	"position": [
 																		135,
 																		22
 																	],
-																	"id": "r"
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			135,
+																			22
+																		],
+																		"id": "r"
+																	}
 																}
-															}
-														]
-													}
+															]
+														}
+													]
 												}
 											]
 										}
@@ -5207,27 +5255,30 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeCollection",
 						"position": [
 							139,
 							23
 						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								139,
-								24
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								139,
-								26
-							],
-							"name": "B"
-						}
+						"kind": "dict",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									139,
+									24
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									139,
+									26
+								],
+								"name": "B"
+							}
+						]
 					},
 					"default": null
 				},
@@ -5244,14 +5295,14 @@
 							139,
 							33
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									139,
 									33
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -5269,16 +5320,16 @@
 										"name": "B"
 									}
 								]
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									139,
+									38
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								139,
-								38
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
@@ -5401,7 +5452,7 @@
 															142,
 															20
 														],
-														"bool": false
+														"value": false
 													}
 												}
 											]
@@ -5423,7 +5474,7 @@
 								143,
 								12
 							],
-							"bool": true
+							"value": true
 						}
 					}
 				]
@@ -5449,27 +5500,30 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeCollection",
 						"position": [
 							145,
 							23
 						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								145,
-								24
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								145,
-								26
-							],
-							"name": "B"
-						}
+						"kind": "dict",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									145,
+									24
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									145,
+									26
+								],
+								"name": "B"
+							}
+						]
 					},
 					"default": null
 				},
@@ -5486,14 +5540,14 @@
 							145,
 							33
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									145,
 									33
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -5511,16 +5565,16 @@
 										"name": "B"
 									}
 								]
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									145,
+									38
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								145,
-								38
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
@@ -5635,7 +5689,7 @@
 															148,
 															20
 														],
-														"bool": true
+														"value": true
 													}
 												}
 											]
@@ -5657,7 +5711,7 @@
 								149,
 								12
 							],
-							"bool": false
+							"value": false
 						}
 					}
 				]
@@ -5683,27 +5737,30 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeCollection",
 						"position": [
 							151,
 							26
 						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								151,
-								27
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								151,
-								29
-							],
-							"name": "B"
-						}
+						"kind": "dict",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									151,
+									27
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									151,
+									29
+								],
+								"name": "B"
+							}
+						]
 					},
 					"default": null
 				},
@@ -5720,14 +5777,14 @@
 							151,
 							36
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									151,
 									36
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -5745,42 +5802,45 @@
 										"name": "B"
 									}
 								]
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									151,
+									41
+								],
+								"name": "Bool"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								151,
-								41
-							],
-							"name": "Bool"
-						}
+						]
 					},
 					"default": null
 				}
 			],
 			"ret": {
-				"node": "TypeDict",
+				"node": "TypeCollection",
 				"position": [
 					151,
 					48
 				],
-				"key_type": {
-					"node": "TypeName",
-					"position": [
-						151,
-						49
-					],
-					"name": "A"
-				},
-				"value_type": {
-					"node": "TypeName",
-					"position": [
-						151,
-						51
-					],
-					"name": "B"
-				}
+				"kind": "dict",
+				"subtypes": [
+					{
+						"node": "TypeName",
+						"position": [
+							151,
+							49
+						],
+						"name": "A"
+					},
+					{
+						"node": "TypeName",
+						"position": [
+							151,
+							51
+						],
+						"name": "B"
+					}
+				]
 			},
 			"block": {
 				"node": "Block",
@@ -5932,27 +5992,30 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeCollection",
 						"position": [
 							154,
 							27
 						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								154,
-								28
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								154,
-								30
-							],
-							"name": "B"
-						}
+						"kind": "dict",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									154,
+									28
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									154,
+									30
+								],
+								"name": "B"
+							}
+						]
 					},
 					"default": null
 				},
@@ -5969,14 +6032,14 @@
 							154,
 							37
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									154,
 									37
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -5994,59 +6057,62 @@
 										"name": "B"
 									}
 								]
+							},
+							{
+								"node": "TypeTuple",
+								"position": [
+									154,
+									42
+								],
+								"types": [
+									{
+										"node": "TypeName",
+										"position": [
+											154,
+											42
+										],
+										"name": "C"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											154,
+											44
+										],
+										"name": "D"
+									}
+								]
 							}
-						],
-						"ret": {
-							"node": "TypeTuple",
-							"position": [
-								154,
-								42
-							],
-							"elements": [
-								{
-									"node": "TypeName",
-									"position": [
-										154,
-										42
-									],
-									"name": "C"
-								},
-								{
-									"node": "TypeName",
-									"position": [
-										154,
-										44
-									],
-									"name": "D"
-								}
-							]
-						}
+						]
 					},
 					"default": null
 				}
 			],
 			"ret": {
-				"node": "TypeDict",
+				"node": "TypeCollection",
 				"position": [
 					154,
 					48
 				],
-				"key_type": {
-					"node": "TypeName",
-					"position": [
-						154,
-						49
-					],
-					"name": "C"
-				},
-				"value_type": {
-					"node": "TypeName",
-					"position": [
-						154,
-						51
-					],
-					"name": "D"
-				}
+				"kind": "dict",
+				"subtypes": [
+					{
+						"node": "TypeName",
+						"position": [
+							154,
+							49
+						],
+						"name": "C"
+					},
+					{
+						"node": "TypeName",
+						"position": [
+							154,
+							51
+						],
+						"name": "D"
+					}
+				]
 			},
 			"block": {
 				"node": "Block",
@@ -6063,27 +6129,30 @@
 						],
 						"id": "r",
 						"type": {
-							"node": "TypeDict",
+							"node": "TypeCollection",
 							"position": [
 								155,
 								8
 							],
-							"key_type": {
-								"node": "TypeName",
-								"position": [
-									155,
-									9
-								],
-								"name": "C"
-							},
-							"value_type": {
-								"node": "TypeName",
-								"position": [
-									155,
-									11
-								],
-								"name": "D"
-							}
+							"kind": "dict",
+							"subtypes": [
+								{
+									"node": "TypeName",
+									"position": [
+										155,
+										9
+									],
+									"name": "C"
+								},
+								{
+									"node": "TypeName",
+									"position": [
+										155,
+										11
+									],
+									"name": "D"
+								}
+							]
 						},
 						"expr": null
 					},
@@ -6127,7 +6196,7 @@
 										157,
 										9
 									],
-									"lvalues": [
+									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
@@ -6135,41 +6204,41 @@
 												9
 											],
 											"id": "y"
-										}
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											157,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
+										},
+										{
+											"node": "ExprCall",
 											"position": [
 												157,
 												13
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
+											"expr": {
+												"node": "AtomId",
 												"position": [
 													157,
-													15
+													13
 												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
 													"position": [
 														157,
 														15
 													],
-													"id": "x"
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															157,
+															15
+														],
+														"id": "x"
+													}
 												}
-											}
-										]
-									}
+											]
+										}
+									]
 								},
 								{
 									"node": "StmtAssg",
@@ -6177,7 +6246,7 @@
 										158,
 										9
 									],
-									"lvalues": [
+									"exprs": [
 										{
 											"node": "ExprIndex",
 											"position": [
@@ -6210,24 +6279,24 @@
 													"attr": "a"
 												}
 											]
-										}
-									],
-									"expr": {
-										"node": "ExprAttr",
-										"position": [
-											158,
-											18
-										],
-										"expr": {
-											"node": "AtomId",
+										},
+										{
+											"node": "ExprAttr",
 											"position": [
 												158,
 												18
 											],
-											"id": "y"
-										},
-										"attr": "b"
-									}
+											"expr": {
+												"node": "AtomId",
+												"position": [
+													158,
+													18
+												],
+												"id": "y"
+											},
+											"attr": "b"
+										}
+									]
 								}
 							]
 						}
@@ -6271,27 +6340,30 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeCollection",
 						"position": [
 							161,
 							26
 						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								161,
-								27
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								161,
-								29
-							],
-							"name": "B"
-						}
+						"kind": "dict",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									161,
+									27
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									161,
+									29
+								],
+								"name": "B"
+							}
+						]
 					},
 					"default": null
 				},
@@ -6308,14 +6380,14 @@
 							161,
 							41
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									161,
 									36
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -6341,16 +6413,16 @@
 									41
 								],
 								"name": "C"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									161,
+									44
+								],
+								"name": "C"
 							}
-						],
-						"ret": {
-							"node": "TypeName",
-							"position": [
-								161,
-								44
-							],
-							"name": "C"
-						}
+						]
 					},
 					"default": null
 				},
@@ -6427,7 +6499,7 @@
 										163,
 										9
 									],
-									"lvalues": [
+									"exprs": [
 										{
 											"node": "AtomId",
 											"position": [
@@ -6435,57 +6507,57 @@
 												9
 											],
 											"id": "r"
-										}
-									],
-									"expr": {
-										"node": "ExprCall",
-										"position": [
-											163,
-											13
-										],
-										"expr": {
-											"node": "AtomId",
+										},
+										{
+											"node": "ExprCall",
 											"position": [
 												163,
 												13
 											],
-											"id": "f"
-										},
-										"args": [
-											{
-												"node": "CallArg",
+											"expr": {
+												"node": "AtomId",
 												"position": [
 													163,
-													15
+													13
 												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+												"id": "f"
+											},
+											"args": [
+												{
+													"node": "CallArg",
 													"position": [
 														163,
 														15
 													],
-													"id": "x"
-												}
-											},
-											{
-												"node": "CallArg",
-												"position": [
-													163,
-													18
-												],
-												"name": null,
-												"expr": {
-													"node": "AtomId",
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															163,
+															15
+														],
+														"id": "x"
+													}
+												},
+												{
+													"node": "CallArg",
 													"position": [
 														163,
 														18
 													],
-													"id": "r"
+													"name": null,
+													"expr": {
+														"node": "AtomId",
+														"position": [
+															163,
+															18
+														],
+														"id": "r"
+													}
 												}
-											}
-										]
-									}
+											]
+										}
+									]
 								}
 							]
 						}
@@ -6528,27 +6600,30 @@
 					],
 					"name": "a",
 					"type": {
-						"node": "TypeDict",
+						"node": "TypeCollection",
 						"position": [
 							166,
 							26
 						],
-						"key_type": {
-							"node": "TypeName",
-							"position": [
-								166,
-								27
-							],
-							"name": "A"
-						},
-						"value_type": {
-							"node": "TypeName",
-							"position": [
-								166,
-								29
-							],
-							"name": "B"
-						}
+						"kind": "dict",
+						"subtypes": [
+							{
+								"node": "TypeName",
+								"position": [
+									166,
+									27
+								],
+								"name": "A"
+							},
+							{
+								"node": "TypeName",
+								"position": [
+									166,
+									29
+								],
+								"name": "B"
+							}
+						]
 					},
 					"default": null
 				},
@@ -6565,14 +6640,14 @@
 							166,
 							41
 						],
-						"args": [
+						"types": [
 							{
 								"node": "TypeTuple",
 								"position": [
 									166,
 									36
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -6597,7 +6672,7 @@
 									166,
 									41
 								],
-								"elements": [
+								"types": [
 									{
 										"node": "TypeName",
 										"position": [
@@ -6615,33 +6690,33 @@
 										"name": "B"
 									}
 								]
+							},
+							{
+								"node": "TypeTuple",
+								"position": [
+									166,
+									46
+								],
+								"types": [
+									{
+										"node": "TypeName",
+										"position": [
+											166,
+											46
+										],
+										"name": "A"
+									},
+									{
+										"node": "TypeName",
+										"position": [
+											166,
+											48
+										],
+										"name": "B"
+									}
+								]
 							}
-						],
-						"ret": {
-							"node": "TypeTuple",
-							"position": [
-								166,
-								46
-							],
-							"elements": [
-								{
-									"node": "TypeName",
-									"position": [
-										166,
-										46
-									],
-									"name": "A"
-								},
-								{
-									"node": "TypeName",
-									"position": [
-										166,
-										48
-									],
-									"name": "B"
-								}
-							]
-						}
+						]
 					},
 					"default": null
 				}
@@ -6652,7 +6727,7 @@
 					166,
 					52
 				],
-				"elements": [
+				"types": [
 					{
 						"node": "TypeName",
 						"position": [
@@ -6691,7 +6766,7 @@
 								167,
 								8
 							],
-							"elements": [
+							"types": [
 								{
 									"node": "TypeName",
 									"position": [
@@ -6718,7 +6793,7 @@
 							168,
 							5
 						],
-						"lvalues": [
+						"exprs": [
 							{
 								"node": "AtomId",
 								"position": [
@@ -6726,16 +6801,16 @@
 									5
 								],
 								"id": "b"
+							},
+							{
+								"node": "AtomBool",
+								"position": [
+									168,
+									9
+								],
+								"value": true
 							}
-						],
-						"expr": {
-							"node": "AtomBool",
-							"position": [
-								168,
-								9
-							],
-							"bool": true
-						}
+						]
 					},
 					{
 						"node": "StmtFor",
@@ -6801,7 +6876,7 @@
 														171,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -6809,16 +6884,16 @@
 																13
 															],
 															"id": "r"
+														},
+														{
+															"node": "AtomId",
+															"position": [
+																171,
+																17
+															],
+															"id": "x"
 														}
-													],
-													"expr": {
-														"node": "AtomId",
-														"position": [
-															171,
-															17
-														],
-														"id": "x"
-													}
+													]
 												},
 												{
 													"node": "StmtAssg",
@@ -6826,7 +6901,7 @@
 														172,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -6834,16 +6909,16 @@
 																13
 															],
 															"id": "b"
+														},
+														{
+															"node": "AtomBool",
+															"position": [
+																172,
+																17
+															],
+															"value": false
 														}
-													],
-													"expr": {
-														"node": "AtomBool",
-														"position": [
-															172,
-															17
-														],
-														"bool": false
-													}
+													]
 												}
 											]
 										},
@@ -6860,7 +6935,7 @@
 														174,
 														13
 													],
-													"lvalues": [
+													"exprs": [
 														{
 															"node": "AtomId",
 															"position": [
@@ -6868,57 +6943,57 @@
 																13
 															],
 															"id": "r"
-														}
-													],
-													"expr": {
-														"node": "ExprCall",
-														"position": [
-															174,
-															17
-														],
-														"expr": {
-															"node": "AtomId",
+														},
+														{
+															"node": "ExprCall",
 															"position": [
 																174,
 																17
 															],
-															"id": "f"
-														},
-														"args": [
-															{
-																"node": "CallArg",
+															"expr": {
+																"node": "AtomId",
 																"position": [
 																	174,
-																	19
+																	17
 																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																"id": "f"
+															},
+															"args": [
+																{
+																	"node": "CallArg",
 																	"position": [
 																		174,
 																		19
 																	],
-																	"id": "x"
-																}
-															},
-															{
-																"node": "CallArg",
-																"position": [
-																	174,
-																	22
-																],
-																"name": null,
-																"expr": {
-																	"node": "AtomId",
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			174,
+																			19
+																		],
+																		"id": "x"
+																	}
+																},
+																{
+																	"node": "CallArg",
 																	"position": [
 																		174,
 																		22
 																	],
-																	"id": "r"
+																	"name": null,
+																	"expr": {
+																		"node": "AtomId",
+																		"position": [
+																			174,
+																			22
+																		],
+																		"id": "r"
+																	}
 																}
-															}
-														]
-													}
+															]
+														}
+													]
 												}
 											]
 										}
