@@ -4,7 +4,6 @@ import re
 from collections import defaultdict
 from contextlib import contextmanager
 from functools import partial
-from itertools import zip_longest
 
 from . import codegen as c
 from . import types as t
@@ -173,29 +172,29 @@ class PyxellTranspiler:
     def default(self, node, type):
         if type == t.Int:
             return v.Int(0)
-        elif type == t.Rat:
+        if type == t.Rat:
             return self.rat(0)
-        elif type == t.Float:
+        if type == t.Float:
             return v.Float(0)
-        elif type == t.Bool:
+        if type == t.Bool:
             return v.false
-        elif type == t.Char:
+        if type == t.Char:
             return v.Char('\0')
-        elif type == t.String:
+        if type == t.String:
             return self.string('')
-        elif type.isArray():
+        if type.isArray():
             return v.Array([], type.subtype)
-        elif type.isSet():
+        if type.isSet():
             return v.Set([], type.subtype)
-        elif type.isDict():
+        if type.isDict():
             return v.Dict([], [], type.key_type, type.value_type)
-        elif type.isNullable():
+        if type.isNullable():
             return v.Nullable(None, type.subtype)
-        elif type.isTuple():
+        if type.isTuple():
             return v.Tuple([self.default(node, t) for t in type.elements])
-        elif type.isFunc():
+        if type.isFunc():
             return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret) if type.ret != t.Void else c.Block())
-        elif type.isClass():
+        if type.isClass():
             return v.Literal('nullptr', type=type)
 
         self.throw(node, err.NotDefaultable(type))
@@ -217,7 +216,7 @@ class PyxellTranspiler:
                     index)
                 return v.Index(collection, index, type=collection.type.subtype)
 
-            elif collection.type.isDict():
+            if collection.type.isDict():
                 index = self.cast(exprs[1], index, collection.type.key_type)
                 type = collection.type.value_type
 
@@ -508,7 +507,7 @@ class PyxellTranspiler:
 
             return self.env[id]
 
-        elif expr['node'] == 'ExprAttr' and not expr.get('safe'):
+        if expr['node'] == 'ExprAttr' and not expr.get('safe'):
             obj = self.transpile(expr['expr'])
             attr = expr['attr']
             if obj.type.isTuple():
@@ -518,14 +517,13 @@ class PyxellTranspiler:
             else:
                 self.throw(node, err.NotLvalue())
 
-        elif expr['node'] == 'ExprIndex' and not expr.get('safe'):
+        if expr['node'] == 'ExprIndex' and not expr.get('safe'):
             return self.index(node, *map(self.transpile, expr['exprs']), lvalue=True)
 
-        elif expr['node'] == 'AtomPlaceholder':
+        if expr['node'] == 'AtomPlaceholder':
             return None
 
-        else:
-            self.throw(node, err.NotLvalue())
+        self.throw(node, err.NotLvalue())
 
     def store(self, left, right, decl=None):
         self.output(c.Statement(decl, left, '=', right))
@@ -582,6 +580,7 @@ class PyxellTranspiler:
         if op != '^' and left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat} and t.Rat in {left.type, right.type}:
             left = self.cast(node, left, t.Rat)
             right = self.cast(node, right, t.Rat)
+
         if left.type.isNumber() and right.type.isNumber() and t.Float in {left.type, right.type}:
             left = self.cast(node, left, t.Float)
             right = self.cast(node, right, t.Float)
@@ -589,101 +588,80 @@ class PyxellTranspiler:
         if op == '^':
             if left.type in {t.Int, t.Rat} and right.type == t.Int:
                 return v.Call('pow', v.Cast(left, t.Rat), right, type=t.Rat)
-            elif left.type.isNumber() and right.type == t.Rat:
-                return v.Call('pow', v.Cast(left, t.Float), v.Cast(right, t.Float), type=t.Float)
-            elif left.type == right.type == t.Float:
-                return v.Call('pow', left, right, type=t.Float)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '^^':
+            if left.type.isNumber() and right.type == t.Rat:
+                return v.Call('pow', v.Cast(left, t.Float), v.Cast(right, t.Float), type=t.Float)
+
+            if left.type == right.type == t.Float:
+                return v.Call('pow', left, right, type=t.Float)
+
+        if op == '^^':
             if left.type == right.type == t.Int:
                 return v.Call('pow', left, right, type=t.Int)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '/':
+        if op == '/':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.BinaryOp(v.Cast(left, t.Rat), op, v.Cast(right, t.Rat), type=t.Rat)
+
             elif left.type == right.type == t.Float:
                 return v.BinaryOp(left, op, right, type=t.Float)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '//':
+        if op == '//':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.Call('floordiv', left, right, type=left.type)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '%':
+        if op == '%':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.Call('mod', left, right, type=left.type)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '*':
+        if op == '*':
             if left.type == right.type and left.type.isNumber():
                 return v.BinaryOp(left, op, right, type=left.type)
 
-            elif left.type.isSequence() and right.type == t.Int:
+            if left.type.isSequence() and right.type == t.Int:
                 return v.Call('multiply', left, right, type=left.type)
 
-            elif left.type == t.Int and right.type.isSequence():
+            if left.type == t.Int and right.type.isSequence():
                 return self.binaryop(node, op, right, left)
 
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
-
-        elif op == '&':
+        if op == '&':
             if left.type.isSet() and right.type.isSet():
                 left, right = self.unify(node, left, right, error=err.NoBinaryOperator('&', left.type, right.type))
                 return v.Call('intersection', left, right, type=left.type)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        elif op == '+':
+        if op == '+':
             if left.type == right.type and left.type.isNumber():
                 return v.BinaryOp(left, op, right, type=left.type)
 
-            elif left.type != right.type and left.type in {t.Char, t.Int} and right.type in {t.Char, t.Int}:
+            if left.type != right.type and left.type in {t.Char, t.Int} and right.type in {t.Char, t.Int}:
                 return v.Cast(v.BinaryOp(left, op, right), t.Char)
 
-            elif left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
+            if left.type != right.type and left.type in {t.Char, t.String} and right.type in {t.Char, t.String}:
                 return v.Call('concat', v.Cast(left, t.String), v.Cast(right, t.String), type=t.String)
 
-            elif left.type.isCollection() and right.type.isCollection():
+            if left.type.isCollection() and right.type.isCollection():
                 left, right = self.unify(node, left, right, error=err.NoBinaryOperator('+', left.type, right.type))
                 return v.Call('concat', left, right, type=left.type)
 
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
-
-        elif op == '-':
+        if op == '-':
             if left.type == right.type and left.type.isNumber():
                 return v.BinaryOp(left, op, right, type=left.type)
 
-            elif left.type == right.type and left.type == t.Char:
+            if left.type == right.type and left.type == t.Char:
                 return v.BinaryOp(v.Cast(left, t.Int), op, v.Cast(right, t.Int), type=t.Int)
 
-            elif left.type == t.Char and right.type == t.Int:
+            if left.type == t.Char and right.type == t.Int:
                 return v.Cast(v.BinaryOp(left, op, right), t.Char)
 
-            elif left.type.isSet() and right.type.isSet():
+            if left.type.isSet() and right.type.isSet():
                 left, right = self.unify(node, left, right, error=err.NoBinaryOperator('-', left.type, right.type))
                 return v.Call('difference', left, right, type=left.type)
 
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
-
-        elif op == '%%':
+        if op == '%%':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0) if left.type == t.Int else self.rat(0), type=t.Bool)
-            else:
-                self.throw(node, err.NoBinaryOperator(op, *types))
 
-        else:
-            self.throw(node, err.NoBinaryOperator(op, *types))
+        self.throw(node, err.NoBinaryOperator(op, *types))
 
     def convert_string(self, node, string):
         string = re.sub('{{', '\\\\u007B', string)
@@ -1092,7 +1070,7 @@ class PyxellTranspiler:
                     cond = lambda: v.true  # infinite range
                 else:
                     end = self.freeze(values[1])
-                    eq = '=' if iterable['inclusive'] else ''
+                    eq = '=' if iterable.get('inclusive') else ''
                     neg = self.tmp(v.BinaryOp(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
                     cond = lambda: v.TernaryOp(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
 
@@ -1378,7 +1356,7 @@ class PyxellTranspiler:
     def transpileExprCollection(self, node):
         items = node['items']
         kind = node['kind']
-        types = [], []
+        type_lists = [], []
 
         with self.no_output():
             for item in items:
@@ -1388,7 +1366,7 @@ class PyxellTranspiler:
                             self.throw(node, err.InvalidSyntax())
                         item = item['exprs'][0]
                     values = lmap(self.transpile, item['exprs'])
-                    types[0].extend(value.type for value in values)
+                    type_lists[0].extend(value.type for value in values)
 
                 elif item['node'] == 'ExprSpread':
                     item = item['expr']
@@ -1397,12 +1375,12 @@ class PyxellTranspiler:
                     value = self.transpile(item)
                     if not value.type.isIterable():
                         self.throw(node, err.NotIterable(value.type))
-                    types[0].append(value.type.subtype)
+                    type_lists[0].append(value.type.subtype)
 
                 elif item['node'] == 'DictPair':
                     values = lmap(self.transpile, item['exprs'])
                     for i in range(2):
-                        types[i].append(values[i].type)
+                        type_lists[i].append(values[i].type)
 
                 elif item['node'] == 'DictSpread':
                     item = item['expr']
@@ -1411,48 +1389,39 @@ class PyxellTranspiler:
                     value = self.transpile(item)
                     if not value.type.isDict():
                         self.throw(node, err.NotDictionary(value.type))
-                    types[0].append(value.type.key_type)
-                    types[1].append(value.type.value_type)
+                    type_lists[0].append(value.type.key_type)
+                    type_lists[1].append(value.type.value_type)
 
                 else:
                     value = self.transpile(item)
-                    types[0].append(value.type)
+                    type_lists[0].append(value.type)
 
-        if kind in {'array', 'set'}:
-            type = t.Unknown
-            type.literal = True
-            if types[0]:
-                type = unify_types(*types[0])
-                if type is None:
+        types = [t.Unknown, t.Unknown]
+        for i in range(2):
+            types[i].literal = True
+            if type_lists[i]:
+                types[i] = unify_types(*type_lists[i])
+                if types[i] is None:
                     self.throw(node, err.UnknownType())
-                type.literal = all(t.literal for t in types[0])
-            if kind == 'array':
-                result = self.tmp(v.Array([], type))
-            elif kind == 'set':
-                if not type.isHashable():
-                    self.throw(node, err.NotHashable(type))
-                result = self.tmp(v.Set([], type))
-        elif kind == 'dict':
-            key_type = value_type = t.Unknown
-            key_type.literal = value_type.literal = True
-            if types[0]:
-                key_type = unify_types(*types[0])
-                value_type = unify_types(*types[1])
-                if key_type is None or value_type is None:
-                    self.throw(node, err.UnknownType())
-                key_type.literal = all(t.literal for t in types[0])
-                value_type.literal = all(t.literal for t in types[1])
-            if not key_type.isHashable():
-                self.throw(node, err.NotHashable(key_type))
-            result = self.tmp(v.Dict([], [], key_type, value_type))
+                types[i].literal = all(t.literal for t in type_lists[i])
 
+        if kind == 'array':
+            result = v.Array([], types[0])
+        else:
+            if not types[0].isHashable():
+                self.throw(node, err.NotHashable(types[0]))
+            if kind == 'set':
+                result = v.Set([], types[0])
+            elif kind == 'dict':
+                result = v.Dict([], [], *types)
+
+        result = self.tmp(result)
         result.type.literal = True
 
         for item in items:
             if item['node'] in {'ExprRange', 'ExprSpread', 'ExprBy'}:
                 if item['node'] == 'ExprSpread':
                     item = item['expr']
-
                 var = {
                     'node': 'AtomId',
                     'position': item['position'],
