@@ -1,1 +1,1 @@
-Variable of type `$T1->$T0` cannot be printed.
+Line 3, column 1: Variable of type `$T1->$T0` cannot be printed.

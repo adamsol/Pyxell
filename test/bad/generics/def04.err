@@ -1,1 +1,2 @@
-Identifier `N` does not represent a variable.
+Line 5, column 1: Error in function `f` called here (with types N=Int).
+Line 3, column 9: Identifier `N` does not represent a variable.

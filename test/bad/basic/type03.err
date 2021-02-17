@@ -1,1 +1,1 @@
-No binary operator `or` defined for `Bool` and `Int`.
+Line 4, column 6: No binary operator `or` defined for `Bool` and `Int`.

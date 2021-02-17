@@ -1,1 +1,1 @@
-Type `Int` is not iterable.
+Line 2, column 21: Type `Int` is not iterable.

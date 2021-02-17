@@ -1,1 +1,2 @@
-No implicit conversion from `Rat` to `Int`.
+Line 5, column 1: Error in function `f` called here (with types A=Int).
+Line 5, column 3: No implicit conversion from `Rat` to `Int`.

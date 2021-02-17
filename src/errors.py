@@ -56,14 +56,10 @@ class PyxellError(Exception):
     UnknownReturnType = lambda: f"Cannot settle return type of the function"
     UnknownType = lambda: f"Cannot settle type of the expression"
 
-    def __init__(self, msg, line, column=None):
+    def __init__(self, msg, line, column):
         self.line = line
         self.column = column
-        text = f"Line {line}"
-        if column:
-            text += f", column {column}"
-        text += f": {msg}."
-        super().__init__(text)
+        super().__init__(f"Line {line}, column {column}: {msg}.")
 
 
 class NotSupportedError(Exception):

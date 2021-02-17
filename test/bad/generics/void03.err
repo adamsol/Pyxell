@@ -1,1 +1,2 @@
-`Void?` is not a valid return type.
+Line 6, column 1: Error in function `f` called here.
+Line 2, column 19: `Void?` is not a valid return type.

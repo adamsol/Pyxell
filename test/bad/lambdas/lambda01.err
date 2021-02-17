@@ -1,1 +1,1 @@
-No implicit conversion from `Int` to `String`.
+Line 5, column 3: No implicit conversion from `Int` to `String`.

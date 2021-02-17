@@ -1,1 +1,1 @@
-No implicit conversion from `[[[B]]]*Int` to `[[[A]]]*Int`.
+Line 9, column 1: No implicit conversion from `[[[B]]]*Int` to `[[[A]]]*Int`.

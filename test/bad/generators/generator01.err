@@ -1,1 +1,1 @@
-No implicit conversion from `Int` to `Generator<Int>`.
+Line 3, column 5: No implicit conversion from `Int` to `Generator<Int>`.

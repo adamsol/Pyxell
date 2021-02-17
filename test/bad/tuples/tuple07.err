@@ -1,1 +1,1 @@
-Type `Int*Int` has no attribute `ab`.
+Line 2, column 1: Type `Int*Int` has no attribute `ab`.

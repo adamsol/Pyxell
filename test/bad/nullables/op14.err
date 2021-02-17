@@ -1,1 +1,1 @@
-No implicit conversion from `String` to `Char`.
+Line 3, column 4: No implicit conversion from `String` to `Char`.

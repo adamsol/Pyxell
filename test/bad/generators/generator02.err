@@ -1,1 +1,1 @@
-Cannot declare variable of type `Generator<String>`.
+Line 5, column 1: Cannot declare variable of type `Generator<String>`.

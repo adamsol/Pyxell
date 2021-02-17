@@ -97,11 +97,11 @@ def test(path, running_aggregate_tests=False):
         except PyxellError as e:
             error_message = str(e)
             if expected_error:
-                if error_message.strip().endswith(expected_error):
+                if error_message == expected_error:
                     output.append(f"{G}{error_message}{E}")
                     passed = True
                 else:
-                    output.append(f"{R}{error_message}\n---\n> {expected_error}{E}")
+                    output.append(f"{R}{error_message}\n---\n{expected_error}{E}")
             else:
                 output.append(f"{R}{error_message}{E}")
         except subprocess.CalledProcessError as e:
@@ -111,7 +111,7 @@ def test(path, running_aggregate_tests=False):
 
         if not error:
             if expected_error:
-                output.append(f"{R}Program compiled successfully, but error expected.\n---\n> {expected_error}{E}")
+                output.append(f"{R}Program compiled successfully, but error expected.\n---\n{expected_error}{E}")
 
             elif not args.separate and not running_aggregate_tests:
                 aggregate_cpp_code.extend([

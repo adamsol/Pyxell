@@ -1,1 +1,1 @@
-Type `[Int]` has no attribute `leng`.
+Line 3, column 7: Type `[Int]` has no attribute `leng`.

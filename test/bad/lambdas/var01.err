@@ -1,1 +1,1 @@
-No implicit conversion from `Rat` to `Int`.
+Line 2, column 15: No implicit conversion from `Rat` to `Int`.

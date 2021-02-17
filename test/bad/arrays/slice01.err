@@ -1,1 +1,1 @@
-No implicit conversion from `Char` to `Int`.
+Line 2, column 7: No implicit conversion from `Char` to `Int`.

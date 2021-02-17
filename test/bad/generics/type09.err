@@ -1,1 +1,1 @@
-No implicit conversion from `Int->Bool` to `A->B->C`.
+Line 8, column 7: No implicit conversion from `Int->Bool` to `A->B->C`.

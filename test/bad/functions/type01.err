@@ -1,1 +1,1 @@
-No implicit conversion from `String->Void` to `Int->Void`.
+Line 9, column 1: No implicit conversion from `String->Void` to `Int->Void`.

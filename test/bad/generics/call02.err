@@ -1,1 +1,2 @@
-No implicit conversion from `Char` to `Int`.
+Line 8, column 1: Error in function `g` called here (with types T=Char).
+Line 6, column 11: No implicit conversion from `Char` to `Int`.

@@ -1,1 +1,1 @@
-No binary operator `+` defined for `{Int:Char}` and `{Char:Int}`.
+Line 2, column 1: No binary operator `+` defined for `{Int:Char}` and `{Char:Int}`.

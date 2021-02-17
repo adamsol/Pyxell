@@ -1,1 +1,1 @@
-No implicit conversion from `{Int:String}` to `{Float:String}`.
+Line 3, column 1: No implicit conversion from `{Int:String}` to `{Float:String}`.

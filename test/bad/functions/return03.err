@@ -1,1 +1,1 @@
-No implicit conversion from `Char` to `Void`.
+Line 3, column 5: No implicit conversion from `Char` to `Void`.

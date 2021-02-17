@@ -1,1 +1,1 @@
-Cannot compare `[Int]` with `[Float]`.
+Line 4, column 12: Cannot compare `[Int]` with `[Float]`.

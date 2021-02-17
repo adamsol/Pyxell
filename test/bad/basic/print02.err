@@ -1,1 +1,1 @@
-Variable of type `String->Void` cannot be printed.
+Line 2, column 1: Variable of type `String->Void` cannot be printed.

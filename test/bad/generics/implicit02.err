@@ -1,1 +1,2 @@
-Cannot settle return type of the function.
+Line 6, column 1: Error in function `f` called here (with types $T1=Int).
+Line 2, column 14: Cannot settle return type of the function.

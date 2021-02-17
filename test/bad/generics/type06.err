@@ -1,1 +1,2 @@
-No implicit conversion from `Char` to `Rat`.
+Line 6, column 1: Error in function `f` called here (with types T=Char).
+Line 4, column 5: No implicit conversion from `Char` to `Rat`.

@@ -1,1 +1,1 @@
-No binary operator `+` defined for `Bool` and `Int`.
+Line 2, column 5: No binary operator `+` defined for `Bool` and `Int`.

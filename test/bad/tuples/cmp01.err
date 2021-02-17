@@ -1,1 +1,1 @@
-Cannot compare `Int*Int*Int` with `Int*Int`.
+Line 2, column 5: Cannot compare `Int*Int*Int` with `Int*Int`.

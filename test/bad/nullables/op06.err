@@ -1,1 +1,1 @@
-Type `Int*Char` has no attribute `c`.
+Line 3, column 1: Type `Int*Char` has no attribute `c`.

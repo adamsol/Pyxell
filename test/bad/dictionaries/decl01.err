@@ -1,1 +1,1 @@
-No implicit conversion from `{String:Int}` to `{Int:String}`.
+Line 3, column 1: No implicit conversion from `{String:Int}` to `{Int:String}`.

@@ -1,1 +1,2 @@
-No binary operator `+` defined for `Bool` and `Int`.
+Line 5, column 1: Error in function `inc` called here (with types $T1=Bool).
+Line 3, column 11: No binary operator `+` defined for `Bool` and `Int`.
