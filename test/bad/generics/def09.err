@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here.
-Line 3, column 5: Cannot declare variable of type `T`.
+:5:1: Error in function `f` called here.
+:3:5: Cannot declare variable of type `T`.

@@ -1,1 +1,1 @@
-Line 2, column 11: Cannot declare variable of type `[{Bool*Void}?]`.
+:2:11: Cannot declare variable of type `[{Bool*Void}?]`.

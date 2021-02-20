@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here.
-Line 22, column 12: Cannot compare `A` with `A`.
+:5:1: Error in function `f` called here.
+lib/std.px:22:12: Cannot compare `A` with `A`.

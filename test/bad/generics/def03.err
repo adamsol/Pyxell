@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here (with types T=Bool).
-Line 3, column 12: Identifier `T` does not represent a variable.
+:5:1: Error in function `f` called here (with types T=Bool).
+:3:12: Identifier `T` does not represent a variable.

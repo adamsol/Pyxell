@@ -1,1 +1,1 @@
-Line 2, column 1: No binary operator `<=` defined for `{Int:Int}` and `{Int:Int}`.
+:2:1: No binary operator `<=` defined for `{Int:Int}` and `{Int:Int}`.

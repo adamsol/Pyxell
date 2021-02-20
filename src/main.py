@@ -29,8 +29,8 @@ for name in ['std', 'math', 'random']:
 
 
 def build_ast(path):
-    code = transform_indented_code(path.read_text())
-    return parse_program(code)
+    code = transform_indented_code(path.read_text(), path)
+    return parse_program(code, path)
 
 
 def build_libs():
@@ -88,10 +88,10 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False, mode='executable')
     transpiler = PyxellTranspiler(cpp_compiler)
 
     for name, ast in units.items():
-        transpiler.run(ast, name)
+        transpiler.run(ast, name, f'lib/{name}.px')
 
     ast = build_ast(filepath)
-    code = transpiler.run_main(ast)
+    code = transpiler.run_main(ast, filepath)
 
     with open(cpp_filename, 'w') as file:
         file.write(f"/*\n"

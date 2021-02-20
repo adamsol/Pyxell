@@ -1,1 +1,1 @@
-Line 5, column 1: Variable of type `[(String->Void)*Int]` cannot be printed.
+:5:1: Variable of type `[(String->Void)*Int]` cannot be printed.

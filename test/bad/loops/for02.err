@@ -1,1 +1,1 @@
-Line 3, column 5: No implicit conversion from `Bool` to `Int`.
+:3:5: No implicit conversion from `Bool` to `Int`.

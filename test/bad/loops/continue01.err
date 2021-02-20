@@ -1,1 +1,1 @@
-Line 5, column 5: `continue` cannot be used here.
+:5:5: `continue` cannot be used here.

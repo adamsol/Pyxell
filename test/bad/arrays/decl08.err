@@ -1,1 +1,1 @@
-Line 3, column 22: No implicit conversion from `[Int]` to `[Rat]`.
+:3:22: No implicit conversion from `[Int]` to `[Rat]`.

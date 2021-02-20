@@ -95,7 +95,7 @@ def test(path, running_aggregate_tests=False):
                 skipped += 1
             output.append(f"{Y}{e}{E}")
         except PyxellError as e:
-            error_message = str(e)
+            error_message = str(e).replace(path, '')
             if expected_error:
                 if error_message == expected_error:
                     output.append(f"{G}{error_message}{E}")

@@ -1,1 +1,1 @@
-Line 2, column 21: Function may have only one variadic argument.
+:2:21: Function may have only one variadic argument.

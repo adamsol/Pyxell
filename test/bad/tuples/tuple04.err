@@ -1,1 +1,1 @@
-Line 3, column 1: No implicit conversion from `Bool*Int` to `Int*Bool`.
+:3:1: No implicit conversion from `Bool*Int` to `Int*Bool`.

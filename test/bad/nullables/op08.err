@@ -1,1 +1,1 @@
-Line 3, column 1: Type `Char` is not indexable.
+:3:1: Type `Char` is not indexable.

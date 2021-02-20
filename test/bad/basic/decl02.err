@@ -1,1 +1,1 @@
-Line 2, column 4: Identifier `T` does not represent a type.
+:2:4: Identifier `T` does not represent a type.

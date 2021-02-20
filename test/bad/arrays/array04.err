@@ -1,1 +1,1 @@
-Line 3, column 7: Type `[Int]` has no attribute `leng`.
+:3:7: Type `[Int]` has no attribute `leng`.

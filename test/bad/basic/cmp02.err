@@ -1,1 +1,1 @@
-Line 2, column 9: Cannot compare `Int` with `Bool`.
+:2:9: Cannot compare `Int` with `Bool`.

@@ -1,1 +1,1 @@
-Line 3, column 5: No implicit conversion from `<unknown>?` to `[Int]`.
+:3:5: No implicit conversion from `<unknown>?` to `[Int]`.

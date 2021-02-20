@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here (with types A=Int, B=String).
-Line 3, column 12: No binary operator `+` defined for `Int` and `String`.
+:5:1: Error in function `f` called here (with types A=Int, B=String).
+:3:12: No binary operator `+` defined for `Int` and `String`.

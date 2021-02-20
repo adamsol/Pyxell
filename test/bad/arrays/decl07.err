@@ -1,1 +1,1 @@
-Line 3, column 1: No implicit conversion from `[[[[Char]]]]` to `[[[[String]]]]`.
+:3:1: No implicit conversion from `[[[[Char]]]]` to `[[[[String]]]]`.

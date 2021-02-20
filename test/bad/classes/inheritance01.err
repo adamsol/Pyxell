@@ -1,1 +1,1 @@
-Line 2, column 1: Type `String` is not a class.
+:2:1: Type `String` is not a class.

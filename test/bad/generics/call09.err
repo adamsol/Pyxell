@@ -1,1 +1,1 @@
-Line 5, column 1: Cannot unify argument types for type variable `A`.
+:5:1: Cannot unify argument types for type variable `A`.

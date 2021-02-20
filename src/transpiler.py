@@ -16,8 +16,13 @@ from .utils import lmap
 
 class Unit:
 
-    def __init__(self):
+    def __init__(self, name, filepath):
+        self.name = name
+        self.filepath = filepath
         self.env = {'#loops': {}}
+
+    def __repr__(self):
+        return f"Unit('{self.name}', '{self.filepath}')"
 
 
 class PyxellTranspiler:
@@ -42,15 +47,15 @@ class PyxellTranspiler:
             self.main,
         )
 
-    def run(self, ast, unit):
-        self.units[unit] = Unit()
+    def run(self, ast, unit, filepath):
+        self.units[unit] = Unit(unit, filepath)
         with self.unit(unit):
             if unit != 'std':
                 self.env = self.units['std'].env.copy()
             self.transpile(ast)
 
-    def run_main(self, ast):
-        self.run(ast, 'main')
+    def run_main(self, ast, filepath):
+        self.run(ast, 'main', filepath)
         self.output(c.Statement('return 0'))
         if 'generators' in self.required_features and 'clang' not in self.cpp_compiler:
             raise NotSupportedError(f"Generators require C++ coroutines support; use Clang.")
@@ -68,8 +73,8 @@ class PyxellTranspiler:
         return result
 
     def throw(self, node, msg):
-        line, column = node.get('position', (1, 1))
-        raise err(msg, line, column)
+        position = node.get('position') or (1, 1)  # FIXME: position should always be available
+        raise err(self.current_unit.filepath, position, msg)
 
     def require(self, feature):
         if feature not in {'generators'}:
@@ -97,8 +102,10 @@ class PyxellTranspiler:
     def unit(self, name):
         _unit = self.current_unit
         self.current_unit = self.units[name]
-        yield
-        self.current_unit = _unit
+        try:
+            yield
+        finally:
+            self.current_unit = _unit
 
     @contextmanager
     def block(self, block):
@@ -685,11 +692,11 @@ class PyxellTranspiler:
 
         for i, tag in enumerate(tags):
             try:
-                expr = parse_expr(ast.literal_eval(f'"{tag}"'))
+                expr = parse_expr(ast.literal_eval(f'"{tag}"'), self.current_unit.filepath)
             except err as e:
                 self.throw({
                     **node,
-                    'position': [e.line+node['position'][0]-1, e.column+node['position'][1]+1],
+                    'position': [e.position[0]+node['position'][0]-1, e.position[1]+node['position'][1]+1],
                 }, err.InvalidSyntax())
 
             exprs[i*2+1] = {
@@ -797,59 +804,60 @@ class PyxellTranspiler:
 
         body = template.body
 
-        with self.local():
-            self.env = template.env.copy()
-            self.env.update(assigned_types)
+        with self.unit(template.unit.name):  # to display the correct filepath when a generic function from another module cannot be compiled
+            with self.local():
+                self.env = template.env.copy()
+                self.env.update(assigned_types)
 
-            func_type = self.resolve_type(template.type)
+                func_type = self.resolve_type(template.type)
 
-            func = self.var(func_type, prefix='f')
-            template.cache[real_types] = func
+                func = self.var(func_type, prefix='f')
+                template.cache[real_types] = func
 
-            arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
-            block = c.Block()
+                arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
+                block = c.Block()
 
-            with self.block(block):
-                if body:
-                    self.env['#return'] = func_type.ret
-                    self.env['#loops'] = {}
-
-                    for arg, var in zip(func_type.args, arg_vars):
-                        self.env[arg.name] = var
-
-                    # Try to resolve any unresolved type variables in the return type.
-                    if has_type_variables(func_type.ret):
-                        with self.local():
-                            self.env['#return-types'] = []
-
-                            with self.no_output():
-                                self.transpile(body)
-
-                            if self.env['#return-types']:
-                                ret = unify_types(*self.env['#return-types'])
-                            else:
-                                ret = t.Void
-
-                            if ret is not None:
-                                d = type_variables_assignment(ret, self.env['#return'])
-                                if d is not None:
-                                    self.env.update(d)
-                                    func_type.ret = self.resolve_type(func_type.ret)
-
+                with self.block(block):
+                    if body:
                         self.env['#return'] = func_type.ret
+                        self.env['#loops'] = {}
 
-                    if not func_type.ret.hasValue() and not func_type.ret.isGenerator() and func_type.ret != t.Void:
-                        self.throw(body, err.InvalidReturnType(func_type.ret))
-                    if has_type_variables(func_type.ret):
-                        self.throw(body, err.UnknownReturnType())
+                        for arg, var in zip(func_type.args, arg_vars):
+                            self.env[arg.name] = var
 
-                    self.transpile(body)
+                        # Try to resolve any unresolved type variables in the return type.
+                        if has_type_variables(func_type.ret):
+                            with self.local():
+                                self.env['#return-types'] = []
 
-                    if func_type.ret.hasValue():
-                        self.output(c.Statement('return', self.default(body, func_type.ret)))
+                                with self.no_output():
+                                    self.transpile(body)
 
-                else:  # `extern`
-                    self.output(c.Statement('return', v.Call(v.Variable(template.type, template.id), *arg_vars)))
+                                if self.env['#return-types']:
+                                    ret = unify_types(*self.env['#return-types'])
+                                else:
+                                    ret = t.Void
+
+                                if ret is not None:
+                                    d = type_variables_assignment(ret, self.env['#return'])
+                                    if d is not None:
+                                        self.env.update(d)
+                                        func_type.ret = self.resolve_type(func_type.ret)
+
+                            self.env['#return'] = func_type.ret
+
+                        if not func_type.ret.hasValue() and not func_type.ret.isGenerator() and func_type.ret != t.Void:
+                            self.throw(body, err.InvalidReturnType(func_type.ret))
+                        if has_type_variables(func_type.ret):
+                            self.throw(body, err.UnknownReturnType())
+
+                        self.transpile(body)
+
+                        if func_type.ret.hasValue():
+                            self.output(c.Statement('return', self.default(body, func_type.ret)))
+
+                    else:  # `extern`
+                        self.output(c.Statement('return', v.Call(v.Variable(template.type, template.id), *arg_vars)))
 
         if template.lambda_:
             # The closure is created every time the function is used (except for recursive calls),
@@ -1189,7 +1197,7 @@ class PyxellTranspiler:
             env = self.env.copy()
 
             lambda_ = node.get('lambda') or self.env.get('#return') is not None
-            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env, lambda_)
+            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env, self.current_unit, lambda_)
 
         if class_type is None:
             self.env[id] = env[id] = func

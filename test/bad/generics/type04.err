@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here (with types A=Int, B=[Rat]).
-Line 3, column 5: No implicit conversion from `[Rat]` to `Int`.
+:5:1: Error in function `f` called here (with types A=Int, B=[Rat]).
+:3:5: No implicit conversion from `[Rat]` to `Int`.

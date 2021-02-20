@@ -1,1 +1,1 @@
-Line 3, column 1: Type `String` is not a function.
+:3:1: Type `String` is not a function.

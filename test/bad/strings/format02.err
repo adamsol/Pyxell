@@ -1,1 +1,1 @@
-Line 1, column 1: Type `->Void` has no attribute `toString`.
+:1:1: Type `->Void` has no attribute `toString`.

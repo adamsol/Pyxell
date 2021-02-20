@@ -1,1 +1,1 @@
-Line 2, column 1: No implicit conversion from `Rat*Rat` to `Rat*Int`.
+:2:1: No implicit conversion from `Rat*Rat` to `Rat*Int`.

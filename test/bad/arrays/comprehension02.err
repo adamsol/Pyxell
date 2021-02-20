@@ -1,1 +1,1 @@
-Line 2, column 6: Undeclared identifier `y`.
+:2:6: Undeclared identifier `y`.

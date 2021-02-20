@@ -1,1 +1,1 @@
-Line 4, column 9: No implicit conversion from `Test` to `Void`.
+:4:9: No implicit conversion from `Test` to `Void`.

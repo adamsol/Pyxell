@@ -4,8 +4,11 @@ from antlr4.error.ErrorListener import ErrorListener
 
 class PyxellErrorListener(ErrorListener):
 
+    def __init__(self, filepath):
+        self.filepath = filepath
+
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise PyxellError(PyxellError.InvalidSyntax(), line, column+1)
+        raise PyxellError(self.filepath, (line, column+1), PyxellError.InvalidSyntax())
 
 
 class PyxellError(Exception):
@@ -56,10 +59,10 @@ class PyxellError(Exception):
     UnknownReturnType = lambda: f"Cannot settle return type of the function"
     UnknownType = lambda: f"Cannot settle type of the expression"
 
-    def __init__(self, msg, line, column):
-        self.line = line
-        self.column = column
-        super().__init__(f"Line {line}, column {column}: {msg}.")
+    def __init__(self, filepath, position, msg):
+        self.filepath = str(filepath).replace('\\', '/')
+        self.position = position
+        super().__init__(f"{self.filepath}:{self.position[0]}:{self.position[1]}: {msg}.")
 
 
 class NotSupportedError(Exception):

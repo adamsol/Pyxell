@@ -1,1 +1,1 @@
-Line 2, column 1: No implicit conversion from `{Char:<unknown>?}` to `{Float:String?}`.
+:2:1: No implicit conversion from `{Char:<unknown>?}` to `{Float:String?}`.

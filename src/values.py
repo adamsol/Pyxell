@@ -136,7 +136,7 @@ class Object(Value):
 
 class FunctionTemplate(Value):
 
-    def __init__(self, id, typevars, type, body, env, lambda_=False):
+    def __init__(self, id, typevars, type, body, env, unit, lambda_=False):
         super().__init__(type)
         self.id = id
         self.final = True  # identifier cannot be redefined
@@ -144,6 +144,7 @@ class FunctionTemplate(Value):
         self.typevars = typevars
         self.body = body
         self.env = env
+        self.unit = unit
         self.lambda_ = lambda_
         self.cache = {}
 

@@ -1,1 +1,1 @@
-Line 2, column 7: Undeclared identifier `CHAITIN_OMEGA`.
+lib/math.px:2:7: Undeclared identifier `CHAITIN_OMEGA`.

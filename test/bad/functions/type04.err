@@ -1,1 +1,1 @@
-Line 3, column 5: No implicit conversion from `(Int->String)->(Int->String)` to `Int->String`.
+:3:5: No implicit conversion from `(Int->String)->(Int->String)` to `Int->String`.

@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here (with types T=String).
-Line 3, column 5: No implicit conversion from `String` to `Int`.
+:5:1: Error in function `f` called here (with types T=String).
+:3:5: No implicit conversion from `String` to `Int`.

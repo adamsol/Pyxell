@@ -1,1 +1,1 @@
-Line 3, column 5: `yield` cannot be used here.
+:3:5: `yield` cannot be used here.

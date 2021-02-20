@@ -1,1 +1,1 @@
-Line 3, column 8: Identifier `Test` does not represent a type.
+:3:8: Identifier `Test` does not represent a type.

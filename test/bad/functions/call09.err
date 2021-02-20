@@ -1,1 +1,1 @@
-Line 5, column 1: Positional argument cannot follow named arguments.
+:5:1: Positional argument cannot follow named arguments.

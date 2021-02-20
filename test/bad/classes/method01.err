@@ -1,1 +1,1 @@
-Line 6, column 16: Undeclared identifier `x`.
+:6:16: Undeclared identifier `x`.

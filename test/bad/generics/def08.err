@@ -1,2 +1,2 @@
-Line 5, column 7: Error in function `f` called here (with types A=Bool).
-Line 2, column 25: Cannot settle return type of the function.
+:5:7: Error in function `f` called here (with types A=Bool).
+:2:25: Cannot settle return type of the function.

@@ -1,1 +1,1 @@
-Line 2, column 7: Undeclared identifier `package`.
+:2:7: Undeclared identifier `package`.

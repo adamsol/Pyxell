@@ -1,1 +1,1 @@
-Line 2, column 23: No implicit conversion from `String` to `Rat`.
+:2:23: No implicit conversion from `String` to `Rat`.

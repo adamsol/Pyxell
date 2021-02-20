@@ -1,2 +1,2 @@
-Line 5, column 1: Error in function `f` called here.
-Line 5, column 1: No implicit conversion from `T->T` to `A->A->A`.
+:5:1: Error in function `f` called here.
+:5:1: No implicit conversion from `T->T` to `A->A->A`.

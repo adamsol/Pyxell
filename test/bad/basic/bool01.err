@@ -1,1 +1,1 @@
-Line 2, column 4: No implicit conversion from `Bool*Bool` to `Bool`.
+:2:4: No implicit conversion from `Bool*Bool` to `Bool`.

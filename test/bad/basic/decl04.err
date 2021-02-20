@@ -1,1 +1,1 @@
-Line 4, column 5: Identifier `x` cannot be redefined.
+:4:5: Identifier `x` cannot be redefined.

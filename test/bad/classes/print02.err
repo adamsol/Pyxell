@@ -1,1 +1,1 @@
-Line 3, column 5: Invalid type signature of member `toString`.
+:3:5: Invalid type signature of member `toString`.

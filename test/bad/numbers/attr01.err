@@ -1,1 +1,1 @@
-Line 2, column 1: Type `Rat` has no attribute `n`.
+:2:1: Type `Rat` has no attribute `n`.

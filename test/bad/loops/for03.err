@@ -1,1 +1,1 @@
-Line 2, column 10: Type `Bool` is not iterable.
+:2:10: Type `Bool` is not iterable.

@@ -1,1 +1,1 @@
-Line 5, column 1: Repeated argument `b`.
+:5:1: Repeated argument `b`.

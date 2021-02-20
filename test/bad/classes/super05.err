@@ -1,1 +1,1 @@
-Line 3, column 5: `super` cannot be used here.
+:3:5: `super` cannot be used here.

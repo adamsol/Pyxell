@@ -1,1 +1,1 @@
-Line 8, column 1: Cannot compare `A` with `B`.
+:8:1: Cannot compare `A` with `B`.

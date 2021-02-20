@@ -1,1 +1,1 @@
-Line 2, column 9: Identifier `XYZ` does not represent a type.
+:2:9: Identifier `XYZ` does not represent a type.

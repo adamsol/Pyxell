@@ -1,1 +1,1 @@
-Line 3, column 7: Undeclared identifier `i`.
+:3:7: Undeclared identifier `i`.

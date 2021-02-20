@@ -1,1 +1,1 @@
-Line 2, column 35: No implicit conversion from `Char` to `Int`.
+:2:35: No implicit conversion from `Char` to `Int`.

@@ -1,1 +1,1 @@
-Line 5, column 3: No implicit conversion from `Void` to `String`.
+:5:3: No implicit conversion from `Void` to `String`.

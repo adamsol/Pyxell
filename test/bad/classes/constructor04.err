@@ -1,1 +1,1 @@
-Line 4, column 15: Type `A` has no attribute `y`.
+:4:15: Type `A` has no attribute `y`.

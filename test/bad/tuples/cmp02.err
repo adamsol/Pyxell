@@ -1,1 +1,1 @@
-Line 2, column 5: Cannot compare `Bool*Int` with `Bool*Bool`.
+:2:5: Cannot compare `Bool*Int` with `Bool*Bool`.

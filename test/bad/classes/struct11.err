@@ -1,1 +1,1 @@
-Line 5, column 31: `this` cannot be used here.
+:5:31: `this` cannot be used here.

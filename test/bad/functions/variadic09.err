@@ -1,1 +1,1 @@
-Line 2, column 8: Variadic argument's type `String` is not an array.
+:2:8: Variadic argument's type `String` is not an array.

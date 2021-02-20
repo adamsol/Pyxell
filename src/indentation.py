@@ -1,7 +1,7 @@
 
 import re
 
-from .errors import PyxellError
+from .errors import PyxellError as err
 
 
 def remove_comments(code):
@@ -18,7 +18,7 @@ def remove_comments(code):
     return re.sub(pattern, replacer, code)
 
 
-def transform_indented_code(code):
+def transform_indented_code(code, filepath):
     """
     Adds braces and semicolons to the code with indents.
     """
@@ -40,7 +40,7 @@ def transform_indented_code(code):
         if new_block:
             if len(indent) <= len(indents[-1]):
                 # New block must be indented more than the previous one.
-                raise PyxellError(PyxellError.InvalidSyntax(), i+1, len(indent)+1)
+                raise err(filepath, (i+1, len(indent)+1), err.InvalidSyntax())
             indents.append(indent)
             new_block = False
 
@@ -61,7 +61,7 @@ def transform_indented_code(code):
                     indents.pop()
                 else:
                     # Indentation must match one of the previous blocks.
-                    raise PyxellError(PyxellError.InvalidSyntax(), i+1, len(indent)+1)
+                    raise err(filepath, (i+1, len(indent)+1), err.InvalidSyntax())
 
         if re.search(r'[^\w\'](do|def)\s*$', line):
             # If the line ends with a `do` or `def` keyword, start a new block.

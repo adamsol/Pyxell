@@ -1,1 +1,1 @@
-Line 2, column 7: No binary operator `+` defined for `String` and `Int`.
+:2:7: No binary operator `+` defined for `String` and `Int`.

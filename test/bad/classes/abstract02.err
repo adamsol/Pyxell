@@ -1,1 +1,1 @@
-Line 14, column 1: Cannot instantiate an abstract class `B`.
+:14:1: Cannot instantiate an abstract class `B`.

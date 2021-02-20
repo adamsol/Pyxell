@@ -1,1 +1,1 @@
-Line 5, column 2: Function without return value cannot be called here.
+:5:2: Function without return value cannot be called here.

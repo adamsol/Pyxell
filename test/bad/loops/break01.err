@@ -1,1 +1,1 @@
-Line 2, column 1: `break` cannot be used here.
+:2:1: `break` cannot be used here.

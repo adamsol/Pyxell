@@ -1,1 +1,1 @@
-Line 2, column 1: Cannot unpack value of type `Int*Int` into 3 values.
+:2:1: Cannot unpack value of type `Int*Int` into 3 values.

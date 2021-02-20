@@ -1,1 +1,1 @@
-Line 3, column 12: Cannot compare `Int` with `Char`.
+:3:12: Cannot compare `Int` with `Char`.
