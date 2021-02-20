@@ -1,3 +1,2 @@
 
-if 42 do
-    a = false
+1 % 2f

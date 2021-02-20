@@ -1,1 +1,1 @@
-:2:1: Expression cannot be assigned to.
+:3:5: No implicit conversion from `Bool` to `Int`.

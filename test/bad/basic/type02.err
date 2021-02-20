@@ -1,1 +1,1 @@
-:2:4: No implicit conversion from `Int` to `Bool`.
+:2:1: No binary operator `%` defined for `Int` and `Float`.

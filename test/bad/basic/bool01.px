@@ -1,11 +1,3 @@
 
-if true, false do
-    skip
-elif 'x', "" do
-    skip
-
-while 1, 2, 3 do
-    skip
-
-until [], null do
-    skip
+if 42 do
+    a = false

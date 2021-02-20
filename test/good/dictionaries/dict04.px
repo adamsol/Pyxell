@@ -10,6 +10,6 @@ d = {
     (a2, 5): 'x',
     (a1, 7): 'q',
 }
-print d[(a1, 4)]
-print d[(null, 7)]!
-print d[(a1!, 4)] ?? d[(a2!, 5)]
+print d[a1, 4]
+print d[null, 7]!
+print d[a1!, 4] ?? d[a2!, 5]
