@@ -1,1 +1,1 @@
-:2:1: No implicit conversion from `<unknown>?` to `Char`.
+:2:11: No implicit conversion from `<unknown>?` to `Char`.

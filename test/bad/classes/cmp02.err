@@ -1,1 +1,1 @@
-:5:1: No binary operator `<` defined for `A` and `A`.
+:5:5: No binary operator `<` defined for `A` and `A`.

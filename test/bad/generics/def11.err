@@ -1,2 +1,2 @@
-:7:7: Error in function `f` called here.
+:7:8: Error in function `f` called here.
 :2:19: Cannot settle return type of the function.

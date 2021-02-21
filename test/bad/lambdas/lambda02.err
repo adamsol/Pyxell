@@ -1,1 +1,1 @@
-:5:16: No binary operator `-` defined for `String` and `Int`.
+:5:18: No binary operator `-` defined for `String` and `Int`.

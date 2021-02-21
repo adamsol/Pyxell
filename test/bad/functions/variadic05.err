@@ -1,1 +1,1 @@
-:5:1: No implicit conversion from `[Int]` to `[Bool]`.
+:5:3: No implicit conversion from `[Int]` to `[Bool]`.

@@ -1,1 +1,1 @@
-:5:1: Variable of type `->Void` cannot be printed.
+:5:7: Variable of type `->Void` cannot be printed.

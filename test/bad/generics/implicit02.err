@@ -1,2 +1,2 @@
-:6:1: Error in function `f` called here (with types $T1=Int).
+:6:2: Error in function `f` called here (with types $T1=Int).
 :2:14: Cannot settle return type of the function.

@@ -1,1 +1,1 @@
-:2:1: Type `{String}` is not indexable.
+:2:6: Type `{String}` is not indexable.

@@ -1,2 +1,2 @@
-:5:1: Error in function `f` called here (with types T=String->Void).
-:3:5: Variable of type `String->Void` cannot be printed.
+:5:2: Error in function `f` called here (with types T=String->Void).
+:3:16: Variable of type `String->Void` cannot be printed.

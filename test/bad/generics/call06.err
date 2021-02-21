@@ -1,2 +1,2 @@
-:5:1: Error in function `f` called here.
-lib/std.px:31:12: Cannot compare `A` with `Int`.
+:5:2: Error in function `f` called here.
+lib/std.px:31:14: Cannot compare `A` with `Int`.

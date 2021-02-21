@@ -1,1 +1,1 @@
-:2:1: Type `[Int]` is not nullable.
+:2:4: Type `[Int]` is not nullable.

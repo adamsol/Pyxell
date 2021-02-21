@@ -1,1 +1,1 @@
-:6:1: Type `A` has no attribute `y`.
+:6:2: Type `A` has no attribute `y`.

@@ -1,1 +1,1 @@
-:2:1: No implicit conversion from `Rat` to `Int`.
+:2:5: No implicit conversion from `Rat` to `Int`.

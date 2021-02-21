@@ -1,1 +1,1 @@
-:5:1: No implicit conversion from `Float` to `Rat`.
+:5:3: No implicit conversion from `Float` to `Rat`.

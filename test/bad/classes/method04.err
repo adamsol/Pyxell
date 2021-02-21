@@ -1,1 +1,1 @@
-:6:1: No implicit conversion from `Int` to `Char`.
+:3:22: No implicit conversion from `Int` to `Char`.

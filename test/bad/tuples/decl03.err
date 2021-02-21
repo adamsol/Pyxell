@@ -1,1 +1,1 @@
-:2:1: No implicit conversion from `Int*Bool*String` to `Int*Bool`.
+:2:15: No implicit conversion from `Int*Bool*String` to `Int*Bool`.

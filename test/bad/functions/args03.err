@@ -1,1 +1,1 @@
-:5:1: No implicit conversion from `Bool` to `Int`.
+:2:17: No implicit conversion from `Bool` to `Int`.

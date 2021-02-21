@@ -1,1 +1,1 @@
-:6:7: Type `Struct` has no attribute `x`.
+:6:8: Type `Struct` has no attribute `x`.

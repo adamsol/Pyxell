@@ -1,1 +1,1 @@
-:2:1: No binary operator `-` defined for `{Bool?}` and `{Char?}`.
+:2:14: No binary operator `-` defined for `{Bool?}` and `{Char?}`.

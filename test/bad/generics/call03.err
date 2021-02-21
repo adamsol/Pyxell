@@ -1,2 +1,2 @@
-:8:1: Error in function `g` called here (with types A=Char, B=Bool).
-:6:5: Cannot unify argument types for type variable `T`.
+:8:2: Error in function `g` called here (with types A=Char, B=Bool).
+:6:6: Cannot unify argument types for type variable `T`.

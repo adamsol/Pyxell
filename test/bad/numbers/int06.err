@@ -1,1 +1,1 @@
-:2:1: Type `Int` has no attribute `fraction`.
+:2:20: Type `Int` has no attribute `fraction`.

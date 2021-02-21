@@ -1,1 +1,1 @@
-:2:1: No binary operator `-` defined for `Int` and `Char`.
+:2:3: No binary operator `-` defined for `Int` and `Char`.

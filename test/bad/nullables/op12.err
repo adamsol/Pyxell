@@ -1,1 +1,1 @@
-:2:1: Type `<unknown>` has no attribute `a`.
+:2:5: Type `<unknown>` has no attribute `a`.

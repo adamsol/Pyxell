@@ -1,2 +1,2 @@
-:5:1: Error in function `f` called here (with types T=String).
+:5:2: Error in function `f` called here (with types T=String).
 :3:5: No implicit conversion from `String` to `Int`.

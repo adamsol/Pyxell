@@ -1,1 +1,1 @@
-:2:5: Cannot compare `Bool*Int` with `Bool*Bool`.
+:2:15: Cannot compare `Bool*Int` with `Bool*Bool`.

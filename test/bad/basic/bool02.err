@@ -1,1 +1,1 @@
-:4:6: No binary operator `or` defined for `Bool` and `Int`.
+:4:12: No binary operator `or` defined for `Bool` and `Int`.

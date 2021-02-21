@@ -1,1 +1,1 @@
-:2:1: Type `Int*Int` has no attribute `ab`.
+:2:7: Type `Int*Int` has no attribute `ab`.

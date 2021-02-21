@@ -1,1 +1,1 @@
-:2:1: No binary operator `&` defined for `{Rat}` and `{String}`.
+:2:7: No binary operator `&` defined for `{Rat}` and `{String}`.

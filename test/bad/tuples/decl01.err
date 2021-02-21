@@ -1,1 +1,1 @@
-:2:1: No implicit conversion from `Rat*Rat` to `Rat*Int`.
+:2:14: No implicit conversion from `Rat*Rat` to `Rat*Int`.

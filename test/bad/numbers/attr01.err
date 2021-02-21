@@ -1,1 +1,1 @@
-:2:1: Type `Rat` has no attribute `n`.
+:2:4: Type `Rat` has no attribute `n`.

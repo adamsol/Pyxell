@@ -1,2 +1,2 @@
-:5:1: Error in function `f` called here.
+:5:2: Error in function `f` called here.
 :3:5: Cannot declare variable of type `T`.

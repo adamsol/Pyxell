@@ -1,1 +1,1 @@
-:2:5: Cannot compare `Int*Int*Int` with `Int*Int`.
+:2:15: Cannot compare `Int*Int*Int` with `Int*Int`.

@@ -1,2 +1,2 @@
-:6:1: Error in function `f` called here.
+:6:2: Error in function `f` called here.
 :2:13: `Void?` is not a valid return type.

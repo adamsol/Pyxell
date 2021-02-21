@@ -1,2 +1,2 @@
-:8:1: Error in function `g` called here (with types T=Char).
-:6:11: No implicit conversion from `Char` to `Int`.
+:8:2: Error in function `g` called here (with types T=Char).
+:6:13: No implicit conversion from `Char` to `Int`.

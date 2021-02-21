@@ -1,2 +1,2 @@
-:6:1: Error in function `f` called here (with types T=Char).
+:6:2: Error in function `f` called here (with types T=Char).
 :4:5: No implicit conversion from `Char` to `Rat`.

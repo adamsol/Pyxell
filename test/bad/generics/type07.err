@@ -1,1 +1,1 @@
-:5:1: No implicit conversion from `Char*Int*Int` to `A*B*A`.
+:5:4: No implicit conversion from `Char*Int*Int` to `A*B*A`.

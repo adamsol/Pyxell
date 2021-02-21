@@ -108,6 +108,15 @@ class PyxellParser:
             'position': token.position,
         }
 
+    def expr_node(self, name, token, op=None):
+        return {
+            **self.node(name, token),
+            'op': {
+                'position': token.position,
+                'text': op,
+            },
+        }
+
     @contextmanager
     def try_parse(self, backtrack=False):
         index = self.index
@@ -236,9 +245,9 @@ class PyxellParser:
         for op in ASSIGNMENT_OPERATORS:
             if op_token.text == op:
                 return {
-                    **self.node('StmtAssgExpr', token),
+                    **self.expr_node('StmtAssgExpr', op_token, op[:-1]),
+                    'position': token.position,
                     'exprs': [exprs[0], self.parse_tuple_expr()],
-                    'op': op[:-1],
                 }
         self.backtrack()  # backtrack if no assignment operator has been matched
 
@@ -339,7 +348,7 @@ class PyxellParser:
         if len(exprs) == 1:
             return exprs[0]
         return {
-            **self.node('ExprTuple', token),
+            **self.expr_node('ExprTuple', token),
             'exprs': exprs,
         }
 
@@ -356,14 +365,15 @@ class PyxellParser:
         expr = self.parse_expr_prefix_op(token)
 
         while EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, self.peek().text] > precedence:
-            expr = self.parse_expr_non_prefix_op(token, expr, self.pop().text)
+            expr = self.parse_expr_non_prefix_op(expr, self.pop())
+            expr['position'] = token.position
 
         return expr
 
     def parse_expr_prefix_op(self, token):
         if token.type == Token.ID:
             return {
-                **self.node('AtomPlaceholder' if token.text == '_' else 'AtomId', token),
+                **self.expr_node('AtomPlaceholder' if token.text == '_' else 'AtomId', token),
                 'id': token.text,
             }
         if token.type == Token.NUMBER:
@@ -378,22 +388,22 @@ class PyxellParser:
             else:
                 value = int(text)
             return {
-                **self.node('AtomInt' if isinstance(value, int) else 'AtomFloat' if isinstance(value, float) else 'AtomRat', token),
+                **self.expr_node('AtomInt' if isinstance(value, int) else 'AtomFloat' if isinstance(value, float) else 'AtomRat', token),
                 'value': value,
             }
         if token.text in {'false', 'true'}:
             return {
-                **self.node('AtomBool', token),
+                **self.expr_node('AtomBool', token),
                 'value': token.text == 'true',
             }
         if token.type in {Token.CHAR, Token.STRING}:
             return {
-                **self.node(f'Atom{token.type.capitalize()}', token),
+                **self.expr_node(f'Atom{token.type.capitalize()}', token),
                 'value': token.text[1:-1],
             }
         if token.text in {'null', 'super', 'this'}:
             return {
-                **self.node(f'Atom{token.text.capitalize()}', token),
+                **self.expr_node(f'Atom{token.text.capitalize()}', token),
             }
         if token.text == '(':  # grouping
             return {
@@ -423,46 +433,45 @@ class PyxellParser:
                             while self.check('for') or self.check('if'):
                                 comprehensions.append(self.parse_comprehension())
                             return {
-                                **self.node('ExprComprehension', token),
+                                **self.expr_node('ExprComprehension', token),
                                 'kind': kind,
                                 'exprs': items[0]['exprs'] if items[0]['node'] == 'DictPair' else items,
                                 'comprehensions': (comprehensions, self.expect(closing_bracket))[0],
                             }
                         break
             return {
-                **self.node('ExprCollection', token),
+                **self.expr_node('ExprCollection', token),
                 'kind': kind,
                 'items': (items, self.expect(closing_bracket))[0],
             }
         if token.text in {'+', '-', 'not'}:  # prefix operators
             return {
-                **self.node('ExprUnaryOp', token),
+                **self.expr_node('ExprUnaryOp', token, token.text),
                 'expr': self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
-                'op': token.text,
             }
         if token.text == '...':  # spread operator
             return {
-                **self.node('ExprSpread', token),
+                **self.expr_node('ExprSpread', token),
                 'expr': self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
             }
         if token.text == 'lambda':
             return {
-                **self.node('ExprLambda', token),
+                **self.expr_node('ExprLambda', token),
                 'ids': [] if self.check(':') else self.parse_id_list(),
                 'expr': self.expect(':') and self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
             }
         self.raise_syntax_error(token)
 
-    def parse_expr_non_prefix_op(self, token, left, op):
-        if op in {'.', '?.'}:  # attribute access
+    def parse_expr_non_prefix_op(self, left, token):
+        if token.text in {'.', '?.'}:  # attribute access
             return {
-                **self.node('ExprAttr', token),
+                **self.expr_node('ExprAttr', token),
                 'expr': left,
-                'safe': op.startswith('?'),
+                'safe': token.text.startswith('?'),
                 'attr': self.parse_id(),
             }
-        if op in {'[', '?['}:  # element access
-            safe = op.startswith('?')
+        if token.text in {'[', '?['}:  # element access
+            safe = token.text.startswith('?')
             if not safe:
                 slice = None
                 with self.try_parse():
@@ -479,16 +488,16 @@ class PyxellParser:
                     slice = exprs
                 if slice:
                     return {
-                        **self.node('ExprSlice', token),
+                        **self.expr_node('ExprSlice', token),
                         'expr': left,
                         'slice': (slice, self.expect(']'))[0],
                     }
             return {
-                **self.node('ExprIndex', token),
+                **self.expr_node('ExprIndex', token),
                 'safe': safe,
                 'exprs': [left, (self.parse_tuple_expr(), self.expect(']'))[0]],
             }
-        if op in {'(', '@('}:  # function call
+        if token.text in {'(', '@('}:  # function call
             args = []
             while not self.check(')'):
                 args.append(self.parse_call_arg())
@@ -496,70 +505,67 @@ class PyxellParser:
                     break
             self.expect(')')
             return {
-                **self.node('ExprCall', token),
+                **self.expr_node('ExprCall', token),
                 'expr': left,
                 'args': args,
-                'partial': op.startswith('@'),
+                'partial': token.text.startswith('@'),
             }
-        if op in {'!'}:  # postfix operators
+        if token.text in {'!'}:  # postfix operators
             return {
-                **self.node('ExprUnaryOp', token),
+                **self.expr_node('ExprUnaryOp', token, token.text),
                 'expr': left,
-                'op': op,
             }
-        if op in {'^', '^^', '??', 'and', 'or'}:  # right-associative infix operators
+        if token.text in {'^', '^^', '??', 'and', 'or'}:  # right-associative infix operators
             return {
-                **self.node('ExprBinaryOp', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op] - 1)],
-                'op': op,
+                **self.expr_node('ExprBinaryOp', token, token.text),
+                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)],
             }
-        if op in {'/', '//', '%', '*', '&', '+', '-', '%%'}:  # left-associative infix operators
+        if token.text in {'/', '//', '%', '*', '&', '+', '-', '%%'}:  # left-associative infix operators
             return {
-                **self.node('ExprBinaryOp', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op])],
-                'op': op,
+                **self.expr_node('ExprBinaryOp', token, token.text),
+                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
             }
-        if op in {'...', '..'}:  # range operators
+        if token.text in {'...', '..'}:  # range operators
             exprs = [left]
             with self.try_parse():  # infinite range if no second expression
-                exprs.append(self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op]))
-            inclusive = op == '..'
+                exprs.append(self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text]))
+            inclusive = token.text == '..'
             if len(exprs) == 1 and inclusive:
                 self.raise_syntax_error(token)
             return {
-                **self.node('ExprRange', token),
+                **self.expr_node('ExprRange', token),
                 'exprs': exprs,
                 'inclusive': inclusive,
             }
-        if op == 'by':
+        if token.text == 'by':
             return {
-                **self.node('ExprBy', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op])],
+                **self.expr_node('ExprBy', token),
+                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
             }
-        if op in {'==', '!=', '<', '<=', '>', '>='}:  # comparison operators
-            right = self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op] - 1)
+        if token.text in {'==', '!=', '<', '<=', '>', '>='}:  # comparison operators
+            right = self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)
             chained = right['node'] == 'ExprCmp' and not right.get('_parenthesized')
             return {
-                **self.node('ExprCmp', token),
+                **self.expr_node('ExprCmp', token),
                 'exprs': [left, *right['exprs']] if chained else [left, right],
-                'ops': [op, *right['ops']] if chained else [op],
+                'ops': [token.text, *right['ops']] if chained else [token.text],
             }
-        if op == 'in' or op == 'not' and self.match('in'):  # `in` / `not in`
+        if token.text == 'in' or token.text == 'not' and self.match('in'):  # `in` / `not in`
             return {
-                **self.node('ExprIn', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op])],
-                'not': op == 'not',
+                **self.expr_node('ExprIn', token),
+                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
+                'not': token.text == 'not',
             }
-        if op == 'is':  # `is null` / `is not null`
+        if token.text == 'is':  # `is null` / `is not null`
             return {
-                **self.node('ExprIsNull', token),
+                **self.expr_node('ExprIsNull', token),
                 'expr': left,
                 'not': (self.match('not'), self.expect('null'))[0],
             }
-        if op == '?':  # ternary conditional operator
+        if token.text == '?':  # ternary conditional operator
             return {
-                **self.node('ExprCond', token),
-                'exprs': [left, self.parse_expr(), self.expect(':') and self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, op] - 1)],
+                **self.expr_node('ExprCond', token),
+                'exprs': [left, self.parse_expr(), self.expect(':') and self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)],
             }
         # No syntax error here since `EXPR_OPERATOR_PRECEDENCE` is 0 for unknown operators anyway.
 
@@ -568,7 +574,7 @@ class PyxellParser:
 
         if self.match('...:'):
             return {
-                **self.node('DictSpread', token),
+                **self.expr_node('DictSpread', token),
                 'expr': self.parse_expr(),
             }
         return {
@@ -604,7 +610,7 @@ class PyxellParser:
             return self.parse_expr_prefix_op(token)
         if token.text == '(':
             return {
-                **self.node('ExprTuple', self.peek()),
+                **self.expr_node('ExprTuple', self.peek()),
                 'exprs': self.parse_for_loop_var_list(),
                 '_parenthesized': self.expect(')'),
             }
@@ -621,11 +627,10 @@ class PyxellParser:
     def parse_type(self, precedence=0):
         # When calling `parse_type()` recursively, the `precedence` argument should be equal to the precedence of the
         # recently parsed operator, if it's left-associative, or that precedence minus one, if it's right-associative.
-        token = self.pop()
-        type = self.parse_type_prefix_op(token)
+        type = self.parse_type_prefix_op(self.pop())
 
         while TYPE_OPERATOR_PRECEDENCE[self.peek().text] > precedence:
-            type = self.parse_type_non_prefix_op(token, type, self.pop().text)
+            type = self.parse_type_non_prefix_op(type, self.pop())
 
         return type
 
@@ -659,21 +664,21 @@ class PyxellParser:
             }
         self.raise_syntax_error(token)
 
-    def parse_type_non_prefix_op(self, token, left, op):
-        if op == '?':  # nullable
+    def parse_type_non_prefix_op(self, left, token):
+        if token.text == '?':  # nullable
             return {
                 **self.node('TypeNullable', token),
                 'subtype': left,
             }
-        if op == '*':  # tuple
-            right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[op] - 1)
+        if token.text == '*':  # tuple
+            right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[token.text] - 1)
             chained = right['node'] == 'TypeTuple' and not right.get('_parenthesized')
             return {
                 **self.node('TypeTuple', token),
                 'types': [left, *right['types']] if chained else [left, right],
             }
-        if op == '->':  # function
-            right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[op] - 1)
+        if token.text == '->':  # function
+            right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[token.text] - 1)
             chained = right['node'] == 'TypeFunc' and not right.get('_parenthesized')
             left = [] if left is None else [left]
             return {

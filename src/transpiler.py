@@ -238,10 +238,10 @@ class PyxellTranspiler:
 
                 return v.Attribute(it, 'second', type=type)
 
-        self.throw(exprs[0], err.NotIndexable(collection.type))
+        self.throw(node['op'], err.NotIndexable(collection.type))
 
     def cond(self, node, pred, callback_true, callback_false):
-        pred = self.cast(node, pred, t.Bool)
+        pred = self.cast(node['op'], pred, t.Bool)
 
         block_true = c.Block()
         block_false = c.Block()
@@ -253,7 +253,7 @@ class PyxellTranspiler:
 
         type = unify_types(value_true.type, value_false.type)
         if type is None:
-            self.throw(node, err.UnknownType())
+            self.throw(node['op'], err.UnknownType())
 
         result = self.var(type)
         self.output(c.Var(result))
@@ -269,7 +269,7 @@ class PyxellTranspiler:
 
     def safe(self, node, value, callback_notnull, callback_null):
         if not value.type.isNullable():
-            self.throw(node, err.NotNullable(value.type))
+            self.throw(node['op'], err.NotNullable(value.type))
 
         return self.cond(node, v.IsNotNull(value), callback_notnull, callback_null)
 
@@ -278,7 +278,7 @@ class PyxellTranspiler:
             id = expr['id']
             if id in self.units:
                 with self.unit(id):
-                    return self.get(node, attr)
+                    return self.get(node['op'], attr)
 
         obj = self.tmp(self.transpile(expr))
         return self.attr(node, obj, attr, for_print)
@@ -402,7 +402,7 @@ class PyxellTranspiler:
             value = self.member(node, obj, attr)
 
         if value is None:
-            self.throw(node, err.NoAttribute(type, attr))
+            self.throw(node['op'], err.NoAttribute(type, attr))
 
         if value.type.isFunc() and not isinstance(value, v.Lambda) and (not type.isClass() or attr in type.methods):
             if for_print:
@@ -414,7 +414,7 @@ class PyxellTranspiler:
 
     def member(self, node, obj, attr, lvalue=False):
         if attr not in obj.type.members:
-            self.throw(node, err.NoAttribute(obj.type, attr))
+            self.throw(node['op'], err.NoAttribute(obj.type, attr))
         if lvalue and attr in obj.type.methods:
             self.throw(node, err.NotLvalue())
 
@@ -454,6 +454,14 @@ class PyxellTranspiler:
             self.throw(node, error)
 
         return [self.cast(node, value, type) for value in values]
+
+    def range(self, node, exprs):
+        values = lmap(self.transpile, exprs)
+        values = self.unify(node, *values)
+        if values[0].type not in {t.Int, t.Rat, t.Float, t.Bool, t.Char}:
+            self.throw(node, err.UnknownType())
+
+        return values
 
     def const(self, value):
         s = str(value)
@@ -499,18 +507,18 @@ class PyxellTranspiler:
 
         return self.env[id]
 
-    def lvalue(self, node, expr, declare=None, override=False):
+    def lvalue(self, expr, declare=None, override=False):
         if expr['node'] == 'AtomId':
             id = expr['id']
 
             if id not in self.env:
                 if declare is None:
-                    self.throw(node, err.UndeclaredIdentifier(id))
-                self.declare(node, declare, id)
+                    self.throw(expr, err.UndeclaredIdentifier(id))
+                self.declare(expr, declare, id)
             elif override:
-                self.declare(node, declare, id, redeclare=True)
+                self.declare(expr, declare, id, redeclare=True)
             elif not isinstance(self.env[id], v.Value) or getattr(self.env[id], 'final', False):
-                self.throw(node, err.RedefinedIdentifier(id))
+                self.throw(expr, err.RedefinedIdentifier(id))
 
             return self.env[id]
 
@@ -518,24 +526,24 @@ class PyxellTranspiler:
             obj = self.transpile(expr['expr'])
             attr = expr['attr']
             if obj.type.isTuple():
-                return self.attr(node, obj, attr)
+                return self.attr(expr, obj, attr)
             elif obj.type.isClass():
-                return self.member(node, obj, attr, lvalue=True)
+                return self.member(expr, obj, attr, lvalue=True)
             else:
-                self.throw(node, err.NotLvalue())
+                self.throw(expr, err.NotLvalue())
 
         if expr['node'] == 'ExprIndex' and not expr.get('safe'):
-            return self.index(node, *map(self.transpile, expr['exprs']), lvalue=True)
+            return self.index(expr, *map(self.transpile, expr['exprs']), lvalue=True)
 
         if expr['node'] == 'AtomPlaceholder':
             return None
 
-        self.throw(node, err.NotLvalue())
+        self.throw(expr, err.NotLvalue())
 
     def store(self, left, right, decl=None):
         self.output(c.Statement(decl, left, '=', right))
 
-    def assign(self, node, expr, value):
+    def assign(self, expr, value):
         type = value.type
 
         if type.isFunc():
@@ -547,22 +555,22 @@ class PyxellTranspiler:
         if type.isTuple():
             len2 = len(type.elements)
             if len1 > 1 and len1 != len2:
-                self.throw(node, err.CannotUnpack(type, len1))
+                self.throw(expr, err.CannotUnpack(type, len1))
         elif len1 > 1:
-            self.throw(node, err.CannotUnpack(type, len1))
+            self.throw(expr, err.CannotUnpack(type, len1))
 
         if len1 > 1:
             value = self.tmp(value)
             for i, expr in enumerate(exprs):
-                self.assign(node, expr, v.Get(value, i))
+                self.assign(expr, v.Get(value, i))
         elif value.isTemplate() and expr['node'] == 'AtomId' and expr['id'] not in self.env:
             id = expr['id']
             self.env[id] = value
         else:
-            var = self.lvalue(node, expr, declare=type, override=expr.get('override', False))
+            var = self.lvalue(expr, declare=type, override=expr.get('override', False))
             if var is None:
                 return
-            value = self.cast(node, value, var.type)
+            value = self.cast(expr, value, var.type)
             self.store(var, value)
             type.literal = False
 
@@ -573,7 +581,7 @@ class PyxellTranspiler:
             types = {t.Bool}
 
         if value.type not in types:
-            self.throw(node, err.NoUnaryOperator(op, value.type))
+            self.throw(node['op'], err.NoUnaryOperator(op, value.type))
 
         op = {
             'not': '!',
@@ -585,12 +593,12 @@ class PyxellTranspiler:
         types = [left.type, right.type]
 
         if op != '^' and left.type in {t.Int, t.Rat} and right.type in {t.Int, t.Rat} and t.Rat in {left.type, right.type}:
-            left = self.cast(node, left, t.Rat)
-            right = self.cast(node, right, t.Rat)
+            left = self.cast(node['op'], left, t.Rat)
+            right = self.cast(node['op'], right, t.Rat)
 
         if left.type.isNumber() and right.type.isNumber() and t.Float in {left.type, right.type}:
-            left = self.cast(node, left, t.Float)
-            right = self.cast(node, right, t.Float)
+            left = self.cast(node['op'], left, t.Float)
+            right = self.cast(node['op'], right, t.Float)
 
         if op == '^':
             if left.type in {t.Int, t.Rat} and right.type == t.Int:
@@ -633,7 +641,7 @@ class PyxellTranspiler:
 
         if op == '&':
             if left.type.isSet() and right.type.isSet():
-                left, right = self.unify(node, left, right, error=err.NoBinaryOperator('&', left.type, right.type))
+                left, right = self.unify(node['op'], left, right, error=err.NoBinaryOperator('&', left.type, right.type))
                 return v.Call('intersection', left, right, type=left.type)
 
         if op == '+':
@@ -647,7 +655,7 @@ class PyxellTranspiler:
                 return v.Call('concat', v.Cast(left, t.String), v.Cast(right, t.String), type=t.String)
 
             if left.type.isCollection() and right.type.isCollection():
-                left, right = self.unify(node, left, right, error=err.NoBinaryOperator('+', left.type, right.type))
+                left, right = self.unify(node['op'], left, right, error=err.NoBinaryOperator('+', left.type, right.type))
                 return v.Call('concat', left, right, type=left.type)
 
         if op == '-':
@@ -661,14 +669,14 @@ class PyxellTranspiler:
                 return v.Cast(v.BinaryOp(left, op, right), t.Char)
 
             if left.type.isSet() and right.type.isSet():
-                left, right = self.unify(node, left, right, error=err.NoBinaryOperator('-', left.type, right.type))
+                left, right = self.unify(node['op'], left, right, error=err.NoBinaryOperator('-', left.type, right.type))
                 return v.Call('difference', left, right, type=left.type)
 
         if op == '%%':
             if left.type == right.type and left.type in {t.Int, t.Rat}:
                 return v.BinaryOp(v.BinaryOp(left, '%', right), '==', v.Int(0) if left.type == t.Int else self.rat(0), type=t.Bool)
 
-        self.throw(node, err.NoBinaryOperator(op, *types))
+        self.throw(node['op'], err.NoBinaryOperator(op, *types))
 
     def convert_string(self, node, string):
         string = re.sub('{{', '\\\\u007B', string)
@@ -913,15 +921,16 @@ class PyxellTranspiler:
         pass
 
     def transpileStmtPrint(self, node):
-        values = lmap(self.transpile, node['exprs'])
+        exprs = node['exprs']
+        values = lmap(self.transpile, exprs)
 
-        for i, value in enumerate(values):
+        for i, (expr, value) in enumerate(zip(exprs, values)):
             if not value.type.isPrintable():
-                self.throw(node, err.NotPrintable(value.type))
+                self.throw(expr, err.NotPrintable(value.type))
 
             if i > 0:
                 self.output(c.Statement(v.Call('write', self.string(' '))))
-            self.output(c.Statement(v.Call('write', self.attr(node, value, 'toString', for_print=True))))
+            self.output(c.Statement(v.Call('write', self.attr(expr, value, 'toString', for_print=True))))
 
         self.output(c.Statement(v.Call('write', self.string('\\n'))))  # std::endl is very slow
 
@@ -932,7 +941,7 @@ class PyxellTranspiler:
         var = self.declare(node, type, id)
 
         if expr:
-            value = self.cast(node, self.transpile(expr), type)
+            value = self.cast(expr, self.transpile(expr), type)
         else:
             value = self.default(node, type)
 
@@ -948,12 +957,12 @@ class PyxellTranspiler:
             value = self.tmp(value)
 
         for lvalue in lvalues:
-            self.assign(lvalue, lvalue, value)
+            self.assign(lvalue, value)
 
     def transpileStmtAssgExpr(self, node):
         exprs = node['exprs']
-        op = node['op']
-        left = self.lvalue(node, exprs[0])
+        op = node['op']['text']
+        left = self.lvalue(exprs[0])
         if left is None:
             self.throw(node, err.InvalidUsage('_'))
 
@@ -963,7 +972,7 @@ class PyxellTranspiler:
             with self.block(block):
                 right = self.transpile(exprs[1])
                 if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
-                    self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                    self.throw(node['op'], err.NoBinaryOperator(op, left.type, right.type))
                 self.store(left, v.Nullable(self.cast(node, right, left.type.subtype)))
         else:
             right = self.transpile(exprs[1])
@@ -1063,13 +1072,10 @@ class PyxellTranspiler:
                 step = self.freeze(v.Int(1))
 
             if iterable['node'] == 'ExprRange':
-                values = lmap(self.transpile, iterable['exprs'])
-                values = self.unify(iterable, *values)
+                values = self.range(iterable['op'], iterable['exprs'])
                 type = values[0].type
-                if type not in {t.Int, t.Rat, t.Float, t.Bool, t.Char}:
-                    self.throw(iterable, err.UnknownType())
-
                 types.append(type)
+
                 index = iterator = self.var({t.Rat: t.Rat, t.Float: t.Float}.get(type, t.Int))
                 start = v.Cast(values[0], index.type)
                 self.cast(step_expr, step, index.type)
@@ -1123,18 +1129,18 @@ class PyxellTranspiler:
         with self.loop(partial(c.For, '', condition, update), node.get('label')):
             if len(vars) == 1 and len(types) > 1:
                 tuple = v.Tuple([getter() for getter in getters])
-                self.assign(node, vars[0], tuple)
+                self.assign(vars[0], tuple)
             elif len(vars) > 1 and len(types) == 1:
                 if not types[0].isTuple():
-                    self.throw(node, err.CannotUnpack(types[0], len(vars)))
+                    self.throw(vars[0], err.CannotUnpack(types[0], len(vars)))
                 tuple = getters[0]()
                 for i, var in enumerate(vars):
-                    self.assign(node, var, v.Get(tuple, i))
+                    self.assign(var, v.Get(tuple, i))
             elif len(vars) == len(types):
                 for var, getter in zip(vars, getters):
-                    self.assign(node, var, getter())
+                    self.assign(var, getter())
             else:
-                self.throw(node, err.CannotUnpack(t.Tuple(types), len(vars)))
+                self.throw(vars[0], err.CannotUnpack(t.Tuple(types), len(vars)))
 
             self.transpile(node['block'])
 
@@ -1173,7 +1179,7 @@ class PyxellTranspiler:
                     typevars.append(type_name)
                     self.env[type_name] = type
                 if not type.hasValue():
-                    self.throw(arg['type'], err.InvalidDeclaration(type))
+                    self.throw(arg, err.InvalidDeclaration(type))
                 if variadic:
                     if any(arg.variadic for arg in args):
                         self.throw(arg, err.RepeatedVariadic())
@@ -1261,7 +1267,7 @@ class PyxellTranspiler:
 
         base = self.transpile(node['base'])
         if base and not base.isClass():
-            self.throw(node, err.NotClass(base))
+            self.throw(node['base'], err.NotClass(base))
 
         base_members = base.members if base else {}
         members = dict(base_members)
@@ -1290,7 +1296,7 @@ class PyxellTranspiler:
 
                 default = member.get('default')
                 if default:
-                    field.default = self.cast(member, self.transpile(default), field.type)
+                    field.default = self.cast(member['default'], self.transpile(default), field.type)
                 else:
                     field.default = self.default(member, field.type)
 
@@ -1371,9 +1377,9 @@ class PyxellTranspiler:
                 if item['node'] in {'ExprRange', 'ExprBy'}:
                     if item['node'] == 'ExprBy':
                         if item['exprs'][0]['node'] != 'ExprRange':
-                            self.throw(node, err.InvalidSyntax())
+                            self.throw(item['op'], err.InvalidSyntax())
                         item = item['exprs'][0]
-                    values = lmap(self.transpile, item['exprs'])
+                    values = self.range(item['op'], item['exprs'])
                     type_lists[0].extend(value.type for value in values)
 
                 elif item['node'] == 'ExprSpread':
@@ -1382,7 +1388,7 @@ class PyxellTranspiler:
                         item = item['exprs'][0]
                     value = self.transpile(item)
                     if not value.type.isIterable():
-                        self.throw(node, err.NotIterable(value.type))
+                        self.throw(item, err.NotIterable(value.type))
                     type_lists[0].append(value.type.subtype)
 
                 elif item['node'] == 'DictPair':
@@ -1396,7 +1402,7 @@ class PyxellTranspiler:
                         item = item['exprs'][0]
                     value = self.transpile(item)
                     if not value.type.isDict():
-                        self.throw(node, err.NotDictionary(value.type))
+                        self.throw(item, err.NotDictionary(value.type))
                     type_lists[0].append(value.type.key_type)
                     type_lists[1].append(value.type.value_type)
 
@@ -1523,15 +1529,15 @@ class PyxellTranspiler:
 
         with self.local():
             if kind == 'array':
-                self.assign(node, collection, v.Array([], types[0]))
+                self.assign(collection, v.Array([], types[0]))
             elif kind == 'set':
                 if not types[0].isHashable():
                     self.throw(node, err.NotHashable(types[0]))
-                self.assign(node, collection, v.Set([], types[0]))
+                self.assign(collection, v.Set([], types[0]))
             elif kind == 'dict':
                 if not types[0].isHashable():
                     self.throw(node, err.NotHashable(types[0]))
-                self.assign(node, collection, v.Dict([], [], *types))
+                self.assign(collection, v.Dict([], [], *types))
 
             inner_stmt['node'] = 'StmtAppend'
             inner_stmt['collection'] = collection
@@ -1569,7 +1575,7 @@ class PyxellTranspiler:
         collection = self.transpile(node['expr'])
         type = collection.type
         if not type.isSequence():
-            self.throw(node, err.NotIndexable(type))
+            self.throw(node['op'], err.NotIndexable(type))
 
         a = v.Nullable(self.cast(slice[0], self.transpile(slice[0]), t.Int)) if slice[0] else v.null
         b = v.Nullable(self.cast(slice[1], self.transpile(slice[1]), t.Int)) if slice[1] else v.null
@@ -1582,7 +1588,7 @@ class PyxellTranspiler:
 
         def _resolve_args(func):
             if not func.type.isFunc():
-                self.throw(node, err.NotFunction(func.type))
+                self.throw(node['op'], err.NotFunction(func.type))
 
             obj = None
             if func.isTemplate() and func.bound:
@@ -1591,51 +1597,52 @@ class PyxellTranspiler:
             func_args = func.type.args[1:] if obj else func.type.args[:]
             func_named_args = {func_arg.name for func_arg in func_args}
 
-            args = []
             pos_args = []
             named_args = {}
 
             for i, call_arg in enumerate(node['args']):
                 name = call_arg['name']
-                expr = call_arg['expr']
                 if name:
                     if name in named_args:
-                        self.throw(node, err.RepeatedArgument(name))
+                        self.throw(call_arg, err.RepeatedArgument(name))
                     if name not in func_named_args:
-                        self.throw(node, err.UnexpectedArgument(name))
-                    named_args[name] = expr
+                        self.throw(call_arg, err.UnexpectedArgument(name))
+                    named_args[name] = call_arg
                 else:
                     if named_args:
-                        self.throw(node, err.ExpectedNamedArgument())
-                    pos_args.append(expr)
+                        self.throw(call_arg, err.ExpectedNamedArgument())
+                    pos_args.append(call_arg)
 
             with self.local():
                 type_variables = defaultdict(list)
+                exprs = []
+                args = []
 
                 for i, func_arg in enumerate(func_args):
                     name = func_arg.name
 
                     if name in named_args:
                         if i < len(pos_args):
-                            self.throw(node, err.RepeatedArgument(name))
+                            self.throw(named_args[name], err.RepeatedArgument(name))
 
-                        expr = named_args.pop(name)
+                        expr = named_args.pop(name)['expr']
 
                     elif func_arg.variadic and (pos_args or not func_arg.default):
                         expr = {
-                            **(pos_args[i] if i < len(pos_args) else {}),
+                            **(pos_args[i]['expr'] if i < len(pos_args) else {}),
                             'node': 'ExprCollection',
                             'kind': 'array',
-                            'items': pos_args[i:],
+                            'items': [arg['expr'] for arg in pos_args[i:]],
                         }
                         pos_args = []
 
                     elif i < len(pos_args):
-                        expr = pos_args[i]
+                        expr = pos_args[i]['expr']
                         pos_args[i] = None
 
                     elif func_arg.default:
                         if isinstance(func_arg.default, v.Value):
+                            exprs.append({})
                             args.append(func_arg.default)
                             continue
                         else:
@@ -1643,24 +1650,25 @@ class PyxellTranspiler:
 
                     else:
                         if name is None:
-                            self.throw(node, err.TooFewArguments())
+                            self.throw(node['op'], err.TooFewArguments())
                         else:
-                            self.throw(node, err.MissingArgument(name))
+                            self.throw(node['op'], err.MissingArgument(name))
 
                     value = self.transpile(expr)
 
                     if not value.isTemplate():
                         d = type_variables_assignment(value.type, func_arg.type)
                         if d is None:
-                            self.throw(node, err.NoConversion(value.type, func_arg.type))
+                            self.throw(expr, err.NoConversion(value.type, func_arg.type))
 
                         for name, type in d.items():
                             type_variables[name].append(type)
 
+                    exprs.append(expr)
                     args.append(value)
 
                 if any(arg is not None for arg in pos_args):
-                    self.throw(node, err.TooManyArguments())
+                    self.throw(node['op'], err.TooManyArguments())
 
                 if obj:
                     for name, type in type_variables_assignment(obj.type, func.type.args[0].type).items():
@@ -1675,27 +1683,27 @@ class PyxellTranspiler:
                 for name, types in type_variables.items():
                     type = unify_types(*types)
                     if type is None:
-                        self.throw(node, err.InvalidArgumentTypes(t.Var(name)))
+                        self.throw(node['op'], err.InvalidArgumentTypes(t.Var(name)))
 
                     self.env[name] = assigned_types[name] = type
 
                 try:
                     for i in range(len(args)):
                         type = self.resolve_type(func_args[i].type)
-                        args[i] = self.cast(node, args[i], type)
+                        args[i] = self.cast(exprs[i], args[i], type)
                         d = type_variables_assignment(args[i].type, func_args[i].type)
                         assigned_types.update(d)
                         self.env.update(d)
                 except err as e:
                     if not func.isTemplate():
                         raise
-                    self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
+                    self.throw(node['op'], err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
                 if func.isTemplate():
                     try:
                         func = self.function(func, assigned_types)
                     except err as e:
-                        self.throw(node, err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
+                        self.throw(node['op'], err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
 
                 return func, args
 
@@ -1721,7 +1729,7 @@ class PyxellTranspiler:
                     else:
                         return v.Nullable(result)
 
-                return self.safe(node, obj, callback, lambda: v.null)
+                return self.safe(expr, obj, callback, lambda: v.null)
 
             else:
                 if attr == 'toString' and len(node['args']) == 0:
@@ -1766,19 +1774,19 @@ class PyxellTranspiler:
         return result
 
     def transpileExprUnaryOp(self, node):
-        op = node['op']
+        op = node['op']['text']
         value = self.transpile(node['expr'])
 
         if op == '!':
             if not value.type.isNullable():
-                self.throw(node, err.NotNullable(value.type))
+                self.throw(node['op'], err.NotNullable(value.type))
 
             return v.Extract(value)
 
         return self.unaryop(node, op, value)
 
     def transpileExprBinaryOp(self, node):
-        op = node['op']
+        op = node['op']['text']
         exprs = node['exprs']
 
         if op == '??':
@@ -1788,12 +1796,9 @@ class PyxellTranspiler:
                     return self.transpile(exprs[1])
                 return self.safe(node, left, lambda: v.Extract(left), lambda: self.transpile(exprs[1]))
             except err:
-                self.throw(node, err.NoBinaryOperator(op, left.type, self.transpile(exprs[1]).type))
+                self.throw(node['op'], err.NoBinaryOperator(op, left.type, self.transpile(exprs[1]).type))
 
         if op in {'and', 'or'}:
-            exprs = node['exprs']
-            op = node['op']
-
             result = self.var(t.Bool)
             self.store(result, v.Bool(op == 'or'), 'auto')
 
@@ -1806,7 +1811,7 @@ class PyxellTranspiler:
             with self.block(block):
                 cond2 = self.transpile(exprs[1])
                 if not cond1.type == cond2.type == t.Bool:
-                    self.throw(node, err.NoBinaryOperator(op, cond1.type, cond2.type))
+                    self.throw(node['op'], err.NoBinaryOperator(op, cond1.type, cond2.type))
                 self.store(result, cond2)
 
             return result
@@ -1816,7 +1821,7 @@ class PyxellTranspiler:
     def transpileExprIsNull(self, node):
         value = self.transpile(node['expr'])
         if not value.type.isNullable():
-            self.throw(node, err.NotNullable(value.type))
+            self.throw(node['op'], err.NotNullable(value.type))
 
         if value.type == t.Unknown:  # for the `null is null` case
             return v.Bool(not node.get('not'))
@@ -1829,7 +1834,7 @@ class PyxellTranspiler:
         element = self.transpile(exprs[0])
         iterable = self.transpile(exprs[1])
         if not iterable.type.isIterable():
-            self.throw(node, err.NotIterable(iterable.type))
+            self.throw(exprs[1], err.NotIterable(iterable.type))
 
         if iterable.type == t.String:
             type = iterable.type
@@ -1841,7 +1846,7 @@ class PyxellTranspiler:
         if type == t.Unknown:  # for the case of empty container
             return v.Bool(node.get('not'))
 
-        element = self.cast(node, element, type)
+        element = self.cast(node['op'], element, type)
         result = v.Call('contains', iterable, element, type=t.Bool)
         return v.UnaryOp('!', result, type=t.Bool) if node.get('not') else result
 
@@ -1860,15 +1865,15 @@ class PyxellTranspiler:
             op = ops[index-1]
 
             try:
-                left, right = self.unify(node, left, right)
+                left, right = self.unify(node['op'], left, right)
                 right = self.tmp(right)
             except err:
-                self.throw(node, err.NotComparable(left.type, right.type))
+                self.throw(node['op'], err.NotComparable(left.type, right.type))
 
             if not left.type.isComparable():
-                self.throw(node, err.NotComparable(left.type, right.type))
+                self.throw(node['op'], err.NotComparable(left.type, right.type))
             if not left.type.isOrderable() and op not in {'==', '!='}:
-                self.throw(node, err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(node['op'], err.NoBinaryOperator(op, left.type, right.type))
 
             cond = v.BinaryOp(left, op, right, type=t.Bool)
             left = right
@@ -1890,13 +1895,13 @@ class PyxellTranspiler:
         return self.cond(node, self.transpile(exprs[0]), lambda: self.transpile(exprs[1]), lambda: self.transpile(exprs[2]))
 
     def transpileExprRange(self, node):
-        self.throw(node, err.InvalidSyntax())
+        self.throw(node['op'], err.InvalidSyntax())
 
     def transpileExprSpread(self, node):
-        self.throw(node, err.InvalidSyntax())
+        self.throw(node['op'], err.InvalidSyntax())
 
     def transpileExprBy(self, node):
-        self.throw(node, err.InvalidSyntax())
+        self.throw(node['op'], err.InvalidSyntax())
 
     def transpileExprLambda(self, node):
         id = self.fake_id()
@@ -1909,8 +1914,8 @@ class PyxellTranspiler:
                 'name': name,
             } for i, name in enumerate(node['ids'], 1)],
             'block': {
-                **node,
                 'node': 'StmtReturn',
+                'position': node['expr'].get('position'),
                 'expr': node['expr'],
             },
             'lambda': True,

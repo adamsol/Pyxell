@@ -1,1 +1,1 @@
-:5:1: No implicit conversion from `String` to `Int`.
+:5:3: No implicit conversion from `String` to `Int`.

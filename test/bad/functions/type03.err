@@ -1,1 +1,1 @@
-:8:1: No implicit conversion from `->Bool` to `Bool->Bool`.
+:8:7: No implicit conversion from `->Bool` to `Bool->Bool`.

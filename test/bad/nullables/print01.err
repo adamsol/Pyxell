@@ -1,1 +1,1 @@
-:3:1: Variable of type `(String->Void)?` cannot be printed.
+:3:7: Variable of type `(String->Void)?` cannot be printed.

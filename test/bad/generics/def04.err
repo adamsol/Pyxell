@@ -1,2 +1,2 @@
-:5:1: Error in function `f` called here (with types N=Int).
+:5:2: Error in function `f` called here (with types N=Int).
 :3:9: Identifier `N` does not represent a variable.

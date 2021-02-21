@@ -1,1 +1,1 @@
-:2:1: Type `Char` is not iterable.
+:2:5: Type `Char` is not iterable.

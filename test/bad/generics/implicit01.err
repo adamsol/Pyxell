@@ -1,2 +1,2 @@
-:5:1: Error in function `inc` called here (with types $T1=Bool).
-:3:11: No binary operator `+` defined for `Bool` and `Int`.
+:5:4: Error in function `inc` called here (with types $T1=Bool).
+:3:13: No binary operator `+` defined for `Bool` and `Int`.

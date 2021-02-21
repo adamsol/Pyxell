@@ -1,2 +1,2 @@
-:6:1: Error in function `f` called here (with types A=Bool).
+:6:2: Error in function `f` called here (with types A=Bool).
 :2:27: Cannot settle return type of the function.

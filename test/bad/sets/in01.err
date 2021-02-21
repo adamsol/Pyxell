@@ -1,1 +1,1 @@
-:2:1: No implicit conversion from `String` to `Char`.
+:2:4: No implicit conversion from `String` to `Char`.

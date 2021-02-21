@@ -1,1 +1,1 @@
-:2:1: No binary operator `+` defined for `{Int:Char}` and `{Char:Int}`.
+:2:10: No binary operator `+` defined for `{Int:Char}` and `{Char:Int}`.

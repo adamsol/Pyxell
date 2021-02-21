@@ -1,1 +1,1 @@
-:2:4: Cannot compare `Int` with `Bool`.
+:2:6: Cannot compare `Int` with `Bool`.

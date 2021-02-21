@@ -1,1 +1,1 @@
-:6:1: No implicit conversion from `->Int` to `A->Int`.
+:6:13: No implicit conversion from `->Int` to `A->Int`.

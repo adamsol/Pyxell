@@ -1,1 +1,1 @@
-:9:1: No implicit conversion from `[B]` to `[A]?`.
+:9:11: No implicit conversion from `[B]` to `[A]?`.

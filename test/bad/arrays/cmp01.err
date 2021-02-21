@@ -1,1 +1,1 @@
-:2:1: Cannot compare `[Char]` with `String`.
+:2:7: Cannot compare `[Char]` with `String`.

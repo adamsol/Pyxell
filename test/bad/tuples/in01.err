@@ -1,1 +1,1 @@
-:2:1: Type `Bool*Bool` is not iterable.
+:2:10: Type `Bool*Bool` is not iterable.
