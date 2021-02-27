@@ -54,13 +54,13 @@ for precedence, op in enumerate(reversed(['?', '*', '->']), 1):
 
 
 class PyxellParser:
-    def __init__(self, lines, filepath):
-        tokens = tokenize(lines)
+    def __init__(self, lines, filepath, start_position=(1, 1)):
+        tokens = tokenize(lines, start_position)
         self.tokens = tokens[:-1]
         self.eof_token = tokens[-1]
         self.index = 0
         self.filepath = filepath
-    
+
     def raise_syntax_error(self, token):
         raise err(self.filepath, token.position, err.InvalidSyntax())
 

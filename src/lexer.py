@@ -37,14 +37,14 @@ class Token:
         raise TypeError("Use `text` property for comparing token strings.")
 
 
-def tokenize(lines):
+def tokenize(lines, start_position=(1, 1)):
     # Note that order matters here, e.g. longer operators must be before the ones that are their prefixes (like '...' and '..' or '??=' and '??').
     operator_regex = '|'.join(re.escape(op) for op in ASSIGNMENT_OPERATORS + MULTI_CHARACTER_OPERATORS) + r'|\W'
     regex = re.compile(f'({ID_REGEX}|{NUMBER_REGEX}|{CHAR_REGEX}|{STRING_REGEX}|{operator_regex}| +)')
 
     tokens = []
-    for i, line in enumerate(lines, 1):
-        j = 1
+    for i, line in enumerate(lines, start_position[0]):
+        j = start_position[1]
         for text in filter(None, re.split(regex, line)):
             # It's enough to look at the first character to decide which pattern (token type) has been matched.
             c = text[0]
@@ -61,5 +61,5 @@ def tokenize(lines):
                 tokens.append(Token(text, type, (i, j)))
             j += len(text)
 
-    tokens.append(Token('', Token.EOF, (len(lines), len(lines[-1]))))
+    tokens.append(Token('', Token.EOF, (len(lines) - 1 + start_position[0], len(lines[-1]) + start_position[1])))
     return tokens

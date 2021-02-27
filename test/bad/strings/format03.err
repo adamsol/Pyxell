@@ -1,1 +1,1 @@
-:1:2: No binary operator `*` defined for `Int` and `Bool`.
+:2:11: No binary operator `*` defined for `Int` and `Bool`.

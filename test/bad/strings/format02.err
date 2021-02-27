@@ -1,1 +1,1 @@
-:1:1: Type `->Void` has no attribute `toString`.
+:5:13: Type `->Void` has no attribute `toString`.

@@ -1,2 +1,2 @@
 
-print "{3*false}"
+"{42}..{+3*false}"

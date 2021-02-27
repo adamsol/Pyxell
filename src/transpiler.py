@@ -73,8 +73,7 @@ class PyxellTranspiler:
         return result
 
     def throw(self, node, msg):
-        position = node.get('position') or (1, 1)  # FIXME: position should always be available
-        raise err(self.current_unit.filepath, position, msg)
+        raise err(self.current_unit.filepath, node['position'], msg)
 
     def require(self, feature):
         if feature not in {'generators'}:
@@ -681,7 +680,7 @@ class PyxellTranspiler:
     def convert_string(self, node, string):
         string = re.sub('{{', '\\\\u007B', string)
         string = re.sub('}}', '\\\\u007D'[::-1], string[::-1])[::-1]
-        parts = re.split(r'{([^}]+)}', string)
+        parts = re.split(r'{([^}]*)}', string)
 
         if len(parts) == 1:
             return {
@@ -689,33 +688,28 @@ class PyxellTranspiler:
                 'value': string,
             }
 
-        lits, tags = parts[::2], parts[1::2]
-        exprs = [None] * len(parts)
-
-        for i, lit in enumerate(lits):
-            exprs[i*2] = {
-                'node': 'AtomString',
-                'value': lit,
-            }
-
-        for i, tag in enumerate(tags):
-            try:
-                expr = PyxellParser([ast.literal_eval(f'"{tag}"')], self.current_unit.filepath).parse_interpolation_expr()
-            except err as e:
-                self.throw({
-                    **node,
-                    'position': [e.position[0]+node['position'][0]-1, e.position[1]+node['position'][1]+1],
-                }, err.InvalidSyntax())
-
-            exprs[i*2+1] = {
-                'node': 'ExprCall',
-                'expr': {
-                    'node': 'ExprAttr',
-                    'expr': expr,
-                    'attr': 'toString',
-                },
-                'args': [],
-            }
+        pos = (node['position'][0], node['position'][1] + 1)
+        exprs = []
+        for i, part in enumerate(parts):
+            if i % 2 == 0:
+                exprs.append({
+                    'node': 'AtomString',
+                    'value': part,
+                })
+                pos = (pos[0], pos[1] + len(part))
+            else:
+                pos = (pos[0], pos[1] + 1)
+                exprs.append({
+                    'node': 'ExprCall',
+                    'expr': {
+                        'node': 'ExprAttr',
+                        'op': {'position': pos},
+                        'expr': PyxellParser([ast.literal_eval(f'"{part}"')], self.current_unit.filepath, pos).parse_interpolation_expr(),
+                        'attr': 'toString',
+                    },
+                    'args': [],
+                })
+                pos = (pos[0], pos[1] + len(part) + 1)
 
         return {
             'node': 'ExprCall',

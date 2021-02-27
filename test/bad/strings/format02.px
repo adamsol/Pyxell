@@ -2,4 +2,4 @@
 func f(): Void def
     return
 
-print "{f}"
+print "f = {f}"
