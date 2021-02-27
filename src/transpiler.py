@@ -1431,8 +1431,8 @@ class PyxellTranspiler:
                 if item['node'] == 'ExprSpread':
                     item = item['expr']
                 var = {
+                    **item,
                     'node': 'AtomId',
-                    'position': item['position'],
                     'id': self.fake_id(),
                 }
                 self.transpile({
@@ -1453,6 +1453,7 @@ class PyxellTranspiler:
                 })
             elif item['node'] == 'DictSpread':
                 vars = [{
+                    **item,
                     'node': 'AtomId',
                     'id': self.fake_id(),
                 } for _ in range(2)]
