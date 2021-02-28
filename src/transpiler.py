@@ -1857,18 +1857,19 @@ class PyxellTranspiler:
         def emitIf(index):
             nonlocal left
             right = self.transpile(exprs[index])
-            op = ops[index-1]
+            op_node = ops[index-1]
+            op = op_node['text']
 
             try:
-                left, right = self.unify(node['op'], left, right)
+                left, right = self.unify(op_node, left, right)
                 right = self.tmp(right)
             except err:
-                self.throw(node['op'], err.NotComparable(left.type, right.type))
+                self.throw(op_node, err.NotComparable(left.type, right.type))
 
             if not left.type.isComparable():
-                self.throw(node['op'], err.NotComparable(left.type, right.type))
+                self.throw(op_node, err.NotComparable(left.type, right.type))
             if not left.type.isOrderable() and op not in {'==', '!='}:
-                self.throw(node['op'], err.NoBinaryOperator(op, left.type, right.type))
+                self.throw(op_node, err.NoBinaryOperator(op, left.type, right.type))
 
             cond = v.BinaryOp(left, op, right, type=t.Bool)
             left = right

@@ -1,3 +1,3 @@
 
-if 1 == 0 == false do
+if 1 <= 0 < false > 0 do
     skip

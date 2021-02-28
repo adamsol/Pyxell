@@ -108,13 +108,16 @@ class PyxellParser:
             'position': token.position,
         }
 
-    def expr_node(self, name, token, op=None):
+    def expr_node(self, name, token):
         return {
             **self.node(name, token),
-            'op': {
-                'position': token.position,
-                'text': op,
-            },
+            'op': self.op_node(token),
+        }
+
+    def op_node(self, token):
+        return {
+            'position': token.position,
+            'text': token.text,
         }
 
     @contextmanager
@@ -245,7 +248,7 @@ class PyxellParser:
         for op in ASSIGNMENT_OPERATORS:
             if op_token.text == op:
                 return {
-                    **self.expr_node('StmtAssgExpr', op_token, op[:-1]),
+                    **self.expr_node('StmtAssgExpr', Token(op[:-1], op_token.type, op_token.position)),
                     'position': token.position,
                     'exprs': [exprs[0], self.parse_tuple_expr()],
                 }
@@ -446,7 +449,7 @@ class PyxellParser:
             }
         if token.text in {'+', '-', 'not'}:  # prefix operators
             return {
-                **self.expr_node('ExprUnaryOp', token, token.text),
+                **self.expr_node('ExprUnaryOp', token),
                 'expr': self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
             }
         if token.text == '...':  # spread operator
@@ -512,17 +515,17 @@ class PyxellParser:
             }
         if token.text in {'!'}:  # postfix operators
             return {
-                **self.expr_node('ExprUnaryOp', token, token.text),
+                **self.expr_node('ExprUnaryOp', token),
                 'expr': left,
             }
         if token.text in {'^', '^^', '??', 'and', 'or'}:  # right-associative infix operators
             return {
-                **self.expr_node('ExprBinaryOp', token, token.text),
+                **self.expr_node('ExprBinaryOp', token),
                 'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)],
             }
         if token.text in {'/', '//', '%', '*', '&', '+', '-', '%%'}:  # left-associative infix operators
             return {
-                **self.expr_node('ExprBinaryOp', token, token.text),
+                **self.expr_node('ExprBinaryOp', token),
                 'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
             }
         if token.text in {'...', '..'}:  # range operators
@@ -548,7 +551,7 @@ class PyxellParser:
             return {
                 **self.expr_node('ExprCmp', token),
                 'exprs': [left, *right['exprs']] if chained else [left, right],
-                'ops': [token.text, *right['ops']] if chained else [token.text],
+                'ops': [self.op_node(token), *right['ops']] if chained else [self.op_node(token)],
             }
         if token.text == 'in' or token.text == 'not' and self.match('in'):  # `in` / `not in`
             return {
