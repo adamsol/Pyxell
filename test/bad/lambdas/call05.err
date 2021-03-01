@@ -1,0 +1,2 @@
+:4:2: Error in function `a` called here (with types $A=Bool).
+:2:5: No unary operator `+` defined for `Bool`.

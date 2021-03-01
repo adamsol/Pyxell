@@ -1,2 +1,2 @@
-:5:2: Error in function `f` called here.
+:5:3: Error in function `sign` called here (with types T=A).
 lib/std.px:31:14: Cannot compare `A` with `Int`.

@@ -1,1 +1,1 @@
-:5:3: No implicit conversion from `$T1->$T2->$T3->$T0` to `Int->Int->Int`.
+:5:3: No implicit conversion from `$A->$B->$C->$D` to `Int->Int->Int`.

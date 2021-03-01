@@ -1,0 +1,2 @@
+:4:2: Error in function `b` called here (with types $A=String).
+:2:6: Type `String` is not nullable.

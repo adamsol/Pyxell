@@ -1,0 +1,3 @@
+
+f = lambda: true * false
+f()

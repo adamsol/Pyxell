@@ -1,0 +1,2 @@
+:3:8: Error in function `f` called here (with types $A=Int, $B=String).
+:2:8: No binary operator `+` defined for `Int` and `String`.

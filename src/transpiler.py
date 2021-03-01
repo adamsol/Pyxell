@@ -1,5 +1,6 @@
 
 import ast
+import copy
 import re
 from collections import defaultdict
 from contextlib import contextmanager
@@ -431,7 +432,12 @@ class PyxellTranspiler:
                 d = type_variables_assignment(type, value.type)
                 if d is None:
                     self.throw(node, err.NoConversion(value.type, type))
-                return self.function(value, d)
+                try:
+                    return self.function(value, d)
+                except err as e:
+                    if value.lambda_:
+                        raise
+                    self.throw(node, err.InvalidFunctionCall(value.id, d, e))
 
             # This is the only place where containers are not covariant during type checking.
             if not can_cast(value.type, type, covariance=False):
@@ -564,6 +570,8 @@ class PyxellTranspiler:
                 self.assign(expr, v.Get(value, i))
         elif value.isTemplate() and expr['node'] == 'AtomId' and expr['id'] not in self.env:
             id = expr['id']
+            value = copy.copy(value)
+            value.id = id
             self.env[id] = value
         else:
             var = self.lvalue(expr, declare=type, override=expr.get('override', False))
@@ -779,7 +787,7 @@ class PyxellTranspiler:
                     return expr
                 return convert_expr(expr)
             if node == 'AtomPlaceholder':
-                id = f'${len(ids)}'
+                id = f'${chr(len(ids)+97)}'
                 ids.append(id)
                 return {
                     **expr,
@@ -1160,13 +1168,13 @@ class PyxellTranspiler:
                 self.env[name] = t.Var(name)
 
             args = [] if class_type is None else [t.Func.Arg('this', class_type)]
-            for i, arg in enumerate(node['args'], 1):
+            for i, arg in enumerate(node['args']):
                 name = arg['name']
                 type = self.transpile(arg.get('type'))
                 default = arg.get('default')
                 variadic = arg.get('variadic')
                 if type is None:
-                    type_name = f'$T{i}'
+                    type_name = f'${chr(i+65)}'
                     type = t.Var(type_name)
                     if variadic:
                         type = t.Array(type)
@@ -1186,7 +1194,8 @@ class PyxellTranspiler:
 
             ret_type = self.transpile(node.get('ret'))
             if ret_type is None:
-                ret_type = t.Var('$T0')
+                n = len(node['args'])
+                ret_type = t.Var(f'${chr(n+65)}')
                 typevars.append(ret_type.name)
                 self.env[ret_type.name] = ret_type
             if node.get('generator'):
@@ -1682,23 +1691,18 @@ class PyxellTranspiler:
 
                     self.env[name] = assigned_types[name] = type
 
-                try:
-                    for i in range(len(args)):
-                        type = self.resolve_type(func_args[i].type)
-                        args[i] = self.cast(exprs[i], args[i], type)
-                        d = type_variables_assignment(args[i].type, func_args[i].type)
-                        assigned_types.update(d)
-                        self.env.update(d)
-                except err as e:
-                    if not func.isTemplate():
-                        raise
-                    self.throw(node['op'], err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
+                for i in range(len(args)):
+                    type = self.resolve_type(func_args[i].type)
+                    args[i] = self.cast(exprs[i], args[i], type)
+                    d = type_variables_assignment(args[i].type, func_args[i].type)
+                    assigned_types.update(d)
+                    self.env.update(d)
 
                 if func.isTemplate():
                     try:
                         func = self.function(func, assigned_types)
                     except err as e:
-                        self.throw(node['op'], err.InvalidFunctionCall(func.id, assigned_types, str(e)[:-1]))
+                        self.throw(node['op'], err.InvalidFunctionCall(func.id, assigned_types, e))
 
                 return func, args
 

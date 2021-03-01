@@ -10,7 +10,7 @@ class PyxellError(Exception):
     IntegerTooLarge = lambda: f"Integer constant is too large"
     InvalidArgumentTypes = lambda t: f"Cannot unify argument types for type variable `{t.show()}`"
     InvalidDeclaration = lambda t: f"Cannot declare variable of type `{t.show()}`"
-    InvalidFunctionCall = lambda id, types, msg: f"Error in function `{id}` called here{(' (with types ' + ', '.join(f'{name}={type.show()}' for name, type in types.items()) + ')') if types else ''}.\n{msg}"
+    InvalidFunctionCall = lambda id, types, e: f"Error in function `{id}` called here{(' (with types ' + ', '.join(f'{name}={type.show()}' for name, type in types.items()) + ')') if types else ''}.\n{str(e)[:-1]}"
     InvalidMember = lambda id: f"Invalid type signature of member `{id}`"
     InvalidReturnType = lambda t: f"`{t.show()}` is not a valid return type"
     InvalidUsage = lambda s: f"`{s}` cannot be used here"
