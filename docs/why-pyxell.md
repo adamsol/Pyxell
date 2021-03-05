@@ -46,6 +46,12 @@ Basic operations on sets (`+`, `-`, `&`) have more intuitive precedence in Pyxel
 so that expression `{1} + {2} - {1}` produces `{2}` as expected,
 contrary to `{1} | {2} - {1}` producing `{1, 2}` in Python.
 
+### Natural order of conditional operator arguments
+
+The ternary conditional operator in Pyxell works like in many other programming languages: `condition ? if_true : if_false`.
+This syntax follows the actual order of evaluation of the expressions,
+and thus is more natural to read than Python's syntax, where condition is in the middle.
+
 ### Operators for nullable types
 
 Pyxell allows `null` value only for variables whose type has been explicitly marked as nullable.
@@ -62,9 +68,10 @@ so that container literals can be safely used in default arguments without the r
 Standard iteration over a dictionary in Pyxell produces pairs of key and value, not just keys.
 Unneeded part can be discarded with `_`.
 
-### Caret as exponentiation operator
+### Caret as power operator
 
-Pyxell uses `^` as power operator, which is closer to the mathematical notation and used more commonly in mathematical software than `**`.
+Instead of using `^` character for rarely utilized `xor` operation, Pyxell uses it for exponentiation,
+as it is most often written this way in regular text and in mathematical software.
 Exponentiation works exactly even for negative exponents, producing rational numbers.
 There is also a separate, lossy `^^` operator, which produces standard integers.
 
@@ -78,6 +85,7 @@ which in Python 2 would denote octal numbers and in Python 3 cause a syntax erro
 There is a clear distinction between tuples and arrays in Pyxell.
 Tuples are indexed using alphabetical properties, e.g. `tuple.a`, and are not iterable, but provide type safety.
 Tuples are mutable, but since they have value semantics (whole tuple is copied rather than just reference), they can still be used e.g. as dictionary keys.
+Moreover, one-element tuples are useless, so you can't construct them by accidentally leaving a trailing comma.
 
 ### Consistent augmented assignment operators
 
@@ -93,7 +101,7 @@ Built-in constants (e.g. `true`) are lowercase, since they are closer to variabl
 
 Pyxell allows modifying global variables inside functions by default.
 Python's requirement of using `global` keyword is most probably not what programmers coming from other languages expect,
-and it also not completely consistent, since mutable global objects can be always mutated anyway.
+and it's also not completely consistent, since mutable global objects can be always mutated anyway.
 
 ### Methods instead of global functions
 

@@ -682,13 +682,14 @@ class Cat def
 
 Every class has a default constructor function that accepts field values in the order of definition, or as named arguments.
 Fields not directly initialized will receive their default values.
+This is similar to how [dataclasses](https://docs.python.org/3/library/dataclasses.html) in Python work.
 
 ```
 cat = Cat(name="Simba")
 print cat.name, cat.afraid_of_water
 ```
 
-Remember that class objects must always be explicitly constructed before use (they have no valid default value).
+Note that class objects must always be explicitly constructed before use (they have no valid default value).
 The following code will crash (or raise a proper exception, once they are implemented).
 
 ```

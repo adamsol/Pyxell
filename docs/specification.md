@@ -53,15 +53,15 @@ This section describes all data types available in Pyxell, together with their p
 
 ### Compound types
 
-| Type name pattern     | Description      | Example value   | Default value                            |
-| --------------------- | ---------------- | --------------- | ---------------------------------------- |
-| `[Type]`              | array            | `[1, 2]`        | `[]`                                     |
-| `{Type}`              | set              | `{"abc", ""}`   | `{}`                                     |
-| `{Key:Value}`         | dictionary       | `{'x': false}`  | `{:}`                                    |
-| `Type?`               | nullable value   | `null`          | `null`                                   |
-| `Type1*Type2`         | tuple            | `true, 4.6`     | tuple of default values                  |
-| `Arg1->Arg2->Result`  | function         | `_+_`           | function returning the default value     |
-| custom class name     | class object     |                 | none (uninitialized object is invalid)   |
+| Type name patterns                 | Description      | Example values     | Default value                            |
+| ---------------------------------- | ---------------- | ------------------ | ---------------------------------------- |
+| `[Type]`                           | array            | `[1, 2]`           | `[]`                                     |
+| `{Type}`                           | set              | `{"abc", ""}`      | `{}`                                     |
+| `{Key:Value}`                      | dictionary       | `{'x': false}`     | `{:}`                                    |
+| `Type?`                            | nullable value   | `null`             | `null`                                   |
+| `Type1*Type2`                      | tuple            | `true, 4.6`        | tuple of default values                  |
+| `Arg1->Arg2->Result`, `()->Result` | function         | `_+_`, `lambda: 0` | function returning the default value     |
+| custom class name                  | class object     |                    | none (uninitialized object is invalid)   |
 
 ### `Int` properties
 
