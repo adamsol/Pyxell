@@ -243,7 +243,8 @@ class Func(Type):
         return f'std::function<{self.ret}({self.args_str()})>'
 
     def show(self):
-        return '->'.join([arg.type.show_with_precedence(self) for arg in self.args]) + '->' + self.ret.show_with_precedence(self)
+        prefix = '()' if not self.args else ''
+        return prefix + '->'.join([arg.type.show_with_precedence(self) for arg in self.args]) + '->' + self.ret.show_with_precedence(self)
 
     def eq(self, other):
         return [arg.type for arg in self.args] == [arg.type for arg in other.args] and self.ret == other.ret

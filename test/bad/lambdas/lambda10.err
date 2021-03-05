@@ -1,1 +1,1 @@
-:3:5: No implicit conversion from `->$A` to `Int`.
+:3:5: No implicit conversion from `()->$A` to `Int`.

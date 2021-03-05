@@ -1,1 +1,1 @@
-:8:3: Cannot compare `->Int` with `->Int`.
+:8:3: Cannot compare `()->Int` with `()->Int`.
