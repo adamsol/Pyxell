@@ -1,0 +1,5 @@
+
+func f(_: Int, _: Int, c: Int): Int def
+    return c
+
+print f(1, 2, 3)

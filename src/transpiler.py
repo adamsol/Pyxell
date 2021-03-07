@@ -150,7 +150,7 @@ class PyxellTranspiler:
             return t.Func([arg._replace(type=self.resolve_type(arg.type)) for arg in type.args], self.resolve_type(type.ret))
         return type
 
-    def fake_id(self, prefix='$id'):
+    def fake_name(self, prefix='$id'):
         self.sequence_number += 1
         return f'{prefix}{self.sequence_number}'
 
@@ -275,10 +275,13 @@ class PyxellTranspiler:
 
     def attribute(self, node, expr, attr, for_print=False):
         if expr['node'] == 'AtomId':
-            id = expr['id']
-            if id in self.units:
-                with self.unit(id):
-                    return self.get(node['op'], attr)
+            module_name = expr['name']
+            if module_name in self.units:
+                try:
+                    with self.unit(module_name):
+                        return self.get(node, attr)
+                except err:
+                    self.throw(node['op'], err.NoIdentifier(module_name, attr))
 
         obj = self.tmp(self.transpile(expr))
         return self.attr(node, obj, attr, for_print)
@@ -437,7 +440,7 @@ class PyxellTranspiler:
                 except err as e:
                     if value.lambda_:
                         raise
-                    self.throw(node, err.InvalidFunctionCall(value.id, d, e))
+                    self.throw(node, err.InvalidFunctionCall(value.name, d, e))
 
             # This is the only place where containers are not covariant during type checking.
             if not can_cast(value.type, type, covariance=False):
@@ -484,7 +487,7 @@ class PyxellTranspiler:
         return self.const(v.String(value))
 
     def var(self, type, prefix='v'):
-        return v.Variable(type, self.fake_id(prefix))
+        return v.Variable(type, self.fake_name(prefix))
 
     def tmp(self, value, force_var=False):
         if isinstance(value, v.Variable) or not force_var and isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
@@ -500,36 +503,36 @@ class PyxellTranspiler:
         self.store(tmp, value, decl='auto')
         return tmp
 
-    def declare(self, node, type, id, redeclare=False):
+    def declare(self, node, type, name, redeclare=False):
         if not type.hasValue() or type.isVar():
             self.throw(node, err.InvalidDeclaration(type))
-        if id in self.env and not redeclare:
-            self.throw(node, err.RedefinedIdentifier(id))
+        if name in self.env and not redeclare:
+            self.throw(node, err.RedefinedIdentifier(name))
 
         var = self.var(type)
-        self.env[id] = var
+        self.env[name] = var
         self.output(c.Var(var), toplevel=(self.env.get('#return') is None))
 
-        return self.env[id]
+        return self.env[name]
 
     def lvalue(self, expr, declare=None, override=False):
         if expr['node'] == 'AtomId':
-            id = expr['id']
+            name = expr['name']
 
-            if id not in self.env:
+            if name not in self.env:
                 if declare is None:
-                    self.throw(expr, err.UndeclaredIdentifier(id))
-                self.declare(expr, declare, id)
+                    self.throw(expr, err.UndeclaredIdentifier(name))
+                self.declare(expr, declare, name)
             elif override:
-                self.declare(expr, declare, id, redeclare=True)
-            elif not isinstance(self.env[id], v.Value) or getattr(self.env[id], 'final', False):
-                self.throw(expr, err.RedefinedIdentifier(id))
+                self.declare(expr, declare, name, redeclare=True)
+            elif not isinstance(self.env[name], v.Value) or getattr(self.env[name], 'final', False):
+                self.throw(expr, err.RedefinedIdentifier(name))
 
-            return self.env[id]
+            return self.env[name]
 
         if expr['node'] == 'ExprAttr' and not expr.get('safe'):
             obj = self.transpile(expr['expr'])
-            attr = expr['attr']
+            attr = expr['id']['name']
             if obj.type.isTuple():
                 return self.attr(expr, obj, attr)
             elif obj.type.isClass():
@@ -568,11 +571,11 @@ class PyxellTranspiler:
             value = self.tmp(value)
             for i, expr in enumerate(exprs):
                 self.assign(expr, v.Get(value, i))
-        elif value.isTemplate() and expr['node'] == 'AtomId' and expr['id'] not in self.env:
-            id = expr['id']
+        elif value.isTemplate() and expr['node'] == 'AtomId' and expr['name'] not in self.env:
+            name = expr['name']
             value = copy.copy(value)
-            value.id = id
-            self.env[id] = value
+            value.name = name
+            self.env[name] = value
         else:
             var = self.lvalue(expr, declare=type, override=expr.get('override', False))
             if var is None:
@@ -713,7 +716,10 @@ class PyxellTranspiler:
                         'node': 'ExprAttr',
                         'op': {'position': pos},
                         'expr': PyxellParser([ast.literal_eval(f'"{part}"')], self.current_unit.filepath, pos).parse_interpolation_expr(),
-                        'attr': 'toString',
+                        'id': {
+                            'node': 'AtomId',
+                            'name': 'toString',
+                        },
                     },
                     'args': [],
                 })
@@ -728,7 +734,10 @@ class PyxellTranspiler:
                     'kind': 'array',
                     'items': exprs,
                 },
-                'attr': 'join',
+                'id': {
+                    'node': 'AtomId',
+                    'name': 'join',
+                },
             },
             'args': [],
         }
@@ -787,13 +796,13 @@ class PyxellTranspiler:
                     return expr
                 return convert_expr(expr)
             if node == 'AtomPlaceholder':
-                id = f'${chr(len(ids)+97)}'
-                ids.append(id)
-                return {
+                id = {
                     **expr,
                     'node': 'AtomId',
-                    'id': id,
+                    'name': f'${chr(len(ids)+97)}',
                 }
+                ids.append(id)
+                return id
             return expr
 
         expr = convert_expr(expr)
@@ -867,7 +876,7 @@ class PyxellTranspiler:
                             self.output(c.Statement('return', self.default(body, func_type.ret)))
 
                     else:  # `extern`
-                        self.output(c.Statement('return', v.Call(v.Variable(template.type, template.id), *arg_vars)))
+                        self.output(c.Statement('return', v.Call(v.Variable(template.type, template.name), *arg_vars)))
 
         if template.lambda_:
             # The closure is created every time the function is used (except for recursive calls),
@@ -882,8 +891,11 @@ class PyxellTranspiler:
 
     @contextmanager
     def loop(self, stmt_callback, label):
+        if label:
+            label = label['name']
+
         with self.local():
-            labels = {'break': self.fake_id('l'), 'continue': self.fake_id('l')}
+            labels = {'break': self.fake_name('l'), 'continue': self.fake_name('l')}
             self.env['#loops'] = {**self.env['#loops'], label: labels, None: labels}
 
             body = c.Block()
@@ -902,19 +914,20 @@ class PyxellTranspiler:
             self.transpile(stmt)
 
     def transpileStmtUse(self, node):
-        name = node['name']
-        if name not in self.units:
-            self.throw(node, err.UnknownModule(name))
+        module_name = node['id']['name']
+        if module_name not in self.units:
+            self.throw(node['id'], err.UnknownModule(module_name))
 
-        unit = self.units[name]
+        unit = self.units[module_name]
         kind, *ids = node['detail']
 
         if kind == 'hiding':
             hidden = set()
             for id in ids:
-                if id not in unit.env:
-                    self.throw(node, err.UndeclaredIdentifier(id))
-                hidden.add(id)
+                name = id['name']
+                if name not in unit.env:
+                    self.throw(id, err.NoIdentifier(module_name, name))
+                hidden.add(name)
             self.env.update({x: unit.env[x] for x in unit.env.keys() - hidden})
         else:
             self.env.update(unit.env)
@@ -937,11 +950,10 @@ class PyxellTranspiler:
         self.output(c.Statement(v.Call('write', self.string('\\n'))))  # std::endl is very slow
 
     def transpileStmtDecl(self, node):
-        id = node['id']
         type = self.resolve_type(self.transpile(node['type']))
-        expr = node['expr']
-        var = self.declare(node, type, id)
+        var = self.declare(node, type, node['id']['name'])
 
+        expr = node['expr']
         if expr:
             value = self.cast(expr, self.transpile(expr), type)
         else:
@@ -966,7 +978,7 @@ class PyxellTranspiler:
         op = node['op']['text']
         left = self.lvalue(exprs[0])
         if left is None:
-            self.throw(node, err.InvalidUsage('_'))
+            self.throw(node, err.NotLvalue())
 
         if op == '??':
             block = c.Block()
@@ -1149,27 +1161,28 @@ class PyxellTranspiler:
     def transpileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`
         label = node.get('label')
+        name = label and label['name']
 
         if not self.env['#loops']:
             self.throw(node, err.InvalidUsage(stmt))
-        if label not in self.env['#loops']:
-            self.throw(node, err.UnknownLabel(label))
+        if name not in self.env['#loops']:
+            self.throw(label, err.UnknownLabel(name))
 
-        self.output(c.Statement('goto', self.env['#loops'][label][stmt]))
+        self.output(c.Statement('goto', self.env['#loops'][name][stmt]))
 
     def transpileStmtFunc(self, node, class_type=None):
-        id = node['id']
-        if class_type is None and id in self.env:
-            self.throw(node, err.RedefinedIdentifier(id))
+        func_name = node['id']['name']
+        if class_type is None and func_name in self.env:
+            self.throw(node['id'], err.RedefinedIdentifier(func_name))
 
         with self.local():
-            typevars = node.get('typevars', [])
+            typevars = [id['name'] for id in node.get('typevars', [])]
             for name in typevars:
                 self.env[name] = t.Var(name)
 
             args = [] if class_type is None else [t.Func.Arg('this', class_type)]
             for i, arg in enumerate(node['args']):
-                name = arg['name']
+                name = arg['id'].get('name')  # allow placeholders as argument names
                 type = self.transpile(arg.get('type'))
                 default = arg.get('default')
                 variadic = arg.get('variadic')
@@ -1206,10 +1219,10 @@ class PyxellTranspiler:
             env = self.env.copy()
 
             lambda_ = node.get('lambda') or self.env.get('#return') is not None
-            func = v.FunctionTemplate(id, typevars, func_type, node['block'], env, self.current_unit, lambda_)
+            func = v.FunctionTemplate(func_name, typevars, func_type, node['block'], env, self.current_unit, lambda_)
 
         if class_type is None:
-            self.env[id] = env[id] = func
+            self.env[func_name] = env[func_name] = func
         else:
             return self.function(func)
 
@@ -1264,9 +1277,9 @@ class PyxellTranspiler:
         self.output(c.Statement('co_yield', value))
 
     def transpileStmtClass(self, node):
-        id = node['id']
-        if id in self.env:
-            self.throw(node, err.RedefinedIdentifier(id))
+        class_name = node['id']['name']
+        if class_name in self.env:
+            self.throw(node['id'], err.RedefinedIdentifier(class_name))
 
         base = self.transpile(node['base'])
         if base and not base.isClass():
@@ -1277,8 +1290,8 @@ class PyxellTranspiler:
         base_methods = base.methods if base else {}
         methods = dict(base_methods)
 
-        type = t.Class(id, base, members, methods)
-        self.env[id] = type
+        type = t.Class(class_name, base, members, methods)
+        self.env[class_name] = type
 
         cls = self.var(t.Func([], type), prefix='c')
         type.initializer = cls
@@ -1289,7 +1302,7 @@ class PyxellTranspiler:
 
         for member in node['members']:
             if member['node'] == 'ClassField':
-                name = member['id']
+                name = member['id']['name']
                 if name in members:
                     self.throw(member, err.RepeatedMember(name))
                 if name == 'toString':
@@ -1306,22 +1319,25 @@ class PyxellTranspiler:
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field
 
-        if not any(member['id'] == 'toString' for member in node['members']) and (not base or 'toString' in base.default_methods):
+        if not any(member['id']['name'] == 'toString' for member in node['members']) and (not base or 'toString' in base.default_methods):
             node['members'].append({
                 'node': 'ClassMethod',
-                'id': 'toString',
+                'id': {
+                    'node': 'AtomId',
+                    'name': 'toString',
+                },
                 'args': [],
                 'ret': t.String,
                 'block': {
                     'node': 'StmtReturn',
-                    'expr': self.string(f'{id} object'),
+                    'expr': self.string(f'{class_name} object'),
                 },
             })
             type.default_methods.add('toString')
 
         for member in node['members']:
             if member['node'] != 'ClassField':
-                name = member['id']
+                name = member['id']['name']
                 if name in members and name not in base_members:
                     self.throw(member, err.RepeatedMember(name))
 
@@ -1442,7 +1458,7 @@ class PyxellTranspiler:
                 var = {
                     **item,
                     'node': 'AtomId',
-                    'id': self.fake_id(),
+                    'name': self.fake_name(),
                 }
                 self.transpile({
                     'node': 'StmtFor',
@@ -1464,7 +1480,7 @@ class PyxellTranspiler:
                 vars = [{
                     **item,
                     'node': 'AtomId',
-                    'id': self.fake_id(),
+                    'name': self.fake_name(),
                 } for _ in range(2)]
 
                 self.transpile({
@@ -1492,7 +1508,7 @@ class PyxellTranspiler:
 
         value, collection = [{
             'node': 'AtomId',
-            'id': self.fake_id(),
+            'name': self.fake_name(),
         } for _ in range(2)]
 
         stmt = inner_stmt = {
@@ -1556,7 +1572,7 @@ class PyxellTranspiler:
 
     def transpileExprAttr(self, node):
         expr = node['expr']
-        attr = node['attr']
+        attr = node['id']['name']
 
         if node.get('safe'):
             obj = self.tmp(self.transpile(expr))
@@ -1605,8 +1621,9 @@ class PyxellTranspiler:
             named_args = {}
 
             for i, call_arg in enumerate(node['args']):
-                name = call_arg['name']
-                if name:
+                id = call_arg.get('id')
+                if id:
+                    name = id['name']
                     if name in named_args:
                         self.throw(call_arg, err.RepeatedArgument(name))
                     if name not in func_named_args:
@@ -1702,7 +1719,7 @@ class PyxellTranspiler:
                     try:
                         func = self.function(func, assigned_types)
                     except err as e:
-                        self.throw(node['op'], err.InvalidFunctionCall(func.id, assigned_types, e))
+                        self.throw(node['op'], err.InvalidFunctionCall(func.name, assigned_types, e))
 
                 return func, args
 
@@ -1712,7 +1729,7 @@ class PyxellTranspiler:
             return v.Call(func, *args, type=func.type.ret)
 
         if expr['node'] == 'ExprAttr':
-            attr = expr['attr']
+            attr = expr['id']['name']
 
             if expr.get('safe'):
                 obj = self.tmp(self.transpile(expr['expr']))
@@ -1904,15 +1921,18 @@ class PyxellTranspiler:
         self.throw(node['op'], err.InvalidSyntax())
 
     def transpileExprLambda(self, node):
-        id = self.fake_id()
+        name = self.fake_name()
 
         self.transpile({
             **node,
             'node': 'StmtFunc',
-            'id': id,
-            'args': [{
+            'id': {
+                'node': 'AtomId',
                 'name': name,
-            } for i, name in enumerate(node['ids'], 1)],
+            },
+            'args': [{
+                'id': id,
+            } for id in node['ids']],
             'block': {
                 'node': 'StmtReturn',
                 'position': node['expr'].get('position'),
@@ -1921,7 +1941,7 @@ class PyxellTranspiler:
             'lambda': True,
         })
 
-        return self.get(node, id)
+        return self.get(node, name)
 
     def transpileExprTuple(self, node):
         elements = lmap(self.transpile, node['exprs'])
@@ -1977,12 +1997,12 @@ class PyxellTranspiler:
         return func
 
     def transpileAtomId(self, node):
-        return self.get(node, node['id'])
+        return self.get(node, node['name'])
 
 
     ### Types ###
 
-    def transpileTypeName(self, node):
+    def transpileTypeId(self, node):
         name = node['name']
 
         type = {

@@ -160,7 +160,7 @@ class PyxellParser:
         if token.text == 'use':
             return {
                 **self.node('StmtUse', token),
-                'name': self.parse_id(),
+                'id': self.parse_id(),
                 'detail': self.match('hiding') and ['hiding', *self.parse_id_list()] or ['all'],
             }
         if token.text == 'skip':
@@ -282,10 +282,13 @@ class PyxellParser:
         if token.text in {'constructor', 'destructor'}:
             return {
                 **self.node(f'Class{token.text.capitalize()}', token),
-                'id': f'<{token.text}>',
+                'id': {
+                    **self.expr_node('AtomId', token),
+                    'name': f'<{token.text}>',
+                },
                 'args': [],
                 'ret': {
-                    **self.node('TypeName', token),
+                    **self.node('TypeId', token),
                     'name': 'Void',
                 },
                 'block': self.expect('def') and self.parse_block(),
@@ -322,22 +325,29 @@ class PyxellParser:
         return {
             **self.node('FuncArg', self.peek()),
             'variadic': self.match('...'),
-            'name': self.parse_id(),
+            'id': self.parse_id(placeholder_allowed=True),
             'type': self.match(':') and self.parse_type() or None,
             'default': self.match('=') and self.parse_expr() or None,
         }
 
-    def parse_id_list(self):
-        ids = [self.parse_id()]
+    def parse_id_list(self, **kwargs):
+        ids = [self.parse_id(**kwargs)]
         while self.match(','):
-            ids.append(self.parse_id())
+            ids.append(self.parse_id(**kwargs))
         return ids
 
-    def parse_id(self):
+    def parse_id(self, placeholder_allowed=False):
         token = self.pop()
-        if token.type != Token.ID:
-            self.raise_syntax_error(token)
-        return token.text
+        if token.type == Token.ID:
+            if token.text == '_':
+                if not placeholder_allowed:
+                    self.raise_syntax_error(token)
+                return self.expr_node('AtomPlaceholder', token)
+            return {
+                **self.expr_node('AtomId', token),
+                'name': token.text,
+            }
+        self.raise_syntax_error(token)
 
     def parse_interpolation_expr(self):
         expr = self.parse_tuple_expr()
@@ -375,10 +385,8 @@ class PyxellParser:
 
     def parse_expr_prefix_op(self, token):
         if token.type == Token.ID:
-            return {
-                **self.expr_node('AtomPlaceholder' if token.text == '_' else 'AtomId', token),
-                'id': token.text,
-            }
+            self.backtrack()
+            return self.parse_id(placeholder_allowed=True)
         if token.type == Token.NUMBER:
             text = token.text.replace('_', '').lower()
             if any(text.startswith(prefix) for prefix in ['0b', '0o', '0x']):
@@ -460,7 +468,7 @@ class PyxellParser:
         if token.text == 'lambda':
             return {
                 **self.expr_node('ExprLambda', token),
-                'ids': [] if self.check(':') else self.parse_id_list(),
+                'ids': [] if self.check(':') else self.parse_id_list(placeholder_allowed=True),
                 'expr': self.expect(':') and self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
             }
         self.raise_syntax_error(token)
@@ -471,7 +479,7 @@ class PyxellParser:
                 **self.expr_node('ExprAttr', token),
                 'expr': left,
                 'safe': token.text.startswith('?'),
-                'attr': self.parse_id(),
+                'id': self.parse_id(),
             }
         if token.text in {'[', '?['}:  # element access
             safe = token.text.startswith('?')
@@ -623,7 +631,7 @@ class PyxellParser:
         token = self.peek()
         return {
             **self.node('CallArg', token),
-            'name': (self.parse_id(), self.expect('='))[0] if token.type == Token.ID and self.peek(1).text == '=' else None,
+            'id': (self.parse_id(), self.expect('='))[0] if token.type == Token.ID and self.peek(1).text == '=' else None,
             'expr': self.parse_expr(),
         }
 
@@ -640,7 +648,7 @@ class PyxellParser:
     def parse_type_prefix_op(self, token):
         if token.type == Token.ID:
             return {
-                **self.node('TypeName', token),
+                **self.node('TypeId', token),
                 'name': token.text,
             }
         if token.text == '(':  # grouping

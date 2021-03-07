@@ -1,0 +1,7 @@
+
+func f(a, _, _) def
+    _ = a
+    g = _
+    return g(a)
+
+print f(1, 2, 3)

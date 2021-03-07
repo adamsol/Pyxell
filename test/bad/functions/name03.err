@@ -1,1 +1,1 @@
-:5:1: Identifier `function` cannot be redefined.
+:5:6: Identifier `function` cannot be redefined.

@@ -1,1 +1,1 @@
-lib/math.px:2:11: Undeclared identifier `CHAITIN_OMEGA`.
+:2:11: Module `math` has no identifier `CHAITIN_OMEGA`.

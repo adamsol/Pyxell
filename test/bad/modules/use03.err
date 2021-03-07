@@ -1,1 +1,1 @@
-:2:1: Undeclared identifier `something`.
+:2:19: Module `random` has no identifier `_something`.

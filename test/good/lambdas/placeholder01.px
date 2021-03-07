@@ -1,0 +1,5 @@
+
+func call(f: Bool->Int->String->Int): Int def
+    return f(true, 7, "")
+
+print call(lambda _, y, _: y)
