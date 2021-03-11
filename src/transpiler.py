@@ -176,7 +176,7 @@ class PyxellTranspiler:
 
         return result
 
-    def default(self, node, type):
+    def default(self, type):
         if type == t.Int:
             return v.Int(0)
         if type == t.Rat:
@@ -198,13 +198,11 @@ class PyxellTranspiler:
         if type.isNullable():
             return v.Nullable(None, type.subtype)
         if type.isTuple():
-            return v.Tuple([self.default(node, t) for t in type.elements])
+            return v.Tuple([self.default(t) for t in type.elements])
         if type.isFunc():
-            return v.Lambda(type, [''] * len(type.args), self.default(node, type.ret) if type.ret != t.Void else c.Block())
+            return v.Lambda(type, [''] * len(type.args), self.default(type.ret) if type.ret != t.Void else c.Block())
         if type.isClass():
             return v.Literal('nullptr', type=type)
-
-        self.throw(node, err.NotDefaultable(type))
 
     def index(self, node, collection, index, lvalue=False):
         exprs = node['exprs']
@@ -233,7 +231,7 @@ class PyxellTranspiler:
                 block = c.Block()
                 self.output(c.If(f'{it} == {end}', block))
                 with self.block(block):
-                    default = self.default(node, type)
+                    default = self.default(type)
                     self.output(c.Statement(it, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), it, index, default)))
 
                 return v.Attribute(it, 'second', type=type)
@@ -427,30 +425,27 @@ class PyxellTranspiler:
         return value
 
     def cast(self, node, value, type):
-        def _cast(value, type):
-            # Special case to handle generic functions and lambdas.
-            if value.isTemplate():
-                if value.bound:
-                    type = t.Func([value.bound.type] + type.args, type.ret)
-                d = type_variables_assignment(type, value.type)
-                if d is None:
-                    self.throw(node, err.NoConversion(value.type, type))
-                try:
-                    return self.function(value, d)
-                except err as e:
-                    if value.lambda_:
-                        raise
-                    self.throw(node, err.InvalidFunctionCall(value.name, d, e))
-
-            # This is the only place where containers are not covariant during type checking.
-            if not can_cast(value.type, type, covariance=False):
+        # Special case to handle generic functions and lambdas.
+        if value.isTemplate():
+            if value.bound:
+                type = t.Func([value.bound.type] + type.args, type.ret)
+            d = type_variables_assignment(type, value.type)
+            if d is None:
                 self.throw(node, err.NoConversion(value.type, type))
+            try:
+                return self.function(value, d)
+            except err as e:
+                if value.lambda_:
+                    raise
+                self.throw(node, err.InvalidFunctionCall(value.name, d, e))
 
-            if not value.type.isNullable() and type.isNullable():
-                return v.Nullable(v.Cast(value, type.subtype))
-            return v.Cast(value, type)
+        # This is the only place where containers are not covariant during type checking.
+        if not can_cast(value.type, type, covariance=False):
+            self.throw(node, err.NoConversion(value.type, type))
 
-        return _cast(value, type)
+        if not value.type.isNullable() and type.isNullable():
+            return v.Nullable(v.Cast(value, type.subtype))
+        return v.Cast(value, type)
 
     def unify(self, node, *values, error=err.UnknownType()):
         if not values:
@@ -749,7 +744,6 @@ class PyxellTranspiler:
             if expr is None:
                 return
 
-            nonlocal ids
             node = expr['node']
 
             if node in {'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprIn', 'ExprCmp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
@@ -757,7 +751,7 @@ class PyxellTranspiler:
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
                 }
-            elif node == 'ExprCollection':
+            if node == 'ExprCollection':
                 return {
                     **expr,
                     'items': lmap(convert_expr, expr['items']),
@@ -873,7 +867,7 @@ class PyxellTranspiler:
                         self.transpile(body)
 
                         if func_type.ret.hasValue():
-                            self.output(c.Statement('return', self.default(body, func_type.ret)))
+                            self.output(c.Statement('return', self.default(func_type.ret)))
 
                     else:  # `extern`
                         self.output(c.Statement('return', v.Call(v.Variable(template.type, template.name), *arg_vars)))
@@ -957,7 +951,7 @@ class PyxellTranspiler:
         if expr:
             value = self.cast(expr, self.transpile(expr), type)
         else:
-            value = self.default(node, type)
+            value = self.default(type)
 
         self.store(var, value)
 
@@ -1184,7 +1178,7 @@ class PyxellTranspiler:
             for i, arg in enumerate(node['args']):
                 name = arg['id'].get('name')  # allow placeholders as argument names
                 type = self.transpile(arg.get('type'))
-                default = arg.get('default')
+                default = arg.get('expr')
                 variadic = arg.get('variadic')
                 if type is None:
                     type_name = f'${chr(i+65)}'
@@ -1310,11 +1304,11 @@ class PyxellTranspiler:
 
                 field = self.var(self.transpile(member['type']), prefix='m')
 
-                default = member.get('default')
+                default = member.get('expr')
                 if default:
-                    field.default = self.cast(member['default'], self.transpile(default), field.type)
+                    field.default = self.cast(default, self.transpile(default), field.type)
                 else:
-                    field.default = self.default(member, field.type)
+                    field.default = self.default(field.type)
 
                 fields.append(c.Statement(c.Var(field)))
                 members[name] = field

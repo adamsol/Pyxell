@@ -22,7 +22,6 @@ class PyxellError(Exception):
     NoIdentifier = lambda id1, id2: f"Module `{id1}` has no identifier `{id2}`"
     NoUnaryOperator = lambda op, t: f"No unary operator `{op}` defined for `{t.show()}`"
     NotComparable = lambda t1, t2: f"Cannot compare `{t1.show()}` with `{t2.show()}`"
-    NotDefaultable = lambda t: f"Type `{t.show()}` does not have a default value"
     NotDictionary = lambda t: f"Type `{t.show()}` is not a dictionary"
     NotHashable = lambda t: f"Type `{t.show()}` is not hashable"
     NotIndexable = lambda t: f"Type `{t.show()}` is not indexable"

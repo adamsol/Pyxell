@@ -238,9 +238,7 @@ class PyxellParser:
         if token.type == Token.ID and self.peek(1).text == ':':
             return {
                 **self.node('StmtDecl', token),
-                'id': self.parse_id(),
-                'type': self.expect(':') and self.parse_type() or None,
-                'expr': self.match('=') and self.parse_tuple_expr() or None,
+                **self.parse_decl(),
             }
 
         exprs = [self.parse_tuple_expr()]
@@ -297,9 +295,7 @@ class PyxellParser:
 
         return {
             **self.node(f'ClassField', token),
-            'id': self.parse_id(),
-            'type': self.expect(':') and self.parse_type() or None,
-            'default': self.match('=') and self.parse_tuple_expr() or None,
+            **self.parse_decl(),
         }
 
     def parse_func_header(self):
@@ -325,9 +321,14 @@ class PyxellParser:
         return {
             **self.node('FuncArg', self.peek()),
             'variadic': self.match('...'),
-            'id': self.parse_id(placeholder_allowed=True),
-            'type': self.match(':') and self.parse_type() or None,
-            'default': self.match('=') and self.parse_expr() or None,
+            **self.parse_decl(placeholder_allowed=True, type_required=False, tuple_expr_allowed=False),
+        }
+
+    def parse_decl(self, placeholder_allowed=False, type_required=True, tuple_expr_allowed=True):
+        return {
+            'id': self.parse_id(placeholder_allowed=placeholder_allowed),
+            'type': (self.expect(':') if type_required else self.match(':')) and self.parse_type() or None,
+            'expr': self.match('=') and (self.parse_tuple_expr() if tuple_expr_allowed else self.parse_expr()) or None,
         }
 
     def parse_id_list(self, **kwargs):
