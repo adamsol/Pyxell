@@ -1516,7 +1516,7 @@ class PyxellTranspiler:
             ],
         }
 
-        for i, cpr in reversed(list(enumerate(node['comprehensions']))):
+        for cpr in reversed(node['comprehensions']):
             if cpr['node'] == 'ComprehensionIteration':
                 stmt = {
                     **cpr,
@@ -1525,8 +1525,6 @@ class PyxellTranspiler:
                     'block': stmt,
                 }
             elif cpr['node'] == 'ComprehensionPredicate':
-                if i == 0:
-                    self.throw(cpr, err.InvalidSyntax())
                 stmt = {
                     **cpr,
                     'node': 'StmtIf',

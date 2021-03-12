@@ -1,0 +1,3 @@
+
+print {"qr": 1 if 0 == 0}
+print {true: true if false for _ in 1...}
