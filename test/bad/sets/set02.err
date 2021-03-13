@@ -1,1 +1,1 @@
-:2:1: Cannot settle type of the expression.
+:2:1: Incompatible types `Int` and `Bool`.

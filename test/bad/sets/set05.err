@@ -1,1 +1,1 @@
-:2:4: Type `{Int}` is not indexable.
+:2:4: Type `{Int}` is not sliceable.

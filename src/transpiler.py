@@ -2,7 +2,7 @@
 import ast
 import copy
 import re
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from contextlib import contextmanager
 from functools import partial
 
@@ -251,7 +251,7 @@ class PyxellTranspiler:
 
         type = unify_types(value_true.type, value_false.type)
         if type is None:
-            self.throw(node['op'], err.UnknownType())
+            self.throw(node['op'], err.IncompatibleTypes(value_true.type, value_false.type))
 
         result = self.var(type)
         self.output(c.Var(result))
@@ -447,14 +447,18 @@ class PyxellTranspiler:
             return v.Nullable(v.Cast(value, type.subtype))
         return v.Cast(value, type)
 
-    def unify(self, node, *values, error=err.UnknownType()):
+    def unify(self, node, *values, error=None):
         if not values:
             return []
 
         types = [value.type for value in values]
         type = unify_types(*types)
         if type is None:
-            self.throw(node, error)
+            if error:
+                self.throw(node, error)
+            else:
+                types = list(OrderedDict.fromkeys(types))  # remove duplicates whilst preserving order
+                self.throw(node, err.IncompatibleTypes(*types))
 
         return [self.cast(node, value, type) for value in values]
 
@@ -462,7 +466,7 @@ class PyxellTranspiler:
         values = lmap(self.transpile, exprs)
         values = self.unify(node, *values)
         if values[0].type not in {t.Int, t.Rat, t.Float, t.Bool, t.Char}:
-            self.throw(node, err.UnknownType())
+            self.throw(node, err.InvalidRange(values[0].type))
 
         return values
 
@@ -1390,7 +1394,7 @@ class PyxellTranspiler:
                 if item['node'] in {'ExprRange', 'ExprBy'}:
                     if item['node'] == 'ExprBy':
                         if item['exprs'][0]['node'] != 'ExprRange':
-                            self.throw(item['op'], err.InvalidSyntax())
+                            self.throw(item['op'], err.InvalidIterative())
                         item = item['exprs'][0]
                     values = self.range(item['op'], item['exprs'])
                     type_lists[0].extend(value.type for value in values)
@@ -1429,7 +1433,7 @@ class PyxellTranspiler:
             if type_lists[i]:
                 types[i] = unify_types(*type_lists[i])
                 if types[i] is None:
-                    self.throw(node, err.UnknownType())
+                    self.throw(node, err.IncompatibleTypes(*type_lists[i]))
                 types[i].literal = all(t.literal for t in type_lists[i])
 
         if kind == 'array':
@@ -1587,7 +1591,7 @@ class PyxellTranspiler:
         collection = self.transpile(node['expr'])
         type = collection.type
         if not type.isSequence():
-            self.throw(node['op'], err.NotIndexable(type))
+            self.throw(node['op'], err.NotSliceable(type))
 
         a = v.Nullable(self.cast(slice[0], self.transpile(slice[0]), t.Int)) if slice[0] else v.null
         b = v.Nullable(self.cast(slice[1], self.transpile(slice[1]), t.Int)) if slice[1] else v.null
@@ -1600,7 +1604,7 @@ class PyxellTranspiler:
 
         def _resolve_args(func):
             if not func.type.isFunc():
-                self.throw(node['op'], err.NotFunction(func.type))
+                self.throw(node['op'], err.NotCallable(func.type))
 
             obj = None
             if func.isTemplate() and func.bound:
@@ -1904,13 +1908,13 @@ class PyxellTranspiler:
         return self.cond(node, self.transpile(exprs[0]), lambda: self.transpile(exprs[1]), lambda: self.transpile(exprs[2]))
 
     def transpileExprRange(self, node):
-        self.throw(node['op'], err.InvalidSyntax())
+        self.throw(node['op'], err.InvalidIterative())
 
     def transpileExprSpread(self, node):
-        self.throw(node['op'], err.InvalidSyntax())
+        self.throw(node['op'], err.InvalidIterative())
 
     def transpileExprBy(self, node):
-        self.throw(node['op'], err.InvalidSyntax())
+        self.throw(node['op'], err.InvalidIterative())
 
     def transpileExprLambda(self, node):
         name = self.fake_name()

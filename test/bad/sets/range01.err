@@ -1,1 +1,1 @@
-:2:3: Cannot settle type of the expression.
+:2:7: Incompatible types `Bool` and `Char`.

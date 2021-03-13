@@ -1,1 +1,1 @@
-:2:6: Cannot settle type of the expression.
+:2:6: Incompatible types `Int` and `Char`.
