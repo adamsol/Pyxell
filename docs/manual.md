@@ -8,7 +8,7 @@ It is assumed that you already know some programming language (preferably Python
 
 You are encouraged to run the code snippets and experiment with them for yourself.
 To run Pyxell code, go to the [Playground](/playground.md),
-clone the repository and follow the instructions on [Github](https://github.com/adamsol/Pyxell#requirements),
+clone the repository and follow the instructions on [Github](https://github.com/adamsol/Pyxell#dependencies),
 or download Windows binaries from the [Releases](https://github.com/adamsol/Pyxell/releases).
 
 
