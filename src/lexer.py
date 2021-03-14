@@ -4,7 +4,7 @@ import re
 # See also pyxell-syntax.js for regexes regarding syntax highlighting in the documentation.
 # TODO: DRY
 KEYWORDS = {
-    'false', 'null', 'super', 'this', 'true',
+    '_', 'false', 'null', 'super', 'this', 'true',
     'abstract', 'and', 'as', 'break', 'by', 'class', 'constructor', 'continue', 'def', 'destructor', 'do', 'elif', 'else', 'extern', 'for', 'func', 'hiding', 'if', 'in', 'is', 'label', 'lambda', 'not', 'only', 'or', 'print', 'return', 'skip', 'super', 'until', 'use', 'while', 'yield',
 }
 ASSIGNMENT_OPERATORS = ['^=', '^^=', '/=', '//=', '%=', '*=', '&=', '+=', '-=', '??=']
@@ -50,7 +50,7 @@ def tokenize(lines, start_position=(1, 1)):
             c = text[0]
             if c != ' ':  # only spaces are allowed as whitespace characters
                 type = Token.OTHER
-                if (c.isalpha() or c == '_') and text not in KEYWORDS:
+                if c.isidentifier() and text not in KEYWORDS:
                     type = Token.ID
                 elif c.isdigit():
                     type = Token.NUMBER

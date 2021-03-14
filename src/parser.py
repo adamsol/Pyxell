@@ -120,6 +120,15 @@ class PyxellParser:
             'text': token.text,
         }
 
+    def id_node(self, token, placeholder_allowed=False):
+        if token.type == Token.ID:
+            return {
+                **self.expr_node('AtomId', token),
+                'name': token.text,
+            }
+        if token.text == '_' and placeholder_allowed:
+            return self.expr_node('AtomPlaceholder', token)
+
     @contextmanager
     def try_parse(self, backtrack=False):
         index = self.index
@@ -337,17 +346,11 @@ class PyxellParser:
             ids.append(self.parse_id(**kwargs))
         return ids
 
-    def parse_id(self, placeholder_allowed=False):
+    def parse_id(self, **kwargs):
         token = self.pop()
-        if token.type == Token.ID:
-            if token.text == '_':
-                if not placeholder_allowed:
-                    self.raise_syntax_error(token)
-                return self.expr_node('AtomPlaceholder', token)
-            return {
-                **self.expr_node('AtomId', token),
-                'name': token.text,
-            }
+        id = self.id_node(token, **kwargs)
+        if id:
+            return id
         self.raise_syntax_error(token)
 
     def parse_interpolation_expr(self):
@@ -385,9 +388,9 @@ class PyxellParser:
         return expr
 
     def parse_expr_prefix_op(self, token):
-        if token.type == Token.ID:
-            self.backtrack()
-            return self.parse_id(placeholder_allowed=True)
+        id = self.id_node(token, placeholder_allowed=True)
+        if id:
+            return id
         if token.type == Token.NUMBER:
             text = token.text.replace('_', '').lower()
             if any(text.startswith(prefix) for prefix in ['0b', '0o', '0x']):
@@ -618,8 +621,9 @@ class PyxellParser:
 
     def parse_for_loop_var(self):
         token = self.pop()
-        if token.type == Token.ID:
-            return self.parse_expr_prefix_op(token)
+        id = self.id_node(token, placeholder_allowed=True)
+        if id:
+            return id
         if token.text == '(':
             return {
                 **self.expr_node('ExprTuple', self.peek()),
