@@ -870,7 +870,7 @@ class PyxellTranspiler:
 
                         self.transpile(body)
 
-                        if func_type.ret.hasValue():
+                        if func_type.ret.hasValue() and not template.lambda_:
                             self.output(c.Statement('return', self.default(func_type.ret)))
 
                     else:  # `extern`

@@ -1,0 +1,9 @@
+
+func apply(f: (Int->Bool)->(Int->Bool), x: Int): Bool def
+    return f(_%%2)(x)
+
+h1 = lambda g: lambda x: g(x)
+print apply(h1, 42)
+
+h2 = lambda g: g@(_-1)
+print apply(h2, 42)

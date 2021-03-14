@@ -1,0 +1,6 @@
+
+func call(f: String->(Int->String)): String def
+    return f("ab")(4)
+
+print call(lambda x: lambda y: x * y)
+print call(lambda x: _.toString() + x)

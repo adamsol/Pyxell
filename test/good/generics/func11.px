@@ -1,0 +1,7 @@
+
+func f<T>(x: T): T->T def
+    return x+_
+    return _+x
+
+print f(5)(6)
+print f("abc")('d')

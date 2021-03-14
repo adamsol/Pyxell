@@ -261,7 +261,7 @@ class Lambda(Value):
     def __str__(self):
         capture = '=' + ''.join(f', &{var}' for var in self.capture_vars)
         args = ', '.join([f'{arg.type} {var}' for arg, var in zip(self.type.args, self.arg_vars)])
-        return f'[{capture}]({args}) mutable {self.body}'
+        return f'[{capture}]({args}) mutable -> {self.type.ret} {self.body}'
 
 
 class Bind(Value):
