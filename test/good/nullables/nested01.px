@@ -1,0 +1,14 @@
+
+a: Int???
+print a, a ?? 0
+
+a = 3
+print a, a!!!
+
+b: Int?? = 5
+a = b
+print a!!!, b
+
+c: Int? ?
+a = c
+print a, a! ?? b, c

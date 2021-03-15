@@ -49,7 +49,7 @@ for precedence, (fixity, ops) in enumerate(reversed([
 
 TYPE_OPERATOR_PRECEDENCE = defaultdict(lambda: 0)
 
-for precedence, op in enumerate(reversed(['?', '*', '->']), 1):
+for precedence, op in enumerate(reversed(['?', '??', '*', '->']), 1):
     TYPE_OPERATOR_PRECEDENCE[op] = precedence
 
 
@@ -681,11 +681,13 @@ class PyxellParser:
         self.raise_syntax_error(token)
 
     def parse_type_non_prefix_op(self, left, token):
-        if token.text == '?':  # nullable
-            return {
-                **self.node('TypeNullable', token),
-                'subtype': left,
-            }
+        if token.text[0] == '?':  # nullable (note that there are two possible tokens: '?' and '??')
+            for _ in token.text:
+                left = {
+                    **self.node('TypeNullable', token),
+                    'subtype': left,
+                }
+            return left
         if token.text == '*':  # tuple
             right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[token.text] - 1)
             chained = right['node'] == 'TypeTuple' and not right.get('_parenthesized')
