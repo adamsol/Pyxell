@@ -111,7 +111,7 @@ Testing
 -------
 
 ```
-python -m pip install -r test/requirements.txt
+pip install -r test/requirements.txt
 python test.py
 ```
 

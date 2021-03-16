@@ -3,32 +3,38 @@
 name: CI
 on:
   push:
-    branches: [master]
+    branches-ignore: [master]
+    paths-ignore: ['**.md']
 jobs:
   test:
-    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
+        include:
+        - { python: 3.6, os: ubuntu-18.04, compiler: clang, arguments: -O0 }
+        - { python: 3.7, os: ubuntu-20.04, compiler: clang, arguments: -O1 }
+        - { python: 3.8, os: ubuntu-18.04, compiler: gcc, arguments: -O2 }
+        - { python: 3.9, os: ubuntu-20.04, compiler: gcc, arguments: -O3 }
+        - { python: 3.10-dev, os: ubuntu-20.04, compiler: clang, arguments: -O3 }
+        - { python: pypy-3.6, os: ubuntu-18.04, compiler: gcc, arguments: -O0 }
+        - { python: pypy-3.7, os: ubuntu-20.04, compiler: clang, arguments: -O2 }
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: ${{ matrix.python }}
     - name: Install Python dependencies
       run: |
-        python -m pip install --upgrade pip wheel setuptools
-        python -m pip install -r test/requirements.txt
-    - name: Install compilers
+        pip install --upgrade pip wheel setuptools
+        pip install -r test/requirements.txt
+        python --version
+    - name: Install compiler
       run: |
         sudo apt update
-        sudo apt install clang build-essential
-    - name: Test with Clang
+        sudo apt install ${{ matrix.compiler }}
+        ${{ matrix.compiler }} --version
+    - name: Run tests
       run: |
-        clang --version
-        python test.py
-    - name: Test with GCC
-      run: |
-        gcc --version
-        python test.py -c=gcc
+        python test.py -c ${{ matrix.compiler }} ${{ matrix.arguments }}
