@@ -239,7 +239,7 @@ class PyxellParser:
             return {
                 **self.node('StmtClass', token),
                 'id': self.parse_id(),
-                'base': self.match('(') and (self.parse_type(), self.expect(')'))[0] or None,
+                'base': self.match(':') and self.parse_type() or None,
                 'members': self.expect('def') and self.parse_class_member_list(),
             }
         self.backtrack()  # backtrack if no keyword has been matched

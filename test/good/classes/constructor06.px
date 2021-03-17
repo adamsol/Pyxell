@@ -10,7 +10,7 @@ class A def
     constructor def
         print 'A'
 
-class B(A) def
+class B: A def
     y: Float = f(2)
 
     constructor def

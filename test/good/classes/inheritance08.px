@@ -2,7 +2,7 @@
 class A def
     x: String = "A"
 
-class B(A) def
+class B: A def
     constructor def
         this.x = "B"
 

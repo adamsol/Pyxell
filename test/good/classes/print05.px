@@ -2,11 +2,11 @@
 class A def
     s: String
 
-class B(A) def
+class B: A def
     func toString(): String def
         return this.s
 
-class C(B) def
+class C: B def
     y: Int
 
 

@@ -3,6 +3,6 @@ class A def
     func f(): Void def
         return
 
-class B(A) def
+class B: A def
     func g(): Void def
         super()

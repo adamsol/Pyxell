@@ -5,16 +5,16 @@ class A def
     func toString(): String def
         return this.c.toString()
 
-class B(A) def
+class B: A def
     b: Bool
 
     func toString(): String def
         return "{this.c} {this.b}"
 
-class C(B) def
+class C: B def
     x: Int
 
-class D(A) def
+class D: A def
     x: Int = 42
 
     func toString(): String def

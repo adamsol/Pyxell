@@ -787,7 +787,7 @@ class Base def
     destructor def
         print "Base destructor"
 
-class Derived(Base) def
+class Derived: Base def
     y: Int
 
     constructor def
@@ -814,7 +814,7 @@ class A def
     func f(x: Int): Void def
         print "A: {x}"
 
-class B(A) def
+class B: A def
     func f(x: Int): Void def
         print "B: {x}"
         super(x//2)
@@ -829,7 +829,7 @@ Methods can be abstract. If a class has any abstract methods, it cannot be insta
 class Abstract def
     func f() abstract
 
-class Concrete(Abstract) def
+class Concrete: Abstract def
     func f(): Void def
         print "ok"
 

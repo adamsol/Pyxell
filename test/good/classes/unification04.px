@@ -3,7 +3,7 @@ class A def
     func f(): Void def
         print "A"
 
-class B(A) def
+class B: A def
     func f(): Void def
         print "B"
 

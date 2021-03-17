@@ -2,7 +2,7 @@
 class A def
     func f() abstract
 
-class B(A) def
+class B: A def
     func f(): Void def
         print 'B'
 

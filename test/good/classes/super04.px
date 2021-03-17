@@ -8,10 +8,10 @@ class A def
     func f(): Void def
         print this.x
 
-class B(A) def
+class B: A def
     y: Int
 
-class C(B) def
+class C: B def
     func f(): Void def
         print 'C'
         super()

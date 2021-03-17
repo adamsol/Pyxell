@@ -6,7 +6,7 @@ class A def
         print "A {this.x}"
 
 
-class B(A) def
+class B: A def
     y: Float
 
     destructor def

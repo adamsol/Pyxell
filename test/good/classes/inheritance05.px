@@ -5,7 +5,7 @@ class A def
     constructor def
         print this.s
 
-class B(A) def
+class B: A def
     x: Int
 
 B("B")

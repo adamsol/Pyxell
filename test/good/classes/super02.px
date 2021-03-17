@@ -5,12 +5,12 @@ class A def
     func f(): Void def
         print this.x
 
-class B(A) def
+class B: A def
     func f(): Void def
         print this.x + 0.5
         super()
 
-class C(B) def
+class C: B def
     func f(): Void def
         super()
         print this.x.toString() + '.'

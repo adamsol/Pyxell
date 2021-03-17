@@ -6,7 +6,7 @@ class A def
     func g(): String def
         return "A.g"
 
-class B(A) def
+class B: A def
     func f(): String def
         return "B.f"
 

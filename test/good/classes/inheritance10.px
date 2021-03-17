@@ -2,13 +2,13 @@
 class A def
     x: Bool
 
-class B(A) def
+class B: A def
     y: Char = '?'
 
     func f(): Void def
         print this.x
 
-class C(B) def
+class C: B def
     z: String
 
 

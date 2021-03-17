@@ -2,9 +2,9 @@
 class A def
     func f() abstract
 
-class B(A) def
+class B: A def
     x: Int
 
-class C(B) def
+class C: B def
     func f(): Void def
         super()

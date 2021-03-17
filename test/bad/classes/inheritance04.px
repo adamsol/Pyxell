@@ -2,10 +2,10 @@
 class Base def
     x: Int
 
-class Sub1(Base) def
+class Sub1: Base def
     y: Int
 
-class Sub2(Base) def
+class Sub2: Base def
     y: Int
 
 

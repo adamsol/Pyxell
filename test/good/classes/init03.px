@@ -5,7 +5,7 @@ class A def
     func f(): Void def
         skip
 
-class B(A) def
+class B: A def
     x: Rat
     a: A
 

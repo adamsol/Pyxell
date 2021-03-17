@@ -3,7 +3,7 @@ class Z def
     func f(x: Char = 'Z'): Void def
         print x
 
-class Y(Z) def
+class Y: Z def
     x: Int
 
 Y().f('Y')

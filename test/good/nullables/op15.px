@@ -3,7 +3,7 @@ class A def
     func f(): Char def
         return 'A'
 
-class B(A) def
+class B: A def
     func f(): Char def
         return 'B'
 

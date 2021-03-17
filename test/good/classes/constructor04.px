@@ -6,7 +6,7 @@ class A def
         print this.x
 
 
-class B(A) def
+class B: A def
     y: Rat
 
     constructor def

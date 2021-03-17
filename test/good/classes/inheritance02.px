@@ -2,7 +2,7 @@
 class A def
     x: Int = 2
 
-class B(A) def
+class B: A def
     y: String = "y"
 
 b: B = B()

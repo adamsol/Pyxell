@@ -3,6 +3,6 @@ class A def
     destructor def
         skip
 
-class B(A) def
+class B: A def
     destructor def
         super()

@@ -5,14 +5,14 @@ class Base def
     func f(): Void def
         print "Base"
 
-class Sub1(Base) def
+class Sub1: Base def
     constructor def
         this.x = 1
 
     func f(): Void def
         print "Sub1"
 
-class Sub2(Base) def
+class Sub2: Base def
     constructor def
         this.x = 2
 

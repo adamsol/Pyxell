@@ -3,7 +3,7 @@ class A def
     func f(x: Int): [Int] def
         return [x*2]
 
-class B(A) def
+class B: A def
     func f(x: Int): [Int] def
         return [super(i) for i in x..x+1][1]
 

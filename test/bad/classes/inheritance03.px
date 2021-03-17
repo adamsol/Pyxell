@@ -2,7 +2,7 @@
 class Base def
     x: Int
 
-class Sub(Base) def
+class Sub: Base def
     y: Int
 
 sub = Sub()

@@ -4,11 +4,11 @@ class A def
         print 'A'
 
 
-class B(A) def
+class B: A def
     x: Int
 
 
-class C(B) def
+class C: B def
     destructor def
         print 'C'
 

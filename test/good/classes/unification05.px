@@ -5,11 +5,11 @@ class A def
     func f(): Void def
         print this.x
 
-class B(A) def
+class B: A def
     constructor def
         this.x = 'B'
 
-class C(A) def
+class C: A def
     constructor def
         this.x = 'C'
 

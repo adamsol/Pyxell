@@ -3,11 +3,11 @@ class Base def
     func toString(): String def
         return "Base"
 
-class Sub1(Base) def
+class Sub1: Base def
     func toString(): String def
         return "Sub1"
 
-class Sub2(Base) def
+class Sub2: Base def
     func toString(): String def
         return "Sub2"
 

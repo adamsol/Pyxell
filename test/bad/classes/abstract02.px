@@ -4,7 +4,7 @@ class A def
 
     func g() abstract
 
-class B(A) def
+class B: A def
     func f(): Void def
         skip
 
