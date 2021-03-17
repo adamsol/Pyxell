@@ -1,5 +1,5 @@
 
-a = [x for x in 0..100]
+a = [for x in 0..100 yield x]
 print a[::4].length
 
 z = -10

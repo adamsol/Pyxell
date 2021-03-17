@@ -1,4 +1,4 @@
 
-a = [c.toString() for c in 'A'...'D']
+a = [for c in 'A'...'D' yield c.toString()]
 print a.length
 print a[0], a[2] == "C"

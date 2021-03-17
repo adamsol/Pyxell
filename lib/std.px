@@ -44,10 +44,10 @@ func String_any(s: String, f: Char->Bool): Bool def
     return false
 
 func String_filter(s: String, f: Char->Bool): String def
-    return [c for c in s if f(c)].join()
+    return [for c in s if f(c) yield c].join()
 
 func String_map(s: String, f: Char->Char): String def
-    return [f(c) for c in s].join()
+    return [for c in s yield f(c)].join()
 
 func String_fold<B>(s: String, f: Char->B->B, r: B): B def
     for c in s do
@@ -79,10 +79,10 @@ func Array_any<A>(a: [A], f: A->Bool = _): Bool def
     return false
 
 func Array_filter<A>(a: [A], f: A->Bool): [A] def
-    return [x for x in a if f(x)]
+    return [for x in a if f(x) yield x]
 
 func Array_map<A,B>(a: [A], f: A->B): [B] def
-    return [f(x) for x in a]
+    return [for x in a yield f(x)]
 
 func Array_fold<A,B>(a: [A], f: A->B->B, r: B): B def
     for x in a do
@@ -114,10 +114,10 @@ func Set_any<A>(a: {A}, f: A->Bool = _): Bool def
     return false
 
 func Set_filter<A>(a: {A}, f: A->Bool): {A} def
-    return {x for x in a if f(x)}
+    return {for x in a if f(x) yield x}
 
 func Set_map<A,B>(a: {A}, f: A->B): {B} def
-    return {f(x) for x in a}
+    return {for x in a yield f(x)}
 
 func Set_fold<A,B>(a: {A}, f: A->B->B, r: B): B def
     for x in a do
@@ -149,7 +149,7 @@ func Dict_any<A,B>(a: {A:B}, f: A*B->Bool): Bool def
     return false
 
 func Dict_filter<A,B>(a: {A:B}, f: A*B->Bool): {A:B} def
-    return {x.a: x.b for x in a if f(x)}
+    return {for x in a if f(x) yield x.a: x.b}
 
 func Dict_map<A,B,C,D>(a: {A:B}, f: A*B->C*D): {C:D} def
     r: {C:D}

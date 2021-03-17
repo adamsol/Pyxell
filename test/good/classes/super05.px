@@ -5,6 +5,6 @@ class A def
 
 class B: A def
     func f(x: Int): [Int] def
-        return [super(i) for i in x..x+1][1]
+        return [for i in x..x+1 yield super(i)][1]
 
 print(B().f(2))

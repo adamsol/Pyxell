@@ -3,7 +3,7 @@ class A def
     n: Int
 
 
-a = [A(i) for i in 0..4]
+a = [for i in 0..4 yield A(i)]
 for x in a do
     if x == a[2] do
         print x.n

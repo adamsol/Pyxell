@@ -1,2 +1,2 @@
 
-print [t for t in 0... by -1, 'w'..'z' by 2]
+print [for t in 0... by -1, 'w'..'z' by 2 yield t]

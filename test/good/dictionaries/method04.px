@@ -1,5 +1,5 @@
 
-d = {c: c.code for c in 'a'..'z'}
+d = {for c in 'a'..'z' yield c: c.code}
 
 d.remove('b')
 print d.get('b')

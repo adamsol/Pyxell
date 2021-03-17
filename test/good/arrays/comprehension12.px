@@ -1,2 +1,2 @@
 
-print [x for x in [1, 2][::-1]]
+print [for x in [1, 2][::-1] yield x]

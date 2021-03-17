@@ -1,5 +1,5 @@
 
-a = [x for x in 1..10] + [x for x in 1..1000] + [x for x in 1..100000]
-a += [x for x in 0...3*10^^6]
+a = [for x in 1..10 yield x] + [for x in 1..1000 yield x] + [for x in 1..100000 yield x]
+a += [for x in 0...3*10^^6 yield x]
 print a.length
 print a[1009], a[-1]

@@ -1,4 +1,4 @@
 
-a = [d+c for d in -2...5 for c in 'i'..'k']
+a = [for d in -2...5 for c in 'i'..'k' yield d+c]
 print a.length
 print a[0], a[5], a[-1]

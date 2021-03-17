@@ -2,5 +2,5 @@
 func even(i: Int): Int? def
     return i %% 2 ? i : null
 
-a = [even(i) for i in 0..1000]
+a = [for i in 0..1000 yield even(i)]
 print a[875], a[876]

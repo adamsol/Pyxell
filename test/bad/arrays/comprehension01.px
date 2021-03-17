@@ -1,2 +1,2 @@
 
-a = [x for x in 1..'c']
+a = [for x in 1..'c' yield x]

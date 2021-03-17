@@ -329,7 +329,7 @@ print [false, true] < [true]
 You can use array comprehension, as well as range literals and spread operator with optional step.
 
 ```
-print [x*y for x in 1..3 for y in x..3]
+print [for x in 1..3 for y in x..3 yield x*y]
 print ['$', 'a'..'g' by 2, ..."xyz"]
 ```
 
@@ -368,7 +368,7 @@ print a + b, a - b, a & b
 Like with arrays, you can use comprehensions, ranges, and spread syntax to create sets.
 
 ```
-print {i//2 for i in 0...4}
+print {for i in 0...4 yield i//2}
 print {..."test"}
 ```
 
@@ -404,7 +404,7 @@ print {1: false} + {1: true}
 Dictionary comprehension works similarly to array and set comprehension.
 
 ```
-print {c: c.code for c in 'A'..'Z' by 5}
+print {for c in 'A'..'Z' by 5 yield c: c.code}
 ```
 
 When iterated over, dictionaries produce pairs of key and value.
@@ -930,7 +930,7 @@ func* fib() def
         yield b
         a, b = b, a + b
 
-print [x for x, _ in fib(), 0...10]
+print [for x, _ in fib(), 0...10 yield x]
 ```
 
 ### 100 digits of π

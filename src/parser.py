@@ -427,8 +427,22 @@ class PyxellParser:
             }
         if token.text in {'[', '{'}:  # containers
             closing_bracket = chr(ord(token.text) + 2)
-            items = []
+            comprehensions = self.parse_comprehensions()
             kind = 'array'
+            if comprehensions:
+                exprs = [self.parse_expr()]
+                if token.text == '{':
+                    kind = 'set'
+                    if self.match(':'):
+                        kind = 'dict'
+                        exprs.append(self.parse_expr())
+                return {
+                    **self.expr_node('ExprComprehension', token),
+                    'kind': kind,
+                    'comprehensions': comprehensions,
+                    'exprs': (exprs, self.expect(closing_bracket))[0],
+                }
+            items = []
             if token.text == '{' and self.match(':'):
                 kind = 'dict'
             else:
@@ -443,16 +457,6 @@ class PyxellParser:
                     elif kind == 'dict':
                         items.append(self.parse_dict_item())
                     if not self.match(','):
-                        if not self.check(closing_bracket) and len(items) == 1 and items[0]['node'] != 'DictSpread':
-                            comprehensions = []
-                            while self.check('for') or self.check('if'):
-                                comprehensions.append(self.parse_comprehension())
-                            return {
-                                **self.expr_node('ExprComprehension', token),
-                                'kind': kind,
-                                'exprs': items[0]['exprs'] if items[0]['node'] == 'DictPair' else items,
-                                'comprehensions': (comprehensions, self.expect(closing_bracket))[0],
-                            }
                         break
             return {
                 **self.expr_node('ExprCollection', token),
@@ -596,6 +600,14 @@ class PyxellParser:
             **self.node('DictPair', token),
             'exprs': [self.parse_expr(), self.expect(':') and self.parse_expr()],
         }
+
+    def parse_comprehensions(self):
+        comprehensions = []
+        while self.check('for') or self.check('if'):
+            comprehensions.append(self.parse_comprehension())
+        if comprehensions:
+            self.expect('yield')
+        return comprehensions
 
     def parse_comprehension(self):
         token = self.pop()

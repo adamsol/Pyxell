@@ -1,4 +1,4 @@
 
-a = [x for x in 1..5]
+a = [for x in 1..5 yield x]
 print a.length
 print a[0], a[1], a[4]

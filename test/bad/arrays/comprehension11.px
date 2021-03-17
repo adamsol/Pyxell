@@ -1,2 +1,2 @@
 
-[x for x + 1 in [0]]
+[for x + 1 in [0] yield x]

@@ -1,6 +1,6 @@
 
 s = 21
-a = [[(i == 0 or j == 0 ? 1 : 0) for j in 0...s] for i in 0...s]
+a = [for i in 0...s yield [for j in 0...s yield i == 0 or j == 0 ? 1 : 0]]
 
 for i in 1...s do
     for j in 1...s do

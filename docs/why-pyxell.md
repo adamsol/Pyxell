@@ -52,6 +52,12 @@ The ternary conditional operator in Pyxell works like in many other programming 
 This syntax follows the actual order of evaluation of the expressions,
 and thus is more natural to read than Python's syntax, where condition is in the middle.
 
+### Intuitive container comprehensions
+
+Similarly to the conditional operator, [container comprehensions in Python can be confusing](https://stackoverflow.com/q/19484705).
+In Pyxell, the actual expression is written at the end, with `yield` keyword, rather than at the beginning,
+so that the whole comprehension can be read naturally just like a generator function with standard `for` and `if` statements.
+
 ### Operators for nullable types
 
 Pyxell allows `null` value only for variables whose type has been explicitly marked as nullable.

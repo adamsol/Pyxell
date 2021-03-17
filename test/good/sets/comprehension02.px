@@ -1,2 +1,2 @@
 
-print {(x+y, x*y) for x in 1.0..10 for y in 1.0..10}.length
+print {for x in 1.0..10 for y in 1.0..10 yield (x+y, x*y)}.length

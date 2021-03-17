@@ -1,3 +1,3 @@
 
-a: {Rat} = {i/2 - i/3 for i in 0^0..10000 by 5}
+a: {Rat} = {for i in 0^0..10000 by 5 yield i/2 - i/3}
 print a.length

@@ -1,1 +1,1 @@
-:2:18: Incompatible types `Int` and `Char`.
+:2:16: Incompatible types `Int` and `Char`.

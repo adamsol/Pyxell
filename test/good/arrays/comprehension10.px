@@ -1,2 +1,2 @@
 
-print [[[z for z in y..y] for y in 1..x] for x in 5...1 by -1 if x < 4]
+print [for x in 5...1 by -1 if x < 4 yield [for y in 1..x yield [for z in y..y yield z]]]

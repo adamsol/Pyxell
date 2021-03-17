@@ -1,3 +1,3 @@
 
-print ['a' if 2 + 2 < 4]
-print [c if true for c in 'b'..'c']
+print [if 2 + 2 < 4 yield 'a']
+print [if true for c in 'b'..'c' yield c]

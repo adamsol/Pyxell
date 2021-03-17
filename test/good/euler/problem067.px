@@ -1,6 +1,6 @@
 
 s = 100
-a = [[readInt() for j in 0..i] for i in 0...s]
+a = [for i in 0...s yield [for j in 0..i yield readInt()]]
 
 for i in s-2..0 by -1 do
     for j in 0..i do

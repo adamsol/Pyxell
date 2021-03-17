@@ -1,2 +1,2 @@
 
-a = [y for x in 1...5]
+a = [for x in 1...5 yield y]

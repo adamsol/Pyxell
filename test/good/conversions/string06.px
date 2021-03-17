@@ -1,6 +1,6 @@
 
 s = "qwerty"
-a = [c for c in s]
+a = [for c in s yield c]
 a[5] = 'z'
 print s, a
 

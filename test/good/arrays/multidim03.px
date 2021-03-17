@@ -1,4 +1,4 @@
 
-a = [[['X'], ['Y'], ['Z']] * i for i in 0..1000]
+a = [for i in 0..1000 yield [['X'], ['Y'], ['Z']] * i]
 print a[0].length, a[-1].length
 print a[-4][-3][0], a[-3][-2][0], a[-2][-1][0]

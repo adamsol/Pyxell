@@ -1,5 +1,5 @@
 
-x = {i.toString(): i for i in 1..5}
+x = {for i in 1..5 yield i.toString(): i}
 y = x.copy()
 z = y
 

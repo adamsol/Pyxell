@@ -1,0 +1,2 @@
+
+[for a in [[]] yield ...a]

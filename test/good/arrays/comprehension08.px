@@ -1,9 +1,9 @@
 
 n = 0
 for x in 1..100 do
-    a = [x for x in 1..n]
+    a = [for x in 1..n yield x]
     l1 = a.length
-    b = [x for x in 1..n]
+    b = [for x in 1..n yield x]
     l2 = a.length
     if l1 != 0 or l2 != 0 do
         print false

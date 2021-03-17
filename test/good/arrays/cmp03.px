@@ -3,8 +3,8 @@ n = 1000000
 n1 = n + 1
 n2 = n + 2
 
-a = [x for x in 1..n]
+a = [for x in 1..n yield x]
 print [[a, a]] == [[a, a]]
-print [[a + [n2]]] == [[[x for x in 1..n1]]]
-print [[a]] != [[[x for x in 1..n1]]]
-print [[a + [n1]]] != [[[x for x in 1..n1]]]
+print [[a + [n2]]] == [[[for x in 1..n1 yield x]]]
+print [[a]] != [[[for x in 1..n1 yield x]]]
+print [[a + [n1]]] != [[[for x in 1..n1 yield x]]]

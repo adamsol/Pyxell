@@ -2,4 +2,4 @@
 func f(s: {Float}): Void def
     print s
 
-f({x/2 for x in 1...2})
+f({for x in 1...2 yield x/2})

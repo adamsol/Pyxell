@@ -1,6 +1,6 @@
 
 s = 20
-a = [[readInt() for i in 1..s] for i in 1..s]
+a = [for i in 1..s yield [for i in 1..s yield readInt()]]
 d = 4
 x = 0
 

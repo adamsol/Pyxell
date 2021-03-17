@@ -1,5 +1,5 @@
 
 a = [2, 3, 4, 5]
 b = [7, 4, 1, 5]
-c = [i + min(x, y) for x, y, i in a, b, 1...]
+c = [for x, y, i in a, b, 1... yield i + min(x, y)]
 print c

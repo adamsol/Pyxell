@@ -1,2 +1,2 @@
 
-[false for x in 2..1 if 0]
+[for x in 2..1 if 0 yield false]

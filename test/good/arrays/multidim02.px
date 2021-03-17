@@ -1,6 +1,6 @@
 
 n = 5
-a = [[j for j in i...n] for i in 0...n]
+a = [for i in 0...n yield [for j in i...n yield j]]
 for b in a do
     for x in b do
         write(x.toString())
