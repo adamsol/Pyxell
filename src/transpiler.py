@@ -1109,6 +1109,8 @@ class PyxellTranspiler:
                 iterator = self.tmp(v.Call(v.Attribute(value, 'begin'), type=t.Iterator(value.type)))
                 end = self.tmp(v.Call(v.Attribute(value, 'end'), type=t.Sentinel(value.type)))
 
+                self.cast(step_expr, step, t.Int)
+
                 if type.isSequence():
                     self.output(c.If(f'{step} < 0 && {iterator} != {end}', c.Statement(iterator, '=', v.Call('std::prev', end))))
                     index = self.tmp(v.Int(0), force_copy=True)
