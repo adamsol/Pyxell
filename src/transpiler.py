@@ -225,7 +225,7 @@ class PyxellTranspiler:
                 index = self.cast(exprs[1], index, collection.type.key_type)
                 type = collection.type.value_type
 
-                it = self.tmp(v.Call(v.Attribute(collection, 'find'), index))
+                it = self.tmp(v.Call(v.Attribute(collection, 'find'), index, type=t.Iterator(collection.type)))
                 end = v.Call(v.Attribute(collection, 'end'))
 
                 block = c.Block()
@@ -488,18 +488,14 @@ class PyxellTranspiler:
     def var(self, type, prefix='v'):
         return v.Variable(type, self.fake_name(prefix))
 
-    def tmp(self, value, force_var=False):
-        if isinstance(value, v.Variable) or not force_var and isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
-            return value
-        if isinstance(value, v.Value) and value.isTemplate():
-            return value
+    def tmp(self, value, force_copy=False):
+        if not force_copy:
+            if isinstance(value, v.Variable) or isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
+                return value
+            if isinstance(value, v.Value) and value.isTemplate():
+                return value
         tmp = self.var(value.type)
-        self.store(tmp, value, decl='auto&&')
-        return tmp
-
-    def freeze(self, value):
-        tmp = self.var(value.type)
-        self.store(tmp, value, decl='auto')
+        self.output(c.Var(tmp, value))
         return tmp
 
     def declare(self, node, type, name, redeclare=False):
@@ -547,8 +543,8 @@ class PyxellTranspiler:
 
         self.throw(expr, err.NotLvalue())
 
-    def store(self, left, right, decl=None):
-        self.output(c.Statement(decl, left, '=', right))
+    def store(self, left, right):
+        self.output(c.Statement(left, '=', right))
 
     def assign(self, expr, value):
         type = value.type
@@ -880,7 +876,7 @@ class PyxellTranspiler:
             # The closure is created every time the function is used (except for recursive calls),
             # so current values of variables are captured, possibly different than in the moment of definition.
             del template.cache[real_types]
-            self.store(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func]), decl=func_type)
+            self.output(c.Var(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func])))
         else:
             self.output(c.Statement(func_type.ret, f'{func}({func_type.args_str()})'), toplevel=True)
             self.output(c.Function(func_type.ret, func, arg_vars, block), toplevel=True)
@@ -1052,8 +1048,7 @@ class PyxellTranspiler:
     def transpileStmtUntil(self, node):
         expr = node['expr']
 
-        second_iteration = self.var(t.Bool)
-        self.store(second_iteration, v.false, 'auto')
+        second_iteration = self.tmp(v.false, force_copy=True)
 
         with self.loop(partial(c.While, v.true), node.get('label')):
             cond = self.cast(expr, self.transpile(expr), t.Bool)
@@ -1077,25 +1072,26 @@ class PyxellTranspiler:
 
             if iterable['node'] == 'ExprBy':
                 step_expr = iterable['exprs'][1]
-                step = self.freeze(self.transpile(step_expr))
+                step = self.transpile(step_expr)
                 iterable = iterable['exprs'][0]
             else:
                 step_expr = None
-                step = self.freeze(v.Int(1))
+                step = v.Int(1)
+
+            step = self.tmp(step, force_copy=True)
 
             if iterable['node'] == 'ExprRange':
                 values = self.range(iterable['op'], iterable['exprs'])
                 type = values[0].type
                 types.append(type)
 
-                index = iterator = self.var({t.Rat: t.Rat, t.Float: t.Float}.get(type, t.Int))
-                start = v.Cast(values[0], index.type)
+                index = self.tmp(v.Cast(values[0], {t.Rat: t.Rat, t.Float: t.Float}.get(type, t.Int)), force_copy=True)
                 self.cast(step_expr, step, index.type)
 
                 if len(values) == 1:
                     cond = lambda: v.true  # infinite range
                 else:
-                    end = self.freeze(values[1])
+                    end = self.tmp(values[1], force_copy=True)
                     eq = '=' if iterable.get('inclusive') else ''
                     neg = self.tmp(v.BinaryOp(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
                     cond = lambda: v.TernaryOp(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
@@ -1110,14 +1106,13 @@ class PyxellTranspiler:
                     self.throw(iterable, err.NotIterable(type))
 
                 types.append(type.subtype)
-                iterator = self.var(None)
-                start = self.tmp(v.Call(v.Attribute(value, 'begin')))
-                end = self.tmp(v.Call(v.Attribute(value, 'end')))
+                iterator = self.tmp(v.Call(v.Attribute(value, 'begin'), type=t.Iterator(value.type)))
+                end = self.tmp(v.Call(v.Attribute(value, 'end'), type=t.Sentinel(value.type)))
 
                 if type.isSequence():
-                    self.output(c.If(f'{step} < 0 && {start} != {end}', c.Statement(start, '=', v.Call('std::prev', end))))
-                    index = self.tmp(v.Int(0), force_var=True)
-                    length = self.tmp(v.Call(v.Attribute(value, 'size')))
+                    self.output(c.If(f'{step} < 0 && {iterator} != {end}', c.Statement(iterator, '=', v.Call('std::prev', end))))
+                    index = self.tmp(v.Int(0), force_copy=True)
+                    length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
                     cond = lambda: f'{index} < {length}'
                     update = lambda: f'{index} += std::abs({step}), {iterator} += {step}'
                 else:
@@ -1127,7 +1122,6 @@ class PyxellTranspiler:
 
                 getter = lambda: v.UnaryOp('*', iterator, type=type.subtype)
 
-            self.store(iterator, start, 'auto')
             conditions.append(cond)
             updates.append(update)
             getters.append(getter)
@@ -1811,8 +1805,7 @@ class PyxellTranspiler:
                 self.throw(node['op'], err.NoBinaryOperator(op, left.type, self.transpile(exprs[1]).type))
 
         if op in {'and', 'or'}:
-            result = self.var(t.Bool)
-            self.store(result, v.Bool(op == 'or'), 'auto')
+            result = self.tmp(v.Bool(op == 'or'), force_copy=True)
 
             cond1 = self.transpile(exprs[0])
             if op == 'or':
@@ -1866,8 +1859,7 @@ class PyxellTranspiler:
         exprs = node['exprs']
         ops = node['ops']
 
-        result = self.var(t.Bool)
-        self.store(result, v.false, 'auto')
+        result = self.tmp(v.false, force_copy=True)
 
         left = self.transpile(exprs[0])
 

@@ -223,6 +223,7 @@ template <typename T> bool operator >= (const custom_ptr<T>& lhs, const custom_p
 
 struct String: public custom_ptr<std::string>
 {
+    using iterator = typename std::string::iterator;
     using custom_ptr<std::string>::custom_ptr;
 
     String(Char x)
@@ -254,6 +255,7 @@ namespace std
 template <typename T>
 struct Array: public custom_ptr<std::vector<T>>
 {
+    using iterator = typename std::vector<T>::iterator;
     using custom_ptr<std::vector<T>>::custom_ptr;
 
     Array(const Array<Unknown>& x)
@@ -285,6 +287,7 @@ Array<T> make_array(Args&&... args)
 template <typename T>
 struct Set: public custom_ptr<std::unordered_set<T>>
 {
+    using iterator = typename std::unordered_set<T>::iterator;
     using custom_ptr<std::unordered_set<T>>::custom_ptr;
 
     Set(const Set<Unknown>& x)
@@ -316,6 +319,7 @@ Set<T> make_set(Args&&... args)
 template <typename K, typename V>
 struct Dict: public custom_ptr<std::unordered_map<K, V>>
 {
+    using iterator = typename std::unordered_map<K, V>::iterator;
     using custom_ptr<std::unordered_map<K, V>>::custom_ptr;
 
     Dict(const Dict<Unknown, Unknown>& x)

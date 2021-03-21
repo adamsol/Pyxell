@@ -31,13 +31,12 @@ class Wrapper:
 
 class Statement(Wrapper):
     def __init__(self, *parts):
-        parts = list(filter(None, parts))
         super().__init__(' '.join(['{}']*len(parts))+';', *parts)
 
 
 class Var(Wrapper):
-    def __init__(self, var):
-        super().__init__('{} {}', var.type, var.name)
+    def __init__(self, var, value=None):
+        super().__init__('{} {}' + (' = {}' if value else ''), var.type, var.name, value)
 
 
 class Const(Wrapper):

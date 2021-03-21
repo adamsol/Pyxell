@@ -287,6 +287,18 @@ class Var(Type):
         return self.name == other.name
 
 
+class Iterator(Wrapper):
+
+    def __str__(self):
+        return f'{self.subtype}::iterator'
+
+
+class Sentinel(Iterator):
+
+    def __str__(self):
+        return f'cppcoro::detail::generator_sentinel' if self.subtype.isGenerator() else super().__str__()
+
+
 Unknown = PrimitiveType('<unknown>', 'Unknown')
 
 
