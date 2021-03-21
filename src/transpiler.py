@@ -225,16 +225,16 @@ class PyxellTranspiler:
                 index = self.cast(exprs[1], index, collection.type.key_type)
                 type = collection.type.value_type
 
-                it = self.tmp(v.Call(v.Attribute(collection, 'find'), index, type=t.Iterator(collection.type)))
+                iterator = self.tmp(v.Call(v.Attribute(collection, 'find'), index, type=t.Iterator(collection.type)))
                 end = v.Call(v.Attribute(collection, 'end'))
 
                 block = c.Block()
-                self.output(c.If(f'{it} == {end}', block))
+                self.output(c.If(f'{iterator} == {end}', block))
                 with self.block(block):
                     default = self.default(type)
-                    self.output(c.Statement(it, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), it, index, default)))
+                    self.output(c.Statement(iterator, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), iterator, index, default)))
 
-                return v.Attribute(it, 'second', type=type)
+                return v.Attribute(iterator, 'second', type=type)
 
         self.throw(node['op'], err.NotIndexable(collection.type))
 
@@ -1067,9 +1067,7 @@ class PyxellTranspiler:
         updates = []
         getters = []
 
-        def prepare(iterable):
-            # It must be a function so that there are separate scopes of variables to use in lambdas.
-
+        for iterable in iterables:
             if iterable['node'] == 'ExprBy':
                 step_expr = iterable['exprs'][1]
                 step = self.transpile(step_expr)
@@ -1089,15 +1087,15 @@ class PyxellTranspiler:
                 self.cast(step_expr, step, index.type)
 
                 if len(values) == 1:
-                    cond = lambda: v.true  # infinite range
+                    cond = v.true  # infinite range
                 else:
                     end = self.tmp(values[1], force_copy=True)
                     eq = '=' if iterable.get('inclusive') else ''
                     neg = self.tmp(v.BinaryOp(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
-                    cond = lambda: v.TernaryOp(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
+                    cond = v.TernaryOp(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
 
-                update = lambda: v.BinaryOp(index, '+=', step)
-                getter = lambda: v.Cast(index, type)
+                update = v.BinaryOp(index, '+=', step)
+                getter = v.Cast(index, type)
 
             else:
                 value = self.tmp(self.transpile(iterable))
@@ -1115,38 +1113,35 @@ class PyxellTranspiler:
                     self.output(c.If(f'{step} < 0 && {iterator} != {end}', c.Statement(iterator, '=', v.Call('std::prev', end))))
                     index = self.tmp(v.Int(0), force_copy=True)
                     length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
-                    cond = lambda: f'{index} < {length}'
-                    update = lambda: f'{index} += std::abs({step}), {iterator} += {step}'
+                    cond = f'{index} < {length}'
+                    update = f'{index} += std::abs({step}), {iterator} += {step}'
                 else:
                     self.store(step, f'std::abs({step})')
-                    cond = lambda: f'{iterator} != {end}'
-                    update = lambda: f'safe_advance({iterator}, {end}, {step})'
+                    cond = f'{iterator} != {end}'
+                    update = f'safe_advance({iterator}, {end}, {step})'
 
-                getter = lambda: v.UnaryOp('*', iterator, type=type.subtype)
+                getter = v.UnaryOp('*', iterator, type=type.subtype)
 
             conditions.append(cond)
             updates.append(update)
             getters.append(getter)
 
-        for iterable in iterables:
-            prepare(iterable)
-
-        condition = ' && '.join(str(cond()) for cond in conditions)
-        update = ', '.join(str(update()) for update in updates)
+        condition = ' && '.join(str(cond) for cond in conditions)
+        update = ', '.join(str(update) for update in updates)
 
         with self.loop(partial(c.For, '', condition, update), node.get('label')):
             if len(vars) == 1 and len(types) > 1:
-                tuple = v.Tuple([getter() for getter in getters])
+                tuple = v.Tuple(getters)
                 self.assign(vars[0], tuple)
             elif len(vars) > 1 and len(types) == 1:
                 if not types[0].isTuple():
                     self.throw(vars[0], err.CannotUnpack(types[0], len(vars)))
-                tuple = getters[0]()
+                tuple = getters[0]
                 for i, var in enumerate(vars):
                     self.assign(var, v.Get(tuple, i))
             elif len(vars) == len(types):
                 for var, getter in zip(vars, getters):
-                    self.assign(var, getter())
+                    self.assign(var, getter)
             else:
                 self.throw(vars[0], err.CannotUnpack(t.Tuple(types), len(vars)))
 

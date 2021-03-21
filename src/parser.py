@@ -210,7 +210,6 @@ class PyxellParser:
         if token.text in {'while', 'until'}:
             return {
                 **self.node(f'Stmt{token.text.capitalize()}', token),
-                'kind': token.text,
                 'expr': self.parse_tuple_expr(),
                 'label': self.match('label') and self.parse_id() or None,
                 'block': self.expect('do') and self.parse_block(),
@@ -242,7 +241,7 @@ class PyxellParser:
                 'base': self.match(':') and self.parse_type() or None,
                 'members': self.expect('def') and self.parse_class_member_list(),
             }
-        self.backtrack()  # backtrack if no keyword has been matched
+        self.backtrack()
 
         if token.type == Token.ID and self.peek(1).text == ':':
             return {
@@ -259,7 +258,7 @@ class PyxellParser:
                     'position': token.position,
                     'exprs': [exprs[0], self.parse_tuple_expr()],
                 }
-        self.backtrack()  # backtrack if no assignment operator has been matched
+        self.backtrack()
 
         while self.match('='):
             exprs.append(self.parse_tuple_expr())
@@ -349,9 +348,9 @@ class PyxellParser:
     def parse_id(self, **kwargs):
         token = self.pop()
         id = self.id_node(token, **kwargs)
-        if id:
-            return id
-        self.raise_syntax_error(token)
+        if not id:
+            self.raise_syntax_error(token)
+        return id
 
     def parse_interpolation_expr(self):
         expr = self.parse_tuple_expr()
@@ -388,6 +387,8 @@ class PyxellParser:
         return expr
 
     def parse_expr_prefix_op(self, token):
+        precedence = EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]
+
         id = self.id_node(token, placeholder_allowed=True)
         if id:
             return id
@@ -427,8 +428,8 @@ class PyxellParser:
             }
         if token.text in {'[', '{'}:  # containers
             closing_bracket = chr(ord(token.text) + 2)
-            comprehensions = self.parse_comprehensions()
             kind = 'array'
+            comprehensions = self.parse_comprehensions()
             if comprehensions:
                 exprs = [self.parse_expr()]
                 if token.text == '{':
@@ -466,22 +467,24 @@ class PyxellParser:
         if token.text in {'+', '-', 'not'}:  # prefix operators
             return {
                 **self.expr_node('ExprUnaryOp', token),
-                'expr': self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
+                'expr': self.parse_expr(precedence),
             }
         if token.text == '...':  # spread operator
             return {
                 **self.expr_node('ExprSpread', token),
-                'expr': self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
+                'expr': self.parse_expr(precedence),
             }
         if token.text == 'lambda':
             return {
                 **self.expr_node('ExprLambda', token),
                 'ids': [] if self.check(':') else self.parse_id_list(placeholder_allowed=True),
-                'expr': self.expect(':') and self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.PREFIX, token.text]),
+                'expr': self.expect(':') and self.parse_expr(precedence),
             }
         self.raise_syntax_error(token)
 
     def parse_expr_non_prefix_op(self, left, token):
+        precedence = EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text]
+
         if token.text in {'.', '?.'}:  # attribute access
             return {
                 **self.expr_node('ExprAttr', token),
@@ -526,8 +529,8 @@ class PyxellParser:
             return {
                 **self.expr_node('ExprCall', token),
                 'expr': left,
-                'args': args,
                 'partial': token.text.startswith('@'),
+                'args': args,
             }
         if token.text in {'!'}:  # postfix operators
             return {
@@ -537,17 +540,17 @@ class PyxellParser:
         if token.text in {'^', '^^', '??', 'and', 'or'}:  # right-associative infix operators
             return {
                 **self.expr_node('ExprBinaryOp', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)],
+                'exprs': [left, self.parse_expr(precedence - 1)],
             }
         if token.text in {'/', '//', '%', '*', '&', '+', '-', '%%'}:  # left-associative infix operators
             return {
                 **self.expr_node('ExprBinaryOp', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
+                'exprs': [left, self.parse_expr(precedence)],
             }
         if token.text in {'...', '..'}:  # range operators
             exprs = [left]
             with self.try_parse():  # infinite range if no second expression
-                exprs.append(self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text]))
+                exprs.append(self.parse_expr(precedence))
             inclusive = token.text == '..'
             if len(exprs) == 1 and inclusive:
                 self.raise_syntax_error(token)
@@ -559,10 +562,10 @@ class PyxellParser:
         if token.text == 'by':
             return {
                 **self.expr_node('ExprBy', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
+                'exprs': [left, self.parse_expr(precedence)],
             }
         if token.text in {'==', '!=', '<', '<=', '>', '>='}:  # comparison operators
-            right = self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)
+            right = self.parse_expr(precedence - 1)
             chained = right['node'] == 'ExprCmp' and not right.get('_parenthesized')
             return {
                 **self.expr_node('ExprCmp', token),
@@ -572,7 +575,7 @@ class PyxellParser:
         if token.text == 'in' or token.text == 'not' and self.match('in'):  # `in` / `not in`
             return {
                 **self.expr_node('ExprIn', token),
-                'exprs': [left, self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text])],
+                'exprs': [left, self.parse_expr(precedence)],
                 'not': token.text == 'not',
             }
         if token.text == 'is':  # `is null` / `is not null`
@@ -584,7 +587,7 @@ class PyxellParser:
         if token.text == '?':  # ternary conditional operator
             return {
                 **self.expr_node('ExprCond', token),
-                'exprs': [left, self.parse_expr(), self.expect(':') and self.parse_expr(EXPR_OPERATOR_PRECEDENCE[Fixity.NON_PREFIX, token.text] - 1)],
+                'exprs': [left, self.parse_expr(), self.expect(':') and self.parse_expr(precedence - 1)],
             }
         # No syntax error here since `EXPR_OPERATOR_PRECEDENCE` is 0 for unknown operators anyway.
 
@@ -693,6 +696,8 @@ class PyxellParser:
         self.raise_syntax_error(token)
 
     def parse_type_non_prefix_op(self, left, token):
+        precedence = TYPE_OPERATOR_PRECEDENCE[token.text]
+
         if token.text[0] == '?':  # nullable (note that there are two possible tokens: '?' and '??')
             for _ in token.text:
                 left = {
@@ -701,14 +706,14 @@ class PyxellParser:
                 }
             return left
         if token.text == '*':  # tuple
-            right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[token.text] - 1)
+            right = self.parse_type(precedence - 1)
             chained = right['node'] == 'TypeTuple' and not right.get('_parenthesized')
             return {
                 **self.node('TypeTuple', token),
                 'types': [left, *right['types']] if chained else [left, right],
             }
         if token.text == '->':  # function
-            right = self.parse_type(TYPE_OPERATOR_PRECEDENCE[token.text] - 1)
+            right = self.parse_type(precedence - 1)
             chained = right['node'] == 'TypeFunc' and not right.get('_parenthesized')
             left = [] if left is None else [left]
             return {
