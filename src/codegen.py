@@ -51,7 +51,7 @@ class Label(Wrapper):
 
 class If(Wrapper):
     def __init__(self, cond, if_block, else_block=None):
-        super().__init__('if ({}) {}' + (' else {}' if else_block else ''), cond, if_block, else_block)
+        super().__init__('if ({}) {}' + (' else {}' if else_block and else_block.content else ''), cond, if_block, else_block)
 
 
 class While(Wrapper):

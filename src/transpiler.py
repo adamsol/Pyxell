@@ -1114,7 +1114,8 @@ class PyxellTranspiler:
                     index = self.tmp(v.Int(0), force_copy=True)
                     length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
                     cond = f'{index} < {length}'
-                    update = f'{index} += std::abs({step}), {iterator} += {step}'
+                    abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
+                    update = f'{index} += {abs_step}, {iterator} += {step}'
                 else:
                     self.store(step, f'std::abs({step})')
                     cond = f'{iterator} != {end}'
