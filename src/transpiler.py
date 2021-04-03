@@ -108,15 +108,15 @@ class PyxellTranspiler:
             self.current_unit = _unit
 
     @contextmanager
-    def block(self, block):
+    def block(self, block=None):
         _block = self.current_block
-        self.current_block = block
-        yield
+        self.current_block = block or c.Block()
+        yield self.current_block
         self.current_block = _block
 
     @contextmanager
     def no_output(self):
-        with self.block(c.Block()):
+        with self.block():
             yield
 
     def output(self, stmt, toplevel=False):
@@ -228,11 +228,10 @@ class PyxellTranspiler:
                 iterator = self.tmp(v.Call(v.Attribute(collection, 'find'), index, type=t.Iterator(collection.type)))
                 end = v.Call(v.Attribute(collection, 'end'))
 
-                block = c.Block()
-                self.output(c.If(f'{iterator} == {end}', block))
-                with self.block(block):
+                with self.block() as block:
                     default = self.default(type)
                     self.output(c.Statement(iterator, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), iterator, index, default)))
+                self.output(c.If(f'{iterator} == {end}', block))
 
                 return v.Attribute(iterator, 'second', type=type)
 
@@ -241,12 +240,9 @@ class PyxellTranspiler:
     def cond(self, node, pred, callback_true, callback_false):
         pred = self.cast(node['op'], pred, t.Bool)
 
-        block_true = c.Block()
-        block_false = c.Block()
-
-        with self.block(block_true):
+        with self.block() as block_true:
             value_true = callback_true()
-        with self.block(block_false):
+        with self.block() as block_false:
             value_false = callback_false()
 
         type = unify_types(value_true.type, value_false.type)
@@ -828,9 +824,8 @@ class PyxellTranspiler:
                 template.cache[real_types] = func
 
                 arg_vars = [self.var(arg.type, prefix='a') for arg in func_type.args]
-                block = c.Block()
 
-                with self.block(block):
+                with self.block() as block:
                     if body:
                         self.env['#return'] = func_type.ret
                         self.env['#loops'] = {}
@@ -892,8 +887,7 @@ class PyxellTranspiler:
             labels = {'break': self.fake_name('l'), 'continue': self.fake_name('l')}
             self.env['#loops'] = {**self.env['#loops'], label: labels, None: labels}
 
-            body = c.Block()
-            with self.block(body):
+            with self.block() as body:
                 self.output(c.If(v.false, c.Block(c.Label(labels['continue']), c.Statement('continue'))))
                 yield
 
@@ -975,13 +969,12 @@ class PyxellTranspiler:
             self.throw(node, err.NotLvalue())
 
         if op == '??':
-            block = c.Block()
-            self.output(c.If(v.IsNull(left), block))
-            with self.block(block):
+            with self.block() as block:
                 right = self.transpile(exprs[1])
                 if not left.type.isNullable() or not can_cast(right.type, left.type.subtype):
                     self.throw(node['op'], err.NoBinaryOperator(op, left.type, right.type))
                 self.store(left, v.Nullable(self.cast(node, right, left.type.subtype)))
+            self.output(c.If(v.IsNull(left), block))
         else:
             right = self.transpile(exprs[1])
             value = self.binaryop(node, op, left, right)
@@ -1020,14 +1013,12 @@ class PyxellTranspiler:
                 expr = exprs[index]
                 cond = self.cast(expr, self.transpile(expr), t.Bool)
 
-            then = c.Block()
-            with self.block(then):
+            with self.block() as then:
                 with self.local():
                     self.transpile(blocks[index])
 
             if expr:
-                els = c.Block()
-                with self.block(els):
+                with self.block() as els:
                     emitIf(index+1)
                 self.output(c.If(cond, then, els))
             else:
@@ -1108,20 +1099,19 @@ class PyxellTranspiler:
                 end = self.tmp(v.Call(v.Attribute(value, 'end'), type=t.Sentinel(value.type)))
 
                 self.cast(step_expr, step, t.Int)
+                abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
 
                 if type.isSequence():
                     self.output(c.If(f'{step} < 0 && {iterator} != {end}', c.Statement(iterator, '=', v.Call('std::prev', end))))
                     index = self.tmp(v.Int(0), force_copy=True)
                     length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
                     cond = f'{index} < {length}'
-                    abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
                     update = f'{index} += {abs_step}, {iterator} += {step}'
                 else:
-                    self.store(step, f'std::abs({step})')
                     cond = f'{iterator} != {end}'
-                    update = f'safe_advance({iterator}, {end}, {step})'
+                    update = v.Call('safe_advance', iterator, end, abs_step)
 
-                getter = v.UnaryOp('*', iterator, type=type.subtype)
+                getter = v.Dereference(iterator, type=type.subtype)
 
             conditions.append(cond)
             updates.append(update)
@@ -1354,19 +1344,17 @@ class PyxellTranspiler:
                         else:
                             members[name] = self.var(func.type, prefix='m')
 
-                        block = c.Block()
-                        fields.append(c.Function('virtual void*', members[name], [], block))
-                        with self.block(block):
+                        with self.block() as block:
                             self.output(c.Statement('return', v.Call('reinterpret_cast<void*>', func)))
+                        fields.append(c.Function('virtual void*', members[name], [], block))
 
                     elif member['node'] == 'ClassDestructor':
-                        block = c.Block()
-                        fields.append(c.Function('virtual', f'~{cls}', [], block))
-                        with self.block(block):
+                        with self.block() as block:
                             # To call the destructor function expecting shared_ptr as the argument,
                             # we create a shared_ptr that points to, but doesn't own, `this`.
                             # https://stackoverflow.com/a/29709885
                             self.output(v.Call(methods['<destructor>'], v.Call(type, v.Call(type), 'this')))
+                        fields.append(c.Function('virtual', f'~{cls}', [], block))
 
         if not any(member['node'] == 'ClassDestructor' for member in node['members']):
             # Empty virtual destructor as recommended by C++.
@@ -1809,13 +1797,12 @@ class PyxellTranspiler:
             if op == 'or':
                 cond1 = v.UnaryOp('!', cond1, type=t.Bool)
 
-            block = c.Block()
-            self.output(c.If(cond1, block))
-            with self.block(block):
+            with self.block() as block:
                 cond2 = self.transpile(exprs[1])
                 if not cond1.type == cond2.type == t.Bool:
                     self.throw(node['op'], err.NoBinaryOperator(op, cond1.type, cond2.type))
                 self.store(result, cond2)
+            self.output(c.If(cond1, block))
 
             return result
 
@@ -1884,8 +1871,7 @@ class PyxellTranspiler:
             if index == len(exprs) - 1:
                 self.store(result, cond)
             else:
-                block = c.Block()
-                with self.block(block):
+                with self.block() as block:
                     emitIf(index+1)
                 self.output(c.If(cond, block))
 
