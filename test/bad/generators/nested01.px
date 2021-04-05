@@ -1,0 +1,7 @@
+
+func* f(): Int def
+    func g(): Int def
+        yield 42
+    g()
+
+f()

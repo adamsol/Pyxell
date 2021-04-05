@@ -1,8 +1,13 @@
 
+k = 0
+
 func* range(n: Int): Int def
     for x in 0...n do
         yield x
+        k += 1
 
 print [...range(0)]
 print [...range(5) by 4]
-print [...range(10^^7) by 2].length
+print [...range(10^^7) by 2000].length
+
+print k

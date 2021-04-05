@@ -1,0 +1,8 @@
+
+func* f(): Int def
+    skip
+
+func* g() def
+    return f()
+
+g()

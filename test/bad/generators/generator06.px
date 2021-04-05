@@ -1,5 +1,0 @@
-
-func* f(): Char def
-    yield 'c'
-
-[...f() by 'a']

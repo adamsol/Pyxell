@@ -1,6 +1,6 @@
 
-func* f() def
-    yield 1
-    yield true
+func* f<T>(): T def
+    yield ""
+    yield 0
 
 f()

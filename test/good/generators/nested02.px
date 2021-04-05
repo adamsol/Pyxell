@@ -1,0 +1,10 @@
+
+func* f(n: Int): [Int] def
+    func array(a: Int): [Int] def
+        return [a...n]
+
+    for i in 0..n do
+        yield array(i)
+
+print [...f(0)]
+print [...f(3)]

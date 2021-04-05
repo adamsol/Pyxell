@@ -1,0 +1,11 @@
+
+func* recursive_range(n: Int): Int def
+    if n == 0 do
+        return
+    yield 0
+    for i in recursive_range(n-1) do
+        yield i + 1
+
+print [...recursive_range(0)]
+print [...recursive_range(5)]
+print [...recursive_range(100) by 9].length

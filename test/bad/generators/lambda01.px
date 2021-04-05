@@ -1,0 +1,6 @@
+
+func* f(): Int def
+    skip
+
+g = lambda: f()
+g()

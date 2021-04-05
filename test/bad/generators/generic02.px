@@ -1,0 +1,6 @@
+
+func* f() def
+    yield 1
+    yield true
+
+f()

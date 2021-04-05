@@ -1,2 +1,1 @@
-:6:2: Error in function `f` called here.
-:2:20: Cannot settle return type of the function.
+:5:12: No implicit conversion from `Char` to `Int`.

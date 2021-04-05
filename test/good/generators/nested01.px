@@ -1,0 +1,11 @@
+
+func f(step: Int = 1): Void def
+    func* between(a: Int, b: Int): Int def
+        for x in a..b by step do
+            yield x
+
+    print [...between(4, 7)]
+
+f()
+f(3)
+f(10)

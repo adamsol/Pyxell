@@ -1,0 +1,6 @@
+
+func* f(x: String): String def
+    yield x
+
+g = f
+print [...g("test")]

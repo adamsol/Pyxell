@@ -1,0 +1,13 @@
+
+class A def
+    x: Char
+
+    func* f(): Char def
+        yield 'A'
+        yield this.x
+
+
+a = A('@')
+
+for x in a.f() do
+    print x

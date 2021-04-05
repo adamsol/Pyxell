@@ -1,0 +1,2 @@
+:6:2: Error in function `g` called here.
+:5:13: No implicit conversion from `Generator<Int>` to `Generator<Int>`.
