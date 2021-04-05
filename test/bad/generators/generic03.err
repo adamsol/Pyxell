@@ -1,2 +1,2 @@
 :8:2: Error in function `g` called here.
-:6:5: No implicit conversion from `Generator<Int>` to `Generator<$A>`.
+:6:5: Generator must not return a value.

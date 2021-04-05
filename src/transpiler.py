@@ -1217,7 +1217,7 @@ class PyxellTranspiler:
             value = self.transpile(expr, void_allowed=True)
 
             if type.isGenerator():
-                self.throw(node, err.NoConversion(value.type, type))
+                self.throw(node, err.GeneratorReturn())
 
             if '#return-types' in self.env:
                 self.env['#return-types'].append(value.type)

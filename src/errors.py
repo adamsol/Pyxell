@@ -6,6 +6,7 @@ class PyxellError(Exception):
     AbstractClass = lambda t: f"Cannot instantiate an abstract class `{t.show()}`"
     CannotUnpack = lambda t, n: f"Cannot unpack value of type `{t.show()}` into {n} values"
     ExpectedNamedArgument = lambda: f"Positional argument cannot follow named arguments"
+    GeneratorReturn = lambda: f"Generator must not return a value"
     GenericMethod = lambda: f"Generic methods are not supported"
     IncompatibleTypes = lambda t1, t2, *ts: f"Incompatible types `{t1.show()}` and `{t2.show()}`"
     IntegerTooLarge = lambda: f"Integer constant is too large"

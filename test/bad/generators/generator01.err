@@ -1,1 +1,1 @@
-:3:5: No implicit conversion from `Int` to `Generator<Int>`.
+:3:5: Generator must not return a value.
