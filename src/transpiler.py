@@ -828,6 +828,7 @@ class PyxellTranspiler:
                 with self.block() as block:
                     if body:
                         self.env['#return'] = func_type.ret
+                        self.env.pop('#return-types', None)
                         self.env['#loops'] = {}
 
                         for arg, var in zip(func_type.args, arg_vars):

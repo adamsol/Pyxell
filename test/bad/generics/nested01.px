@@ -1,0 +1,7 @@
+
+func f<T>(): T def
+    func g(): Int def
+        return 1
+    g()
+
+print f()
