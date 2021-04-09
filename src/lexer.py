@@ -1,6 +1,7 @@
 
 import re
-
+from typing import NamedTuple, Tuple
+import enum
 # See also pyxell-syntax.js for regexes regarding syntax highlighting in the documentation.
 # TODO: DRY
 KEYWORDS = {
@@ -16,8 +17,7 @@ ESCAPE_SEQ_REGEX = r'''[\\abfnrt]|x[0-9a-fA-F]+'''
 CHAR_REGEX = rf'''\'(?:[^\\']|\\(?:'|{ESCAPE_SEQ_REGEX}))\''''
 STRING_REGEX = rf'''\"(?:[^\\"]|\\(?:"|{ESCAPE_SEQ_REGEX}))*\"'''
 
-
-class Token:
+class TokenTypeEnum(enum.Enum):
     NUMBER = 'NUMBER'
     CHAR = 'CHAR'
     STRING = 'STRING'
@@ -25,16 +25,10 @@ class Token:
     OTHER = 'OTHER'
     EOF = 'EOF'
 
-    def __init__(self, text, type, position):
-        self.text = text
-        self.type = type
-        self.position = position
-
-    def __repr__(self):
-        return f"Token('{self.text}', {self.type}, {self.position}))"
-
-    def __eq__(self, other):
-        raise TypeError("Use `text` property for comparing token strings.")
+class Token(NamedTuple):
+    text: str
+    type: TokenTypeEnum
+    position: Tuple[int, int]
 
 
 def tokenize(lines, start_position=(1, 1)):
@@ -51,15 +45,15 @@ def tokenize(lines, start_position=(1, 1)):
             if c != ' ':  # only spaces are allowed as whitespace characters
                 type = Token.OTHER
                 if c.isidentifier() and text not in KEYWORDS:
-                    type = Token.ID
+                    type = TokenTypeEnum.ID
                 elif c.isdigit():
-                    type = Token.NUMBER
+                    type = TokenTypeEnum.NUMBER
                 elif c == '\'' and len(text) > 1:
-                    type = Token.CHAR
+                    type = TokenTypeEnum.CHAR
                 elif c == '"' and len(text) > 1:
-                    type = Token.STRING
+                    type = TokenTypeEnum.STRING
                 tokens.append(Token(text, type, (i, j)))
             j += len(text)
 
-    tokens.append(Token('', Token.EOF, (len(lines) - 1 + start_position[0], len(lines[-1]) + start_position[1])))
+    tokens.append(Token('', TokenTypeEnum.EOF, (len(lines) - 1 + start_position[0], len(lines[-1]) + start_position[1])))
     return tokens
