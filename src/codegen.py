@@ -34,7 +34,7 @@ class Statement(Wrapper):
         super().__init__(' '.join(['{}']*len(parts))+';', *parts)
 
 
-class Var(Wrapper):
+class Decl(Wrapper):
     def __init__(self, var, value=None):
         super().__init__('{} {}' + (' = {}' if value else ''), var.type, var.name, value)
 
@@ -64,9 +64,19 @@ class For(Wrapper):
         super().__init__('for ({}; {}; {}) {}', init, cond, update, body)
 
 
+class Switch(Wrapper):
+    def __init__(self, value, block):
+        super().__init__('switch ({}) {}', value, block)
+
+
+class Case(Wrapper):
+    def __init__(self, value, block):
+        super().__init__('case {}: {}', value, block)
+
+
 class Function(Wrapper):
     def __init__(self, ret, name, args, body):
-        super().__init__('{}{}({}) {}', f'{ret} '.lstrip(), name, ', '.join(str(Var(arg)) for arg in args), body)
+        super().__init__('{}{}({}) {}', f'{ret} '.lstrip(), name, ', '.join(str(Decl(arg)) for arg in args), body)
 
 
 class Struct(Wrapper):

@@ -643,7 +643,7 @@ print apply(3*_, 14)
 ### Generators
 
 Generator is a function producing a sequence of values that can be iterated over without storing it in memory.
-To create a generator, add an asterisk symbol to the function definition.
+To create a generator, add an asterisk symbol in the function definition and use `yield` instead of `return`.
 
 ```
 func* range(n: Int): Int def
@@ -663,8 +663,6 @@ func* reversed(a) def
 a = [4, -1, 0.6]
 print [...reversed(a)]
 ```
-
-Note that generators are currently supported only with Clang.
 
 
 ## Classes

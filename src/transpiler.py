@@ -9,7 +9,7 @@ from functools import partial
 from . import codegen as c
 from . import types as t
 from . import values as v
-from .errors import NotSupportedError, PyxellError as err
+from .errors import PyxellError as err
 from .parser import PyxellParser
 from .types import can_cast, has_type_variables, type_variables_assignment, unify_types
 from .utils import lmap
@@ -28,10 +28,7 @@ class Unit:
 
 class PyxellTranspiler:
 
-    def __init__(self, cpp_compiler):
-        self.cpp_compiler = cpp_compiler
-
-        self.required_features = set()
+    def __init__(self):
         self.units = {}
         self.current_unit = None
         self.sequence_number = 0
@@ -58,8 +55,6 @@ class PyxellTranspiler:
     def run_main(self, ast, filepath):
         self.run(ast, 'main', filepath)
         self.output(c.Statement('return 0'))
-        if 'generators' in self.required_features and 'clang' not in self.cpp_compiler:
-            raise NotSupportedError(f"Generators require C++ coroutines support; use Clang.")
         return str(self.module)
 
     def transpile(self, node, void_allowed=False):
@@ -75,11 +70,6 @@ class PyxellTranspiler:
 
     def throw(self, node, msg):
         raise err(self.current_unit.filepath, node['position'], msg)
-
-    def require(self, feature):
-        if feature not in {'generators'}:
-            raise ValueError(feature)
-        self.required_features.add(feature)
 
 
     ### Helpers ###
@@ -120,7 +110,7 @@ class PyxellTranspiler:
             yield
 
     def output(self, stmt, toplevel=False):
-        if isinstance(stmt, (v.Value, c.Var, c.Const, c.Label)):
+        if isinstance(stmt, (v.Value, c.Decl, c.Const, c.Label)):
             stmt = c.Statement(stmt)
 
         if toplevel:
@@ -249,8 +239,7 @@ class PyxellTranspiler:
         if type is None:
             self.throw(node['op'], err.IncompatibleTypes(value_true.type, value_false.type))
 
-        result = self.var(type)
-        self.output(c.Var(result))
+        result = self.tmp(type=type)
 
         with self.block(block_true):
             self.store(result, value_true)
@@ -484,15 +473,25 @@ class PyxellTranspiler:
     def var(self, type, prefix='v'):
         return v.Variable(type, self.fake_name(prefix))
 
-    def tmp(self, value, force_copy=False):
+    def tmp(self, value=None, type=None, force_copy=False):
         if not force_copy:
             if isinstance(value, v.Variable) or isinstance(value, v.Literal) and value.type in {t.Int, t.Float, t.Bool, t.Char}:
                 return value
             if isinstance(value, v.Value) and value.isTemplate():
                 return value
-        tmp = self.var(value.type)
-        self.output(c.Var(tmp, value))
-        return tmp
+
+        if value is not None:
+            type = value.type
+        var = self.var(type)
+
+        if '#generator-fields' in self.env:
+            self.env['#generator-fields'].append(c.Statement(c.Decl(var)))
+            if value is not None:
+                self.store(var, value)
+        else:
+            self.output(c.Decl(var, value))
+
+        return var
 
     def declare(self, node, type, name, redeclare=False):
         if not type.hasValue() or type.isVar():
@@ -502,7 +501,11 @@ class PyxellTranspiler:
 
         var = self.var(type)
         self.env[name] = var
-        self.output(c.Var(var), toplevel=(self.env.get('#return') is None))
+
+        if '#generator-fields' in self.env:
+            self.env['#generator-fields'].append(c.Statement(c.Decl(var)))
+        else:
+            self.output(c.Decl(var), toplevel=(self.env.get('#return') is None))
 
         return self.env[name]
 
@@ -829,6 +832,7 @@ class PyxellTranspiler:
                     if body:
                         self.env['#return'] = func_type.ret
                         self.env.pop('#return-types', None)
+                        self.env.pop('#generator-fields', None)
                         self.env['#loops'] = {}
 
                         for arg, var in zip(func_type.args, arg_vars):
@@ -838,6 +842,7 @@ class PyxellTranspiler:
                         if has_type_variables(func_type.ret):
                             with self.local():
                                 self.env['#return-types'] = []
+                                self.env['#generator-switch'] = c.Block()
 
                                 with self.no_output():
                                     self.transpile(body)
@@ -860,9 +865,30 @@ class PyxellTranspiler:
                         if has_type_variables(func_type.ret):
                             self.throw(body, err.UnknownReturnType())
 
+                        if func_type.ret.isGenerator():
+                            cls = self.fake_name('c')
+
+                            fields = c.Block()
+                            for var in arg_vars:
+                                fields.append(c.Statement(c.Decl(var)))
+                            if arg_vars:
+                                init_list = ', '.join(f'{var}({var})' for var in arg_vars)
+                                fields.append(c.Function('', cls, arg_vars, f': {init_list} {{}}'))
+                            fields.append(c.Function(t.Bool, 'run', [], block))
+                            self.env['#generator-fields'] = fields
+
+                            self.env['#generator-switch'] = c.Block()
+                            self.output(c.Switch('state', self.env['#generator-switch']))
+
+                            with self.block() as block:
+                                self.output(c.Struct(cls, fields, base=f'GeneratorBase<{func_type.ret.subtype}>'))
+                                self.output(c.Statement('return', v.Call(f'std::make_unique<{cls}>', *arg_vars)))
+
                         self.transpile(body)
 
-                        if func_type.ret.hasValue() and not template.lambda_:
+                        if func_type.ret.isGenerator():
+                            self.output(c.Statement('return', v.false))
+                        elif func_type.ret.hasValue() and not template.lambda_:
                             self.output(c.Statement('return', self.default(func_type.ret)))
 
                     else:  # `extern`
@@ -872,7 +898,11 @@ class PyxellTranspiler:
             # The closure is created every time the function is used (except for recursive calls),
             # so current values of variables are captured, possibly different than in the moment of definition.
             del template.cache[real_types]
-            self.output(c.Var(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func])))
+            if '#generator-fields' in self.env:
+                self.env['#generator-fields'].append(c.Statement(c.Decl(func)))
+                self.store(func, v.Lambda(func_type, arg_vars, block))
+            else:
+                self.output(c.Decl(func, v.Lambda(func_type, arg_vars, block, capture_vars=[func])))
         else:
             self.output(c.Statement(func_type.ret, f'{func}({func_type.args_str()})'), toplevel=True)
             self.output(c.Function(func_type.ret, func, arg_vars, block), toplevel=True)
@@ -1096,8 +1126,13 @@ class PyxellTranspiler:
                     self.throw(iterable, err.NotIterable(type))
 
                 types.append(type.subtype)
-                iterator = self.tmp(v.Call(v.Attribute(value, 'begin'), type=t.Iterator(value.type)))
-                end = self.tmp(v.Call(v.Attribute(value, 'end'), type=t.Sentinel(value.type)))
+
+                if type.isGenerator():
+                    getter = v.Attribute(value, 'value', type=type.subtype)
+                else:
+                    iterator = self.tmp(v.Call(v.Attribute(value, 'begin'), type=t.Iterator(value.type)))
+                    end = self.tmp(v.Call(v.Attribute(value, 'end'), type=t.Iterator(value.type)))
+                    getter = v.Dereference(iterator, type=type.subtype)
 
                 self.cast(step_expr, step, t.Int)
                 abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
@@ -1108,11 +1143,13 @@ class PyxellTranspiler:
                     length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
                     cond = f'{index} < {length}'
                     update = f'{index} += {abs_step}, {iterator} += {step}'
+                elif type.isGenerator():
+                    cond = self.tmp(v.Call(v.Attribute(value, 'run'), type=t.Bool))
+                    repeat = v.Call(v.Attribute(value, 'repeat'), abs_step, type=t.Bool)
+                    update = f'{cond} = {repeat}'
                 else:
                     cond = f'{iterator} != {end}'
                     update = v.Call('safe_advance', iterator, end, abs_step)
-
-                getter = v.Dereference(iterator, type=type.subtype)
 
             conditions.append(cond)
             updates.append(update)
@@ -1193,7 +1230,6 @@ class PyxellTranspiler:
                 typevars.append(ret_type.name)
                 self.env[ret_type.name] = ret_type
             if node.get('generator'):
-                self.require('generators')
                 ret_type = t.Generator(ret_type)
             func_type = t.Func(args, ret_type)
 
@@ -1233,7 +1269,7 @@ class PyxellTranspiler:
                 self.throw(node, err.NoConversion(t.Void, type))
 
         if type.isGenerator():
-            self.output(c.Statement('co_return'))
+            self.output(c.Statement('return', v.false))
         elif type == t.Void:
             if expr:
                 # Special case for lambdas returning Void.
@@ -1255,7 +1291,16 @@ class PyxellTranspiler:
         else:
             value = self.cast(node, value, type)
 
-        self.output(c.Statement('co_yield', value))
+        switch = self.env['#generator-switch']
+        state = len(switch.content) + 1
+        label = self.fake_name('l')
+
+        switch.append(c.Case(state, c.Statement('goto', label)))
+
+        self.store('value', value)
+        self.store('state', state)
+        self.output(c.Statement('return', v.true))
+        self.output(c.Label(label))
 
     def transpileStmtClass(self, node):
         class_name = node['id']['name']
@@ -1297,7 +1342,7 @@ class PyxellTranspiler:
                 else:
                     field.default = self.default(field.type)
 
-                fields.append(c.Statement(c.Var(field)))
+                fields.append(c.Statement(c.Decl(field)))
                 members[name] = field
 
         if not any(member['id']['name'] == 'toString' for member in node['members']) and (not base or 'toString' in base.default_methods):

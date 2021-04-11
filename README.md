@@ -69,11 +69,6 @@ Dependencies
 
 * C++17 compiler: Clang 5+ or GCC 7+
 
-Note that generators are currently available only with Clang, since they are based on C++'s coroutines.
-Though GCC 10 also supports coroutines, as of version 10.2 the implementation is buggy
-(see [here](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95591) or [here](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=95823)),
-so it is not yet supported by Pyxell.
-
 
 Usage
 -----
@@ -94,7 +89,7 @@ You can set the optimization level with `-O` option, e.g. `-O2`.
 This will make the program run faster, but also make the compilation slower.
 
 Use `-s` to skip the compilation step and obtain transpiled C++ code with all headers included,
-ready for manual compilation (with `-std=c++17` option, and with `-fcoroutines-ts` in the case of Clang).
+ready for manual compilation (with `-std=c++17` option).
 
 To see all options, use `-h`.
 

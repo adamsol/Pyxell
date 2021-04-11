@@ -1,10 +1,13 @@
 
-func* f(n: Int): [Int] def
-    func array(a: Int): [Int] def
-        return [a...n]
+func* f(n: Int): Rat def
+    func g(n: Int): Rat def
+        if n == 0 do
+            return 1
+        n -= 1
+        return g(n) / 2
 
-    for i in 0..n do
-        yield array(i)
+    yield g(n)
+    yield n * g(n)
 
 print [...f(0)]
 print [...f(3)]

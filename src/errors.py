@@ -55,7 +55,3 @@ class PyxellError(Exception):
         self.filepath = str(filepath).replace('\\', '/')
         self.position = position
         super().__init__(f"{self.filepath}:{self.position[0]}:{self.position[1]}: {msg}.")
-
-
-class NotSupportedError(Exception):
-    pass

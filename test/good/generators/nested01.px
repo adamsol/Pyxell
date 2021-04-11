@@ -1,11 +1,10 @@
 
-func f(step: Int = 1) def
-    func* between(a: Int, b: Int): Int def
-        for x in a..b by step do
-            yield x
+func* f(n: Int): [Int] def
+    func array(a: Int): [Int] def
+        return [a...n]
 
-    print [...between(4, 7)]
+    for i in 0..n do
+        yield array(i)
 
-f()
-f(3)
-f(10)
+print [...f(0)]
+print [...f(3)]

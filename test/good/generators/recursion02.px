@@ -1,0 +1,10 @@
+
+func* add(x: Int, y: Int): Int def
+    if x == 0 do
+        yield y
+    elif y == 0 do
+        yield x
+    else do
+        yield [...add(x-1, 1), ...add(1, y-1)].reduce(_+_)
+
+print [...add(7, 25)][0]

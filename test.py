@@ -15,7 +15,7 @@ from timeit import default_timer as timer
 
 from src.codegen import INDENT
 from src.main import compile, run_cpp_compiler
-from src.errors import NotSupportedError, PyxellError
+from src.errors import PyxellError
 
 # Setup terminal colors.
 R = colorama.Style.BRIGHT + colorama.Fore.RED
@@ -55,7 +55,6 @@ if n == 0:
 print(f"Running {n} tests using {args.thread_count} thread{'s' if args.thread_count > 1 else ''}.")
 
 ok = 0
-skipped = 0
 t0 = timer()
 output_dict = {}
 output_index = 1
@@ -68,7 +67,6 @@ tests_to_compile = set()
 
 def test(path, running_aggregate_tests=False):
     global ok
-    global skipped
     global output_index
 
     index = tests[path]
@@ -90,10 +88,6 @@ def test(path, running_aggregate_tests=False):
             else:
                 exe_filename = compile(path, args.cpp_compiler, args.opt_level, mode=('executable' if args.separate else 'cpp'))
             error = False
-        except NotSupportedError as e:
-            with lock:
-                skipped += 1
-            output.append(f"{Y}{e}{E}")
         except PyxellError as e:
             error_message = str(e).replace(path, '')
             if expected_error:
@@ -204,10 +198,7 @@ if not args.separate:
 
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"
-failed = n - ok - skipped
-
-if skipped:
-    msg += f", {Y}{skipped} skipped{E}"
+failed = n - ok
 
 if failed:
     msg += f", {R}{failed} failed{E}"

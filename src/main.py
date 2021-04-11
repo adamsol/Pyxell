@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from timeit import default_timer as timer
 
-from .errors import NotSupportedError, PyxellError
+from .errors import PyxellError
 from .indentation import transform_indented_code
 from .parser import PyxellParser
 from .transpiler import PyxellTranspiler
@@ -29,13 +29,6 @@ for name in ['std', 'math', 'random']:
     units[name] = build_ast(abspath/f'lib/{name}.px')
 
 
-def cpp_flags(cpp_compiler, opt_level):
-    flags = [f'-O{opt_level}', '-std=c++17']
-    if 'clang' in cpp_compiler:
-        flags.append('-fcoroutines-ts')
-    return flags
-
-
 def resolve_local_includes(path):
     code = path.read_text().replace('#pragma once', '')
 
@@ -46,7 +39,7 @@ def resolve_local_includes(path):
 
 
 def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose=False, disable_warnings=False):
-    command = [cpp_compiler, cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, *cpp_flags(cpp_compiler, opt_level), '-lstdc++']
+    command = [cpp_compiler, '-std=c++17', f'-O{opt_level}', cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-lstdc++']
     if disable_warnings:
         command.append('-w')
     if platform.system() != 'Windows':
@@ -74,7 +67,7 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False, mode='executable')
         print(f"transpiling {filepath} to {cpp_filename}")
 
     t1 = timer()
-    transpiler = PyxellTranspiler(cpp_compiler)
+    transpiler = PyxellTranspiler()
 
     for name, ast in units.items():
         transpiler.run(ast, name, f'lib/{name}.px')
@@ -135,7 +128,7 @@ def main():
     except FileNotFoundError:
         print(f"file not found: {args.filepath}")
         sys.exit(1)
-    except (NotSupportedError, PyxellError) as e:
+    except PyxellError as e:
         print(str(e))
         sys.exit(1)
     except subprocess.CalledProcessError as e:

@@ -22,14 +22,6 @@
 
 #include "indy256/bigint.hpp"
 
-#ifdef __clang__
-    #define GENERATORS
-#endif
-
-#ifdef GENERATORS
-    #include "cppcoro/generator.hpp"
-#endif
-
 using namespace std::literals::string_literals;
 
 
@@ -352,10 +344,27 @@ Dict<K, V> make_dict(Args&&... args)
 
 /* Generator */
 
-#ifdef GENERATORS
-    template <typename T>
-    using Generator = cppcoro::generator<T>;
-#endif
+template <typename T>
+struct GeneratorBase
+{
+    T value;
+    unsigned state = 0;
+
+    virtual Bool run() = 0;
+
+    Bool repeat(Int n)
+    {
+        while (n--) {
+            if (!run()) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
+
+template <typename T>
+using Generator = std::unique_ptr<GeneratorBase<T>>;
 
 /* Nullable */
 
@@ -682,18 +691,16 @@ bool contains(const Dict<K, V>& x, const K& k)
     return x->find(k) != x->end();
 }
 
-#ifdef GENERATORS
-    template <typename T>
-    bool contains(Generator<T>& x, const T& e)
-    {
-        for (auto&& v: x) {
-            if (v == e) {
-                return true;
-            }
+template <typename T>
+bool contains(const Generator<T>& x, const T& e)
+{
+    while (x->run()) {
+        if (x->value == e) {
+            return true;
         }
-        return false;
     }
-#endif
+    return false;
+}
 
 
 /* Container methods */

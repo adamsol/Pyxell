@@ -1,0 +1,7 @@
+
+func* f(): String->Rat def
+    yield _.length
+    yield _[0].code / 2
+
+for f' in f() do
+    print f'("AB")

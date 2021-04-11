@@ -115,8 +115,7 @@
                             'LanguageChoice': 27,  // C++ (clang)
                             'Program': response.data.cpp_code,
                             'Input': this.input,
-                            'CompilerArgs': '-std=c++17 -fcoroutines-ts -o a.out source_file.cpp' +
-                                            (this.optimization ? ' -O2' : ''),
+                            'CompilerArgs': `-std=c++17 -O${this.optimization ? 2 : 0} source_file.cpp -o a.out`,
                         };
                         const form_data = new FormData();
                         for (const [name, value] of Object.entries(params)) {
