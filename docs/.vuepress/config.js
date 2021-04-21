@@ -4,14 +4,10 @@ module.exports = {
     description: 'Programming language built with simplicity in mind.',
     themeConfig: {
         repo: 'adamsol/Pyxell',
-        nav: [
-            { link: '/playground', text: 'Try it online' },
-        ],
         sidebar: [
             ['/manual', 'Manual'],
             ['/specification', 'Specification'],
             ['/why-pyxell', 'Why Pyxell?'],
-            ['/playground', 'Playground'],
         ],
         displayAllHeaders: true,
         lastUpdated: 'Documentation version',  // see plugins/version.js

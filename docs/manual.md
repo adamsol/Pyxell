@@ -7,7 +7,7 @@ This manual should let you quickly learn all the details to start programming in
 It is assumed that you already know some programming language (preferably Python), since basic programming concepts are not explained here.
 
 You are encouraged to run the code snippets and experiment with them for yourself.
-To run Pyxell code, go to the [Playground](/playground.md),
+To run Pyxell code,
 clone the repository and follow the instructions on [Github](https://github.com/adamsol/Pyxell#dependencies),
 or download Windows binaries from the [Releases](https://github.com/adamsol/Pyxell/releases).
 
