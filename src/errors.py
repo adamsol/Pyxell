@@ -20,6 +20,8 @@ class PyxellError(Exception):
     InvalidUsage = lambda s: f"`{s}` cannot be used here"
     InvalidVariadicType = lambda t: f"Variadic argument's type `{t.show()}` is not an array"
     MissingArgument = lambda id: f"Missing required argument `{id}`"
+    NestedClass = lambda: f"Nested classes are not supported"
+    NestedGenerator = lambda: f"Nested generators are not supported"
     NoAttribute = lambda t, id: f"Type `{t.show()}` has no attribute `{id}`"
     NoBinaryOperator = lambda op, t1, t2: f"No binary operator `{op}` defined for `{t1.show()}` and `{t2.show()}`"
     NoConversion = lambda t1, t2: f"No implicit conversion from `{t1.show()}` to `{t2.show()}`"

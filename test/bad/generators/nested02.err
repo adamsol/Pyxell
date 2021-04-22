@@ -1,0 +1,2 @@
+:6:2: Error in function `f` called here.
+:3:5: Nested generators are not supported.

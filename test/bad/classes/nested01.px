@@ -1,0 +1,6 @@
+
+func f() def
+    class A def
+        x: Int
+
+f()

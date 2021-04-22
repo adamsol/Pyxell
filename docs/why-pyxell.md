@@ -355,7 +355,7 @@ It depends mainly on whether a variable is global or declared inside a function.
 It is only guaranteed that all destructors will be eventually called before the program ends, provided that there are no circular references
 (and Pyxell currently doesn't detect such cases, so memory leaks are also possible).
 
-### Partial closures
+### Partial closures for nested functions
 
 Closures in Pyxell are based on closures in C++ with variables captured by value.
 This works differently than in Python and some other languages when non-local variables in nested functions are concerned.
@@ -377,3 +377,5 @@ f()
 
 For the expected result you might want to use a mutable object, e.g. an array with one element, or a global variable instead.
 Also note that in Python you would need to mark the `x` variable in `g` definition as `nonlocal` for the above code to work at all (after syntax changes).
+
+Defining classes or generators inside functions is currently not supported at all.

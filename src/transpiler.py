@@ -1189,6 +1189,9 @@ class PyxellTranspiler:
         self.output(c.Statement('goto', self.env['#loops'][name][stmt]))
 
     def transpileStmtFunc(self, node, class_type=None):
+        if node.get('generator') and self.env.get('#return'):
+            self.throw(node, err.NestedGenerator())
+
         func_name = node['id']['name']
         if class_type is None and func_name in self.env:
             self.throw(node['id'], err.RedefinedIdentifier(func_name))
@@ -1303,6 +1306,9 @@ class PyxellTranspiler:
         self.output(c.Label(label))
 
     def transpileStmtClass(self, node):
+        if self.env.get('#return'):
+            self.throw(node, err.NestedClass())
+
         class_name = node['id']['name']
         if class_name in self.env:
             self.throw(node['id'], err.RedefinedIdentifier(class_name))

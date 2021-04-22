@@ -1,0 +1,6 @@
+
+func f() def
+    func* g(): Int def
+        return
+
+f()
