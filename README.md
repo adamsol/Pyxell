@@ -67,7 +67,7 @@ Dependencies
 
 * Python 3.6+
 
-* C++17 compiler: Clang 5+ or GCC 7+
+* C++17 compiler: GCC 7+ or Clang 5+
 
 
 Usage
@@ -81,7 +81,7 @@ If the program is valid, `program.cpp` file and `program.exe` executable will be
 and it will be automatically executed (unless you add `-n` option).
 Otherwise, errors will be displayed, pointing to the erroneous code location.
 
-By default, `clang` command is used to compile the code.
+By default, `gcc` command is used to compile the code.
 You can pick a different compiler using `-c` option.
 
 The executable is not optimized by default.

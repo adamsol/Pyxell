@@ -146,7 +146,7 @@ so there is no need to put `\` character at the end of a line.
 
 ### Compilation to machine code
 
-Programs written in Pyxell are transpiled to C++ and compiled to native machine code by a well-optimized compiler (Clang or GCC),
+Programs written in Pyxell are transpiled to C++ and compiled to native machine code by a well-optimized compiler (GCC or Clang),
 which makes the execution as fast as possible.
 
 

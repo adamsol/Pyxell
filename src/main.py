@@ -106,7 +106,7 @@ def compile(filepath, cpp_compiler, opt_level, verbose=False, mode='executable')
 def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
-    parser.add_argument('-c', '--cpp-compiler', default='clang', help="C++ compiler command (default: clang)")
+    parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
     parser.add_argument('-n', '--dont-run', action='store_true', help="don't run the program after compilation")
     parser.add_argument('-O', '--opt-level', type=int, choices=range(4), default=0, help="compiler optimization level (default: 0)")
     parser.add_argument('-s', '--standalone-cpp', action='store_true', help="save transpiled C++ code for standalone compilation and exit")
