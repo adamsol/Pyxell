@@ -1,0 +1,7 @@
+
+func* count(n): Int def
+    yield n
+    yield 1..n
+
+for x in count(3) do
+    print x

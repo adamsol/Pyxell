@@ -646,9 +646,20 @@ Generator is a function producing a sequence of values that can be iterated over
 To create a generator, add an asterisk symbol in the function definition and use `yield` instead of `return`.
 
 ```
+func* divisors(n: Int): Int def
+    for x in 1..n do
+        if n %% x do
+            yield x
+
+for x in divisors(12) do
+    print x
+```
+
+You can also use `yield` directly with range and spread syntax.
+
+```
 func* range(n: Int): Int def
-    for i in 0...n do
-        yield i
+    yield 0...n
 
 print [...range(5)]
 ```
@@ -657,11 +668,9 @@ Generic functions can be generators as well.
 
 ```
 func* reversed(a) def
-    for x in a by -1 do
-        yield x
+    yield ...a by -1
 
-a = [4, -1, 0.6]
-print [...reversed(a)]
+print [...reversed("qwerty")]
 ```
 
 

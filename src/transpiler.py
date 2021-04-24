@@ -1286,8 +1286,26 @@ class PyxellTranspiler:
         if not type or not type.isGenerator():
             self.throw(node, err.InvalidUsage('yield'))
 
+        expr = node['expr']
+
+        if expr['node'] in {'ExprRange', 'ExprSpread'} or expr['node'] == 'ExprBy' and expr['exprs'][0]['node'] == 'ExprRange':
+            var = {
+                'node': 'AtomId',
+                'name': self.fake_name(),
+            }
+            return self.transpile({
+                'node': 'StmtFor',
+                'vars': [var],
+                'iterables': [expr['expr'] if expr['node'] == 'ExprSpread' else expr],
+                'block': {
+                    **node,
+                    'node': 'StmtYield',
+                    'expr': var,
+                },
+            })
+
         type = type.subtype
-        value = self.transpile(node['expr'])
+        value = self.transpile(expr)
 
         if '#return-types' in self.env:
             self.env['#return-types'].append(t.Generator(value.type))
@@ -1423,10 +1441,8 @@ class PyxellTranspiler:
 
         with self.no_output():
             for item in items:
-                if item['node'] in {'ExprRange', 'ExprBy'}:
+                if item['node'] == 'ExprRange' or item['node'] == 'ExprBy' and item['exprs'][0]['node'] == 'ExprRange':
                     if item['node'] == 'ExprBy':
-                        if item['exprs'][0]['node'] != 'ExprRange':
-                            self.throw(item['op'], err.InvalidIterative())
                         item = item['exprs'][0]
                     values = self.range(item['op'], item['exprs'])
                     type_lists[0].extend(value.type for value in values)

@@ -1,0 +1,6 @@
+
+func* reversed(a) def
+    yield ...a by -1
+
+print [...reversed([1, 2])]
+print [...reversed("test")]

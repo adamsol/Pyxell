@@ -1,0 +1,5 @@
+
+func* f(): Char def
+    yield "" by 2
+
+f()
