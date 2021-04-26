@@ -1,2 +1,2 @@
 
-[for a in [[]] yield ...a]
+[for x in [] yield x, x]

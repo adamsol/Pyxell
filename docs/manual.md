@@ -327,6 +327,7 @@ print [false, true] < [true]
 ```
 
 You can use array comprehension, as well as range literals and spread operator with optional step.
+Note that the syntax for array comprehension is a bit different than in Python: it resembles generators, which are described later.
 
 ```
 print [for x in 1..3 for y in x..3 yield x*y]

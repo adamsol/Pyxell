@@ -1,0 +1,3 @@
+
+print [for i in 1..3 yield i...5]
+print [for c in "zux" yield c..'z' by 2].join()

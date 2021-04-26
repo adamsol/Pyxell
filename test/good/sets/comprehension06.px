@@ -1,0 +1,3 @@
+
+print {for c, i in "ah", 1... yield c..c+i} == {..."abhij"}
+print {if true yield ..."abc" by 3}

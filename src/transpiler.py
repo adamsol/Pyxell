@@ -925,6 +925,20 @@ class PyxellTranspiler:
             self.output(stmt_callback(body))
             self.output(c.Label(labels['break']))
 
+    def iterable_literal(self, expr):
+        return expr['node'] in {'ExprRange', 'ExprSpread'} or expr['node'] == 'ExprBy' and expr['exprs'][0]['node'] == 'ExprRange'
+
+    def iterate(self, expr):
+        var = {
+            'node': 'AtomId',
+            'name': self.fake_name(),
+        }
+        return var, {
+            'node': 'StmtFor',
+            'vars': [var],
+            'iterables': [expr['expr'] if expr['node'] == 'ExprSpread' else expr],
+        }
+
 
     ### Statements ###
 
@@ -1288,21 +1302,14 @@ class PyxellTranspiler:
 
         expr = node['expr']
 
-        if expr['node'] in {'ExprRange', 'ExprSpread'} or expr['node'] == 'ExprBy' and expr['exprs'][0]['node'] == 'ExprRange':
-            var = {
-                'node': 'AtomId',
-                'name': self.fake_name(),
+        if self.iterable_literal(expr):
+            var, stmt = self.iterate(expr)
+            stmt['block'] = {
+                **node,
+                'node': 'StmtYield',
+                'expr': var,
             }
-            return self.transpile({
-                'node': 'StmtFor',
-                'vars': [var],
-                'iterables': [expr['expr'] if expr['node'] == 'ExprSpread' else expr],
-                'block': {
-                    **node,
-                    'node': 'StmtYield',
-                    'expr': var,
-                },
-            })
+            return self.transpile(stmt)
 
         type = type.subtype
         value = self.transpile(expr)
@@ -1441,13 +1448,7 @@ class PyxellTranspiler:
 
         with self.no_output():
             for item in items:
-                if item['node'] == 'ExprRange' or item['node'] == 'ExprBy' and item['exprs'][0]['node'] == 'ExprRange':
-                    if item['node'] == 'ExprBy':
-                        item = item['exprs'][0]
-                    values = self.range(item['op'], item['exprs'])
-                    type_lists[0].extend(value.type for value in values)
-
-                elif item['node'] == 'ExprSpread':
+                if item['node'] == 'ExprSpread':
                     item = item['expr']
                     if item['node'] == 'ExprBy':
                         item = item['exprs'][0]
@@ -1455,6 +1456,12 @@ class PyxellTranspiler:
                     if not value.type.isIterable():
                         self.throw(item, err.NotIterable(value.type))
                     type_lists[0].append(value.type.subtype)
+
+                elif self.iterable_literal(item):
+                    if item['node'] == 'ExprBy':
+                        item = item['exprs'][0]
+                    values = self.range(item['op'], item['exprs'])
+                    type_lists[0].extend(value.type for value in values)
 
                 elif item['node'] == 'DictPair':
                     values = lmap(self.transpile, item['exprs'])
@@ -1567,6 +1574,10 @@ class PyxellTranspiler:
                 },
             ],
         }
+
+        if kind != 'dict' and self.iterable_literal(exprs[0]):
+            exprs[0], stmt = self.iterate(exprs[0])
+            stmt['block'] = inner_stmt
 
         for cpr in reversed(node['comprehensions']):
             if cpr['node'] == 'ComprehensionIteration':

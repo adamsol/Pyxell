@@ -1,0 +1,7 @@
+
+print [for a in [[]] yield ...a]
+
+a = [false, true]
+print [for i in 0..2 yield ...a*i*i by -i]
+
+print [for i in 0...5 for j in 0...4 if j != 1 yield ..."qwerty"].length
