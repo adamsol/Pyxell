@@ -1,0 +1,8 @@
+
+func f(): Bool... def
+    yield true
+
+a: Bool... = f()
+print [...a]
+print [...a]
+print {...a}

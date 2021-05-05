@@ -1,0 +1,5 @@
+
+g: String...
+print [...g]
+g = g
+print {'a', ...g}

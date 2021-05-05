@@ -1,1 +1,1 @@
-:5:1: Cannot declare variable of type `String...`.
+:3:5: No implicit conversion from `Rat` to `Int`.

@@ -1,0 +1,13 @@
+
+func counter(n: Int): Int... def
+    print true
+    for i in 1..n do
+        yield i
+        print i
+
+r = counter(5)
+print false
+
+print [for v, i in r, 0...3 yield v]
+# 4 is lost here, Python behaves the same way.
+print [...r]

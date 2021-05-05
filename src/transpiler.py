@@ -189,6 +189,8 @@ class PyxellTranspiler:
             return v.Nullable(None, type.subtype)
         if type.isTuple():
             return v.Tuple([self.default(t) for t in type.elements])
+        if type.isGenerator():
+            return v.Call(f'std::make_shared<GeneratorBase<{type.subtype}>>')
         if type.isFunc():
             return v.Lambda(type, [''] * len(type.args), self.default(type.ret) if type.ret != t.Void else c.Block())
         if type.isClass():
@@ -893,7 +895,7 @@ class PyxellTranspiler:
 
                             with self.block() as block:
                                 self.output(c.Struct(cls, fields, base=f'GeneratorBase<{func_type.ret.subtype}>'))
-                                self.output(c.Statement('return', v.Call(f'std::make_unique<{cls}>', *arg_vars)))
+                                self.output(c.Statement('return', v.Call(f'std::make_shared<{cls}>', *arg_vars)))
 
                         self.transpile(body)
 
@@ -1285,7 +1287,7 @@ class PyxellTranspiler:
             else:
                 value = self.cast(node, value, type)
 
-        elif type.hasValue():
+        elif type.hasValue() and not type.isGenerator():
             if '#return-types' in self.env:
                 type = t.Void
                 self.env['#return-types'].append(type)

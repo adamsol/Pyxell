@@ -350,7 +350,9 @@ struct GeneratorBase
     T value;
     unsigned state = 0;
 
-    virtual Bool run() = 0;
+    virtual Bool run() {
+        return false;
+    }
 
     Bool repeat(Int n)
     {
@@ -364,7 +366,7 @@ struct GeneratorBase
 };
 
 template <typename T>
-using Generator = std::unique_ptr<GeneratorBase<T>>;
+using Generator = std::shared_ptr<GeneratorBase<T>>;
 
 /* Nullable */
 

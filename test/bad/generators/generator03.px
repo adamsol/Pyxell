@@ -1,5 +1,5 @@
 
-func f(): Bool def
-    yield true
+func f(): Char... def
+    yield 'c'
 
-f()
+[...f() by 'a']

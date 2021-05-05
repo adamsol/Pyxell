@@ -110,7 +110,7 @@ class Type:
             return self.subtype.hasValue()
         if self.isTuple():
             return all(elem.hasValue() for elem in self.elements)
-        return self != Void and not self.isGenerator()
+        return self != Void
 
 
 class PrimitiveType(Type):
@@ -382,7 +382,7 @@ def common_superclass(type1, type2):
 def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=True):
 
     if type1.isArray() and type2.isArray() or type1.isSet() and type2.isSet() or type1.isDict() and type2.isDict():
-        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed=(conversion_allowed and (covariance or type1.literal)))
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed and (covariance or type1.literal))
 
     if type1.isNullable() and type2.isNullable():
         return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
@@ -408,7 +408,7 @@ def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=
         return result
 
     if type1.isGenerator() and type2.isGenerator():
-        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed and covariance)
 
     if type1.isFunc() and type2.isFunc():
         return type_variables_assignment(

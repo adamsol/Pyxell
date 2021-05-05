@@ -1,0 +1,16 @@
+
+func range(n: Int): Int... def
+    yield 0...n
+
+r = range(10)
+
+for x in r by 2 do
+    print x
+    if x > 1 do
+        break
+
+for x in r by 4 do
+    print x
+    break
+
+print [...r by 3]

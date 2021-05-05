@@ -1,0 +1,16 @@
+
+func range(n: Int): Rat... def
+    yield 0...n
+
+
+class A def
+    g: Rat... = range(1)
+
+
+a = A()
+print [...a.g]
+print [...a.g]
+
+a.g = range(3)
+print [...a.g]
+print {...a.g}

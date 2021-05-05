@@ -1,5 +1,5 @@
 
-func f(): String... def
-    yield ""
+func f(): Int... def
+    yield 4.2
 
-x = f()
+f()

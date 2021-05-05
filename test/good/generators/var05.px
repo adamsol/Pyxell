@@ -1,0 +1,12 @@
+
+func spread(x) def
+    yield ...x
+
+
+func array(g, n = 1) def
+    return [...g] * n
+
+
+g = spread("xy")
+print array(g, 2)
+print array(g)
