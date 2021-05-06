@@ -1,0 +1,1 @@
+:5:7: Variable of type `()->(Int->Bool)...` cannot be printed.

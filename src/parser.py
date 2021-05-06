@@ -49,7 +49,7 @@ for precedence, (fixity, ops) in enumerate(reversed([
 
 TYPE_OPERATOR_PRECEDENCE = defaultdict(lambda: 0)
 
-for precedence, op in enumerate(reversed(['?', '??', '*', '->']), 1):
+for precedence, op in enumerate(reversed(['?', '??', '*', '...', '->']), 1):
     TYPE_OPERATOR_PRECEDENCE[op] = precedence
 
 
@@ -308,7 +308,6 @@ class PyxellParser:
 
     def parse_func_header(self):
         return {
-            'generator': self.match('*'),
             'id': self.parse_id(),
             'typevars': self.match('<') and (self.parse_id_list(), self.expect('>'))[0] or [],
             'args': self.parse_func_arg_list(),
@@ -711,6 +710,11 @@ class PyxellParser:
             return {
                 **self.node('TypeTuple', token),
                 'types': [left, *right['types']] if chained else [left, right],
+            }
+        if token.text == '...':  # generator
+            return {
+                **self.node('TypeGenerator', token),
+                'subtype': left,
             }
         if token.text == '->':  # function
             right = self.parse_type(precedence - 1)

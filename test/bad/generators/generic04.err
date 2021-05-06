@@ -1,2 +1,2 @@
 :5:2: Error in function `f` called here.
-:2:14: Cannot settle return type of the function.
+:2:22: Cannot settle return type of the function.

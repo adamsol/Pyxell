@@ -2,7 +2,7 @@
 class A def
     x: Int
 
-    func* f(a: Int): Rat def
+    func f(a: Int): Rat... def
         for i in 1..this.x do
             yield a/i
 

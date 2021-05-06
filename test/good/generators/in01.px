@@ -1,5 +1,5 @@
 
-func* f(): Float*Bool def
+func f(): Float*Bool... def
     yield 0.0, false
     yield 1.0, true
 

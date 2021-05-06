@@ -130,12 +130,12 @@ class PyxellTranspiler:
             return t.Set(self.resolve_type(type.subtype))
         if type.isDict():
             return t.Dict(self.resolve_type(type.key_type), self.resolve_type(type.value_type))
-        if type.isGenerator():
-            return t.Generator(self.resolve_type(type.subtype))
         if type.isNullable():
             return t.Nullable(self.resolve_type(type.subtype))
         if type.isTuple():
             return t.Tuple([self.resolve_type(type) for type in type.elements])
+        if type.isGenerator():
+            return t.Generator(self.resolve_type(type.subtype))
         if type.isFunc():
             return t.Func([arg._replace(type=self.resolve_type(arg.type)) for arg in type.args], self.resolve_type(type.ret))
         return type
@@ -821,6 +821,8 @@ class PyxellTranspiler:
                 self.env = template.env.copy()
                 self.env.update(assigned_types)
 
+                nested = self.env.get('#return') is not None
+
                 func_type = self.resolve_type(template.type)
 
                 func = self.var(func_type, prefix='f')
@@ -847,8 +849,14 @@ class PyxellTranspiler:
                                 with self.no_output():
                                     self.transpile(body)
 
-                                if self.env['#return-types']:
-                                    ret = unify_types(*self.env['#return-types'])
+                                types = self.env['#return-types']
+
+                                # Ignore `return` in generators.
+                                if all(type == t.Void or type.isGenerator() for type in types):
+                                    types = [type for type in types if type != t.Void]
+
+                                if types:
+                                    ret = unify_types(*types)
                                 else:
                                     ret = t.Void
 
@@ -866,6 +874,9 @@ class PyxellTranspiler:
                             self.throw(body, err.UnknownReturnType())
 
                         if func_type.ret.isGenerator():
+                            if nested:
+                                self.throw(body, err.NestedGenerator())
+
                             cls = self.fake_name('c')
 
                             fields = c.Block()
@@ -1203,9 +1214,6 @@ class PyxellTranspiler:
         self.output(c.Statement('goto', self.env['#loops'][name][stmt]))
 
     def transpileStmtFunc(self, node, class_type=None):
-        if node.get('generator') and self.env.get('#return'):
-            self.throw(node, err.NestedGenerator())
-
         func_name = node['id']['name']
         if class_type is None and func_name in self.env:
             self.throw(node['id'], err.RedefinedIdentifier(func_name))
@@ -1246,8 +1254,6 @@ class PyxellTranspiler:
                 ret_type = t.Var(f'${chr(n+65)}')
                 typevars.append(ret_type.name)
                 self.env[ret_type.name] = ret_type
-            if node.get('generator'):
-                ret_type = t.Generator(ret_type)
             func_type = t.Func(args, ret_type)
 
             env = self.env.copy()
@@ -1267,6 +1273,7 @@ class PyxellTranspiler:
             self.throw(node, err.InvalidUsage('return'))
 
         expr = node['expr']
+
         if expr:
             value = self.transpile(expr, void_allowed=True)
 
@@ -1297,8 +1304,6 @@ class PyxellTranspiler:
 
     def transpileStmtYield(self, node):
         type = self.env.get('#return')
-        if not type or not type.isGenerator():
-            self.throw(node, err.InvalidUsage('yield'))
 
         expr = node['expr']
 
@@ -1311,13 +1316,14 @@ class PyxellTranspiler:
             }
             return self.transpile(stmt)
 
-        type = type.subtype
         value = self.transpile(expr)
 
         if '#return-types' in self.env:
             self.env['#return-types'].append(t.Generator(value.type))
         else:
-            value = self.cast(node, value, type)
+            if type is None or not type.isGenerator():
+                self.throw(node, err.InvalidUsage('yield'))
+            value = self.cast(node, value, type.subtype)
 
         switch = self.env['#generator-switch']
         state = len(switch.content) + 1
@@ -2083,6 +2089,9 @@ class PyxellTranspiler:
 
     def transpileTypeTuple(self, node):
         return t.Tuple(lmap(self.transpile, node['types']))
+
+    def transpileTypeGenerator(self, node):
+        return t.Generator(self.transpile(node['subtype']))
 
     def transpileTypeFunc(self, node):
         types = lmap(self.transpile, node['types'])

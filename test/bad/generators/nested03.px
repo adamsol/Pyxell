@@ -1,0 +1,7 @@
+
+func f() def
+    func g() def
+        yield true
+    g()
+
+f()

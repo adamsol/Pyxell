@@ -644,10 +644,10 @@ print apply(3*_, 14)
 ### Generators
 
 Generator is a function producing a sequence of values that can be iterated over without storing it in memory.
-To create a generator, add an asterisk symbol in the function definition and use `yield` instead of `return`.
+To create a generator, add an ellipsis to the return type declaration and use `yield` instead of `return`.
 
 ```
-func* divisors(n: Int): Int def
+func divisors(n: Int): Int... def
     for x in 1..n do
         if n %% x do
             yield x
@@ -659,16 +659,17 @@ for x in divisors(12) do
 You can also use `yield` directly with range and spread syntax.
 
 ```
-func* range(n: Int): Int def
+func range(n: Int): Int... def
     yield 0...n
 
 print [...range(5)]
 ```
 
 Generic functions can be generators as well.
+If `yield` statement is used inside a function's body, the function will automatically become a generator.
 
 ```
-func* reversed(a) def
+func reversed(a) def
     yield ...a by -1
 
 print [...reversed("qwerty")]
@@ -931,7 +932,7 @@ print factorial(10)
 ### Generator for Fibonacci numbers
 
 ```
-func* fib() def
+func fib() def
     a, b = 0r, 1r
     yield a
     while true do

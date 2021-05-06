@@ -1,5 +1,5 @@
 
-func* recursive_range(n: Int): Int def
+func recursive_range(n: Int): Int... def
     if n == 0 do
         return
     yield 0

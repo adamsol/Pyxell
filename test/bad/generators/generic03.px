@@ -1,8 +1,8 @@
 
-func* f(): Int def
+func f(): Int... def
     skip
 
-func* g() def
+func g() def
     return f()
 
 g()

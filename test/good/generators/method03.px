@@ -2,7 +2,7 @@
 class A def
     x: Char
 
-    func* f(): Char def
+    func f(): Char... def
         yield 'A'
         yield this.x
 

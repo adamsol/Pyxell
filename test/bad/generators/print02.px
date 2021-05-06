@@ -1,0 +1,5 @@
+
+func f(): Char*Rat... def
+    skip
+
+print f()

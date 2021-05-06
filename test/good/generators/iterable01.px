@@ -1,5 +1,5 @@
 
-func* count(n): Int def
+func count(n): Int... def
     yield n
     yield 1..n
 

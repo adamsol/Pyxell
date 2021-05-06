@@ -1,5 +1,5 @@
 
-func* fib(): Int def
+func fib(): Int... def
     a, b = 0, 1
     while true do
         yield a

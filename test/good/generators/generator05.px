@@ -1,5 +1,5 @@
 
-func* f(a: Int, b: String = "", c: [Float] = []): Int def
+func f(a: Int, b: String = "", c: [Float] = []): Int... def
     print c
     yield a + b.length + c.length
 

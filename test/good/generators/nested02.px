@@ -1,5 +1,5 @@
 
-func* f(n: Int): Rat def
+func f(n: Int): Rat... def
     func g(n: Int): Rat def
         if n == 0 do
             return 1

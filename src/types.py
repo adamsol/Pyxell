@@ -34,14 +34,14 @@ class Type:
     def isDict(self):
         return isinstance(self, Dict)
 
-    def isGenerator(self):
-        return isinstance(self, Generator)
-
     def isNullable(self):
         return isinstance(self, Nullable)
 
     def isTuple(self):
         return isinstance(self, Tuple)
+
+    def isGenerator(self):
+        return isinstance(self, Generator)
 
     def isFunc(self):
         return isinstance(self, Func)
@@ -187,16 +187,6 @@ class Dict(Wrapper):
         return f'{{{self.key_type.show()}:{self.value_type.show()}}}'
 
 
-class Generator(Wrapper):
-    PRECEDENCE = 0
-
-    def __str__(self):
-        return f'Generator<{self.subtype}>'
-
-    def show(self):
-        return f'Generator<{self.subtype.show()}>'
-
-
 class Nullable(Wrapper):
     PRECEDENCE = 1
 
@@ -225,8 +215,18 @@ class Tuple(Type):
         return self.elements == other.elements
 
 
-class Func(Type):
+class Generator(Wrapper):
     PRECEDENCE = 3
+
+    def __str__(self):
+        return f'Generator<{self.subtype}>'
+
+    def show(self):
+        return f'{self.subtype.show_with_precedence(self)}...'
+
+
+class Func(Type):
+    PRECEDENCE = 4
 
     Arg = namedtuple('Arg', ['name', 'type', 'default', 'variadic'])
     Arg.__new__.__defaults__ = (None,) * 4
@@ -330,10 +330,6 @@ def unify_types(type1, *types):
         value_type = unify_types(type1.value_type, type2.value_type)
         return Dict(key_type, value_type) if key_type and value_type else None
 
-    if type1.isGenerator() and type2.isGenerator():
-        subtype = unify_types(type1.subtype, type2.subtype)
-        return Generator(subtype) if subtype else None
-
     if type1.isNullable() or type2.isNullable():
         subtype = unify_types(type1.subtype if type1.isNullable() else type1, type2.subtype if type2.isNullable() else type2)
         return Nullable(subtype) if subtype else None
@@ -341,6 +337,10 @@ def unify_types(type1, *types):
     if type1.isTuple() and type2.isTuple():
         elems = [unify_types(t1, t2) for t1, t2 in zip(type1.elements, type2.elements)]
         return Tuple(elems) if all(elems) and len(type1.elements) == len(type2.elements) else None
+
+    if type1.isGenerator() and type2.isGenerator():
+        subtype = unify_types(type1.subtype, type2.subtype)
+        return Generator(subtype) if subtype else None
 
     if type1.isClass() and type2.isClass():
         return common_superclass(type1, type2)
@@ -384,9 +384,6 @@ def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=
     if type1.isArray() and type2.isArray() or type1.isSet() and type2.isSet() or type1.isDict() and type2.isDict():
         return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed=(conversion_allowed and (covariance or type1.literal)))
 
-    if type1.isGenerator() and type2.isGenerator():
-        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
-
     if type1.isNullable() and type2.isNullable():
         return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
     if not type1.isNullable() and type2.isNullable() and conversion_allowed:
@@ -409,6 +406,9 @@ def type_variables_assignment(type1, type2, covariance=True, conversion_allowed=
                 return None
             result[name] = type
         return result
+
+    if type1.isGenerator() and type2.isGenerator():
+        return type_variables_assignment(type1.subtype, type2.subtype, covariance, conversion_allowed)
 
     if type1.isFunc() and type2.isFunc():
         return type_variables_assignment(

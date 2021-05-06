@@ -1,5 +1,5 @@
 
-func* f(x: String): String def
+func f(x: String): String... def
     yield x
 
 g = f

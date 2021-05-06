@@ -60,6 +60,7 @@ This section describes all data types available in Pyxell, together with their p
 | `{Key:Value}`                      | dictionary       | `{'x': false}`     | `{:}`                                    |
 | `Type?`                            | nullable value   | `null`             | `null`                                   |
 | `Type1*Type2`                      | tuple            | `true, 4.6`        | tuple of default values                  |
+| `Type...`                          | generator object |                    | empty sequence                           |
 | `Arg1->Arg2->Result`, `()->Result` | function         | `_+_`, `lambda: 0` | function returning the default value     |
 | custom class name                  | class object     |                    | none (uninitialized object is invalid)   |
 

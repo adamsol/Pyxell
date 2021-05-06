@@ -1,5 +1,5 @@
 
-func* f(): String->Rat def
+func f(): (String->Rat)... def
     yield _.length
     yield _[0].code / 2
 

@@ -1,5 +1,5 @@
 
-func* f(n: Int): [Int] def
+func f(n: Int): [Int]... def
     func array(a: Int): [Int] def
         return [a...n]
 

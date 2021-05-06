@@ -1,5 +1,5 @@
 
-func* add(x: Int, y: Int): Int def
+func add(x: Int, y: Int): Int... def
     if x == 0 do
         yield y
     elif y == 0 do

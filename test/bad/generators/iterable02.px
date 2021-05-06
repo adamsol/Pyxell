@@ -1,5 +1,5 @@
 
-func* f(): Char def
+func f(): Char... def
     yield ...'x'
 
 f()

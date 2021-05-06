@@ -1,13 +1,13 @@
 
 class A def
-    func* f(): String def
+    func f(): String... def
         return
 
 
 class B: A def
     s: String
 
-    func* f(): String def
+    func f(): String... def
         yield this.s
 
 

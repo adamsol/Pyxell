@@ -1,0 +1,9 @@
+
+func inverse(a) def
+    yield a
+    if a == 0 do
+        return
+    yield 1/a
+
+print [...inverse(5)]
+print [...inverse(0f)]

@@ -1,0 +1,9 @@
+
+func empty<T>(): T... def
+    print
+    return
+    print
+    yield false
+    return
+
+print {...empty()}

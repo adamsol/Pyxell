@@ -1,5 +1,5 @@
 
-func* reversed(a) def
+func reversed(a) def
     yield ...a by -1
 
 print [...reversed([1, 2])]

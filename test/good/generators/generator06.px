@@ -1,5 +1,5 @@
 
-func* cond(a: Bool, b: String, c: String): String def
+func cond(a: Bool, b: String, c: String): String... def
     yield a ? b : c
 
 print [...cond(1 < 2, 'x', 'y')][0]

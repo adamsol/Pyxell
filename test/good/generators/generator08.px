@@ -1,0 +1,6 @@
+
+func codes(s): Int*Char*Int... def
+    for c, i in s, 0... do
+        yield i, c, c.code
+
+print [...codes("a*")]

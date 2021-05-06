@@ -1,8 +1,8 @@
 
-func* range(a, b, step = 1): Rat def
+func range(a, b, step = 1): Rat... def
     yield a...b by step
 
-func* f(a: [Int]): Float def
+func f(a: [Int]): Float... def
     yield ...range(0, a.length, 2)
     yield 4.2
     yield ...a by -1
