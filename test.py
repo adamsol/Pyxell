@@ -169,7 +169,7 @@ with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
     for path in tests:
         executor.submit(test, path)
 
-if not args.separate:
+if tests_to_compile:
     if args.verbose:
         print(f"Compiling {aggregate_cpp_filename}.")
 
