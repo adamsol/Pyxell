@@ -31,10 +31,11 @@ colorama.init()
 parser = argparse.ArgumentParser(description="Test Pyxell compiler.")
 parser.add_argument('pattern', nargs='?', default='', help="file path pattern (relative to test folder)")
 parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
+parser.add_argument('-k', '--keep-cpp', dest='keep_cpp', action='store_true', help="don't remove generated C++ files")
 parser.add_argument('-s', '--separate', action='store_true', help="compile each test individually (instead of putting all the code into one C++ file)")
 parser.add_argument('-O', '--opt-level', type=int, choices=range(4), default=0, help="compiler optimization level (default: 0)")
 parser.add_argument('-t', '--thread-count', dest='thread_count', type=int, default=16, help="number of threads to use")
-parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help="display all tests and don't remove generated files")
+parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help="display additional information")
 args = parser.parse_args()
 
 # Run tests that satisfy the pattern.
@@ -159,10 +160,11 @@ def test(path, running_aggregate_tests=False):
     if passed:
         with lock:
             ok += 1
-        if not args.verbose:
+        if not error:
             os.remove(path.replace('.px', '.tmp'))
-            if not error:
+            if not args.keep_cpp:
                 os.remove(path.replace('.px', '.cpp'))
+            if not args.separate:
                 os.remove(path.replace('.px', '.exe'))
 
 with concurrent.futures.ThreadPoolExecutor(args.thread_count) as executor:
@@ -192,9 +194,9 @@ if tests_to_compile:
             for path in tests_to_compile:
                 executor.submit(test, path, running_aggregate_tests=True)
 
-        if not args.verbose:
+        if not args.keep_cpp:
             os.remove(aggregate_cpp_filename)
-            os.remove(aggregate_exe_filename)
+        os.remove(aggregate_exe_filename)
 
 print(f"{B}---{E}")
 msg = f"Run {n} tests in {timer()-t0:.3f}s"
