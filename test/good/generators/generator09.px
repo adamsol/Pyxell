@@ -1,0 +1,8 @@
+
+func f(): Void... def
+    print 'a'
+    yield
+    print 'b'
+
+for _ in f() do
+    print 1

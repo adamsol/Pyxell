@@ -344,10 +344,8 @@ Dict<K, V> make_dict(Args&&... args)
 
 /* Generator */
 
-template <typename T>
-struct GeneratorBase
+struct _GeneratorBase
 {
-    T value;
     unsigned state = 0;
 
     virtual Bool run() {
@@ -363,6 +361,17 @@ struct GeneratorBase
         }
         return true;
     }
+};
+
+template <typename T>
+struct GeneratorBase: _GeneratorBase
+{
+    T value;
+};
+
+template <>
+struct GeneratorBase<Void>: _GeneratorBase
+{
 };
 
 template <typename T>

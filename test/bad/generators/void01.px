@@ -1,3 +1,5 @@
 
 func f(): Void... def
-    yield
+    yield false
+
+f()

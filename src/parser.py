@@ -189,7 +189,7 @@ class PyxellParser:
         if token.text == 'yield':
             return {
                 **self.node('StmtYield', token),
-                'expr': self.parse_tuple_expr(),
+                'expr': None if self.check(';') else self.parse_tuple_expr(),
             }
         if token.text == 'if':
             exprs = [self.parse_tuple_expr()]

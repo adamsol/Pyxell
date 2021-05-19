@@ -1,0 +1,2 @@
+:6:2: Error in function `f` called here.
+:2:13: Cannot settle return type of the function.

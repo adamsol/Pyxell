@@ -1,0 +1,6 @@
+
+func f() def
+    yield []
+    yield
+
+f()

@@ -1,0 +1,11 @@
+
+func f(n) def
+    for i in 1..n do
+        print i
+        yield
+
+for _ in f(0) do
+    print false
+
+for _ in f(3) do
+    print true

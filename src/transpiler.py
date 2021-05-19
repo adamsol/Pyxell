@@ -1269,12 +1269,11 @@ class PyxellTranspiler:
             return self.function(func)
 
     def transpileStmtReturn(self, node):
-        try:
-            type = self.env['#return']
-        except KeyError:
+        type = self.env.get('#return')
+        if type is None:
             self.throw(node, err.InvalidUsage('return'))
 
-        expr = node['expr']
+        expr = node.get('expr')
 
         if expr:
             value = self.transpile(expr, void_allowed=True)
@@ -1287,11 +1286,11 @@ class PyxellTranspiler:
             else:
                 value = self.cast(node, value, type)
 
-        elif type.hasValue() and not type.isGenerator():
+        elif not type.isGenerator():
             if '#return-types' in self.env:
                 type = t.Void
                 self.env['#return-types'].append(type)
-            else:
+            elif type.hasValue():
                 self.throw(node, err.NoConversion(t.Void, type))
 
         if type.isGenerator():
@@ -1306,26 +1305,34 @@ class PyxellTranspiler:
 
     def transpileStmtYield(self, node):
         type = self.env.get('#return')
+        if type is None or not type.isGenerator() and '#return-types' not in self.env:
+            self.throw(node, err.InvalidUsage('yield'))
 
-        expr = node['expr']
+        expr = node.get('expr')
 
-        if self.iterable_literal(expr):
-            var, stmt = self.iterate(expr)
-            stmt['block'] = {
-                **node,
-                'node': 'StmtYield',
-                'expr': var,
-            }
-            return self.transpile(stmt)
+        if expr:
+            if self.iterable_literal(expr):
+                var, stmt = self.iterate(expr)
+                stmt['block'] = {
+                    **node,
+                    'node': 'StmtYield',
+                    'expr': var,
+                }
+                return self.transpile(stmt)
 
-        value = self.transpile(expr)
+            value = self.transpile(expr)
 
-        if '#return-types' in self.env:
-            self.env['#return-types'].append(t.Generator(value.type))
+            if '#return-types' in self.env:
+                self.env['#return-types'].append(t.Generator(value.type))
+            else:
+                value = self.cast(node, value, type.subtype)
+
         else:
-            if type is None or not type.isGenerator():
-                self.throw(node, err.InvalidUsage('yield'))
-            value = self.cast(node, value, type.subtype)
+            if '#return-types' in self.env:
+                type = t.Generator(t.Void)
+                self.env['#return-types'].append(type)
+            elif type.subtype.hasValue():
+                self.throw(node, err.NoConversion(t.Void, type.subtype))
 
         switch = self.env['#generator-switch']
         state = len(switch.content) + 1
@@ -1333,7 +1340,8 @@ class PyxellTranspiler:
 
         switch.append(c.Case(state, c.Statement('goto', label)))
 
-        self.store('value', value)
+        if type != t.Generator(t.Void):
+            self.store('value', value)
         self.store('state', state)
         self.output(c.Statement('return', v.true))
         self.output(c.Label(label))
