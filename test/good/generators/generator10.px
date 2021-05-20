@@ -1,0 +1,13 @@
+
+func f(): Float?... def
+    yield 0
+    yield null
+    yield 1/10^20
+
+func g(): Char?...??... def
+    yield null
+
+print [...f()]
+
+for x in g() do
+    print x is null

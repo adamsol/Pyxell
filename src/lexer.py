@@ -8,7 +8,7 @@ KEYWORDS = {
     'abstract', 'and', 'as', 'break', 'by', 'class', 'constructor', 'continue', 'def', 'destructor', 'do', 'elif', 'else', 'extern', 'for', 'func', 'hiding', 'if', 'in', 'is', 'label', 'lambda', 'not', 'only', 'or', 'print', 'return', 'skip', 'super', 'until', 'use', 'while', 'yield',
 }
 ASSIGNMENT_OPERATORS = ['^=', '^^=', '/=', '//=', '%=', '*=', '&=', '+=', '-=', '??=']
-MULTI_CHARACTER_OPERATORS = ['?.', '@(', '^^', '//', '%%', '?[', '??', '...:', '...', '..', '==', '!=', '<=', '>=', '->']
+MULTI_CHARACTER_OPERATORS = ['?...', '?.', '@(', '^^', '//', '%%', '?[', '??', '...:', '...', '..', '==', '!=', '<=', '>=', '->']
 
 ID_REGEX = r'''[a-zA-Z_][\w']*'''
 NUMBER_REGEX = r'''0b[01_]+|0o[0-7_]+|0x[\da-fA-F_]+|\d[\d_]*(?:r|(?:\.[\d_]+)?(?:[eE][-+]?[\d_]+|f)?)?'''
