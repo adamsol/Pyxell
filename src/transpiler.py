@@ -870,10 +870,10 @@ class PyxellTranspiler:
 
                             self.env['#return'] = func_type.ret
 
-                        if not func_type.ret.hasValue() and not func_type.ret.isGenerator() and func_type.ret != t.Void:
-                            self.throw(body, err.InvalidReturnType(func_type.ret))
                         if has_type_variables(func_type.ret):
                             self.throw(body, err.UnknownReturnType())
+                        if not func_type.hasValue():
+                            self.throw(body, err.InvalidReturnType(func_type.ret))
 
                         if func_type.ret.isGenerator():
                             if nested:
@@ -1290,7 +1290,7 @@ class PyxellTranspiler:
             if '#return-types' in self.env:
                 type = t.Void
                 self.env['#return-types'].append(type)
-            elif type.hasValue():
+            elif type != t.Void:
                 self.throw(node, err.NoConversion(t.Void, type))
 
         if type.isGenerator():
@@ -1331,7 +1331,7 @@ class PyxellTranspiler:
             if '#return-types' in self.env:
                 type = t.Generator(t.Void)
                 self.env['#return-types'].append(type)
-            elif type.subtype.hasValue():
+            elif type.subtype != t.Void:
                 self.throw(node, err.NoConversion(t.Void, type.subtype))
 
         switch = self.env['#generator-switch']

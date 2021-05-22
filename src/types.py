@@ -52,17 +52,6 @@ class Type:
     def isVar(self):
         return isinstance(self, Var)
 
-    def isUnknown(self):
-        if self == Unknown:
-            return True
-        if self.isContainer() or self.isNullable():
-            return self.subtype.isUnknown()
-        if self.isTuple():
-            return any(elem.isUnknown() for elem in self.elements)
-        if self.isFunc():
-            return any(arg.type.isUnknown() for arg in self.args) or self.ret.isUnknown()
-        return False
-
     def isSequence(self):
         return self == String or self.isArray()
 
@@ -78,8 +67,6 @@ class Type:
     def isHashable(self):
         if self.isNumber() or self in {Bool, Char, String, Unknown}:
             return True
-        if self.isContainer():
-            return False
         if self.isNullable():
             return self.subtype.isHashable()
         if self.isTuple():
@@ -110,6 +97,10 @@ class Type:
             return self.subtype.hasValue()
         if self.isTuple():
             return all(elem.hasValue() for elem in self.elements)
+        if self.isGenerator():
+            return self.subtype.hasValue() or self.subtype == Void
+        if self.isFunc():
+            return all(arg.type.hasValue() for arg in self.args) and (self.ret.hasValue() or self.ret == Void)
         return self != Void
 
 

@@ -1,0 +1,5 @@
+
+func f(): [Void]... def
+    return
+
+f()
