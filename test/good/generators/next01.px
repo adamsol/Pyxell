@@ -1,0 +1,8 @@
+
+func f(): Bool... def
+    yield true
+    yield false
+
+g = f()
+print g.next()
+print g.next()

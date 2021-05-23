@@ -367,11 +367,19 @@ template <typename T>
 struct GeneratorBase: _GeneratorBase
 {
     T value;
+
+    T next() {
+        run();
+        return value;
+    }
 };
 
 template <>
 struct GeneratorBase<Void>: _GeneratorBase
 {
+    Void next() {
+        run();
+    }
 };
 
 template <typename T>

@@ -1,0 +1,8 @@
+
+func f(n: Int): Char... def
+    yield 'a'..'a'+n
+
+g = f(3)
+next = g.next
+print next()
+print g.next(), next()

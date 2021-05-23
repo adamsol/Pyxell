@@ -1,0 +1,9 @@
+
+func f(): Void... def
+    print 1
+    yield
+    print 2
+
+g = f()
+print 0
+g.next()

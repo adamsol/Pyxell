@@ -386,6 +386,10 @@ class PyxellTranspiler:
             if 0 <= index < len(type.elements):
                 value = v.Get(obj, index)
 
+        elif type.isGenerator():
+            if attr == 'next':
+                value = v.Lambda(t.Func([], type.subtype), [], v.Call(v.Attribute(obj, 'next')))
+
         elif type.isClass():
             value = self.member(node, obj, attr)
 
