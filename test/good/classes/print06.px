@@ -1,0 +1,6 @@
+
+class Test def
+    func toString() def
+        return "test"
+
+print Test()

@@ -508,7 +508,8 @@ hello()
 ```
 
 Just like with variables, type annotations in functions are optional.
-If omitted, a generic function, which can work with values of any type, will be created.
+If the return type is omitted, it will be inferred.
+If any of the argument types is omitted, a generic function (which can work with values of any type) will be created.
 Generic functions are described in more detail in the next section.
 
 ```
@@ -747,6 +748,15 @@ print Greeting("world")
 ```
 
 Generic methods, like generic classes, are currently not supported.
+However, just like with normal functions, the return type of a method can be omitted, so that it will be inferred.
+
+```
+class Oracle def
+    func answer() def
+        return 42
+
+print Oracle().answer()
+```
 
 ### Constructors and destructors
 
