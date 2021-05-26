@@ -27,7 +27,7 @@ trying to avoid common design flaws that have been nicely described
 Features
 --------
 
-* Python-like syntax with semantic indentation
+* Indentation-based syntax
 * Strongly static typing with partial type inference
 * 64-bit integers and double-precision floating-point numbers
 * Arbitrary-precision rational numbers
@@ -129,7 +129,7 @@ Documentation
 -------------
 
 To build the documentation from source, go to the `docs` folder, run `npm install`, then `make`.
-To start a documentation server locally, install `flask` and run `server.py` in the same folder.
+To start a documentation server locally, run `pip install -r requirements.txt` and `python server.py` in the same folder.
 
 
 Alternatives
