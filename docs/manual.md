@@ -666,6 +666,13 @@ func range(n: Int): Int... def
 print [...range(5)]
 ```
 
+To advance a generator by one step and retrieve the yielded value without standard iteration, use `next()` method.
+
+```
+r = range(3)
+print r.next(), r.next()
+```
+
 Generic functions can be generators as well.
 If `yield` statement is used inside a function's body, the function will automatically become a generator.
 

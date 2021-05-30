@@ -197,7 +197,13 @@ This section describes all data types available in Pyxell, together with their p
 | ---------------- | ------------ | ---------------------------------------------------------------- |
 | letter `a`–`z`   | any          | corresponding element of the tuple                               |
 
-### Common methods (all types)
+### Generator methods
+
+| Method header                                     | Description                                                                                                     |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `next<A>(): A`                                    | runs the generator and returns the yielded value                                                                |
+
+### Common methods
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
