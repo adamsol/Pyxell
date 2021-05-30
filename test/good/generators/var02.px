@@ -1,6 +1,7 @@
 
 func f(): Bool... def
     yield true
+    print "done"
 
 a: Bool... = f()
 print [...a]

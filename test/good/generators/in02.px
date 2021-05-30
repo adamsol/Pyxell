@@ -1,0 +1,13 @@
+
+func f(): Int... def
+    yield 1
+    print 0
+
+g = f()
+print 1 in g
+print 1 in g
+print 1 not in g
+
+g = f()
+print 0 in g
+print 1 in g

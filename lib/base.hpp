@@ -346,20 +346,17 @@ Dict<K, V> make_dict(Args&&... args)
 
 struct _GeneratorBase
 {
-    unsigned state = 0;
+    int state = 0;
 
-    virtual Bool run() {
-        return false;
+    virtual void run() {
+        state = -1;
     }
 
-    Bool repeat(Int n)
+    void repeat(Int n)
     {
-        while (n--) {
-            if (!run()) {
-                return false;
-            }
+        while (n-- && state != -1) {
+            run();
         }
-        return true;
     }
 };
 
@@ -713,12 +710,15 @@ bool contains(const Dict<K, V>& x, const K& k)
 template <typename T>
 bool contains(const Generator<T>& x, const T& e)
 {
-    while (x->run()) {
+    while (true) {
+        x->run();
+        if (x->state == -1) {
+            return false;
+        }
         if (x->value == e) {
             return true;
         }
     }
-    return false;
 }
 
 
@@ -1198,7 +1198,7 @@ Float toFloat(const String& x)
 
 /* Standard output */
 
-void write(const String& x)
+Void write(const String& x)
 {
     std::cout << *x;
 }

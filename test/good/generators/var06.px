@@ -1,6 +1,7 @@
 
 func range(n: Int): Rat... def
     yield 0...n
+    print false
 
 
 class A def
@@ -8,9 +9,11 @@ class A def
 
 
 a = A()
+print true
 print [...a.g]
 print [...a.g]
 
 a.g = range(3)
+print true
 print [...a.g]
 print {...a.g}

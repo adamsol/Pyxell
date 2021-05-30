@@ -891,7 +891,7 @@ class PyxellTranspiler:
                             if arg_vars:
                                 init_list = ', '.join(f'{var}({var})' for var in arg_vars)
                                 fields.append(c.Function('', cls, arg_vars, f': {init_list} {{}}'))
-                            fields.append(c.Function(t.Bool, 'run', [], block))
+                            fields.append(c.Function(t.Void, 'run', [], block))
                             self.env['#generator-fields'] = fields
 
                             self.env['#generator-switch'] = c.Block()
@@ -904,7 +904,8 @@ class PyxellTranspiler:
                         self.transpile(body)
 
                         if func_type.ret.isGenerator():
-                            self.output(c.Statement('return', v.false))
+                            self.env['#generator-switch'].append(c.Case(-1, c.Statement('return')))
+                            self.store('state', -1)
                         elif func_type.ret.hasValue() and not template.lambda_:
                             self.output(c.Statement('return', self.default(func_type.ret)))
 
@@ -1175,9 +1176,9 @@ class PyxellTranspiler:
                     cond = f'{index} < {length}'
                     update = f'{index} += {abs_step}, {iterator} += {step}'
                 elif type.isGenerator():
-                    cond = self.tmp(v.Call(v.Attribute(value, 'run'), type=t.Bool))
-                    repeat = v.Call(v.Attribute(value, 'repeat'), abs_step, type=t.Bool)
-                    update = f'{cond} = {repeat}'
+                    self.output(c.Statement(v.Call(v.Attribute(value, 'run'), type=t.Bool)))
+                    cond = v.BinaryOp(v.Attribute(value, 'state'), '!=', -1)
+                    update = v.Call(v.Attribute(value, 'repeat'), abs_step, type=t.Bool)
                 else:
                     cond = f'{iterator} != {end}'
                     update = v.Call('safe_advance', iterator, end, abs_step)
@@ -1298,7 +1299,8 @@ class PyxellTranspiler:
                 self.throw(node, err.NoConversion(t.Void, type))
 
         if type.isGenerator():
-            self.output(c.Statement('return', v.false))
+            self.store('state', -1)
+            self.output(c.Statement('return'))
         elif type == t.Void:
             if expr:
                 # Special case for lambdas returning Void.
@@ -1347,7 +1349,7 @@ class PyxellTranspiler:
         if type != t.Generator(t.Void):
             self.store('value', value)
         self.store('state', state)
-        self.output(c.Statement('return', v.true))
+        self.output(c.Statement('return'))
         self.output(c.Label(label))
 
     def transpileStmtClass(self, node):
