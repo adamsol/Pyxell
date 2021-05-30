@@ -1,0 +1,13 @@
+
+func spread(a) def
+    yield ...a
+    print '-'
+
+g = spread("qwertyui")
+a: Char
+
+for a, i, b, c in g, 0..., g, g do
+    print i, b, a, c
+
+print a
+print {...g}

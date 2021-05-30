@@ -1160,7 +1160,12 @@ class PyxellTranspiler:
                 types.append(type.subtype)
 
                 if type.isGenerator():
-                    getter = v.Attribute(value, 'value', type=type.subtype)
+                    next = v.Call(v.Attribute(value, 'next'), type=type.subtype)
+                    if type.subtype == t.Void:
+                        self.output(next)
+                        getter = self.var(t.Void)
+                    else:
+                        getter = self.tmp(next)
                 else:
                     iterator = self.tmp(v.Call(v.Attribute(value, 'begin'), type=t.Iterator(value.type)))
                     end = self.tmp(v.Call(v.Attribute(value, 'end'), type=t.Iterator(value.type)))
@@ -1176,9 +1181,10 @@ class PyxellTranspiler:
                     cond = f'{index} < {length}'
                     update = f'{index} += {abs_step}, {iterator} += {step}'
                 elif type.isGenerator():
-                    self.output(c.Statement(v.Call(v.Attribute(value, 'run'), type=t.Bool)))
                     cond = v.BinaryOp(v.Attribute(value, 'state'), '!=', -1)
-                    update = v.Call(v.Attribute(value, 'repeat'), abs_step, type=t.Bool)
+                    update = v.Call(v.Attribute(value, 'next'), abs_step)
+                    if type.subtype != t.Void:
+                        update = f'{getter} = {update}'
                 else:
                     cond = f'{iterator} != {end}'
                     update = v.Call('safe_advance', iterator, end, abs_step)

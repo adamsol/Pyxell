@@ -1,0 +1,8 @@
+
+func spread(a) def
+    yield ...a
+
+g = spread([1, 5, 7, 2])
+
+for t in g, g do
+    print t

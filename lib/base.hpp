@@ -344,7 +344,19 @@ Dict<K, V> make_dict(Args&&... args)
 
 /* Generator */
 
-struct _GeneratorBase
+template <typename T>
+struct GeneratorValue
+{
+    T value;
+};
+
+template <>
+struct GeneratorValue<Void>
+{
+};
+
+template <typename T>
+struct GeneratorBase: GeneratorValue<T>
 {
     int state = 0;
 
@@ -352,30 +364,13 @@ struct _GeneratorBase
         state = -1;
     }
 
-    void repeat(Int n)
-    {
+    T next(Int n = 1) {
         while (n-- && state != -1) {
             run();
         }
-    }
-};
-
-template <typename T>
-struct GeneratorBase: _GeneratorBase
-{
-    T value;
-
-    T next() {
-        run();
-        return value;
-    }
-};
-
-template <>
-struct GeneratorBase<Void>: _GeneratorBase
-{
-    Void next() {
-        run();
+        if constexpr (!std::is_same<T, Void>::value) {
+            return this->value;
+        }
     }
 };
 
