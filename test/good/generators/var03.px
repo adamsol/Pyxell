@@ -11,3 +11,9 @@ print false
 print [for v, i in r, 0...3 yield v]
 # 4 is lost here, Python behaves the same way.
 print [...r]
+
+r = counter(5)
+
+print [for i, v in 0...3, r yield v]
+# But with another order of iterables, 4 is consumed properly.
+print [...r]

@@ -1190,11 +1190,11 @@ class PyxellTranspiler:
                     update = v.Call('safe_advance', iterator, end, abs_step)
 
             conditions.append(cond)
-            updates.append(update)
+            updates.append(f'({update}, {cond})')
             getters.append(getter)
 
         condition = ' && '.join(str(cond) for cond in conditions)
-        update = ', '.join(str(update) for update in updates)
+        update = ' && '.join(str(update) for update in updates)
 
         with self.loop(partial(c.For, '', condition, update), node.get('label')):
             if len(vars) == 1 and len(types) > 1:

@@ -1,0 +1,9 @@
+
+func range(a, b): Int... def
+    for x in a..b do
+        print x
+        yield x
+    print null, a, b
+
+for x, y, z in range(2, 3), range(1, 1), range(4, 5) do
+    print x, y, z
