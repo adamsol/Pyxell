@@ -491,28 +491,28 @@ class PyxellParser:
                 'safe': token.text.startswith('?'),
                 'id': self.parse_id(),
             }
-        if token.text in {'[', '?['}:  # element access
+        if token.text in {'[', '?['}:  # element access or slicing
             safe = token.text.startswith('?')
-            if not safe:
-                slice = None
+            slice = None
+            with self.try_parse():
+                exprs = [None] * 3
                 with self.try_parse():
-                    exprs = [None] * 3
-                    with self.try_parse():
-                        exprs[0] = self.parse_expr()
+                    exprs[0] = self.parse_expr()
+                self.expect(':')
+                with self.try_parse():
+                    exprs[1] = self.parse_expr()
+                with self.try_parse():
                     self.expect(':')
                     with self.try_parse():
-                        exprs[1] = self.parse_expr()
-                    with self.try_parse():
-                        self.expect(':')
-                        with self.try_parse():
-                            exprs[2] = self.parse_expr()
-                    slice = exprs
-                if slice:
-                    return {
-                        **self.expr_node('ExprSlice', token),
-                        'expr': left,
-                        'slice': (slice, self.expect(']'))[0],
-                    }
+                        exprs[2] = self.parse_expr()
+                slice = exprs
+            if slice:
+                return {
+                    **self.expr_node('ExprSlice', token),
+                    'safe': safe,
+                    'expr': left,
+                    'slice': (slice, self.expect(']'))[0],
+                }
             return {
                 **self.expr_node('ExprIndex', token),
                 'safe': safe,

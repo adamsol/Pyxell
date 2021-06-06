@@ -6,3 +6,4 @@ func f(x: Int): [Int]? def
 
 print f(100)?.length, f(-1)?.length
 print f(-3)?[0], f(3)?[0]
+print f(4)?[f(3)!.length:], f(-4)?[:f(0)![0]]

@@ -1,0 +1,8 @@
+
+a: [String?]?
+print a?[0:5], a?[:]
+
+a = [for c in 'a'..'e' yield c]
+a![-1] = a![0] = null
+print a?[3:]
+print [for b in a![2::-1] yield b?[::5]]

@@ -1673,18 +1673,24 @@ class PyxellTranspiler:
         return self.index(node, *map(self.transpile, exprs))
 
     def transpileExprSlice(self, node):
-        slice = node['slice']
+        def _slice(collection):
+            type = collection.type
+            if not type.isSequence():
+                self.throw(node['op'], err.NotSliceable(type))
 
-        collection = self.transpile(node['expr'])
-        type = collection.type
-        if not type.isSequence():
-            self.throw(node['op'], err.NotSliceable(type))
+            slice = node['slice']
+            a = v.Nullable(self.cast(slice[0], self.transpile(slice[0]), t.Int)) if slice[0] else v.null
+            b = v.Nullable(self.cast(slice[1], self.transpile(slice[1]), t.Int)) if slice[1] else v.null
+            step = self.cast(slice[2], self.transpile(slice[2]), t.Int) if slice[2] else v.Int(1)
 
-        a = v.Nullable(self.cast(slice[0], self.transpile(slice[0]), t.Int)) if slice[0] else v.null
-        b = v.Nullable(self.cast(slice[1], self.transpile(slice[1]), t.Int)) if slice[1] else v.null
-        step = self.cast(slice[2], self.transpile(slice[2]), t.Int) if slice[2] else v.Int(1)
+            return v.Call('slice', collection, a, b, step, type=type)
 
-        return v.Call('slice', collection, a, b, step, type=type)
+        obj = self.tmp(self.transpile(node['expr']))
+
+        if node.get('safe'):
+            return self.safe(node, obj, lambda: v.Nullable(_slice(v.Extract(obj))), lambda: v.null)
+
+        return _slice(obj)
 
     def transpileExprCall(self, node):
         expr = node['expr']
