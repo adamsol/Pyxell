@@ -928,7 +928,8 @@ class PyxellTranspiler:
         return func.bind(template.bound)
 
     @contextmanager
-    def loop(self, stmt_callback, label):
+    def loop(self, node, stmt_callback):
+        label = node.get('label')
         if label:
             label = label['name']
 
@@ -939,8 +940,15 @@ class PyxellTranspiler:
             with self.block() as body:
                 self.output(c.If(v.false, c.Block(c.Label(labels['continue']), c.Statement('continue'))))
                 yield
+                self.transpile(node['block'])
 
             self.output(stmt_callback(body))
+
+        with self.local():
+            with self.block() as else_block:
+                self.transpile(node.get('else'))
+            self.output(else_block)
+
             self.output(c.Label(labels['break']))
 
     def iterable_literal(self, expr):
@@ -1092,25 +1100,21 @@ class PyxellTranspiler:
     def transpileStmtWhile(self, node):
         expr = node['expr']
 
-        with self.loop(partial(c.While, v.true), node.get('label')):
+        with self.loop(node, partial(c.While, v.true)):
             cond = self.cast(expr, self.transpile(expr), t.Bool)
             cond = v.UnaryOp('!', cond)
             self.output(c.If(cond, c.Statement('break')))
-
-            self.transpile(node['block'])
 
     def transpileStmtUntil(self, node):
         expr = node['expr']
 
         second_iteration = self.tmp(v.false, force_copy=True)
 
-        with self.loop(partial(c.While, v.true), node.get('label')):
+        with self.loop(node, partial(c.While, v.true)):
             cond = self.cast(expr, self.transpile(expr), t.Bool)
             cond = v.BinaryOp(second_iteration, '&&', cond)
             self.output(c.If(cond, c.Statement('break')))
             self.store(second_iteration, v.true)
-
-            self.transpile(node['block'])
 
     def transpileStmtFor(self, node):
         vars = node['vars']
@@ -1196,7 +1200,7 @@ class PyxellTranspiler:
         condition = ' && '.join(str(cond) for cond in conditions)
         update = ' && '.join(str(update) for update in updates)
 
-        with self.loop(partial(c.For, '', condition, update), node.get('label')):
+        with self.loop(node, partial(c.For, '', condition, update)):
             if len(vars) == 1 and len(types) > 1:
                 tuple = v.Tuple(getters)
                 self.assign(vars[0], tuple)
@@ -1211,8 +1215,6 @@ class PyxellTranspiler:
                     self.assign(var, getter)
             else:
                 self.throw(vars[0], err.CannotUnpack(t.Tuple(types), len(vars)))
-
-            self.transpile(node['block'])
 
     def transpileStmtLoopControl(self, node):
         stmt = node['stmt']  # `break` / `continue`

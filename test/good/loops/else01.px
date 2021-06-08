@@ -1,0 +1,12 @@
+
+while false do
+    print 0
+    break
+else do
+    print 1
+
+while true do
+    print 2
+    break
+else do
+    print 3

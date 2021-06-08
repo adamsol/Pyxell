@@ -1,0 +1,15 @@
+
+until true do
+    while true label w do
+        for i in 0... do
+            print 0
+            break w
+        else do
+            print 1
+        print 2
+    else do
+        print 3
+    print 4
+    continue
+else do
+    print 5

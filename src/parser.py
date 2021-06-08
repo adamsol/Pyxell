@@ -213,6 +213,7 @@ class PyxellParser:
                 'expr': self.parse_tuple_expr(),
                 'label': self.match('label') and self.parse_id() or None,
                 'block': self.expect('do') and self.parse_block(),
+                'else': self.match(';', 'else') and self.expect('do') and self.parse_block(),
             }
         if token.text == 'for':
             return {
@@ -221,6 +222,7 @@ class PyxellParser:
                 'iterables': self.expect('in') and self.parse_expr_list(),
                 'label': self.match('label') and self.parse_id() or None,
                 'block': self.expect('do') and self.parse_block(),
+                'else': self.match(';', 'else') and self.expect('do') and self.parse_block(),
             }
         if token.text in {'break', 'continue'}:
             return {

@@ -1,0 +1,7 @@
+
+while false do
+    skip
+else do
+    a = 1
+
+print a

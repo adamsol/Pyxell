@@ -1,0 +1,8 @@
+
+x = 4
+
+for a in [] do
+    break
+else do
+    y = 2
+    print "{x}{y}"

@@ -182,7 +182,7 @@ The scope of a variable declared in a block is limited to that block.
 
 ### `if` statement
 
-The first branch whose condition evaluates to `true` is executed.
+The first branch whose condition evaluates to `true` is executed; otherwise, optional `else` branch is executed.
 
 ```
 if 2 + 2 > 4 do
@@ -206,7 +206,7 @@ print a
 
 ### `until` loop
 
-This loop is similar to `while` loop, but it is always executed at least once and runs until the condition is satisfied.
+This loop is similar to the `while` loop, but it is always executed at least once and runs until the condition is satisfied.
 
 ```
 a = 0
@@ -239,7 +239,7 @@ for x, c in 0.5... by -0.1, 'A'...'D' do
     print x, c
 ```
 
-### `continue` and `break`
+### Loop `continue` and `break` statements
 
 You can use these statements to exit the current iteration or the whole loop.
 
@@ -262,6 +262,26 @@ for x in 1..n label loop do
             print "{n} = {x} * {y}"
             break loop
 ```
+
+### Loop `else` block
+
+Like in Python, every loop may have an optional `else` block,
+which will be called if the loop exits normally, not through a `break` statement.
+This can be useful for executing some code depending on whether an item has been found on a list.
+
+```
+n = 6
+for i in 1..10 by 2 do
+    if i == n do
+        print n, "found"
+        break
+else do
+    print n, "not found"
+```
+
+Note that even though this syntax may be unintuitive for some programmers (see discussion [here](https://stackoverflow.com/questions/9979970/)),
+the author thinks it's clear enough for use cases like the above and has not been able to find a good alternative for this feature
+(`nobreak` keyword being one alternative with its own disadvantages) – but is open to suggestions.
 
 ### Empty blocks
 

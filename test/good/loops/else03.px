@@ -1,0 +1,9 @@
+
+for n in 0...5 do
+    for x in 2..3 do
+        if x == n do
+            break
+    else do
+        print n
+else do
+    print true
