@@ -78,28 +78,23 @@ python pyxell.py program.px
 ```
 
 If the program is valid, `program.cpp` file and `program.exe` executable will be created in the same folder,
-and it will be automatically executed (unless you add `-n` option).
+and it will be automatically executed (unless you add the `-n` flag).
 Otherwise, errors will be displayed, pointing to the erroneous code location.
 
 By default, `gcc` command is used to compile the code.
-You can pick a different compiler using `-c` option.
+You can pick a different compiler using the `-c` parameter.
 
 The executable is not optimized by default.
-You can set the optimization level with `-O` option, e.g. `-O2`.
+You can set an optimization level with the `-O` parameter, e.g. `-O2`.
 This will make the program run faster, but also make the compilation slower.
 
+In order to speed up the compilation, you can precompile the C++ header (`lib/base.hpp`) by first running the script with the `-p` flag.
+Note that the precompiled header is compatible only with the same C++ compiler, optimization level, and Pyxell version.
+
 Use `-s` to skip the compilation step and obtain transpiled C++ code with all headers included,
-ready for manual compilation (with `-std=c++17` option).
+ready for manual compilation (with `-std=c++17`).
 
-To see all options, use `-h`.
-
-
-PyInstaller
------------
-
-You can build a standalone compiler application using `PyInstaller`.
-Install `PyInstaller` with `pip`, then run `make exe`.
-An executable (not requiring Python to run) will be created in the `dist/pyxell` folder.
+To see all command line options, use `-h`.
 
 
 Testing
@@ -118,11 +113,9 @@ Total execution time (with default settings) should be around 30-60 seconds.
 
 If, however, the script fails with an error like this: `too many sections` / `file too big`
 (seen with GCC 7.2 on Windows), or there is another compilation error that is hard to decipher,
-then you might need to add the `-s` option so that each test is compiled separately.
+then you might need to add the `-s` flag so that each test is compiled separately.
 
 You can pass a path pattern to run only selected tests (e.g. `python test.py arrays`).
-
-To see all options, use `-h`.
 
 
 Documentation
@@ -130,6 +123,14 @@ Documentation
 
 To build the documentation from source, go to the `docs` folder, run `npm install`, then `make`.
 To start a documentation server locally, run `pip install -r requirements.txt` and `python server.py` in the same folder.
+
+
+PyInstaller
+-----------
+
+You can build a standalone compiler application using `PyInstaller`.
+Install `PyInstaller` with `pip`, then run `make exe`.
+An executable (not requiring Python to run) will be created in the `dist/pyxell` folder.
 
 
 Alternatives

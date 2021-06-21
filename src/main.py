@@ -13,7 +13,7 @@ from .indentation import transform_indented_code
 from .parser import PyxellParser
 from .transpiler import PyxellTranspiler
 
-abspath = Path(__file__).parents[1]
+abspath = Path(os.path.abspath(__file__)).parents[1]
 
 version = Path(abspath/'version.txt').read_text()
 
@@ -38,8 +38,17 @@ def resolve_local_includes(path):
     return re.sub(r'#include "(.+?)"', replacer, code)
 
 
+def cpp_flags(opt_level):
+    return ['-std=c++17', f'-O{opt_level}']
+
+
+def precompile_base_header(cpp_compiler, opt_level):
+    command = [cpp_compiler, *cpp_flags(opt_level), '-c', str(abspath/'lib/base.hpp')]
+    subprocess.run(command, stdout=subprocess.PIPE, check=True)
+
+
 def run_cpp_compiler(cpp_compiler, cpp_filename, exe_filename, opt_level, verbose=False, disable_warnings=False):
-    command = [cpp_compiler, '-std=c++17', f'-O{opt_level}', cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-lstdc++']
+    command = [cpp_compiler, *cpp_flags(opt_level), cpp_filename, '-include', str(abspath/'lib/base.hpp'), '-o', exe_filename, '-lstdc++']
     if disable_warnings:
         command.append('-w')
     if platform.system() != 'Windows':
@@ -107,8 +116,10 @@ def main():
     parser = argparse.ArgumentParser(prog='pyxell', description="Run Pyxell compiler.")
     parser.add_argument('filepath', nargs=argparse.OPTIONAL, help="source file path")
     parser.add_argument('-c', '--cpp-compiler', default='gcc', help="C++ compiler command (default: gcc)")
+    parser.add_argument('-l', '--time-limit', type=int, help="program execution time limit")
     parser.add_argument('-n', '--dont-run', action='store_true', help="don't run the program after compilation")
     parser.add_argument('-O', '--opt-level', type=int, choices=range(4), default=0, help="compiler optimization level (default: 0)")
+    parser.add_argument('-p', '--precompile-header', action='store_true', help="precompile the base.hpp header and exit")
     parser.add_argument('-s', '--standalone-cpp', action='store_true', help="save transpiled C++ code for standalone compilation and exit")
     parser.add_argument('-t', '--time', action='store_true', help="measure time of program compilation and execution")
     parser.add_argument('-v', '--verbose', action='store_true', help="output diagnostic information")
@@ -117,6 +128,10 @@ def main():
 
     if args.version:
         print(f"Pyxell {version}")
+        sys.exit(0)
+
+    if args.precompile_header:
+        precompile_base_header(args.cpp_compiler, args.opt_level)
         sys.exit(0)
 
     if not args.filepath:
@@ -143,7 +158,13 @@ def main():
             print(f"executing {exe_filename}")
 
         t1 = timer()
-        subprocess.call(exe_filename)
+
+        try:
+            subprocess.run(exe_filename, timeout=args.time_limit)
+        except subprocess.TimeoutExpired:
+            print('execution time limit exceeded')
+            sys.exit(2)
+
         t2 = timer()
         execution_time = t2 - t1
 

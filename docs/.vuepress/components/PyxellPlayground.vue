@@ -99,42 +99,36 @@
         },
         methods: {
             async run() {
-                localStorage.setItem('code', this.code);
+                const input = this.show_input ? this.input : '';
                 this.output = '';
                 this.running = true;
 
+                localStorage.setItem('code', this.code);
+                localStorage.setItem('input', input);
+
                 try {
-                    let response = await axios.post('/transpile/', {
+                    let response = await axios.post('/run/', {
                         code: this.code,
+                        input: input,
+                        optimization: this.optimization,
                     });
-                    if (response.data.error) {
-                        this.error = true;
-                        this.output = response.data.error;
-                    } else {
-                        const params = {
-                            'LanguageChoice': 27,  // C++ (clang)
-                            'Program': response.data.cpp_code,
-                            'Input': this.input,
-                            'CompilerArgs': `-std=c++17 -O${this.optimization ? 2 : 0} source_file.cpp -o a.out`,
-                        };
-                        const form_data = new FormData();
-                        for (const [name, value] of Object.entries(params)) {
-                            form_data.set(name, value);
-                        }
-                        response = await axios.post('https://rextester.com/rundotnet/api/', form_data);
-                        this.error = !!response.data.Errors;
-                        this.output = response.data.Errors || response.data.Result;
-                    }
-                } catch (error) {
+                    this.error = !!response.data.error;
+                    this.output = response.data.error || response.data.output;
+                }
+                catch (error) {
                     this.error = true;
                     this.output = 'Unknown error';
                     throw error;
                 }
-                this.running = false;
+                finally {
+                    this.running = false;
+                }
             },
         },
         created() {
             this.code = localStorage.getItem('code') || '\nprint "Hello, world!"\n';
+            this.input = localStorage.getItem('input') || '';
+            this.show_input = this.input !== '';
         },
         mounted() {
             this.$refs.code.codemirror.setSize('auto', this.CODE_HEIGHT);
