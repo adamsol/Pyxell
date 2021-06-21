@@ -9,7 +9,7 @@ Documentation
 
 https://www.pyxell.org/docs/
 
-**[Examples](https://www.pyxell.org/docs/manual.html#examples)**
+**[Examples](https://www.pyxell.org/docs/manual.html#examples)** | **[Playground](https://www.pyxell.org/docs/playground.html)**
 
 
 Motivation
