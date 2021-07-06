@@ -1,0 +1,8 @@
+
+d = {for i in 1..100 yield (-i, i): 1/i}
+
+for p, i in d, 1..100 do
+    if p != ((-i, i), 1/i) do
+        print false
+
+print {...:d by -20}

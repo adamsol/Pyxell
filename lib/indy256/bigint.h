@@ -1,19 +1,8 @@
-/*
-https://github.com/indy256/codelibrary/tree/master/cpp/numeric/
-
-Pyxell:
-- renamed files: bigint.cpp -> bigint.hpp, fft.h -> fft.hpp,
-- explicitly listed necessary includes,
-- removed `using namespace std`,
-- added conversion to double,
-- implemented conversion to std::string without streams,
-- removed unused code.
-*/
 
 #include <string>
 #include <vector>
 
-#include "fft.hpp"
+#include "fft.h"
 
 constexpr int digits(int base) noexcept {
     return base <= 1 ? 0 : 1 + digits(base / 10);

@@ -3,6 +3,7 @@ from collections import defaultdict, namedtuple
 
 
 class Type:
+    ATTRIBUTE_ARROW = True
 
     def __init__(self):
         self.literal = False
@@ -125,6 +126,7 @@ class PrimitiveType(Type):
 Void = PrimitiveType('Void')
 Int = PrimitiveType('Int')
 Rat = PrimitiveType('Rat')
+Rat.ATTRIBUTE_ARROW = False
 Float = PrimitiveType('Float')
 Bool = PrimitiveType('Bool')
 Char = PrimitiveType('Char')
@@ -180,6 +182,7 @@ class Dict(Wrapper):
 
 class Nullable(Wrapper):
     PRECEDENCE = 1
+    ATTRIBUTE_ARROW = False
 
     def __str__(self):
         return f'Nullable<{self.subtype}>'
@@ -279,6 +282,7 @@ class Var(Type):
 
 
 class Iterator(Wrapper):
+    ATTRIBUTE_ARROW = False
 
     def __str__(self):
         return f'{self.subtype}::iterator'

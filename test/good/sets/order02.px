@@ -1,0 +1,9 @@
+
+a = {1..100}
+b = {for i in a yield "{i*3}"}
+
+for s, i in b, a do
+    if s.toInt() != i*3 do
+        print false
+
+print {...b by -33}

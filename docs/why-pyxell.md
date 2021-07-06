@@ -318,7 +318,7 @@ No language is perfect. Here is a list of things that may considered bugs or inc
 ### Slow compilation
 
 Pyxell is only as fast as the C++ code it generates.
-Since the base library contains over a thousand lines of C++ code with extensive usage of high-level features,
+Since the base library contains thousands of lines of C++ code with extensive usage of high-level features,
 compiling even the simplest programs may take a few seconds,
 depending on the compiler used (Clang is generally faster than GCC in this regard) and optimization level.
 The compilation time may grow quickly, as each line of Pyxell code often translates to many lines of C++ code.
@@ -329,9 +329,16 @@ Although Pyxell has a built-in type for arbitrary-precision rational numbers,
 standard integers have fixed 64-bit precision, so it's possible to cause an overflow when performing arithmetic operations on them.
 
 `/` (division) and `^` (exponentiation) operators produce exact results,
-but since rational numbers have some overhead, integer operators (`//` and `^^`) must be sometimes used to retain speed of calculations.
+but since rational numbers have some overhead, integer operators (`//` and `^^`) must sometimes be used to retain the speed of calculations.
 
-### Uninitialized objects
+### No guaranteed order in sets and dictionaries
+
+A well-defined order in containers improves predictability of the program and often comes in handy for implementing various algorithms.
+Sets and dictionaries in Pyxell preserve the insertion order of elements, buy only to a limited extent:
+when some element in the middle is removed, the last element takes its place, thus breaking the insertion order.
+This could be fixed by changing the hash table implementation to postpone shifting of the elements so that the amortized time is constant.
+
+### Possible uninitialized objects
 
 Pyxell initializes variables and class fields with default values (and appends a default `return` statement in functions),
 but class objects have no default values and must be constructed explicitly.

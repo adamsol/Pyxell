@@ -366,10 +366,17 @@ c = a  # error: No implicit conversion from `[Int]` to `[Rat]`.
 
 ### Sets
 
-Sets contain no duplicates and do not preserve order of elements.
+Sets are collections of values without duplicates, internally implemented with a hash table.
+They are generally unordered, but due to implementation details, they do preserve the original order of elements until some element in the middle is removed.
 
 ```
 print {3, 4, 4}
+```
+
+Sets are equal if they contain exactly the same elements, even if not in the same order.
+
+```
+print {true, false} == {false, true}
 ```
 
 To check if an element is in the set, use `in` operator.
@@ -401,13 +408,20 @@ Containers are not hashable, so they cannot be stored in sets.
 
 ### Dictionaries
 
-Dictionaries are hash maps. Like sets, they do not preserve order of elements.
+Dictionaries are hash maps. Like sets, they are unordered in principle, but they do preserve the insertion order of elements until some key in the middle is removed.
 They work similarly to `defaultdict` in Python: if a key is not present, the default value for a given type is automatically created in the dictionary.
 
 ```
 d = {"abc": 3}
 print d["abc"]
 print d[""]
+print d
+```
+
+Dictionaries are equal if they contain the same keys with the same values assigned to them, even if not in the same order.
+
+```
+print d == {"": 0, "abc": 3}
 ```
 
 Use `in` operator to check whether a dictionary contains a given key.
@@ -948,15 +962,7 @@ print d
 
 ```
 a = ["apple", "banana", "apple", "orange", "banana"]
-b: [String]
-v: {String}
-for x in a do
-    if x not in v do
-        b.push(x)
-        v.add(x)
-print b
-# Or, if the order of elements is not important, just:
-print {...a}
+print [...{...a}]
 ```
 
 ### Factorial with lambda functions

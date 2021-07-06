@@ -222,10 +222,11 @@ class PyxellTranspiler:
 
                 with self.block() as block:
                     default = self.default(type)
-                    self.output(c.Statement(iterator, '=', v.Call(v.Attribute(collection, 'insert_or_assign'), iterator, index, default)))
+                    self.output(c.Statement(iterator, '=', v.Call(v.Attribute(collection, 'emplace_hint'), iterator, index, default)))
+
                 self.output(c.If(f'{iterator} == {end}', block))
 
-                return v.Attribute(iterator, 'second', type=type)
+                return v.Call(v.Attribute(iterator, 'value'), type=type)
 
         self.throw(node['op'], err.NotIndexable(collection.type))
 
@@ -1150,9 +1151,9 @@ class PyxellTranspiler:
                     end = self.tmp(values[1], force_copy=True)
                     eq = '=' if iterable.get('inclusive') else ''
                     neg = self.tmp(v.BinaryOp(step, '<', v.Cast(v.Int(0), step.type), type=t.Bool))
-                    cond = v.TernaryOp(neg, f'{index} >{eq} {end}', f'{index} <{eq} {end}')
+                    cond = v.TernaryOp(neg, v.BinaryOp(index, '>'+eq, end), v.BinaryOp(index, '<'+eq, end))
 
-                update = v.BinaryOp(index, '+=', step)
+                update = v.CommaSequence(v.BinaryOp(index, '+=', step), cond)
                 getter = v.Cast(index, type)
 
             else:
@@ -1178,23 +1179,23 @@ class PyxellTranspiler:
                 self.cast(step_expr, step, t.Int)
                 abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
 
-                if type.isSequence():
-                    self.output(c.If(f'{step} < 0 && {iterator} != {end}', c.Statement(iterator, '=', v.Call('std::prev', end))))
-                    index = self.tmp(v.Int(0), force_copy=True)
-                    length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
-                    cond = f'{index} < {length}'
-                    update = f'{index} += {abs_step}, {iterator} += {step}'
-                elif type.isGenerator():
+                if type.isGenerator():
                     cond = v.BinaryOp(v.Attribute(value, 'state'), '!=', -1)
                     update = v.Call(v.Attribute(value, 'next'), abs_step)
                     if type.subtype != t.Void:
-                        update = f'{getter} = {update}'
+                        update = v.CommaSequence(v.BinaryOp(getter, '=', update), cond)
                 else:
-                    cond = f'{iterator} != {end}'
-                    update = v.Call('safe_advance', iterator, end, abs_step)
+                    self.output(c.If(v.BinaryOp(v.BinaryOp(step, '<', v.Int(0)), '&&', v.BinaryOp(iterator, '!=', end)),
+                                     c.Statement(iterator, '=', v.Call('std::prev', end))))
+                    index = self.tmp(v.Int(0), force_copy=True)
+                    length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
+                    cond = v.BinaryOp(index, '<', length)
+                    update = v.CommaSequence(v.BinaryOp(index, '+=', abs_step),
+                                             # iterator should not cross the end of a container
+                                             v.TernaryOp(cond, v.CommaSequence(v.BinaryOp(iterator, '+=', step), v.true), v.false))
 
             conditions.append(cond)
-            updates.append(f'({update}, {cond})')
+            updates.append(update)  # this expression must also evaluate to the value of `cond` for proper zipping
             getters.append(getter)
 
         condition = ' && '.join(str(cond) for cond in conditions)

@@ -1,0 +1,6 @@
+
+n = 50000f
+s = {1..n}
+
+print s == {for x in 0...n yield x}
+print s == {for x in n...0 by -1 yield x}

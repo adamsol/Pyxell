@@ -138,7 +138,7 @@ This section describes all data types available in Pyxell, together with their p
 | `fold<A,B>(f: A->B->B, r: B): B`                       | applies an accumulator function over the array, with a given initial accumulator value                          |
 | `get<A>(p: Int): A?`                                   | returns the element under a given index in the array, or `null` if the index is out of bounds                   |
 | `insert<A>(p: Int, x: A): Void`                        | inserts a new element at a given position of the array                                                          |
-| `join(sep: String = ""): String`                       | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
+| `join<A>(sep: String = ""): String`                    | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
 | `map<A,B>(f: A->B): [B]`                               | returns an array with elements from the original array transformed by a mapping function                        |
 | `pop<A>(): A`                                          | removes the last element from the array and returns it (will fail if the array is empty)                        |
 | `push<A>(x: A): Void`                                  | appends a given element to the end of the array                                                                 |
@@ -164,7 +164,7 @@ This section describes all data types available in Pyxell, together with their p
 | `fold<A,B>(f: A->B->B, r: B): B`                  | applies an accumulator function over the set, with a given initial accumulator value                            |
 | `intersect<A>(s: {A}): Void`                      | removes all elements not present in a given set from the set                                                    |
 | `map<A,B>(f: A->B): {B}`                          | returns a set with elements from the original set transformed by a mapping function                             |
-| `pop<A>(): A`                                     | removes some element from the set and returns it (will fail if the set is empty)                                |
+| `pop<A>(): A`                                     | removes one element from the set and returns it (will fail if the set is empty)                                 |
 | `reduce<A>(f: A->A->A): A`                        | applies an accumulator function over the set, with one of the elements as the initial value                     |
 | `remove<A>(x: A): Void`                           | removes a given element from the set                                                                            |
 | `subtract<A>(s: {A}): Void`                       | removes all elements in a given set from the set                                                                |

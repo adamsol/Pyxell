@@ -164,7 +164,7 @@ class Attribute(Value):
         self.attr = attr
 
     def __str__(self):
-        op = '.' if self.value.type and (self.value.type == t.Rat or self.value.type.isNullable()) else '->'
+        op = '->' if self.value.type.ATTRIBUTE_ARROW else '.'
         return f'{self.value}{op}{self.attr}'
 
 
@@ -245,6 +245,17 @@ class TernaryOp(Value):
 
     def __str__(self):
         return f'({self.value1} ? {self.value2} : {self.value3})'
+
+
+class CommaSequence(Value):
+
+    def __init__(self, *values, **kwargs):
+        super().__init__(**kwargs)
+        self.values = values
+
+    def __str__(self):
+        values = ', '.join(map(str, self.values))
+        return f'({values})'
 
 
 class Lambda(Value):

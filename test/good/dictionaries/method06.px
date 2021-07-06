@@ -1,0 +1,14 @@
+
+n = 10^^6 // 2
+
+x = {for i in 1..n yield i: n-i+1}
+
+for i in 0..n by 2 do
+    x[i] *= 5
+
+print x.length
+
+for i in 1..n-2 do
+    x.remove(i)
+
+print x == {0: 0, n-1: 2, n: 5}

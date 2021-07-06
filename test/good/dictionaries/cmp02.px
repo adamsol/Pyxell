@@ -1,0 +1,7 @@
+
+n = 10^^4
+d = {for x in 1..n yield x: x %% 2}
+
+print d != {for x in 0...n yield x: x %% 2}
+print d != {for x in n...0 by -1 yield x: x %% 2}
+print d == {for x in 1..n yield x: not x %% 2}

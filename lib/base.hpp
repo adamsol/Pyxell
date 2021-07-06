@@ -15,12 +15,12 @@
 #include <random>
 #include <string>
 #include <tuple>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "indy256/bigint.hpp"
+#include "indy256/bigint.h"
+#include "tsl/ordered_map.h"
+#include "tsl/ordered_set.h"
 
 using namespace std::literals::string_literals;
 
@@ -29,13 +29,6 @@ using namespace std::literals::string_literals;
 #if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER < 1900 && defined(_TWO_DIGIT_EXPONENT)) && !defined(_UCRT)
     unsigned int old_exponent_format = _set_output_format(_TWO_DIGIT_EXPONENT);
 #endif
-
-
-template <typename T, typename U>
-void safe_advance(T& it, const U& end, std::size_t n)
-{
-    for (std::size_t i = 0; i < n && it != end; ++i, ++it);
-}
 
 
 /* Types */
@@ -277,59 +270,59 @@ Array<T> make_array(Args&&... args)
 /* Set */
 
 template <typename T>
-struct Set: public custom_ptr<std::unordered_set<T>>
+struct Set: public custom_ptr<tsl::ordered_set<T>>
 {
-    using iterator = typename std::unordered_set<T>::iterator;
-    using custom_ptr<std::unordered_set<T>>::custom_ptr;
+    using iterator = typename tsl::ordered_set<T>::iterator;
+    using custom_ptr<tsl::ordered_set<T>>::custom_ptr;
 
     Set(const Set<Unknown>& x)
     {
-        this->p = std::make_shared<std::unordered_set<T>>();
+        this->p = std::make_shared<tsl::ordered_set<T>>();
     }
 
     template <typename U>
     Set(const Set<U>& x)
     {
-        this->p = std::make_shared<std::unordered_set<T>>(x->begin(), x->end());
+        this->p = std::make_shared<tsl::ordered_set<T>>(x->begin(), x->end());
     }
 };
 
 template <typename T>
 Set<T> make_set(std::initializer_list<T> x)
 {
-    return Set<T>(std::make_shared<std::unordered_set<T>>(x));
+    return Set<T>(std::make_shared<tsl::ordered_set<T>>(x));
 }
 
 template <typename T, typename... Args>
 Set<T> make_set(Args&&... args)
 {
-    return Set<T>(std::make_shared<std::unordered_set<T>>(std::forward<Args>(args)...));
+    return Set<T>(std::make_shared<tsl::ordered_set<T>>(std::forward<Args>(args)...));
 }
 
 /* Dict */
 
 template <typename K, typename V>
-struct Dict: public custom_ptr<std::unordered_map<K, V>>
+struct Dict: public custom_ptr<tsl::ordered_map<K, V>>
 {
-    using iterator = typename std::unordered_map<K, V>::iterator;
-    using custom_ptr<std::unordered_map<K, V>>::custom_ptr;
+    using iterator = typename tsl::ordered_map<K, V>::iterator;
+    using custom_ptr<tsl::ordered_map<K, V>>::custom_ptr;
 
     Dict(const Dict<Unknown, Unknown>& x)
     {
-        this->p = std::make_shared<std::unordered_map<K, V>>();
+        this->p = std::make_shared<tsl::ordered_map<K, V>>();
     }
 
     template <typename L, typename W>
     Dict(const Dict<L, W>& x)
     {
-        this->p = std::make_shared<std::unordered_map<K, V>>(x->begin(), x->end());
+        this->p = std::make_shared<tsl::ordered_map<K, V>>(x->begin(), x->end());
     }
 };
 
 template <typename K, typename V>
 Dict<K, V> make_dict(std::initializer_list<std::pair<const K, V>> x)
 {
-    auto r = Dict<K, V>(std::make_shared<std::unordered_map<K, V>>());
+    auto r = Dict<K, V>(std::make_shared<tsl::ordered_map<K, V>>());
     for (auto&& p: x) {
         r->insert_or_assign(p.first, p.second);
     }
@@ -339,7 +332,7 @@ Dict<K, V> make_dict(std::initializer_list<std::pair<const K, V>> x)
 template <typename K, typename V, typename... Args>
 Dict<K, V> make_dict(Args&&... args)
 {
-    return Dict<K, V>(std::make_shared<std::unordered_map<K, V>>(std::forward<Args>(args)...));
+    return Dict<K, V>(std::make_shared<tsl::ordered_map<K, V>>(std::forward<Args>(args)...));
 }
 
 /* Generator */
@@ -392,6 +385,12 @@ template <typename T>
 bool operator == (const Nullable<T>& lhs, const Nullable<T>& rhs)
 {
     return static_cast<std::optional<T>>(lhs) == static_cast<std::optional<T>>(rhs);
+}
+
+template <typename T>
+bool operator != (const Nullable<T>& lhs, const Nullable<T>& rhs)
+{
+    return static_cast<std::optional<T>>(lhs) != static_cast<std::optional<T>>(rhs);
 }
 
 template <typename T>
@@ -921,7 +920,7 @@ template <typename T>
 Void subtract(const Set<T>& x, const Set<T>& y)
 {
     for (auto&& e: *y) {
-        x->erase(e);
+        x->unordered_erase(e);
     }
 }
 
@@ -934,15 +933,15 @@ Void intersect(const Set<T>& x, const Set<T>& y)
 template <typename T>
 T pop(const Set<T>& x)
 {
-    auto r = *x->begin();
-    x->erase(r);
+    auto r = x->back();
+    x->pop_back();
     return r;
 }
 
 template <typename T>
 Void remove(const Set<T>& x, const T& e)
 {
-    x->erase(e);
+    x->unordered_erase(e);
 }
 
 template <typename T>
@@ -987,7 +986,7 @@ Nullable<V> get(const Dict<K, V>& x, const K& e)
 template <typename K, typename V>
 Void remove(const Dict<K, V>& x, const K& e)
 {
-    x->erase(e);
+    x->unordered_erase(e);
 }
 
 template <typename K, typename V>

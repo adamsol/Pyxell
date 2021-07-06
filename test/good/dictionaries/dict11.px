@@ -1,0 +1,4 @@
+
+d: {String:[Int]}
+t = d["a"], d['b'], d["cd"], d['x']
+print t, d.length

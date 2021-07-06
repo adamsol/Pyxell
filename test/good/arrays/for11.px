@@ -1,0 +1,12 @@
+
+n = 10^^5
+a = [0..n]
+r = 0
+
+for _ in 1..n do
+    for _ in a by n//2 do
+        r += 1
+    for _ in a by -n//2 do
+        r += 1
+
+print r
