@@ -164,7 +164,7 @@ This section describes all data types available in Pyxell, together with their p
 | `fold<A,B>(f: A->B->B, r: B): B`                  | applies an accumulator function over the set, with a given initial accumulator value                            |
 | `intersect<A>(s: {A}): Void`                      | removes all elements not present in a given set from the set                                                    |
 | `map<A,B>(f: A->B): {B}`                          | returns a set with elements from the original set transformed by a mapping function                             |
-| `pop<A>(): A`                                     | removes one element from the set and returns it (will fail if the set is empty)                                 |
+| `pop<A>(): A`                                     | removes the last element from the set and returns it (will fail if the set is empty)                            |
 | `reduce<A>(f: A->A->A): A`                        | applies an accumulator function over the set, with one of the elements as the initial value                     |
 | `remove<A>(x: A): Void`                           | removes a given element from the set                                                                            |
 | `subtract<A>(s: {A}): Void`                       | removes all elements in a given set from the set                                                                |
@@ -187,6 +187,7 @@ This section describes all data types available in Pyxell, together with their p
 | `fold<A,B,C>(f: A*B->C->C, r: C): C`              | applies an accumulator function over the dictionary, with a given initial accumulator value                     |
 | `get<A,B>(x: A): B?`                              | returns the value under a given key in the dictionary, or `null` if the key is not present                      |
 | `map<A,B,C,D>(f: A*B->C*D): {C:D}`                | returns a dictionary with key-value pairs from the original dictionary transformed by a mapping function        |
+| `pop<A,B>(): A*B`                                 | removes the last key-value pair from the dictionary and returns it (will fail if the dictionary is empty)       |
 | `reduce<A,B>(f: A*B->A*B->A*B): A*B`              | applies an accumulator function over the dictionary, with one of the key-value pairs as the initial value       |
 | `remove<A,B>(x: A): Void`                         | removes a given key from the dictionary                                                                         |
 | `update<A,B>(d: {A:B}): Void`                     | updates the dictionary with keys and values from a given dictionary                                             |

@@ -1,0 +1,4 @@
+
+s = {'Z'..'A' by -2}
+print s.pop(), s.pop()
+print {...s by 6}

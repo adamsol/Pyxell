@@ -984,6 +984,14 @@ Nullable<V> get(const Dict<K, V>& x, const K& e)
 }
 
 template <typename K, typename V>
+Tuple<K, V> pop(const Dict<K, V>& x)
+{
+    auto r = x->back();
+    x->pop_back();
+    return r;
+}
+
+template <typename K, typename V>
 Void remove(const Dict<K, V>& x, const K& e)
 {
     x->unordered_erase(e);

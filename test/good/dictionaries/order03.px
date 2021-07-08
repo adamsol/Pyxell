@@ -1,0 +1,4 @@
+
+d = {for i in 1..10 yield i: i %% 2}
+print d.pop(), d.pop().b, d.pop().a
+print [...d by 4]

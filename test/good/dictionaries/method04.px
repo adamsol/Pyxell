@@ -7,5 +7,13 @@ print d.get('b')
 d.remove('A')
 print d.length
 
-d.clear()
-print d
+d': {Int:Char}
+for _ in 1..d.length do
+    p = d.pop()
+    d'[p.b] = p.a
+
+print d.length
+print d' == {for c in 'a'..'z' if c != 'b' yield c.code: c}
+
+d'.clear()
+print d'
