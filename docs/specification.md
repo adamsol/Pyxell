@@ -130,7 +130,7 @@ This section describes all data types available in Pyxell, together with their p
 | `any<A>(f: A->Bool = _): Bool`                         | determines whether any element in the array satisfies a condition                                               |
 | `clear<A>(): Void`                                     | removes all elements from the array                                                                             |
 | `copy<A>(): [A]`                                       | returns a shallow copy of the array                                                                             |
-| `count<A>(x: A): A?`                                   | returns the number of occurrences of an element within the array                                                |
+| `count<A>(x: A): Int`                                  | returns the number of occurrences of an element within the array                                                |
 | `erase<A>(p: Int, count: Int = 1): Void`               | removes elements from the array at a given position                                                             |
 | `extend<A>(a: [A]): Void`                              | appends all elements in a given array to the array                                                              |
 | `filter<A>(f: A->Bool): [A]`                           | returns an array with only those elements from the original array that satisfy a condition                      |
@@ -143,8 +143,8 @@ This section describes all data types available in Pyxell, together with their p
 | `pop<A>(): A`                                          | removes the last element from the array and returns it (will fail if the array is empty)                        |
 | `push<A>(x: A): Void`                                  | appends a given element to the end of the array                                                                 |
 | `reduce<A>(f: A->A->A): A`                             | applies an accumulator function over the array, with the first element as the initial value                     |
-| `reverse<A>(): Void`                                   | reverses the order of elements in the array                                                                     |
-| `sort<A,K>(reverse: Bool = false, key: A->K = _): [A]` | sorts the array in place, stably, using a function to extract comparison keys; returns the sorted array         |
+| `reverse<A>(): [A]`                                    | reverses the order of elements in the array in place, and returns the reversed array                            |
+| `sort<A,K>(reverse: Bool = false, key: A->K = _): [A]` | sorts the array in place, stably, using a function to extract comparison keys, and returns the sorted array     |
 
 ### Set properties and methods
 

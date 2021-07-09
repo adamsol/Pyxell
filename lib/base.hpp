@@ -860,20 +860,21 @@ Void clear(const Array<T>& x)
 }
 
 template <typename T>
-Void reverse(const Array<T>& x)
+Array<T> reverse(const Array<T>& x)
 {
     std::reverse(x->begin(), x->end());
+    return x;
 }
 
 template <typename T, typename K>
-Array<T> sort(const Array<T>& v, Bool reverse, std::function<K(T)> key)
+Array<T> sort(const Array<T>& x, Bool reverse, std::function<K(T)> key)
 {
     if (reverse) {
-        std::stable_sort(v->begin(), v->end(), [&](const T& x, const T& y) { return key(x) > key(y); });
+        std::stable_sort(x->begin(), x->end(), [&](const T& a, const T& b) { return key(a) > key(b); });
     } else {
-        std::stable_sort(v->begin(), v->end(), [&](const T& x, const T& y) { return key(x) < key(y); });
+        std::stable_sort(x->begin(), x->end(), [&](const T& a, const T& b) { return key(a) < key(b); });
     }
-    return v;
+    return x;
 }
 
 template <typename T>

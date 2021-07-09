@@ -3,5 +3,5 @@ a = [for i in 1..10^^6 yield random.randFloat()]
 b = a[::-1]
 print a[0] == b[0]
 
-a.reverse()
+print a.reverse().length
 print a == b

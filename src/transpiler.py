@@ -342,7 +342,7 @@ class PyxellTranspiler:
                     'pop': v.Variable(t.Func([type], type.subtype), attr),
                     'erase': v.Variable(t.Func([type, t.Int, t.Func.Arg('count', t.Int, default=v.Int(1))]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
-                    'reverse': v.Variable(t.Func([type]), attr),
+                    'reverse': v.Variable(t.Func([type], type), attr),
                     'sort': v.Variable(t.Func([type, t.Func.Arg('reverse', t.Bool, default=v.false), t.Func.Arg('key', t.Func([type.subtype], t.Var('K')), default={'node': 'AtomPlaceholder'})], type), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
                     'find': v.Variable(t.Func([type, type.subtype, t.Func.Arg('start', t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
