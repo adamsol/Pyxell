@@ -76,7 +76,11 @@ namespace tsl {
 template <class Key, class Hash = std::hash<Key>,
           class KeyEqual = std::equal_to<Key>,
           class Allocator = std::allocator<Key>,
-          class ValueTypeContainer = std::deque<Key, Allocator>,
+          // https://github.com/Tessil/ordered-map/issues/34
+          class ValueTypeContainer = typename std::conditional<
+              std::is_same<Key, bool>::value,
+              typename std::deque<Key, Allocator>,
+              typename std::vector<Key, Allocator>>::type,
           class IndexType = std::uint_least32_t>
 class ordered_set {
  private:

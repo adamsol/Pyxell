@@ -226,7 +226,11 @@ class PyxellTranspiler:
 
                 self.output(c.If(f'{iterator} == {end}', block))
 
-                return v.Call(v.Attribute(iterator, 'value'), type=type)
+                result = v.Call(v.Attribute(iterator, 'value'), type=type)
+                # When creating a tuple, iterators may get invalidated between the inserts.
+                if not lvalue:
+                    result = self.tmp(result)
+                return result
 
         self.throw(node['op'], err.NotIndexable(collection.type))
 

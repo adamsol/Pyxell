@@ -76,7 +76,7 @@ namespace tsl {
 template <class Key, class T, class Hash = std::hash<Key>,
           class KeyEqual = std::equal_to<Key>,
           class Allocator = std::allocator<std::pair<Key, T>>,
-          class ValueTypeContainer = std::deque<std::pair<Key, T>, Allocator>,
+          class ValueTypeContainer = std::vector<std::pair<Key, T>, Allocator>,
           class IndexType = std::uint_least32_t>
 class ordered_map {
  private:
