@@ -117,7 +117,7 @@ This section describes all data types available in Pyxell, together with their p
 | `toFloat(): Float`                                | returns the string's content converted to `Float` (conversion may fail)                                         |
 | `toRat(): Rat`                                    | returns the string's content converted to `Rat` (conversion may fail)                                           |
 
-### Array properties and methods
+### `[A]` (array) properties and methods
 
 | Property name    | Type         | Description                                                      |
 | ---------------- | ------------ | ---------------------------------------------------------------- |
@@ -126,27 +126,27 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                          | Description                                                                                                     |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| `all<A>(f: A->Bool = _): Bool`                         | determines whether all elements in the array satisfy a condition                                                |
-| `any<A>(f: A->Bool = _): Bool`                         | determines whether any element in the array satisfies a condition                                               |
-| `clear<A>(): Void`                                     | removes all elements from the array                                                                             |
-| `copy<A>(): [A]`                                       | returns a shallow copy of the array                                                                             |
-| `count<A>(x: A): Int`                                  | returns the number of occurrences of an element within the array                                                |
-| `erase<A>(p: Int, count: Int = 1): Void`               | removes elements from the array at a given position                                                             |
-| `extend<A>(a: [A]): Void`                              | appends all elements in a given array to the array                                                              |
-| `filter<A>(f: A->Bool): [A]`                           | returns an array with only those elements from the original array that satisfy a condition                      |
-| `find<A>(x: A, start: Int = 0): Int?`                  | returns the index of the first occurrence of an element within the array, or `null` if it is not found          |
-| `fold<A,B>(f: A->B->B, r: B): B`                       | applies an accumulator function over the array, with a given initial accumulator value                          |
-| `get<A>(p: Int): A?`                                   | returns the element under a given index in the array, or `null` if the index is out of bounds                   |
-| `insert<A>(p: Int, x: A): Void`                        | inserts a new element at a given position of the array                                                          |
-| `join<A>(sep: String = ""): String`                    | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
-| `map<A,B>(f: A->B): [B]`                               | returns an array with elements from the original array transformed by a mapping function                        |
-| `pop<A>(): A`                                          | removes the last element from the array and returns it (will fail if the array is empty)                        |
-| `push<A>(x: A): Void`                                  | appends a given element to the end of the array                                                                 |
-| `reduce<A>(f: A->A->A): A`                             | applies an accumulator function over the array, with the first element as the initial value                     |
-| `reverse<A>(): [A]`                                    | reverses the order of elements in the array in place, and returns the reversed array                            |
-| `sort<A,K>(reverse: Bool = false, key: A->K = _): [A]` | sorts the array in place, stably, using a function to extract comparison keys, and returns the sorted array     |
+| `all(f: A->Bool = _): Bool`                            | determines whether all elements in the array satisfy a condition                                                |
+| `any(f: A->Bool = _): Bool`                            | determines whether any element in the array satisfies a condition                                               |
+| `clear(): Void`                                        | removes all elements from the array                                                                             |
+| `copy(): [A]`                                          | returns a shallow copy of the array                                                                             |
+| `count(x: A): Int`                                     | returns the number of occurrences of an element within the array                                                |
+| `erase(p: Int, count: Int = 1): Void`                  | removes elements from the array at a given position                                                             |
+| `extend(a: [A]): Void`                                 | appends all elements in a given array to the array                                                              |
+| `filter(f: A->Bool): [A]`                              | returns an array with only those elements from the original array that satisfy a condition                      |
+| `find(x: A, start: Int = 0): Int?`                     | returns the index of the first occurrence of an element within the array, or `null` if it is not found          |
+| `fold<B>(f: A->B->B, r: B): B`                         | applies an accumulator function over the array, with a given initial accumulator value                          |
+| `get(p: Int): A?`                                      | returns the element under a given index in the array, or `null` if the index is out of bounds                   |
+| `insert(p: Int, x: A): Void`                           | inserts a new element at a given position of the array                                                          |
+| `join(sep: String = ""): String`                       | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
+| `map<B>(f: A->B): [B]`                                 | returns an array with elements from the original array transformed by a mapping function                        |
+| `pop(): A`                                             | removes the last element from the array and returns it (will fail if the array is empty)                        |
+| `push(x: A): Void`                                     | appends a given element to the end of the array                                                                 |
+| `reduce(f: A->A->A): A`                                | applies an accumulator function over the array, with the first element as the initial value                     |
+| `reverse(): [A]`                                       | reverses the order of elements in the array in place, and returns the reversed array                            |
+| `sort<K>(reverse: Bool = false, key: A->K = _): [A]`   | sorts the array in place, stably, using a function to extract comparison keys, and returns the sorted array     |
 
-### Set properties and methods
+### `{A}` (set) properties and methods
 
 | Property name    | Type         | Description                                                      |
 | ---------------- | ------------ | ---------------------------------------------------------------- |
@@ -155,22 +155,22 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `add<A>(x: A): Void`                              | adds a given element to the set                                                                                 |
-| `all<A>(f: A->Bool = _): Bool`                    | determines whether all elements in the set satisfy a condition                                                  |
-| `any<A>(f: A->Bool = _): Bool`                    | determines whether any element in the set satisfies a condition                                                 |
-| `clear<A>(): Void`                                | removes all elements from the set                                                                               |
-| `copy<A>(): {A}`                                  | returns a shallow copy of the set                                                                               |
-| `filter<A>(f: A->Bool): {A}`                      | returns a set with only those elements from the original set that satisfy a condition                           |
-| `fold<A,B>(f: A->B->B, r: B): B`                  | applies an accumulator function over the set, with a given initial accumulator value                            |
-| `intersect<A>(s: {A}): Void`                      | removes all elements not present in a given set from the set                                                    |
-| `map<A,B>(f: A->B): {B}`                          | returns a set with elements from the original set transformed by a mapping function                             |
-| `pop<A>(): A`                                     | removes the last element from the set and returns it (will fail if the set is empty)                            |
-| `reduce<A>(f: A->A->A): A`                        | applies an accumulator function over the set, with one of the elements as the initial value                     |
-| `remove<A>(x: A): Void`                           | removes a given element from the set                                                                            |
-| `subtract<A>(s: {A}): Void`                       | removes all elements in a given set from the set                                                                |
-| `union<A>(s: {A}): Void`                          | adds all elements in a given set to the set                                                                     |
+| `add(x: A): Void`                                 | adds a given element to the set                                                                                 |
+| `all(f: A->Bool = _): Bool`                       | determines whether all elements in the set satisfy a condition                                                  |
+| `any(f: A->Bool = _): Bool`                       | determines whether any element in the set satisfies a condition                                                 |
+| `clear(): Void`                                   | removes all elements from the set                                                                               |
+| `copy(): {A}`                                     | returns a shallow copy of the set                                                                               |
+| `filter(f: A->Bool): {A}`                         | returns a set with only those elements from the original set that satisfy a condition                           |
+| `fold<B>(f: A->B->B, r: B): B`                    | applies an accumulator function over the set, with a given initial accumulator value                            |
+| `intersect(s: {A}): Void`                         | removes all elements not present in a given set from the set                                                    |
+| `map<B>(f: A->B): {B}`                            | returns a set with elements from the original set transformed by a mapping function                             |
+| `pop(): A`                                        | removes the last element from the set and returns it (will fail if the set is empty)                            |
+| `reduce(f: A->A->A): A`                           | applies an accumulator function over the set, with the first element as the initial value                       |
+| `remove(x: A): Void`                              | removes a given element from the set                                                                            |
+| `subtract(s: {A}): Void`                          | removes all elements in a given set from the set                                                                |
+| `union(s: {A}): Void`                             | adds all elements in a given set to the set                                                                     |
 
-### Dictionary properties and methods
+### `{A:B}` (dictionary) properties and methods
 
 | Property name    | Type         | Description                                                      |
 | ---------------- | ------------ | ---------------------------------------------------------------- |
@@ -179,18 +179,18 @@ This section describes all data types available in Pyxell, together with their p
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `all<A,B>(f: A*B->Bool): Bool`                    | determines whether all key-value pairs in the dictionary satisfy a condition                                    |
-| `any<A,B>(f: A*B->Bool): Bool`                    | determines whether any key-value pair in the dictionary satisfies a condition                                   |
-| `clear<A,B>(): Void`                              | removes all elements from the dictionary                                                                        |
-| `copy<A,B>(): {A:B}`                              | returns a shallow copy of the dictionary                                                                        |
-| `filter<A,B>(f: A*B->Bool): {A:B}`                | returns a dictionary with only those key-value pairs from the original dictionary that satisfy a condition      |
-| `fold<A,B,C>(f: A*B->C->C, r: C): C`              | applies an accumulator function over the dictionary, with a given initial accumulator value                     |
-| `get<A,B>(x: A): B?`                              | returns the value under a given key in the dictionary, or `null` if the key is not present                      |
-| `map<A,B,C,D>(f: A*B->C*D): {C:D}`                | returns a dictionary with key-value pairs from the original dictionary transformed by a mapping function        |
-| `pop<A,B>(): A*B`                                 | removes the last key-value pair from the dictionary and returns it (will fail if the dictionary is empty)       |
-| `reduce<A,B>(f: A*B->A*B->A*B): A*B`              | applies an accumulator function over the dictionary, with one of the key-value pairs as the initial value       |
-| `remove<A,B>(x: A): Void`                         | removes a given key from the dictionary                                                                         |
-| `update<A,B>(d: {A:B}): Void`                     | updates the dictionary with keys and values from a given dictionary                                             |
+| `all(f: A*B->Bool): Bool`                         | determines whether all key-value pairs in the dictionary satisfy a condition                                    |
+| `any(f: A*B->Bool): Bool`                         | determines whether any key-value pair in the dictionary satisfies a condition                                   |
+| `clear(): Void`                                   | removes all elements from the dictionary                                                                        |
+| `copy(): {A:B}`                                   | returns a shallow copy of the dictionary                                                                        |
+| `filter(f: A*B->Bool): {A:B}`                     | returns a dictionary with only those key-value pairs from the original dictionary that satisfy a condition      |
+| `fold<C>(f: A*B->C->C, r: C): C`                  | applies an accumulator function over the dictionary, with a given initial accumulator value                     |
+| `get(x: A): B?`                                   | returns the value under a given key in the dictionary, or `null` if the key is not present                      |
+| `map<C,D>(f: A*B->C*D): {C:D}`                    | returns a dictionary with key-value pairs from the original dictionary transformed by a mapping function        |
+| `pop(): A*B`                                      | removes the last key-value pair from the dictionary and returns it (will fail if the dictionary is empty)       |
+| `reduce(f: A*B->A*B->A*B): A*B`                   | applies an accumulator function over the dictionary, with the first key-value pair as the initial value         |
+| `remove(x: A): Void`                              | removes a given key from the dictionary                                                                         |
+| `update(d: {A:B}): Void`                          | updates the dictionary with keys and values from a given dictionary                                             |
 
 ### Tuple properties
 
@@ -198,11 +198,11 @@ This section describes all data types available in Pyxell, together with their p
 | ---------------- | ------------ | ---------------------------------------------------------------- |
 | letter `a`–`z`   | any          | corresponding element of the tuple                               |
 
-### Generator methods
+### `A...` (generator) methods
 
 | Method header                                     | Description                                                                                                     |
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `next<A>(): A`                                    | runs the generator and returns the yielded value                                                                |
+| `next(): A`                                       | runs the generator and returns the yielded value                                                                |
 
 ### Common methods
 
