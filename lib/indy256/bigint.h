@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -182,9 +183,9 @@ struct bigint {
 
     bool operator>=(const bigint &v) const { return !(*this < v); }
 
-    bool operator==(const bigint &v) const { return !(*this < v) && !(v < *this); }
+    bool operator==(const bigint &v) const { return sign == v.sign && z == v.z; }
 
-    bool operator!=(const bigint &v) const { return *this < v || v < *this; }
+    bool operator!=(const bigint &v) const { return !(*this == v); }
 
     void trim() {
         while (!z.empty() && z.back() == 0)
@@ -241,10 +242,10 @@ struct bigint {
 
     std::string to_string() const {
         if (z.empty()) {
-        	return "0";
+            return "0";
         } else {
             std::string s;
-            for (int digit: z) {
+            for (int digit : z) {
                 for (int i = 0; i < base_digits; ++i) {
                     s.push_back('0' + digit % 10);
                     digit /= 10;
@@ -258,8 +259,8 @@ struct bigint {
             }
             std::reverse(s.begin(), s.end());
             return s;
-		}
-	}
+        }
+    }
 
     static std::vector<int> convert_base(const std::vector<int> &a, int old_digits, int new_digits) {
         std::vector<long long> p(std::max(old_digits, new_digits) + 1);
