@@ -468,11 +468,11 @@ b = null
 print b
 ```
 
-You can either directly check if a value is `null`, or use special coalescing and conditional operators.
+You can either directly check if a value is equal to `null`, or use special coalescing and conditional operators.
 
 ```
 a: [Int]?
-print a is null
+print a == null
 print a ?? []
 print a?.length
 print a?[0]

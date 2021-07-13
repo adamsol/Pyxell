@@ -5,7 +5,7 @@ import re
 # TODO: DRY
 KEYWORDS = {
     '_', 'false', 'null', 'super', 'this', 'true',
-    'abstract', 'and', 'as', 'break', 'by', 'class', 'constructor', 'continue', 'def', 'destructor', 'do', 'elif', 'else', 'extern', 'for', 'func', 'hiding', 'if', 'in', 'is', 'label', 'lambda', 'not', 'only', 'or', 'print', 'return', 'skip', 'super', 'until', 'use', 'while', 'yield',
+    'abstract', 'and', 'as', 'break', 'by', 'class', 'constructor', 'continue', 'def', 'destructor', 'do', 'elif', 'else', 'extern', 'for', 'func', 'hiding', 'if', 'in', 'label', 'lambda', 'not', 'only', 'or', 'print', 'return', 'skip', 'super', 'until', 'use', 'while', 'yield',
 }
 ASSIGNMENT_OPERATORS = ['^=', '^^=', '/=', '//=', '%=', '*=', '&=', '+=', '-=', '??=']
 MULTI_CHARACTER_OPERATORS = ['?...', '?.', '@(', '^^', '//', '%%', '?[', '??', '...:', '...', '..', '==', '!=', '<=', '>=', '->']

@@ -778,7 +778,7 @@ class PyxellTranspiler:
                     **expr,
                     'iterables': lmap(convert_expr, expr['iterables']),
                 }
-            if node in {'ComprehensionPredicate', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprIsNull', 'ExprSpread', 'DictSpread'}:
+            if node in {'ComprehensionPredicate', 'ExprAttr', 'CallArg', 'ExprUnaryOp', 'ExprSpread', 'DictSpread'}:
                 return {
                     **expr,
                     'expr': convert_expr(expr['expr']),
@@ -1928,16 +1928,6 @@ class PyxellTranspiler:
             return result
 
         return self.binaryop(node, op, *map(self.transpile, exprs))
-
-    def transpileExprIsNull(self, node):
-        value = self.transpile(node['expr'])
-        if not value.type.isNullable():
-            self.throw(node['op'], err.NotNullable(value.type))
-
-        if value.type == t.Unknown:  # for the `null is null` case
-            return v.Bool(not node.get('not'))
-
-        return v.IsNotNull(value) if node.get('not') else v.IsNull(value)
 
     def transpileExprIn(self, node):
         exprs = node['exprs']

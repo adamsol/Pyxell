@@ -91,7 +91,7 @@ class Type:
         return self.isNumber() or self in {Char, Bool, String} or self.isArray() or self.isTuple()
 
     def isComparable(self):
-        return self.isOrderable() or self.isSet() or self.isDict() or self.isClass()
+        return self.isOrderable() or self.isNullable() or self.isSet() or self.isDict() or self.isClass()
 
     def hasValue(self):
         if self.isContainer() or self.isNullable():

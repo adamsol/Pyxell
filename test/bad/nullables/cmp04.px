@@ -1,4 +1,0 @@
-
-b: Bool?
-c: Char?
-b is c

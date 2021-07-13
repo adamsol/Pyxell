@@ -10,4 +10,4 @@ func g(): Char?...??... def
 print [...f()]
 
 for x in g() do
-    print x is null
+    print x == null

@@ -36,7 +36,6 @@ for precedence, (fixity, ops) in enumerate(reversed([
     (Fixity.PREFIX, ['...']),
     (Fixity.NON_PREFIX, ['==', '!=', '<', '<=', '>', '>=']),
     (Fixity.NON_PREFIX, ['in', 'not']),
-    (Fixity.NON_PREFIX, ['is']),
     (Fixity.PREFIX, ['not']),
     (Fixity.NON_PREFIX, ['and']),
     (Fixity.NON_PREFIX, ['or']),
@@ -578,12 +577,6 @@ class PyxellParser:
                 **self.expr_node('ExprIn', token),
                 'exprs': [left, self.parse_expr(precedence)],
                 'not': token.text == 'not',
-            }
-        if token.text == 'is':  # `is null` / `is not null`
-            return {
-                **self.expr_node('ExprIsNull', token),
-                'expr': left,
-                'not': (self.match('not'), self.expect('null'))[0],
             }
         if token.text == '?':  # ternary conditional operator
             return {

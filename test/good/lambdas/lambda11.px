@@ -7,7 +7,7 @@ print f(_!, x)
 
 x = null
 print f(_ ?? 3, x)
-print f(_ is null ? 1 : 0, x)
+print f(_ == null ? 1 : 0, x)
 
 func f'(g: Int?->Float?, x: Int?): Float? def
     return g(x)

@@ -1,3 +1,6 @@
 
 x: [Int?]? = [42, null]
-print x![0]! == 42, x![1] is not null
+print x == x, x! != x
+print x![0] == 42, x![1] != null
+print x == [5, null]
+print {...x!} == {null, 42}

@@ -1,6 +1,6 @@
 
 func f<T>(x: T?): T? def
-    if x is null do
+    if x == null do
         return null
     return x!
 

@@ -26,7 +26,6 @@ Operators in the same row have equal precedence.
 | `...`                            | spread                                                   | unary     | right         |
 | `==`, `!=`, `<`, `<=`, `>`, `>=` | comparisons (chainable)                                  | binary    | right         |
 | `in`, `not in`                   | membership                                               | binary    | left          |
-| `is null`, `is not null`         | null check                                               | unary     | left          |
 | `not`                            | logical negation                                         | binary    | right         |
 | `and`                            | logical conjunction (short-circuiting)                   | binary    | right         |
 | `or`                             | logical disjunction (short-circuiting)                   | binary    | right         |

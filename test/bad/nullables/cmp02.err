@@ -1,1 +1,1 @@
-:3:3: Cannot compare `Int?` with `Int?`.
+:3:3: No binary operator `<` defined for `Int?` and `Int?`.
