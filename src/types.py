@@ -26,6 +26,9 @@ class Type:
     def isNumber(self):
         return self in {Int, Rat, Float}
 
+    def isPrimitive(self):
+        return self.isNumber() or self in {Bool, Char, String, Unknown}
+
     def isArray(self):
         return isinstance(self, Array)
 
@@ -66,32 +69,40 @@ class Type:
         return self.isCollection() or self.isGenerator()
 
     def isHashable(self):
-        if self.isNumber() or self in {Bool, Char, String, Unknown}:
+        if self.isPrimitive() or self.isClass():
             return True
         if self.isNullable():
             return self.subtype.isHashable()
         if self.isTuple():
             return all(elem.isHashable() for elem in self.elements)
-        if self.isClass():
-            return True
         return False
 
     def isPrintable(self):
-        if self.isNumber() or self in {Bool, Char, String, Unknown}:
+        if self.isPrimitive() or self.isClass():
             return True
         if self.isContainer() or self.isNullable():
             return self.subtype.isPrintable()
         if self.isTuple():
             return all(elem.isPrintable() for elem in self.elements)
-        if self.isClass():
+        return False
+
+    def isComparable(self):
+        if self.isPrimitive() or self.isClass():
             return True
+        if self.isContainer() or self.isNullable():
+            return self.subtype.isComparable()
+        if self.isTuple():
+            return all(elem.isComparable() for elem in self.elements)
         return False
 
     def isOrderable(self):
-        return self.isNumber() or self in {Char, Bool, String} or self.isArray() or self.isTuple()
-
-    def isComparable(self):
-        return self.isOrderable() or self.isNullable() or self.isSet() or self.isDict() or self.isClass()
+        if self.isPrimitive():
+            return True
+        if self.isArray():
+            return self.subtype.isOrderable()
+        if self.isTuple():
+            return all(elem.isOrderable() for elem in self.elements)
+        return False
 
     def hasValue(self):
         if self.isContainer() or self.isNullable():
