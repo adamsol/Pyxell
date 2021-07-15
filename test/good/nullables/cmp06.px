@@ -1,0 +1,4 @@
+
+x: Int? = 6
+print x != null == null
+print null != x == 6

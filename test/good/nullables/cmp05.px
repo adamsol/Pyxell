@@ -1,0 +1,4 @@
+
+f: (Int->Void)?
+print f == null, null == f
+print f != null, null != f

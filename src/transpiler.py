@@ -440,8 +440,6 @@ class PyxellTranspiler:
         if not can_cast(value.type, type, covariance=False):
             self.throw(node, err.NoConversion(value.type, type))
 
-        if not value.type.isNullable() and type.isNullable():
-            return v.Nullable(v.Cast(value, type.subtype))
         return v.Cast(value, type)
 
     def unify(self, node, *values, error=None):
@@ -1965,18 +1963,25 @@ class PyxellTranspiler:
             op_node = ops[index-1]
             op = op_node['text']
 
-            try:
-                left, right = self.unify(op_node, left, right)
-                right = self.tmp(right)
-            except err:
-                self.throw(op_node, err.NotComparable(left.type, right.type))
+            # Special checks to handle comparison of non-comparable nullable values (like functions) with null.
+            if left.type.isNullable() and getattr(right, 'is_null', False) and op in {'==', '!='}:
+                cond = v.IsNull(left) if op == '==' else v.IsNotNull(left)
+            elif right.type.isNullable() and getattr(left, 'is_null', False) and op in {'==', '!='}:
+                cond = v.IsNull(right) if op == '==' else v.IsNotNull(right)
+            else:
+                try:
+                    left, right = self.unify(op_node, left, right)
+                    right = self.tmp(right)
+                except err:
+                    self.throw(op_node, err.NotComparable(left.type, right.type))
 
-            if not left.type.isComparable():
-                self.throw(op_node, err.NotComparable(left.type, right.type))
-            if not left.type.isOrderable() and op not in {'==', '!='}:
-                self.throw(op_node, err.NoBinaryOperator(op, left.type, right.type))
+                if not left.type.isComparable():
+                    self.throw(op_node, err.NotComparable(left.type, right.type))
+                if not left.type.isOrderable() and op not in {'==', '!='}:
+                    self.throw(op_node, err.NoBinaryOperator(op, left.type, right.type))
 
-            cond = v.BinaryOp(left, op, right, type=t.Bool)
+                cond = v.BinaryOp(left, op, right, type=t.Bool)
+
             left = right
 
             if index == len(exprs) - 1:
@@ -2066,7 +2071,9 @@ class PyxellTranspiler:
             }, str(e).partition(': ')[2][:-1])
 
     def transpileAtomNull(self, node):
-        return self.const(v.null)
+        value = self.const(v.null)
+        value.is_null = True
+        return value
 
     def transpileAtomThis(self, node):
         if not self.env.get('#this'):
