@@ -8,4 +8,4 @@ for i in 1..10 do
 print d[1], d[4], d[7]
 print d.length
 print d[null].length
-print d.length, null in d
+print d.length, d.has(null)

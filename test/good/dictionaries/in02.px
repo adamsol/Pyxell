@@ -1,3 +1,0 @@
-
-print 1.5 in {:}
-print false not in {:}

@@ -1,0 +1,8 @@
+
+print {'a', 'c'}.has('b')
+print {null}.has(null)
+
+s = {1...1e5}
+for i in -10^^5..10^^5 do
+    if s.has(i) != (i >= 0) do
+        print i

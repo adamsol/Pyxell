@@ -35,7 +35,6 @@ for precedence, (fixity, ops) in enumerate(reversed([
     (Fixity.NON_PREFIX, ['by']),
     (Fixity.PREFIX, ['...']),
     (Fixity.NON_PREFIX, ['==', '!=', '<', '<=', '>', '>=']),
-    (Fixity.NON_PREFIX, ['in', 'not']),
     (Fixity.PREFIX, ['not']),
     (Fixity.NON_PREFIX, ['and']),
     (Fixity.NON_PREFIX, ['or']),
@@ -217,7 +216,7 @@ class PyxellParser:
         if token.text == 'for':
             return {
                 **self.node('StmtFor', token),
-                'vars': self.parse_for_loop_var_list(),
+                'vars': self.parse_expr_list(),
                 'iterables': self.expect('in') and self.parse_expr_list(),
                 'label': self.match('label') and self.parse_id() or None,
                 'block': self.expect('do') and self.parse_block(),
@@ -572,12 +571,6 @@ class PyxellParser:
                 'exprs': [left, *right['exprs']] if chained else [left, right],
                 'ops': [self.op_node(token), *right['ops']] if chained else [self.op_node(token)],
             }
-        if token.text == 'in' or token.text == 'not' and self.match('in'):  # `in` / `not in`
-            return {
-                **self.expr_node('ExprIn', token),
-                'exprs': [left, self.parse_expr(precedence)],
-                'not': token.text == 'not',
-            }
         if token.text == '?':  # ternary conditional operator
             return {
                 **self.expr_node('ExprCond', token),
@@ -612,7 +605,7 @@ class PyxellParser:
         if token.text == 'for':
             return {
                 **self.node('ComprehensionIteration', token),
-                'vars': self.parse_for_loop_var_list(),
+                'vars': self.parse_expr_list(),
                 'iterables': self.expect('in') and self.parse_expr_list(),
             }
         if token.text == 'if':
@@ -620,26 +613,6 @@ class PyxellParser:
                 **self.node('ComprehensionPredicate', token),
                 'expr': self.parse_tuple_expr(),
             }
-
-    def parse_for_loop_var_list(self):
-        # We could use `parse_expr_list` instead, but there is a problem with ambiguity of `in` token.
-        vars = [self.parse_for_loop_var()]
-        while self.match(','):
-            vars.append(self.parse_for_loop_var())
-        return vars
-
-    def parse_for_loop_var(self):
-        token = self.pop()
-        id = self.id_node(token, placeholder_allowed=True)
-        if id:
-            return id
-        if token.text == '(':
-            return {
-                **self.expr_node('ExprTuple', self.peek()),
-                'exprs': self.parse_for_loop_var_list(),
-                '_parenthesized': self.expect(')'),
-            }
-        self.raise_syntax_error(token)
 
     def parse_call_arg(self):
         token = self.peek()

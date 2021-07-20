@@ -25,7 +25,6 @@ Operators in the same row have equal precedence.
 | `by`                             | iteration step                                           | binary    | left          |
 | `...`                            | spread                                                   | unary     | right         |
 | `==`, `!=`, `<`, `<=`, `>`, `>=` | comparisons (chainable)                                  | binary    | right         |
-| `in`, `not in`                   | membership                                               | binary    | left          |
 | `not`                            | logical negation                                         | binary    | right         |
 | `and`                            | logical conjunction (short-circuiting)                   | binary    | right         |
 | `or`                             | logical disjunction (short-circuiting)                   | binary    | right         |
@@ -108,6 +107,7 @@ This section describes all data types available in Pyxell, together with their p
 | `find(s: String, start: Int = 0): Int?`           | returns the index of the first occurrence of a string within the string, or `null` if it is not found           |
 | `fold<B>(f: Char->B->B, r: B): B`                 | applies an accumulator function over the string, with a given initial accumulator value                         |
 | `get(p: Int): Char?`                              | returns the character under a given index in the string, or `null` if the index is out of bounds                |
+| `has(s: String): Bool`                            | determines whether the string contains a given substring                                                        |
 | `map(f: Char->Char): String`                      | returns a string with characters from the original string transformed by a mapping function                     |
 | `reduce(f: Char->Char->Char): Char`               | applies an accumulator function over the string, with the first character as the initial value                  |
 | `split(sep: String): [String]`                    | splits the string into substrings delimited by a given separator                                                |
@@ -136,6 +136,7 @@ This section describes all data types available in Pyxell, together with their p
 | `find(x: A, start: Int = 0): Int?`                     | returns the index of the first occurrence of an element within the array, or `null` if it is not found          |
 | `fold<B>(f: A->B->B, r: B): B`                         | applies an accumulator function over the array, with a given initial accumulator value                          |
 | `get(p: Int): A?`                                      | returns the element under a given index in the array, or `null` if the index is out of bounds                   |
+| `has(x: A): Bool`                                      | determines whether the array contains a given element                                                           |
 | `insert(p: Int, x: A): Void`                           | inserts a new element at a given position of the array                                                          |
 | `join(sep: String = ""): String`                       | returns a string consisting of elements from the array (characters or strings) delimited by a given separator   |
 | `map<B>(f: A->B): [B]`                                 | returns an array with elements from the original array transformed by a mapping function                        |
@@ -161,6 +162,7 @@ This section describes all data types available in Pyxell, together with their p
 | `copy(): {A}`                                     | returns a shallow copy of the set                                                                               |
 | `filter(f: A->Bool): {A}`                         | returns a set with only those elements from the original set that satisfy a condition                           |
 | `fold<B>(f: A->B->B, r: B): B`                    | applies an accumulator function over the set, with a given initial accumulator value                            |
+| `has(x: A): Bool`                                 | determines whether the set contains a given element                                                             |
 | `intersect(s: {A}): Void`                         | removes all elements not present in a given set from the set                                                    |
 | `map<B>(f: A->B): {B}`                            | returns a set with elements from the original set transformed by a mapping function                             |
 | `pop(): A`                                        | removes the last element from the set and returns it (will fail if the set is empty)                            |
@@ -185,6 +187,7 @@ This section describes all data types available in Pyxell, together with their p
 | `filter(f: A*B->Bool): {A:B}`                     | returns a dictionary with only those key-value pairs from the original dictionary that satisfy a condition      |
 | `fold<C>(f: A*B->C->C, r: C): C`                  | applies an accumulator function over the dictionary, with a given initial accumulator value                     |
 | `get(x: A): B?`                                   | returns the value under a given key in the dictionary, or `null` if the key is not present                      |
+| `has(x: A): Bool`                                 | determines whether the dictionary contains a given key                                                          |
 | `map<C,D>(f: A*B->C*D): {C:D}`                    | returns a dictionary with key-value pairs from the original dictionary transformed by a mapping function        |
 | `pop(): A*B`                                      | removes the last key-value pair from the dictionary and returns it (will fail if the dictionary is empty)       |
 | `reduce(f: A*B->A*B->A*B): A*B`                   | applies an accumulator function over the dictionary, with the first key-value pair as the initial value         |

@@ -1,6 +1,0 @@
-
-a = [-1, 4, 6]
-print 4 in a
-print 1 in a
-print 46 not in a
-print -1 not in a

@@ -1,5 +1,0 @@
-
-func f(): String... def
-    return
-
-0 in f()

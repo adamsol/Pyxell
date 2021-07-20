@@ -1,0 +1,8 @@
+
+a = [-1, 4, 6]
+print a.has(4), a.has(-1), a.has(6)
+print a.has(1), a.has(46)
+
+print [[]].has([])
+print [1f..10^6].has(10^^5)
+print [15e-1..10^6].has(10^5)

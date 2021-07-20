@@ -1,3 +1,0 @@
-
-print 'b' in "abc"
-print 'x' not in "XYZ"

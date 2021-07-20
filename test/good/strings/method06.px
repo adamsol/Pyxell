@@ -1,0 +1,12 @@
+
+s = "abc"
+print s.has('c'), s.has('a'), s.has('b')
+print s.has('A'), s.has('d')
+
+print "aAbcC".has("abc")
+print "abcd".has("abc")
+print "XYxyZ".has("xy")
+print "xyz".has("xyz")
+print "xy".has("yx")
+print ".".has("")
+print "".has("")

@@ -1,4 +1,0 @@
-
-print true in []
-print null not in []
-print [] not in [[]]

@@ -684,37 +684,6 @@ Array<T> slice(const Array<T>& x, const Nullable<Int>& a, const Nullable<Int>& b
     return make_array<T>(slice(*x, a, b, c));
 }
 
-bool contains(const String& x, const String& y)
-{
-    return x->find(*y) != std::string::npos;
-}
-
-template <typename T>
-bool contains(const Array<T>& x, const T& e)
-{
-    return std::find(x->begin(), x->end(), e) != x->end();
-}
-
-template <typename K, typename V>
-bool contains(const Dict<K, V>& x, const K& k)
-{
-    return x->find(k) != x->end();
-}
-
-template <typename T>
-bool contains(const Generator<T>& x, const T& e)
-{
-    while (true) {
-        x->run();
-        if (x->state == -1) {
-            return false;
-        }
-        if (x->value == e) {
-            return true;
-        }
-    }
-}
-
 
 /* Container methods */
 
@@ -768,6 +737,11 @@ Nullable<Int> find(const String& x, const String& y, Int i)
 Int count(const String& x, Char e)
 {
     return std::count(x->begin(), x->end(), e);
+}
+
+Bool has(const String& x, const String& y)
+{
+    return x->find(*y) != std::string::npos;
 }
 
 Bool startsWith(const String& x, const String& y)
@@ -903,6 +877,12 @@ Int count(const Array<T>& x, const T& e)
     return std::count(x->begin(), x->end(), e);
 }
 
+template <typename T>
+Bool has(const Array<T>& x, const T& e)
+{
+    return std::find(x->begin(), x->end(), e) != x->end();
+}
+
 /* Set methods */
 
 template <typename T>
@@ -958,7 +938,7 @@ Set<T> copy(const Set<T>& x)
 }
 
 template <typename T>
-bool contains(const Set<T>& x, const T& e)
+bool has(const Set<T>& x, const T& e)
 {
     return x->find(e) != x->end();
 }
@@ -1008,6 +988,12 @@ template <typename K, typename V>
 Dict<K, V> copy(const Dict<K, V>& x)
 {
     return make_dict<K, V>(*x);
+}
+
+template <typename K, typename V>
+Bool has(const Dict<K, V>& x, const K& e)
+{
+    return x->find(e) != x->end();
 }
 
 

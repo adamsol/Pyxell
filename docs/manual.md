@@ -379,12 +379,6 @@ Sets are equal if they contain exactly the same elements, even if not in the sam
 print {true, false} == {false, true}
 ```
 
-To check if an element is in the set, use `in` operator.
-
-```
-print 'b' in {'a', 'b'}
-```
-
 There exist operators for set union, difference, and intersection.
 
 ```
@@ -422,12 +416,6 @@ Dictionaries are equal if they contain the same keys with the same values assign
 
 ```
 print d == {"": 0, "abc": 3}
-```
-
-Use `in` operator to check whether a dictionary contains a given key.
-
-```
-print "abc" in d
 ```
 
 Dictionaries can be merged with `+` operator. In the case of repeated keys, the second value wins.

@@ -1,0 +1,10 @@
+
+d = {"x": 1, "yz": 5}
+print d.has('x')
+print d.has("yz")
+print d.has("xyz")
+
+d' = {for i in -3...-10^^4 by -1 yield i: false}
+for i in -10^^4...10^^4 do
+    if d'.has(i) != (i < 0) do
+        print i

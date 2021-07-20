@@ -1,6 +1,0 @@
-
-s = {1...1e5}
-
-for i in 1..10^^5 do
-    if (i not in s) == (not i in s) == true do
-        print i

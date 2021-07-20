@@ -324,6 +324,7 @@ class PyxellTranspiler:
                     'split': v.Variable(t.Func([type, type], t.Array(type)), attr),
                     'find': v.Variable(t.Func([type, type, t.Func.Arg('start', t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
+                    'has': v.Variable(t.Func([type, type], t.Bool), attr),
                     'startsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                     'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
@@ -351,6 +352,7 @@ class PyxellTranspiler:
                     'copy': v.Variable(t.Func([type], type), attr),
                     'find': v.Variable(t.Func([type, type.subtype, t.Func.Arg('start', t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
+                    'has': v.Variable(t.Func([type, type.subtype], t.Bool), attr),
                 }.get(attr)
 
             elif type.isSet():
@@ -369,6 +371,7 @@ class PyxellTranspiler:
                     'remove': v.Variable(t.Func([type, type.subtype]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
+                    'has': v.Variable(t.Func([type, type.subtype], t.Bool), attr),
                 }.get(attr)
 
             elif type.isDict():
@@ -385,6 +388,7 @@ class PyxellTranspiler:
                     'remove': v.Variable(t.Func([type, type.key_type]), attr),
                     'clear': v.Variable(t.Func([type]), attr),
                     'copy': v.Variable(t.Func([type], type), attr),
+                    'has': v.Variable(t.Func([type, type.key_type], t.Bool), attr),
                 }.get(attr)
 
         elif type.isTuple() and len(attr) == 1:
@@ -755,7 +759,7 @@ class PyxellTranspiler:
 
             node = expr['node']
 
-            if node in {'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprIn', 'ExprCmp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
+            if node in {'DictPair', 'ExprIndex', 'ExprBinaryOp', 'ExprCmp', 'ExprCond', 'ExprRange', 'ExprBy', 'ExprTuple'}:
                 return {
                     **expr,
                     'exprs': lmap(convert_expr, expr['exprs']),
@@ -1926,28 +1930,6 @@ class PyxellTranspiler:
             return result
 
         return self.binaryop(node, op, *map(self.transpile, exprs))
-
-    def transpileExprIn(self, node):
-        exprs = node['exprs']
-
-        element = self.transpile(exprs[0])
-        iterable = self.transpile(exprs[1])
-        if not iterable.type.isIterable():
-            self.throw(exprs[1], err.NotIterable(iterable.type))
-
-        if iterable.type == t.String:
-            type = iterable.type
-        elif iterable.type.isDict():
-            type = iterable.type.key_type
-        else:
-            type = iterable.type.subtype
-
-        if type == t.Unknown:  # for the case of empty container
-            return v.Bool(node.get('not'))
-
-        element = self.cast(node['op'], element, type)
-        result = v.Call('contains', iterable, element, type=t.Bool)
-        return v.UnaryOp('!', result, type=t.Bool) if node.get('not') else result
 
     def transpileExprCmp(self, node):
         exprs = node['exprs']

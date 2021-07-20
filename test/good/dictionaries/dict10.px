@@ -5,4 +5,4 @@ d['x'] ??= true
 print d
 
 d['y']
-print ('y', null) in {...d}
+print {...d}.has(('y', null))
