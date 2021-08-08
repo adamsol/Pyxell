@@ -1,10 +1,10 @@
 
-print "qwerty".startsWith("qw")
-print "abc".startsWith("")
-print "123".startsWith("2")
-print "".startsWith(" ")
+print "qwerty".starts("qw")
+print "abc".starts("")
+print "123".starts("2")
+print "".starts(" ")
 
-print "qwerty".endsWith("rty")
-print "abc".endsWith("")
-print "123".endsWith("2")
-print "".endsWith(" ")
+print "qwerty".ends("rty")
+print "abc".ends("")
+print "123".ends("2")
+print "".ends(" ")

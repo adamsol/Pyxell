@@ -325,8 +325,8 @@ class PyxellTranspiler:
                     'find': v.Variable(t.Func([type, type, t.Func.Arg('start', t.Int, default=v.Int(0))], t.Nullable(t.Int)), attr),
                     'count': v.Variable(t.Func([type, type.subtype], t.Int), attr),
                     'has': v.Variable(t.Func([type, type], t.Bool), attr),
-                    'startsWith': v.Variable(t.Func([type, type], t.Bool), attr),
-                    'endsWith': v.Variable(t.Func([type, type], t.Bool), attr),
+                    'starts': v.Variable(t.Func([type, type], t.Bool), attr),
+                    'ends': v.Variable(t.Func([type, type], t.Bool), attr),
                 }.get(attr)
 
             elif attr == 'join' and type.isArray() and type.subtype in {t.Char, t.String, t.Unknown}:

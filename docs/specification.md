@@ -102,7 +102,7 @@ This section describes all data types available in Pyxell, together with their p
 | `all(f: Char->Bool): Bool`                        | determines whether all characters in the string satisfy a condition                                             |
 | `any(f: Char->Bool): Bool`                        | determines whether any character in the string satisfies a condition                                            |
 | `count(c: Char): Int`                             | returns the number of occurrences of a character within the string                                              |
-| `endsWith(s: String): Bool`                       | determines whether the string ends with a given string                                                          |
+| `ends(s: String): Bool`                           | determines whether the string ends with a given string                                                          |
 | `filter(f: Char->Bool): String`                   | returns a string with only those characters from the original string that satisfy a condition                   |
 | `find(s: String, start: Int = 0): Int?`           | returns the index of the first occurrence of a string within the string, or `null` if it is not found           |
 | `fold<B>(f: Char->B->B, r: B): B`                 | applies an accumulator function over the string, with a given initial accumulator value                         |
@@ -111,7 +111,7 @@ This section describes all data types available in Pyxell, together with their p
 | `map(f: Char->Char): String`                      | returns a string with characters from the original string transformed by a mapping function                     |
 | `reduce(f: Char->Char->Char): Char`               | applies an accumulator function over the string, with the first character as the initial value                  |
 | `split(sep: String): [String]`                    | splits the string into substrings delimited by a given separator                                                |
-| `startsWith(s: String): Bool`                     | determines whether the string starts with a given string                                                        |
+| `starts(s: String): Bool`                         | determines whether the string starts with a given string                                                        |
 | `toInt(): Int`                                    | returns the string's content converted to `Int` (conversion may fail)                                           |
 | `toFloat(): Float`                                | returns the string's content converted to `Float` (conversion may fail)                                         |
 | `toRat(): Rat`                                    | returns the string's content converted to `Rat` (conversion may fail)                                           |

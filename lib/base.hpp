@@ -744,12 +744,12 @@ Bool has(const String& x, const String& y)
     return x->find(*y) != std::string::npos;
 }
 
-Bool startsWith(const String& x, const String& y)
+Bool starts(const String& x, const String& y)
 {
     return x->rfind(*y, 0) == 0;
 }
 
-Bool endsWith(const String& x, const String& y)
+Bool ends(const String& x, const String& y)
 {
     return x->find(*y, x->size() - y->size()) != std::string::npos;
 }
