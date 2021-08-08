@@ -1184,11 +1184,10 @@ class PyxellTranspiler:
                     getter = v.Dereference(iterator, type=type.subtype)
 
                 self.cast(step_expr, step, t.Int)
-                abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
 
                 if type.isGenerator():
                     cond = v.BinaryOp(v.Attribute(value, 'state'), '!=', -1)
-                    update = v.Call(v.Attribute(value, 'next'), abs_step)
+                    update = v.Call(v.Attribute(value, 'next'), step)
                     if type.subtype != t.Void:
                         update = v.CommaSequence(v.BinaryOp(getter, '=', update), cond)
                 else:
@@ -1197,6 +1196,7 @@ class PyxellTranspiler:
                     index = self.tmp(v.Int(0), force_copy=True)
                     length = self.tmp(v.Call(v.Attribute(value, 'size'), type=t.Int))
                     cond = v.BinaryOp(index, '<', length)
+                    abs_step = self.tmp(v.Call('std::abs', step, type=step.type))
                     update = v.CommaSequence(v.BinaryOp(index, '+=', abs_step),
                                              # iterator should not cross the end of a container
                                              v.TernaryOp(cond, v.CommaSequence(v.BinaryOp(iterator, '+=', step), v.true), v.false))
