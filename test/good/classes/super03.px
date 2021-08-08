@@ -9,20 +9,20 @@ class A def
 
 class B: A def
     func add(v: Int = 0, c: Char = 'B'): Int def
-        return super(v, c=c)
+        return super(v, c = c)
 
 class B': B def
     func add(v: Int = 0, c: Char = 'B'): Int def
         if c != 'B' do
             print c
-        super(v=v)
+        super(v = v)
         return this.x + 100
 
 b = B()
 b = B'()
 b.add()
 b.add(11)
-b.add(v=42)
+b.add(v = 42)
 print b.x
 
 a = A()

@@ -2,4 +2,4 @@
 func f(s: String): Void def
     return
 
-f("", s="")
+f("", s = "")

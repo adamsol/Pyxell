@@ -2,4 +2,4 @@
 func f(a: [Int], b: [[Bool]], c: [[[Char]]] = [[[]]]): Int*Int*Int def
     return a.length, b.length, c[0][0].length
 
-print f([], b=[[]])
+print f([], b = [[]])

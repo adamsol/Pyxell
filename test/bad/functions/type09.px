@@ -3,6 +3,6 @@ func neg(b: Bool = false): Bool def
     return not b
 
 func f(g: Bool->Bool): Bool def
-    return g(b=true)
+    return g(b = true)
 
 print f(neg)

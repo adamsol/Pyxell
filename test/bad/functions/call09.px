@@ -2,4 +2,4 @@
 func f(a: Int = 5, b: Int = 10): Void def
     return
 
-f(a=3, 7)
+f(a = 3, 7)

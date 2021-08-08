@@ -4,4 +4,4 @@ func f<T>(x: T = 10^^15, y: T = 1f): Void def
 
 f(3.5)
 f()
-f(y=-2)
+f(y = -2)

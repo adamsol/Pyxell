@@ -8,4 +8,4 @@ class A def
     y: Float
 
 print A(1, 2).f()
-print A(y=3.6, x=4).f()
+print A(y = 3.6, x = 4).f()

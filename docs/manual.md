@@ -561,7 +561,7 @@ Arguments can be also passed in any order using their names.
 func pow(base, exponent) def
     return base ^ exponent
 
-print pow(exponent=-3, base=6)
+print pow(exponent = -3, base = 6)
 ```
 
 Variadic functions are supported too. This is just a syntactic sugar for passing an array.
@@ -724,7 +724,7 @@ Fields not directly initialized will receive their default values.
 This is similar to how [dataclasses](https://docs.python.org/3/library/dataclasses.html) in Python work.
 
 ```
-cat = Cat(name="Simba")
+cat = Cat(name = "Simba")
 print cat.name, cat.afraid_of_water
 ```
 
@@ -844,7 +844,7 @@ class Derived: Base def
     destructor def
         print "Derived destructor"
 
-Derived(y=4)
+Derived(y = 4)
 ```
 
 Derived class object can be assigned to a parent class variable, but not the other way around.

@@ -10,4 +10,4 @@ func f(x: String, y: Int, z: Int = v(), a: [Bool] = [false]): Char def
     return x[0]
 
 f("", 0, 4)
-print f("str", a=[true], y=15)
+print f("str", a = [true], y = 15)

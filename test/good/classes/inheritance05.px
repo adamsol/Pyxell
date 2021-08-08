@@ -9,5 +9,5 @@ class B: A def
     x: Int
 
 B("B")
-B(s="B")
+B(s = "B")
 B()

@@ -6,7 +6,7 @@ class C def
 n = 10^^5
 
 c = [for i in 0...n yield C(i, 1.25f)] + [for i in n...3*n yield C(i, 1.5f)]
-c.sort(reverse=true, key=_.x)
+c.sort(reverse = true, key = _.x)
 
 print c.length
 print [for i in 0...2*n yield c[i].id == n+i and c[i].x == 1.5f].all()

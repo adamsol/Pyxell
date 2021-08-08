@@ -2,4 +2,4 @@
 class A def
     x: Int
 
-A(y=0)
+A(y = 0)

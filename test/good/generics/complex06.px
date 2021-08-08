@@ -4,4 +4,4 @@ func f<T>(x: T?): T? def
         return null
     return x!
 
-print f(3), f(x=-7.89), f(null)
+print f(3), f(x = -7.89), f(null)

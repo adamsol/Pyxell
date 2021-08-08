@@ -12,5 +12,5 @@ t = Test(3)
 t.add()
 t.add(1)
 t.multiply()
-t.multiply(v=4)
+t.multiply(v = 4)
 print t.value

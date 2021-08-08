@@ -2,4 +2,4 @@
 func f(...args: [Int]): Void def
     return
 
-f(args={3})
+f(args = {3})

@@ -2,4 +2,4 @@
 func f(_: Int): Void def
     return
 
-f(_=0)
+f(_ = 0)

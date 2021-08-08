@@ -1,1 +1,1 @@
-:5:8: No implicit conversion from `{Int}` to `[Int]`.
+:5:10: No implicit conversion from `{Int}` to `[Int]`.

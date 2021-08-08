@@ -3,5 +3,5 @@ func f(a: Char, ...b: [String], c: Float, d: Int = 4): Void def
     print a, c + d
     print b.join()
 
-f('x', c=1)
-f('x', 'y', "abc", d=5, c=3.25)
+f('x', c = 1)
+f('x', 'y', "abc", d = 5, c = 3.25)

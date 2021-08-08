@@ -4,4 +4,4 @@ func f(a: Int, b: String = "", c: [Float] = []): Int... def
     yield a + b.length + c.length
 
 print {...f(3)}
-print {...f(c=[5], a=5)}
+print {...f(c = [5], a = 5)}

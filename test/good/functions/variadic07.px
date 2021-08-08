@@ -3,7 +3,7 @@ func f(x: Int = 0, ...a: [String]): Int def
     return x + a.length
 
 print f()
-print f(x=1)
+print f(x = 1)
 print f(5, 'x', "qwerty")
-print f(a=[])
-print f(2, a=['A'..'D'])
+print f(a = [])
+print f(2, a = ['A'..'D'])

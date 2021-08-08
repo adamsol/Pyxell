@@ -3,4 +3,4 @@ func f(y: Int = 0): Void def
     return
 
 g = f
-g(y=1)
+g(y = 1)

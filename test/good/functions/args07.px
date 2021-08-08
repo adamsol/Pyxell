@@ -3,4 +3,4 @@ func f(x: [Float] = [0]): Void def
     print x
 
 f()
-f(x=[8, 10^^16])
+f(x = [8, 10^^16])

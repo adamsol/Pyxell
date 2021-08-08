@@ -3,4 +3,4 @@ func f(s: String = "abc", n: Int): Int def
     return s.length + n
 
 print f("", 4)
-print f(n=10)
+print f(n = 10)

@@ -11,5 +11,5 @@ b = false
 f(b)
 print b
 
-f(args=a)
+f(args = a)
 print a

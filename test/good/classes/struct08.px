@@ -10,6 +10,6 @@ print a.f(".")
 a.f = _.length
 print a.f("zxcvb")
 
-a = A(f=_[-1].code)
+a = A(f = _[-1].code)
 print a.c
 print a.f("XY")

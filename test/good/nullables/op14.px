@@ -12,5 +12,5 @@ a: A?
 print a?.f()
 
 a = A()
-print a?.f(x=10)
+print a?.f(x = 10)
 a?.g()

@@ -3,6 +3,6 @@ func apply<A,B>(x: A = 0, f: A->B = _+1): B def
     return f(x)
 
 print apply()
-print apply(x=1)
-print apply(f=_)
-print apply("test", f=_.length)
+print apply(x = 1)
+print apply(f = _)
+print apply("test", f = _.length)

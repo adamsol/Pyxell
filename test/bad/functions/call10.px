@@ -2,4 +2,4 @@
 func f(b: Bool): Void def
     return
 
-f(b=true, b=true)
+f(b = true, b = true)

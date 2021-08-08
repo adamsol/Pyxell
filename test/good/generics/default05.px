@@ -2,7 +2,7 @@
 func apply<A,B,C>(x: A, f: A->B->C = min, y: B = 0): C def
     return f(x, y)
 
-print apply(5), apply(-4, y=-3)
-print apply(3, max), apply(2.5, f=max, y=7.5)
-print apply("abc", _*_), apply("abc", _*_, y=1)
-print apply([true], y=[false], f=_+_)
+print apply(5), apply(-4, y = -3)
+print apply(3, max), apply(2.5, f = max, y = 7.5)
+print apply("abc", _*_), apply("abc", _*_, y = 1)
+print apply([true], y = [false], f = _+_)

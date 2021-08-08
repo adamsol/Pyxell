@@ -1,5 +1,5 @@
 
 a = ["abc", "a", "bc"]
 print a.sort()
-print a.sort(reverse=true)
-print a.sort(key=_.length)
+print a.sort(reverse = true)
+print a.sort(key = _.length)

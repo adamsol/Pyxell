@@ -17,5 +17,5 @@ B().f()
 b = B(true, 'y')
 print b.x, b.y
 
-c = C(z="xyz")
+c = C(z = "xyz")
 print c.x, c.y, c.z

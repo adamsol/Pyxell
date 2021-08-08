@@ -2,4 +2,4 @@
 func f(x: Int): Void def
     return
 
-f(x=false)
+f(x = false)

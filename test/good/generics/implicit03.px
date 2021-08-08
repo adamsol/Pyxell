@@ -3,5 +3,5 @@ func f(x, y = 0) def
     print x*2 + y
 
 f("ab", 'c')
-f(y=1/2, x=3e-1)
+f(y = 1/2, x = 3e-1)
 f(4)

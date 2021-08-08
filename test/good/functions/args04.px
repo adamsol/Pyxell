@@ -2,6 +2,6 @@
 func div(a: Int, b: Int): Int def
     return a // b
 
-print div(a=18, b=3)
-print div(-50, b=10)
-print div(b=14, a=42)
+print div(a = 18, b = 3)
+print div(-50, b = 10)
+print div(b = 14, a = 42)
