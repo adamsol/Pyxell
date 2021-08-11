@@ -46,7 +46,7 @@ This section describes all data types available in Pyxell, together with their p
 | `Rat`      | arbitrary-precision rational number         | `1.5`         | `0r`          |
 | `Float`    | double-precision floating-point number      | `3.14f`       | `0f`          |
 | `Bool`     | boolean value                               | `true`        | `false`       |
-| `Char`     | single-byte character                       | `'A'`         | `'\x0'`       |
+| `Char`     | single-byte character                       | `'A'`         | `'\0'`        |
 | `String`   | arbitrary-length string of characters       | `"example"`   | `""`          |
 
 ### Compound types

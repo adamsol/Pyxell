@@ -5,5 +5,5 @@ module.exports = {
     variable_name: /\b[a-z_][\w']*/,  // so that apostrophes in variable names are handled properly
     type_name: /\b[A-Z][\w']*/,
     number: /(?:0b[01_]+|0o[0-7_]+|0x[\da-fA-F_]+|\d[\d_]*(?:r|(?:\.[\d_]+)?(?:[eE][-+]?[\d_]+|f)?)?)\b/,
-    string: /"(?:[^\\"]|\\(?:["\\abfnrt]|x[0-9a-fA-F]+))*(?:"|$)|'(?:[^\\']|\\(?:['\\abfnrt]|x[0-9a-fA-F]+))?(?:'|$)/,
+    string: /"(?:[^\\"]|\\.)*(?:"|$)|'(?:[^\\']|\\.)?(?:'|$)/,
 };

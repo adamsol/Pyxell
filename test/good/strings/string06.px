@@ -1,4 +1,0 @@
-
-s = ""
-print s.empty
-print "string".length + s.length

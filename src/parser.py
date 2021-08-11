@@ -412,9 +412,17 @@ class PyxellParser:
                 'value': token.text == 'true',
             }
         if token.type in {Token.CHAR, Token.STRING}:
+            value = token.text[1:-1]
+            i = 0
+            while i < len(value):
+                if value[i] == '\\':
+                    i += 1
+                    if value[i] not in {'\\', '\'', '"', 'n', 'r', 't', '0'}:
+                        raise err(self.filepath, (token.position[0], token.position[1] + i), err.InvalidEscapeSequence(value[i-1:i+1]))
+                i += 1
             return {
                 **self.expr_node(f'Atom{token.type.capitalize()}', token),
-                'value': token.text[1:-1],
+                'value': value,
             }
         if token.text in {'null', 'super', 'this'}:
             return {

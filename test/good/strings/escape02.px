@@ -1,0 +1,9 @@
+
+s = "\\\'\"\n\r\t\0"
+c = ['\\', '\'', '\"', '\n', '\r', '\t', '\0']
+print s.length
+print s == c.join()
+print s[:4], c[0]
+print (s, 1)
+print c
+print c.map(_.code)

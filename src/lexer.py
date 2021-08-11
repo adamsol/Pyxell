@@ -12,9 +12,8 @@ MULTI_CHARACTER_OPERATORS = ['?...', '?.', '@(', '^^', '//', '%%', '?[', '??', '
 
 ID_REGEX = r'''[a-zA-Z_][\w']*'''
 NUMBER_REGEX = r'''0b[01_]+|0o[0-7_]+|0x[\da-fA-F_]+|\d[\d_]*(?:r|(?:\.[\d_]+)?(?:[eE][-+]?[\d_]+|f)?)?'''
-ESCAPE_SEQ_REGEX = r'''[\\abfnrt]|x[0-9a-fA-F]+'''
-CHAR_REGEX = rf'''\'(?:[^\\']|\\(?:'|{ESCAPE_SEQ_REGEX}))\''''
-STRING_REGEX = rf'''\"(?:[^\\"]|\\(?:"|{ESCAPE_SEQ_REGEX}))*\"'''
+CHAR_REGEX = rf'''\'(?:[^\\']|\\.)\''''
+STRING_REGEX = rf'''\"(?:[^\\"]|\\.)*\"'''
 
 
 class Token:

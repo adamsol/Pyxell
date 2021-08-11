@@ -1,6 +1,7 @@
 
 class PyxellError(Exception):
 
+    InvalidEscapeSequence = lambda s: f"Invalid escape sequence `{s}`"
     InvalidSyntax = lambda: f"Syntax error"
 
     AbstractClass = lambda t: f"Cannot instantiate an abstract class `{t.show()}`"

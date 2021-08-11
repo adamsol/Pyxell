@@ -1054,14 +1054,44 @@ String toString(Bool x)
     return make_string(x ? "true" : "false");
 }
 
+std::string transform_character_to_display(char c)
+{
+    switch (c) {
+        case '\\': return "\\\\";
+        case '\n': return "\\n";
+        case '\r': return "\\r";
+        case '\t': return "\\t";
+        case '\0': return "\\0";
+    }
+    return std::string(1, c);
+}
+
 String toString(Char x)
 {
-    return make_string("'" + std::string(1, x) + "'");
+    auto r = make_string();
+    r->append("'");
+    if (x == '\'') {
+        r->append("\\'");
+    } else {
+        r->append(transform_character_to_display(x));
+    }
+    r->append("'");
+    return r;
 }
 
 String toString(const String& x)
 {
-    return make_string('"' + *x + '"');
+    auto r = make_string();
+    r->append("\"");
+    for (auto c: *x) {
+        if (c == '"') {
+            r->append("\\\"");
+        } else {
+            r->append(transform_character_to_display(c));
+        }
+    }
+    r->append("\"");
+    return r;
 }
 
 template <typename T>
