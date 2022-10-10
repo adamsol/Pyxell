@@ -613,7 +613,7 @@ When a type name is used more than once, the compiler will try to unify types of
 
 ```
 func contains<T>(a: [T], x: T): Bool def
-    return x in a
+    return a.has(x)
 
 print contains([3r], 3)  # T will be Rat
 ```
@@ -622,7 +622,7 @@ As described in the previous section, a generic function can also be created imp
 
 ```
 func contains2(a, x) def
-    return x in a
+    return a.has(x)
 
 print contains2("abc", 'd')
 ```
